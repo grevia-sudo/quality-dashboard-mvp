@@ -4,6 +4,7 @@ import { appRouter } from "./routers";
 
 const dbMocks = vi.hoisted(() => ({
   ensureMvpSeedData: vi.fn(async () => undefined),
+  archiveExpiredData: vi.fn(async () => ({ archivedCount: 0 })),
   seedKpiForDemo: vi.fn(async () => undefined),
   getStationOverviewData: vi.fn(async () => [
     { stationCode: "A1", label: "A1 點到貨", pendingCount: 3, todayNewCount: 1, overdueCount: 0 },
@@ -33,6 +34,7 @@ const dbMocks = vi.hoisted(() => ({
 
 const {
   ensureMvpSeedData,
+  archiveExpiredData,
   seedKpiForDemo,
   getStationOverviewData,
   getEngineerKpiSummary,

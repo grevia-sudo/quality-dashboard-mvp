@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
+  archiveExpiredData,
   completeStationTask,
   ensureMvpSeedData,
   getAdminSetupData,
@@ -23,6 +24,7 @@ export const appRouter = router({
     me: publicProcedure.query(async (opts) => {
       if (opts.ctx.user) {
         await ensureMvpSeedData();
+        await archiveExpiredData();
         await seedKpiForDemo(opts.ctx.user.id);
       }
       return opts.ctx.user;
@@ -38,6 +40,7 @@ export const appRouter = router({
   dashboard: router({
     home: protectedProcedure.query(async ({ ctx }) => {
       await ensureMvpSeedData();
+      await archiveExpiredData();
       const stations = await getStationOverviewData();
       const kpi = await getEngineerKpiSummary(ctx.user.id);
       const roleLanding = ["admin", "manager", "supervisor"].includes(ctx.user.role) ? "dashboard" : "operations";
@@ -115,6 +118,7 @@ export const appRouter = router({
   admin: router({
     setup: adminProcedure.query(async () => {
       await ensureMvpSeedData();
+      await archiveExpiredData();
       return getAdminSetupData();
     }),
   }),

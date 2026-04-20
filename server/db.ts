@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   engineerDailyProductivity,
   InsertUser,
+  productArchives,
   productCategories,
   productivityScoreDetails,
   productivityTargetConfigs,
@@ -806,6 +807,46 @@ export async function seedKpiForDemo(userId: number) {
       finalKpiScore: "96.670000",
     },
   });
+}
+
+export async function archiveExpiredData() {
+  const db = await getDb();
+  if (!db) {
+    return { archivedCount: 0 };
+  }
+
+  const expiredProducts = await db
+    .select()
+    .from(products)
+    .where(and(isNull(products.archivedAt), sql`${products.createdAt} < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 6 MONTH)`))
+    .limit(100);
+
+  if (expiredProducts.length === 0) {
+    return { archivedCount: 0 };
+  }
+
+  const archiveMonth = new Date().toISOString().slice(0, 7);
+  const productIds = expiredProducts.map((item) => item.id);
+
+  await db.insert(productArchives).values(
+    expiredProducts.map((product) => ({
+      originalProductId: product.id,
+      productSnapshot: product,
+      archiveMonth,
+    })),
+  );
+
+  await db
+    .update(products)
+    .set({ archivedAt: new Date() })
+    .where(inArray(products.id, productIds));
+
+  await db
+    .update(stationTasks)
+    .set({ taskStatus: "archived" })
+    .where(inArray(stationTasks.productId, productIds));
+
+  return { archivedCount: expiredProducts.length };
 }
 
 export async function getAdminSetupData() {
