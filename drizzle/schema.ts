@@ -1,28 +1,217 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  date,
+  decimal,
+  int,
+  json,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
+export const userRoleEnum = mysqlEnum("role", ["user", "admin", "manager", "engineer", "supervisor"]);
+export const stationCodeEnum = mysqlEnum("stationCode", ["A1", "A2", "B", "C", "D", "E", "STOCK"]);
+export const productStatusEnum = mysqlEnum("productStatus", [
+  "pending_a1",
+  "pending_a2",
+  "pending_b",
+  "pending_c",
+  "pending_d",
+  "pending_e",
+  "pending_stock",
+  "completed",
+  "archived",
+]);
+export const stationTaskStatusEnum = mysqlEnum("stationTaskStatus", ["pending", "in_progress", "completed", "returned", "overdue", "archived"]);
+export const stationEventTypeEnum = mysqlEnum("stationEventType", [
+  "enter",
+  "complete",
+  "return_to_hub",
+  "rework",
+  "sampling_pass",
+  "sampling_fail",
+  "wipe_complete",
+  "stock_ready",
+  "archived",
+]);
+export const syncJobStatusEnum = mysqlEnum("syncJobStatus", ["queued", "processing", "success", "failed"]);
+
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: userRoleEnum.default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const productCategories = mysqlTable("product_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  categoryName: varchar("categoryName", { length: 120 }).notNull(),
+  subtypeCode: varchar("subtypeCode", { length: 80 }).notNull(),
+  brandName: varchar("brandName", { length: 80 }),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const stationRules = mysqlTable("station_rules", {
+  id: int("id").autoincrement().primaryKey(),
+  stationCode: stationCodeEnum.notNull(),
+  routeKey: varchar("routeKey", { length: 80 }).notNull(),
+  nextStationCode: stationCodeEnum,
+  allowReworkToCode: stationCodeEnum,
+  active: boolean("active").default(true).notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const products = mysqlTable("products", {
+  id: int("id").autoincrement().primaryKey(),
+  productCode: varchar("productCode", { length: 120 }).notNull().unique(),
+  batchNo: varchar("batchNo", { length: 120 }),
+  serialNumber: varchar("serialNumber", { length: 120 }),
+  imei: varchar("imei", { length: 120 }),
+  productName: varchar("productName", { length: 160 }),
+  warrantyDate: date("warrantyDate"),
+  categoryId: int("categoryId").references(() => productCategories.id),
+  currentStationCode: stationCodeEnum.default("A1").notNull(),
+  currentStatus: productStatusEnum.default("pending_a1").notNull(),
+  inspectionSummary: text("inspectionSummary"),
+  wipeStatus: varchar("wipeStatus", { length: 40 }).default("pending"),
+  stockStatus: varchar("stockStatus", { length: 40 }).default("pending"),
+  archivedAt: timestamp("archivedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const stationTasks = mysqlTable("station_tasks", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull().references(() => products.id),
+  stationCode: stationCodeEnum.notNull(),
+  assignedUserId: int("assignedUserId").references(() => users.id),
+  taskStatus: stationTaskStatusEnum.default("pending").notNull(),
+  dueDate: date("dueDate"),
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  isOverdue: boolean("isOverdue").default(false).notNull(),
+  resultSummary: text("resultSummary"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const stationEvents = mysqlTable("station_events", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull().references(() => products.id),
+  stationTaskId: int("stationTaskId").references(() => stationTasks.id),
+  stationCode: stationCodeEnum.notNull(),
+  eventType: stationEventTypeEnum.notNull(),
+  operatorUserId: int("operatorUserId").references(() => users.id),
+  businessDate: date("businessDate").notNull(),
+  categoryId: int("categoryId").references(() => productCategories.id),
+  subtypeCode: varchar("subtypeCode", { length: 80 }),
+  isRework: boolean("isRework").default(false).notNull(),
+  reworkRound: int("reworkRound").default(0).notNull(),
+  countForProductivity: boolean("countForProductivity").default(true).notNull(),
+  payload: json("payload"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const samplingResults = mysqlTable("sampling_results", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull().references(() => products.id),
+  stationTaskId: int("stationTaskId").references(() => stationTasks.id),
+  sampledByUserId: int("sampledByUserId").references(() => users.id),
+  sampleDate: date("sampleDate").notNull(),
+  passed: boolean("passed").notNull(),
+  defectReason: text("defectReason"),
+  reworkToStationCode: stationCodeEnum.default("C").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const productivityTargetConfigs = mysqlTable("productivity_target_configs", {
+  id: int("id").autoincrement().primaryKey(),
+  stationCode: stationCodeEnum.notNull(),
+  categoryId: int("categoryId").references(() => productCategories.id),
+  subtypeCode: varchar("subtypeCode", { length: 80 }).notNull(),
+  dailyTargetQty: int("dailyTargetQty").notNull(),
+  baseUnitPoints: decimal("baseUnitPoints", { precision: 12, scale: 6 }).notNull(),
+  qualityDeductionThreshold: decimal("qualityDeductionThreshold", { precision: 8, scale: 4 }).default("0.0000"),
+  reworkFactor: decimal("reworkFactor", { precision: 8, scale: 4 }).default("0.5000").notNull(),
+  effectiveFrom: date("effectiveFrom").notNull(),
+  effectiveTo: date("effectiveTo"),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const productivityScoreDetails = mysqlTable("productivity_score_details", {
+  id: int("id").autoincrement().primaryKey(),
+  businessDate: date("businessDate").notNull(),
+  userId: int("userId").notNull().references(() => users.id),
+  stationEventId: int("stationEventId").notNull().references(() => stationEvents.id),
+  productId: int("productId").notNull().references(() => products.id),
+  stationCode: stationCodeEnum.notNull(),
+  categoryId: int("categoryId").references(() => productCategories.id),
+  subtypeCode: varchar("subtypeCode", { length: 80 }),
+  targetConfigId: int("targetConfigId"),
+  completedQty: int("completedQty").default(1).notNull(),
+  baseUnitPoints: decimal("baseUnitPoints", { precision: 12, scale: 6 }).notNull(),
+  reworkFactor: decimal("reworkFactor", { precision: 8, scale: 4 }).default("1.0000").notNull(),
+  qualityFactor: decimal("qualityFactor", { precision: 8, scale: 4 }).default("1.0000").notNull(),
+  earnedPoints: decimal("earnedPoints", { precision: 12, scale: 6 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const engineerDailyProductivity = mysqlTable("engineer_daily_productivity", {
+  id: int("id").autoincrement().primaryKey(),
+  businessDate: date("businessDate").notNull(),
+  userId: int("userId").notNull().references(() => users.id),
+  attendanceFlag: boolean("attendanceFlag").default(true).notNull(),
+  totalPoints: decimal("totalPoints", { precision: 12, scale: 6 }).default("0.000000").notNull(),
+  rawAchievementRate: decimal("rawAchievementRate", { precision: 8, scale: 2 }).default("0.00").notNull(),
+  kpiAchievementRate: decimal("kpiAchievementRate", { precision: 8, scale: 2 }).default("0.00").notNull(),
+  overAchievementRate: decimal("overAchievementRate", { precision: 8, scale: 2 }).default("0.00").notNull(),
+  samplingFailRate: decimal("samplingFailRate", { precision: 8, scale: 4 }).default("0.0000").notNull(),
+  reworkRate: decimal("reworkRate", { precision: 8, scale: 4 }).default("0.0000").notNull(),
+  overdueCount: int("overdueCount").default(0).notNull(),
+  avgProcessHours: decimal("avgProcessHours", { precision: 8, scale: 2 }).default("0.00").notNull(),
+  attendanceFairnessFactor: decimal("attendanceFairnessFactor", { precision: 8, scale: 4 }).default("1.0000").notNull(),
+  finalKpiScore: decimal("finalKpiScore", { precision: 12, scale: 6 }).default("0.000000").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const sheetSyncJobs = mysqlTable("sheet_sync_jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  jobType: varchar("jobType", { length: 80 }).notNull(),
+  targetSheetName: varchar("targetSheetName", { length: 160 }).notNull(),
+  status: syncJobStatusEnum.default("queued").notNull(),
+  queuedAt: timestamp("queuedAt").defaultNow().notNull(),
+  startedAt: timestamp("startedAt"),
+  finishedAt: timestamp("finishedAt"),
+  errorMessage: text("errorMessage"),
+});
+
+export const productArchives = mysqlTable("product_archives", {
+  id: int("id").autoincrement().primaryKey(),
+  originalProductId: int("originalProductId").notNull(),
+  productSnapshot: json("productSnapshot").notNull(),
+  archivedAt: timestamp("archivedAt").defaultNow().notNull(),
+  archiveMonth: varchar("archiveMonth", { length: 7 }).notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-// TODO: Add your tables here
+export type Product = typeof products.$inferSelect;
+export type StationTask = typeof stationTasks.$inferSelect;
+export type StationEvent = typeof stationEvents.$inferSelect;
+export type ProductivityTargetConfig = typeof productivityTargetConfigs.$inferSelect;
+export type EngineerDailyProductivity = typeof engineerDailyProductivity.$inferSelect;
