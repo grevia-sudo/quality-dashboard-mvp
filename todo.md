@@ -21,3 +21,4 @@
 - [x] 撰寫與更新 Vitest 測試，覆蓋 MVP 關鍵流程
 - [x] 完成 MVP 驗證、狀態檢查與最終交付
 - [x] 修復首頁載入時 station_rules 初始化寫入失敗造成的 API Query Error，並驗證首頁可正常開啟
+- [x] 修復 /admin 頁面載入時 stationCode 驗證失敗造成的 API Query Error，並驗證管理頁可正常顯示

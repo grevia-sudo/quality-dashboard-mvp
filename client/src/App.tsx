@@ -13,12 +13,12 @@ import StationPage from "./pages/StationPage";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
       <Route path="/station/:stationCode" component={StationPage} />
       <Route path="/sampling" component={SamplingPage} />
       <Route path="/kpi" component={EngineerKpiPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/404" component={NotFound} />
+      <Route path="/" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );
