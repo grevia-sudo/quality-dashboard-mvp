@@ -1,0 +1,2 @@
+ALTER TABLE `station_rules` ADD `nextStationCode` enum('A1','A2','B','C','D','E','STOCK');--> statement-breakpoint
+ALTER TABLE `station_rules` ADD `allowReworkToCode` enum('A1','A2','B','C','D','E','STOCK');
