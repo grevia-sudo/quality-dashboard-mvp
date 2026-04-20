@@ -5,7 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { Boxes, ClipboardCheck, Gauge, ShieldCheck } from "lucide-react";
 
 const navItems: DashboardNavItem[] = [
-  { label: "站點總覽", path: "/", icon: Boxes },
+  { label: "站點總覽", path: "/operations", icon: Boxes },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck },

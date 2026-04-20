@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 
 const navItems: DashboardNavItem[] = [
-  { label: "站點總覽", path: "/", icon: Boxes },
+  { label: "站點總覽", path: "/operations", icon: Boxes },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck },
@@ -79,7 +79,7 @@ export default function SamplingPage() {
           ) : null}
         </div>
 
-        <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/')}>
+        <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/operations')}>
           返回站點總覽
         </Button>
       </div>

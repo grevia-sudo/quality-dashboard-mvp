@@ -882,3 +882,57 @@ export async function getAdminSetupData() {
     },
   };
 }
+
+export async function updateStationRule(input: {
+  id: number;
+  routeKey: string;
+  nextStationCode: StationCode | null;
+  allowReworkToCode: StationCode | null;
+  active: boolean;
+  notes?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await db
+    .update(stationRules)
+    .set({
+      routeKey: input.routeKey,
+      nextStationCode: input.nextStationCode,
+      allowReworkToCode: input.allowReworkToCode,
+      active: input.active,
+      notes: input.notes ?? null,
+    })
+    .where(eq(stationRules.id, input.id));
+
+  const rows = await db.select().from(stationRules).where(eq(stationRules.id, input.id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function updateProductivityTarget(input: {
+  id: number;
+  stationCode: StationCode;
+  dailyTargetQty: number;
+  baseUnitPoints: string;
+  active: boolean;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await db
+    .update(productivityTargetConfigs)
+    .set({
+      stationCode: input.stationCode,
+      dailyTargetQty: input.dailyTargetQty,
+      baseUnitPoints: input.baseUnitPoints,
+      active: input.active,
+    })
+    .where(eq(productivityTargetConfigs.id, input.id));
+
+  const rows = await db.select().from(productivityTargetConfigs).where(eq(productivityTargetConfigs.id, input.id)).limit(1);
+  return rows[0] ?? null;
+}

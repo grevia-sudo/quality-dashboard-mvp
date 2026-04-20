@@ -4,12 +4,15 @@ import { readFileSync } from "node:fs";
 const appSource = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf8");
 
 describe("App routing order", () => {
-  it("registers /admin before the root route to prevent Home from matching first", () => {
+  it("registers concrete dashboard routes before the root route", () => {
+    const operationsIndex = appSource.indexOf('<Route path="/operations" component={OperationsPage} />');
     const adminIndex = appSource.indexOf('<Route path="/admin" component={AdminPage} />');
     const rootIndex = appSource.indexOf('<Route path="/" component={Home} />');
 
+    expect(operationsIndex).toBeGreaterThan(-1);
     expect(adminIndex).toBeGreaterThan(-1);
     expect(rootIndex).toBeGreaterThan(-1);
+    expect(operationsIndex).toBeLessThan(rootIndex);
     expect(adminIndex).toBeLessThan(rootIndex);
   });
 });

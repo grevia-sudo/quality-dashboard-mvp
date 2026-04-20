@@ -30,6 +30,8 @@ const dbMocks = vi.hoisted(() => ({
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [], targets: [], syncSummary: { queuedJobs: 0, targetSheetName: "手機檢測資料庫" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
+  updateStationRule: vi.fn(async (input: unknown) => ({ success: true as const, input })),
+  updateProductivityTarget: vi.fn(async (input: unknown) => ({ success: true as const, input })),
 }));
 
 const {
@@ -43,6 +45,8 @@ const {
   getSamplingQueue,
   submitSamplingResult,
   getAdminSetupData,
+  updateStationRule,
+  updateProductivityTarget,
 } = dbMocks;
 
 vi.mock("./db", () => dbMocks);
@@ -136,6 +140,48 @@ describe("warehouse MVP router", () => {
       sampledByUserId: 7,
       passed: false,
       defectReason: "外觀異常",
+    });
+  });
+
+  it("allows admins to update station rules", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    await caller.admin.updateStationRule({
+      id: 1,
+      routeKey: "default",
+      nextStationCode: "A2",
+      allowReworkToCode: "C",
+      active: true,
+      notes: "A1 完成後進入 A2",
+    });
+
+    expect(updateStationRule).toHaveBeenCalledWith({
+      id: 1,
+      routeKey: "default",
+      nextStationCode: "A2",
+      allowReworkToCode: "C",
+      active: true,
+      notes: "A1 完成後進入 A2",
+    });
+  });
+
+  it("allows admins to update productivity targets", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    await caller.admin.updateProductivityTarget({
+      id: 2,
+      stationCode: "B",
+      dailyTargetQty: 150,
+      baseUnitPoints: "0.006667",
+      active: true,
+    });
+
+    expect(updateProductivityTarget).toHaveBeenCalledWith({
+      id: 2,
+      stationCode: "B",
+      dailyTargetQty: 150,
+      baseUnitPoints: "0.006667",
+      active: true,
     });
   });
 });

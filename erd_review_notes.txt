@@ -1,0 +1,10 @@
+來源：/home/ubuntu/upload/回收品檢系統資料表設計（ERD）.pdf
+
+關鍵結論：
+1. ERD 的核心資料表除 products、station_tasks、station_events、productivity_target_configs 外，還明確包含 import_batches、stations、category_station_routes、inspection_reports、inspection_issues、sampling_batches、sampling_results、wipe_records、inventory_records、sheet_sync_jobs、sheet_sync_rows、engineer_daily_productivity、engineer_daily_productivity_details。
+2. products 應偏向完整商品主檔，包含 item_code、batch_code、serial_no、imei、product_name、current_station_code、lifecycle_status、archived、closed_at 等欄位。
+3. station_tasks 應描述每站任務狀態，包含 queued_at、started_at、completed_at、result_code、remark 等流程欄位。
+4. station_events 應保留 scan、start、complete、return、sync 等事件，作為 KPI 與歷程追蹤基礎。
+5. inspection_reports / inspection_issues 在 ERD 中是 B/C 站檢測資料的重要結構，代表目前 MVP 若尚未呈現對應頁面欄位，與 ERD 仍有落差。
+6. sheet_sync_jobs / sheet_sync_rows 在 ERD 中是正式的回寫追蹤結構，不只是摘要卡片。
+7. 使用者目前明確要求補上：管理後台可直接編輯站點規則與標準產能，並確認站點總覽、A1、A2、B、C、E 作業頁可見。

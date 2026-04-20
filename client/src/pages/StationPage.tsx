@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 import { useLocation, useRoute } from "wouter";
 
 const navItems: DashboardNavItem[] = [
-  { label: "站點總覽", path: "/", icon: Boxes },
+  { label: "站點總覽", path: "/operations", icon: Boxes },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck },
@@ -53,7 +53,7 @@ export default function StationPage() {
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900">{detailQuery.data?.label}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">支援掃碼或直接輸入商品代碼，完成後立即推進至下一站，同時保留返回站點總覽的快速入口。</p>
             </div>
-            <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/')}>
+            <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/operations')}>
               <Undo2 className="mr-2 h-4 w-4" /> 返回站點總覽
             </Button>
           </CardContent>
@@ -104,7 +104,7 @@ export default function StationPage() {
                   >
                     完成並推進下一站
                   </Button>
-                  <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/')}>
+                  <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/operations')}>
                     返回總覽
                   </Button>
                 </div>

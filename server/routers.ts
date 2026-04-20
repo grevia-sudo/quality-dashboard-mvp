@@ -14,6 +14,8 @@ import {
   getStationPageData,
   seedKpiForDemo,
   submitSamplingResult,
+  updateProductivityTarget,
+  updateStationRule,
 } from "./db";
 
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
@@ -121,6 +123,46 @@ export const appRouter = router({
       await archiveExpiredData();
       return getAdminSetupData();
     }),
+    updateStationRule: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          routeKey: z.string().min(1),
+          nextStationCode: stationCodeSchema.nullable(),
+          allowReworkToCode: stationCodeSchema.nullable(),
+          active: z.boolean(),
+          notes: z.string().nullable().optional(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return updateStationRule({
+          id: input.id,
+          routeKey: input.routeKey,
+          nextStationCode: input.nextStationCode,
+          allowReworkToCode: input.allowReworkToCode,
+          active: input.active,
+          notes: input.notes ?? null,
+        });
+      }),
+    updateProductivityTarget: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          stationCode: stationCodeSchema,
+          dailyTargetQty: z.number().int().min(1),
+          baseUnitPoints: z.string().min(1),
+          active: z.boolean(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return updateProductivityTarget({
+          id: input.id,
+          stationCode: input.stationCode,
+          dailyTargetQty: input.dailyTargetQty,
+          baseUnitPoints: input.baseUnitPoints,
+          active: input.active,
+        });
+      }),
   }),
 });
 
