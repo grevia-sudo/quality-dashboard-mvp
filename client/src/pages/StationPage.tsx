@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { Boxes, ClipboardCheck, Gauge, ShieldCheck, Search, Undo2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useRoute } from "wouter";
 
 const navItems: DashboardNavItem[] = [
@@ -16,13 +16,30 @@ const navItems: DashboardNavItem[] = [
   { label: "管理後台", path: "/admin", icon: ShieldCheck },
 ];
 
+const stationCodes = ["A1", "A2", "B", "C", "E", "STOCK"] as const;
+type StationCode = (typeof stationCodes)[number];
+
+export function normalizeStationCodeParam(value?: string | null): StationCode | null {
+  if (!value) return null;
+
+  const normalized = value.replace(/^:/, "").trim().toUpperCase();
+  return stationCodes.includes(normalized as StationCode) ? (normalized as StationCode) : null;
+}
+
 export default function StationPage() {
-  const [, params] = useRoute<{ stationCode: "A1" | "A2" | "B" | "C" | "E" | "STOCK" }>("/station/:stationCode");
-  const stationCode = (params?.stationCode ?? "A1") as "A1" | "A2" | "B" | "C" | "E" | "STOCK";
+  const [, params] = useRoute<{ stationCode: string }>("/station/:stationCode");
+  const rawStationCode = params?.stationCode;
+  const normalizedStationCode = normalizeStationCodeParam(rawStationCode);
+  const stationCode = normalizedStationCode ?? "A1";
   const [, setLocation] = useLocation();
   const [keyword, setKeyword] = useState("");
   const utils = trpc.useUtils();
-  const detailQuery = trpc.station.detail.useQuery({ stationCode });
+  const detailQuery = trpc.station.detail.useQuery(
+    { stationCode },
+    {
+      retry: false,
+    },
+  );
   const completeMutation = trpc.station.complete.useMutation({
     onSuccess: async () => {
       await utils.station.detail.invalidate({ stationCode });
@@ -30,6 +47,12 @@ export default function StationPage() {
       await utils.dashboard.home.invalidate();
     },
   });
+
+  useEffect(() => {
+    if (!rawStationCode || rawStationCode !== stationCode) {
+      setLocation(`/station/${stationCode}`);
+    }
+  }, [rawStationCode, setLocation, stationCode]);
 
   const filteredTasks = useMemo(() => {
     const tasks = detailQuery.data?.tasks ?? [];
@@ -44,7 +67,7 @@ export default function StationPage() {
   }
 
   return (
-    <DashboardLayout title={detailQuery.data?.label ?? '站點作業'} navItems={navItems}>
+    <DashboardLayout title={detailQuery.data?.label ?? "站點作業"} navItems={navItems}>
       <div className="space-y-6">
         <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
           <CardContent className="flex flex-col gap-4 p-8 md:flex-row md:items-end md:justify-between">
@@ -53,7 +76,7 @@ export default function StationPage() {
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900">{detailQuery.data?.label}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">支援掃碼或直接輸入商品代碼，完成後立即推進至下一站，同時保留返回站點總覽的快速入口。</p>
             </div>
-            <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/operations')}>
+            <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>
               <Undo2 className="mr-2 h-4 w-4" /> 返回站點總覽
             </Button>
           </CardContent>
@@ -77,17 +100,17 @@ export default function StationPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-base font-bold text-slate-900">
                   <span>{task.productCode}</span>
-                  <Badge variant="secondary" className={task.isOverdue ? 'bg-[#f7e8ee] text-rose-700' : 'bg-slate-100 text-slate-700'}>
-                    {task.isOverdue ? '逾期' : task.taskStatus}
+                  <Badge variant="secondary" className={task.isOverdue ? "bg-[#f7e8ee] text-rose-700" : "bg-slate-100 text-slate-700"}>
+                    {task.isOverdue ? "逾期" : task.taskStatus}
                   </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-2">
-                  <div><p className="text-xs text-slate-400">商品名稱</p><p className="mt-1 font-semibold text-slate-900">{task.productName ?? '-'}</p></div>
-                  <div><p className="text-xs text-slate-400">品類</p><p className="mt-1 font-semibold text-slate-900">{task.subtypeCode ?? '-'}</p></div>
-                  <div><p className="text-xs text-slate-400">序號</p><p className="mt-1 font-semibold text-slate-900">{task.serialNumber ?? '-'}</p></div>
-                  <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? '-'}</p></div>
+                  <div><p className="text-xs text-slate-400">商品名稱</p><p className="mt-1 font-semibold text-slate-900">{task.productName ?? "-"}</p></div>
+                  <div><p className="text-xs text-slate-400">品類</p><p className="mt-1 font-semibold text-slate-900">{task.subtypeCode ?? "-"}</p></div>
+                  <div><p className="text-xs text-slate-400">序號</p><p className="mt-1 font-semibold text-slate-900">{task.serialNumber ?? "-"}</p></div>
+                  <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? "-"}</p></div>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Button
@@ -104,7 +127,7 @@ export default function StationPage() {
                   >
                     完成並推進下一站
                   </Button>
-                  <Button variant="outline" className="rounded-2xl" onClick={() => setLocation('/operations')}>
+                  <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>
                     返回總覽
                   </Button>
                 </div>
