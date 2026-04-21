@@ -6,11 +6,14 @@ const importPageSource = readFileSync(new URL("../client/src/pages/ImportPage.ts
 const adminPageSource = readFileSync(new URL("../client/src/pages/AdminPage.tsx", import.meta.url), "utf8");
 
 describe("warehouse workflow pages", () => {
-  it("exposes import workflow entry and protected batch import mutation on the import page", () => {
+  it("exposes file upload import workflow on the import page", () => {
     expect(importPageSource).toContain('title="匯入作業"');
     expect(importPageSource).toContain("trpc.station.importBatch.useMutation");
     expect(importPageSource).toContain("PO 單號（同批共用）");
-    expect(importPageSource).toContain("CSV／TSV 貼上匯入");
+    expect(importPageSource).toContain("CSV 檔案上傳");
+    expect(importPageSource).toContain("選擇 CSV 檔案");
+    expect(importPageSource).toContain("handleFileUpload");
+    expect(importPageSource).toContain("目前已載入");
   });
 
   it("provides A1 arrival fields and receive mutation on the station page", () => {

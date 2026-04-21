@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Boxes, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
+import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
@@ -31,7 +31,7 @@ const createEmptyRow = (): ImportDraftRow => ({
   productName: "",
 });
 
-function parseBulkText(input: string): ImportDraftRow[] {
+function parseCsvContent(input: string): ImportDraftRow[] {
   return input
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -48,22 +48,29 @@ function parseBulkText(input: string): ImportDraftRow[] {
         productName,
       };
     })
-    .filter((row) => row.batchNo || row.serialNumber || row.productName);
+    .filter((row, index) => {
+      const looksLikeHeader = index === 0 && [row.batchNo, row.serialNumber, row.imei, row.productName].join(",").toLowerCase() === "batchno,serialnumber,imei,productname";
+      return !looksLikeHeader && (row.batchNo || row.serialNumber || row.productName);
+    });
 }
 
 export default function ImportPage() {
   const [, setLocation] = useLocation();
   const authQuery = trpc.auth.me.useQuery(undefined, { retry: false });
   const [poNumber, setPoNumber] = useState("");
-  const [bulkText, setBulkText] = useState("");
   const [rows, setRows] = useState<ImportDraftRow[]>([createEmptyRow(), createEmptyRow()]);
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
 
   const importMutation = trpc.station.importBatch.useMutation({
     onSuccess: async (result) => {
       toast.success(`已匯入 ${result.importedCount} 筆商品資料`);
       setRows([createEmptyRow(), createEmptyRow()]);
-      setBulkText("");
+      setSelectedFileName("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       await utils.station.list.invalidate();
       await utils.dashboard.home.invalidate();
       await utils.station.detail.invalidate({ stationCode: "A1" });
@@ -75,14 +82,15 @@ export default function ImportPage() {
   });
 
   const preparedRows = useMemo(
-    () => rows
-      .map((row) => ({
-        batchNo: row.batchNo.trim(),
-        serialNumber: row.serialNumber.trim(),
-        imei: row.imei.trim(),
-        productName: row.productName.trim(),
-      }))
-      .filter((row) => row.batchNo && row.serialNumber && row.productName),
+    () =>
+      rows
+        .map((row) => ({
+          batchNo: row.batchNo.trim(),
+          serialNumber: row.serialNumber.trim(),
+          imei: row.imei.trim(),
+          productName: row.productName.trim(),
+        }))
+        .filter((row) => row.batchNo && row.serialNumber && row.productName),
     [rows],
   );
 
@@ -93,16 +101,31 @@ export default function ImportPage() {
     setRows((prev) => prev.map((row, currentIndex) => (currentIndex === index ? { ...row, ...patch } : row)));
   };
 
-  const appendParsedRows = () => {
-    const parsedRows = parseBulkText(bulkText);
-    if (parsedRows.length === 0) {
-      toast.error("請先貼上至少一筆 CSV 或 TSV 資料");
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
       return;
     }
 
-    setRows((prev) => [...prev, ...parsedRows]);
-    setBulkText("");
-    toast.success(`已追加 ${parsedRows.length} 筆匯入資料`);
+    setSelectedFileName(file.name);
+
+    try {
+      const content = await file.text();
+      const parsedRows = parseCsvContent(content);
+      if (parsedRows.length === 0) {
+        toast.error("檔案內容為空，或欄位格式不符合 batchNo, serialNumber, imei, productName");
+        return;
+      }
+
+      setRows(parsedRows);
+      toast.success(`已載入 ${parsedRows.length} 筆 CSV 資料`);
+    } catch {
+      toast.error("讀取檔案失敗，請重新上傳 CSV");
+    }
   };
 
   return (
@@ -111,7 +134,7 @@ export default function ImportPage() {
         <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
           <CardContent className="space-y-4 p-8">
             <Badge className="bg-white/80 text-slate-700">PO 與 A1 建檔入口</Badge>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">先匯入資料，再交由 A1 點到貨與各站點接續處理</h1>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">先上傳 CSV，再交由 A1 點到貨與各站點接續處理</h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
               同一次匯入可共用一個 PO 單號。每列資料包含商品批號、序號、IMEI 與品名；匯入完成後，系統會先寫入 DB 並建立 A1 待處理任務，再由背景程序非同步回寫 Google Sheet。
             </p>
@@ -171,16 +194,26 @@ export default function ImportPage() {
           <div className="space-y-4">
             <Card className="rounded-[28px] border-0 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900"><Upload className="h-4 w-4 text-[#7ca3d9]" /> CSV／TSV 貼上匯入</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900"><Upload className="h-4 w-4 text-[#7ca3d9]" /> CSV 檔案上傳</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <textarea
-                  value={bulkText}
-                  onChange={(event) => setBulkText(event.target.value)}
-                  className="min-h-48 w-full rounded-[24px] border-0 bg-slate-50 p-4 text-sm text-slate-700 outline-none ring-0"
-                  placeholder={"每行一筆，欄位順序：商品批號,商品序號,IMEI,品名\n支援逗號 CSV 或 Tab 分隔。"}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.tsv,text/csv,text/tab-separated-values"
+                  className="hidden"
+                  onChange={handleFileUpload}
                 />
-                <Button variant="outline" className="w-full rounded-2xl" onClick={appendParsedRows}>追加到匯入主表</Button>
+                <div className="rounded-[24px] bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                  <p>請上傳 CSV 或 TSV 檔案，欄位順序需為：商品批號、商品序號、IMEI、品名。</p>
+                  <p>若檔案第一列為標題列，系統會自動略過 `batchNo,serialNumber,imei,productName`。</p>
+                </div>
+                <Button variant="outline" className="w-full rounded-2xl" onClick={openFilePicker}>
+                  <FileUp className="mr-2 h-4 w-4" /> 選擇 CSV 檔案
+                </Button>
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                  {selectedFileName ? `目前已載入：${selectedFileName}` : "尚未選擇檔案"}
+                </div>
               </CardContent>
             </Card>
 
@@ -190,7 +223,7 @@ export default function ImportPage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm leading-7 text-slate-600">
                 <p>商品批號建議維持唯一識別，序號則允許因二次回收而重複；IMEI 若無可先留空，後續可在 A1 頁面直接補錄。</p>
-                <p>匯入後請前往 A1 點到貨頁確認資料是否齊全，再交由 A2、B、C、D、E 與待入庫流程往下處理。</p>
+                <p>上傳後資料會先帶入匯入主表，你仍可在送出前逐列修正內容，再正式建立 A1 待處理任務。</p>
                 <p>{isAdmin ? "你目前具備管理視角，可同時從管理後台維護功能表與站點規則。" : "你目前使用一般作業視角，仍可執行必要匯入並前往 A1 站處理到貨。"}</p>
               </CardContent>
             </Card>
