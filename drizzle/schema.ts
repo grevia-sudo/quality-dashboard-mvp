@@ -37,6 +37,7 @@ export const stationEventTypeEnum = mysqlEnum("stationEventType", [
   "archived",
 ]);
 export const syncJobStatusEnum = mysqlEnum("syncJobStatus", ["queued", "processing", "success", "failed"]);
+export const defectOptionTypeEnum = mysqlEnum("defectOptionType", ["fault", "appearance"]);
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -68,6 +69,17 @@ export const stationRules = mysqlTable("station_rules", {
   allowReworkToCode: mysqlEnum("allowReworkToCode", ["A1", "A2", "B", "C", "D", "E", "STOCK"]),
   active: boolean("active").default(true).notNull(),
   notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const defectOptions = mysqlTable("defect_options", {
+  id: int("id").autoincrement().primaryKey(),
+  stationCode: stationCodeEnum.notNull(),
+  optionType: defectOptionTypeEnum.notNull(),
+  label: varchar("label", { length: 160 }).notNull(),
+  active: boolean("active").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

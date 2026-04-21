@@ -15,6 +15,13 @@
       "when": 1776701179897,
       "tag": "0001_normal_captain_stacy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1776734686797,
+      "tag": "0002_typical_morph",
+      "breakpoints": true
     }
   ]
 }

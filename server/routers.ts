@@ -8,17 +8,22 @@ import {
   completeStationTask,
   ensureMvpSeedData,
   getAdminSetupData,
+  getDefectOptions,
   getEngineerKpiSummary,
   getSamplingQueue,
   getStationOverviewData,
   getStationPageData,
+  importProducts,
   seedKpiForDemo,
   submitSamplingResult,
   updateProductivityTarget,
   updateStationRule,
+  upsertDefectOption,
 } from "./db";
 
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
+const defectOptionStationSchema = z.enum(["B", "C"]);
+const defectOptionTypeSchema = z.enum(["fault", "appearance"]);
 
 export const appRouter = router({
   system: systemRouter,
@@ -72,6 +77,8 @@ export const appRouter = router({
           categoryId: z.number().nullable().optional(),
           subtypeCode: z.string().nullable().optional(),
           summary: z.string().optional(),
+          faultOptionIds: z.array(z.number().int().positive()).optional(),
+          appearanceOptionIds: z.array(z.number().int().positive()).optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -83,6 +90,54 @@ export const appRouter = router({
           categoryId: input.categoryId,
           subtypeCode: input.subtypeCode,
           summary: input.summary,
+          faultOptionIds: input.faultOptionIds,
+          appearanceOptionIds: input.appearanceOptionIds,
+        });
+      }),
+    receive: protectedProcedure
+      .input(
+        z.object({
+          batchNo: z.string().min(1),
+          serialNumber: z.string().min(1),
+          imei: z.string().optional(),
+          productName: z.string().min(1),
+          categoryId: z.number().nullable().optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        return importProducts({
+          importedByUserId: ctx.user.id,
+          rows: [
+            {
+              batchNo: input.batchNo,
+              serialNumber: input.serialNumber,
+              imei: input.imei ?? null,
+              productName: input.productName,
+              categoryId: input.categoryId,
+            },
+          ],
+        });
+      }),
+    importBatch: protectedProcedure
+      .input(
+        z.object({
+          poNumber: z.string().min(1).optional(),
+          rows: z.array(
+            z.object({
+              batchNo: z.string().min(1),
+              serialNumber: z.string().min(1),
+              imei: z.string().optional(),
+              productName: z.string().min(1),
+              categoryId: z.number().nullable().optional(),
+            }),
+          ).min(1),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        return importProducts({
+          poNumber: input.poNumber,
+          importedByUserId: ctx.user.id,
+          rows: input.rows,
         });
       }),
   }),
@@ -123,6 +178,16 @@ export const appRouter = router({
       await archiveExpiredData();
       return getAdminSetupData();
     }),
+    getDefectOptions: adminProcedure
+      .input(
+        z.object({
+          stationCode: defectOptionStationSchema,
+          optionType: defectOptionTypeSchema,
+        }),
+      )
+      .query(async ({ input }) => {
+        return getDefectOptions(input.stationCode, input.optionType);
+      }),
     updateStationRule: adminProcedure
       .input(
         z.object({
@@ -161,6 +226,42 @@ export const appRouter = router({
           dailyTargetQty: input.dailyTargetQty,
           baseUnitPoints: input.baseUnitPoints,
           active: input.active,
+        });
+      }),
+    upsertDefectOption: adminProcedure
+      .input(
+        z.object({
+          id: z.number().optional(),
+          stationCode: defectOptionStationSchema,
+          optionType: defectOptionTypeSchema,
+          label: z.string().min(1),
+          active: z.boolean(),
+          sortOrder: z.number().int().min(0),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return upsertDefectOption(input);
+      }),
+    importProducts: adminProcedure
+      .input(
+        z.object({
+          poNumber: z.string().min(1).optional(),
+          rows: z.array(
+            z.object({
+              batchNo: z.string().min(1),
+              serialNumber: z.string().min(1),
+              imei: z.string().optional(),
+              productName: z.string().min(1),
+              categoryId: z.number().nullable().optional(),
+            }),
+          ).min(1),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        return importProducts({
+          poNumber: input.poNumber,
+          importedByUserId: ctx.user.id,
+          rows: input.rows,
         });
       }),
   }),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLayout";
@@ -8,16 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Gauge, ShieldCheck } from "lucide-react";
+import { Boxes, ClipboardCheck, Gauge, PackagePlus, ShieldCheck } from "lucide-react";
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
+  { label: "匯入作業", path: "/import", icon: PackagePlus },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck },
 ];
 
 const stationOptions = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
+type OptionStationCode = "B" | "C";
+type OptionType = "fault" | "appearance";
 
 type RuleDraft = {
   id: number;
@@ -38,12 +41,34 @@ type TargetDraft = {
   active: boolean;
 };
 
+type DefectOptionDraft = {
+  localKey: string;
+  id?: number;
+  stationCode: OptionStationCode;
+  optionType: OptionType;
+  label: string;
+  active: boolean;
+  sortOrder: number;
+};
+
+function createNewOptionDraft(stationCode: OptionStationCode, optionType: OptionType): DefectOptionDraft {
+  return {
+    localKey: `${stationCode}-${optionType}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    stationCode,
+    optionType,
+    label: "",
+    active: true,
+    sortOrder: 0,
+  };
+}
+
 export default function AdminPage() {
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const query = trpc.admin.setup.useQuery(undefined, { retry: false });
   const [ruleDrafts, setRuleDrafts] = useState<RuleDraft[]>([]);
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
+  const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
 
   useEffect(() => {
     if (!query.data) {
@@ -72,6 +97,18 @@ export default function AdminPage() {
         active: Boolean(target.active),
       })),
     );
+
+    setOptionDrafts(
+      (query.data.defectOptions ?? []).map((option) => ({
+        localKey: `existing-${option.id}`,
+        id: option.id,
+        stationCode: option.stationCode as OptionStationCode,
+        optionType: option.optionType as OptionType,
+        label: option.label,
+        active: Boolean(option.active),
+        sortOrder: Number(option.sortOrder ?? 0),
+      })),
+    );
   }, [query.data]);
 
   const ruleMutation = trpc.admin.updateStationRule.useMutation({
@@ -94,6 +131,16 @@ export default function AdminPage() {
     },
   });
 
+  const optionMutation = trpc.admin.upsertDefectOption.useMutation({
+    onSuccess: async () => {
+      toast.success("功能表項目已更新");
+      await utils.admin.setup.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "功能表項目更新失敗");
+    },
+  });
+
   const updateRuleDraft = (id: number, patch: Partial<RuleDraft>) => {
     setRuleDrafts((prev) => prev.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
   };
@@ -102,18 +149,36 @@ export default function AdminPage() {
     setTargetDrafts((prev) => prev.map((target) => (target.id === id ? { ...target, ...patch } : target)));
   };
 
+  const updateOptionDraft = (localKey: string, patch: Partial<DefectOptionDraft>) => {
+    setOptionDrafts((prev) => prev.map((option) => (option.localKey === localKey ? { ...option, ...patch } : option)));
+  };
+
+  const appendOptionDraft = (stationCode: OptionStationCode, optionType: OptionType) => {
+    setOptionDrafts((prev) => [...prev, createNewOptionDraft(stationCode, optionType)]);
+  };
+
+  const groupedOptionDrafts = useMemo(
+    () => ({
+      bFault: optionDrafts.filter((option) => option.stationCode === "B" && option.optionType === "fault"),
+      cFault: optionDrafts.filter((option) => option.stationCode === "C" && option.optionType === "fault"),
+      cAppearance: optionDrafts.filter((option) => option.stationCode === "C" && option.optionType === "appearance"),
+    }),
+    [optionDrafts],
+  );
+
   return (
     <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
       <div className="space-y-6">
         <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
           <CardContent className="space-y-4 p-8">
             <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、產能設定與 KPI 規則</h1>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、匯入節奏與 B/C 功能表</h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              這一版把原本只有檢視的管理區改成可直接編輯。你可以在這裡修改各站點的下一站規則、返工站點，以及各站點 × 品類的標準產能，並從右下方快速切去站點總覽或個別作業頁檢查實際畫面。
+              這裡除了既有站點規則與標準產能外，也補上匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。
             </p>
-            <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+            <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>站點總覽</Button>
+              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/import")}>匯入作業</Button>
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/A1")}>A1 點到貨</Button>
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/A2")}>A2 安裝</Button>
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/B")}>B 站軟測</Button>
@@ -125,7 +190,7 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card className="rounded-[26px] border-0 bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base font-bold">Google Sheet 非同步回寫</CardTitle>
@@ -133,7 +198,7 @@ export default function AdminPage() {
             <CardContent className="space-y-2 text-sm text-slate-600">
               <p>目標工作表：<span className="font-semibold text-slate-900">{query.data?.syncSummary?.targetSheetName ?? "手機檢測資料庫"}</span></p>
               <p>待回寫佇列：<span className="font-semibold text-slate-900">{query.data?.syncSummary?.queuedJobs ?? 0}</span></p>
-              <p>主流程先寫入 DB，再由非同步程序回寫，不阻塞工程師作業。</p>
+              <p>主流程先寫入 DB，再由非同步程序回寫，不阻塞現場操作。</p>
             </CardContent>
           </Card>
           <Card className="rounded-[26px] border-0 bg-white shadow-sm">
@@ -146,12 +211,23 @@ export default function AdminPage() {
               <p>{query.data?.archiveSummary?.policy ?? "主表僅保留近期資料。"}</p>
             </CardContent>
           </Card>
+          <Card className="rounded-[26px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">功能表項目統計</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-slate-600">
+              <p>B 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.bFault.length}</span></p>
+              <p>C 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cFault.length}</span></p>
+              <p>C 站外觀選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cAppearance.length}</span></p>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="rules" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-4">
+          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-5">
             <TabsTrigger value="rules" className="rounded-2xl">站點規則</TabsTrigger>
             <TabsTrigger value="targets" className="rounded-2xl">標準產能</TabsTrigger>
+            <TabsTrigger value="menus" className="rounded-2xl">功能表設定</TabsTrigger>
             <TabsTrigger value="users" className="rounded-2xl">帳號管理</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-2xl">品類設定</TabsTrigger>
           </TabsList>
@@ -239,17 +315,16 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-lg font-bold text-slate-900">{target.stationCode} × {target.subtypeCode}</p>
-                        <p className="text-xs text-slate-500">依照 ERD 的 productivity_target_configs 管理 dailyTargetQty 與 baseUnitPoints</p>
+                        <p className="text-xs text-slate-500">依站點與子分類設定標準產能與單位點數</p>
                       </div>
                       <label className="flex items-center gap-2 text-sm text-slate-600">
                         <input type="checkbox" checked={target.active} onChange={(event) => updateTargetDraft(target.id, { active: event.target.checked })} />
                         啟用
                       </label>
                     </div>
-
                     <div className="grid gap-4 md:grid-cols-3">
                       <label className="space-y-2 text-sm text-slate-600">
-                        <span>站點代號</span>
+                        <span>站點</span>
                         <select value={target.stationCode} onChange={(event) => updateTargetDraft(target.id, { stationCode: event.target.value as TargetDraft["stationCode"] })} className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
                           {stationOptions.map((code) => (
                             <option key={code} value={code}>{code === "STOCK" ? "待入庫" : code}</option>
@@ -257,24 +332,23 @@ export default function AdminPage() {
                         </select>
                       </label>
                       <label className="space-y-2 text-sm text-slate-600">
-                        <span>每日標準產能</span>
-                        <Input type="number" min={1} value={target.dailyTargetQty} onChange={(event) => updateTargetDraft(target.id, { dailyTargetQty: Number(event.target.value) || 0 })} className="rounded-2xl border-0 bg-white" />
+                        <span>每日目標件數</span>
+                        <Input type="number" value={target.dailyTargetQty} onChange={(event) => updateTargetDraft(target.id, { dailyTargetQty: Number(event.target.value || 0) })} className="rounded-2xl border-0 bg-white" />
                       </label>
                       <label className="space-y-2 text-sm text-slate-600">
-                        <span>單件點數</span>
+                        <span>單位點數</span>
                         <Input value={target.baseUnitPoints} onChange={(event) => updateTargetDraft(target.id, { baseUnitPoints: event.target.value })} className="rounded-2xl border-0 bg-white" />
                       </label>
                     </div>
-
                     <div className="flex justify-end">
                       <Button
                         className="rounded-2xl"
-                        disabled={targetMutation.isPending || target.dailyTargetQty <= 0}
+                        disabled={targetMutation.isPending}
                         onClick={() =>
                           targetMutation.mutate({
                             id: target.id,
                             stationCode: target.stationCode,
-                            dailyTargetQty: target.dailyTargetQty,
+                            dailyTargetQty: Math.max(1, target.dailyTargetQty),
                             baseUnitPoints: target.baseUnitPoints,
                             active: target.active,
                           })
@@ -289,6 +363,67 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="menus">
+            <div className="grid gap-4 xl:grid-cols-3">
+              {[
+                { key: "bFault", title: "B 站軟測故障狀態", stationCode: "B" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
+                { key: "cFault", title: "C 站品檢故障項目", stationCode: "C" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
+                { key: "cAppearance", title: "C 站品檢外觀項目", stationCode: "C" as const, optionType: "appearance" as const, tone: "bg-[#f7e8ee]" },
+              ].map((section) => {
+                const sectionItems = groupedOptionDrafts[section.key as keyof typeof groupedOptionDrafts];
+
+                return (
+                  <Card key={section.key} className="rounded-[28px] border-0 bg-white shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-base font-bold text-slate-900">{section.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {sectionItems.map((option) => (
+                        <div key={option.localKey} className={`space-y-3 rounded-[24px] ${section.tone} p-4`}>
+                          <label className="space-y-2 text-sm text-slate-600">
+                            <span>項目名稱</span>
+                            <Input value={option.label} onChange={(event) => updateOptionDraft(option.localKey, { label: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="例如 觸控異常" />
+                          </label>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <label className="space-y-2 text-sm text-slate-600">
+                              <span>排序</span>
+                              <Input type="number" value={option.sortOrder} onChange={(event) => updateOptionDraft(option.localKey, { sortOrder: Number(event.target.value || 0) })} className="rounded-2xl border-0 bg-white" />
+                            </label>
+                            <label className="flex items-center gap-2 self-end rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                              <input type="checkbox" checked={option.active} onChange={(event) => updateOptionDraft(option.localKey, { active: event.target.checked })} />
+                              啟用
+                            </label>
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              className="rounded-2xl"
+                              disabled={optionMutation.isPending || !option.label.trim()}
+                              onClick={() =>
+                                optionMutation.mutate({
+                                  id: option.id,
+                                  stationCode: option.stationCode,
+                                  optionType: option.optionType,
+                                  label: option.label.trim(),
+                                  active: option.active,
+                                  sortOrder: option.sortOrder,
+                                })
+                              }
+                            >
+                              儲存功能表項目
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      <Button variant="outline" className="w-full rounded-2xl" onClick={() => appendOptionDraft(section.stationCode, section.optionType)}>
+                        新增一個項目
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
           <TabsContent value="users">
             <Card className="rounded-[28px] border-0 bg-white shadow-sm">
               <CardHeader>
@@ -296,10 +431,19 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {(query.data?.users ?? []).map((user) => (
-                  <div key={user.id} className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-3">
-                    <div><p className="text-xs text-slate-400">姓名</p><p className="mt-1 font-semibold text-slate-900">{user.name ?? "-"}</p></div>
-                    <div><p className="text-xs text-slate-400">Email</p><p className="mt-1 font-semibold text-slate-900">{user.email ?? "-"}</p></div>
-                    <div><p className="text-xs text-slate-400">角色</p><p className="mt-1 font-semibold text-slate-900">{user.role}</p></div>
+                  <div key={user.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-3">
+                    <div>
+                      <p className="text-xs text-slate-400">名稱</p>
+                      <p className="mt-1 font-semibold text-slate-900">{user.name ?? "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Email</p>
+                      <p className="mt-1 font-semibold text-slate-900">{user.email ?? "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">角色</p>
+                      <p className="mt-1 font-semibold text-slate-900">{user.role}</p>
+                    </div>
                   </div>
                 ))}
               </CardContent>
@@ -309,15 +453,27 @@ export default function AdminPage() {
           <TabsContent value="categories">
             <Card className="rounded-[28px] border-0 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="text-base font-bold">品類／子分類設定</CardTitle>
+                <CardTitle className="text-base font-bold">品類設定</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {(query.data?.categories ?? []).map((category) => (
-                  <div key={category.id} className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-4">
-                    <div><p className="text-xs text-slate-400">品類</p><p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p></div>
-                    <div><p className="text-xs text-slate-400">子分類</p><p className="mt-1 font-semibold text-slate-900">{category.subtypeCode}</p></div>
-                    <div><p className="text-xs text-slate-400">品牌</p><p className="mt-1 font-semibold text-slate-900">{category.brandName ?? "-"}</p></div>
-                    <div><p className="text-xs text-slate-400">狀態</p><p className="mt-1 font-semibold text-slate-900">{category.active ? "啟用" : "停用"}</p></div>
+                  <div key={category.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-4">
+                    <div>
+                      <p className="text-xs text-slate-400">品類</p>
+                      <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">子分類</p>
+                      <p className="mt-1 font-semibold text-slate-900">{category.subtypeCode}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">品牌</p>
+                      <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">狀態</p>
+                      <p className="mt-1 font-semibold text-slate-900">{category.active ? "啟用" : "停用"}</p>
+                    </div>
                   </div>
                 ))}
               </CardContent>

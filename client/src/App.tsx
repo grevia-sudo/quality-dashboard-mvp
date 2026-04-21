@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import AdminPage from "./pages/AdminPage";
 import EngineerKpiPage from "./pages/EngineerKpiPage";
 import Home from "./pages/Home";
+import ImportPage from "./pages/ImportPage";
 import OperationsPage from "./pages/OperationsPage";
 import SamplingPage from "./pages/SamplingPage";
 import StationPage from "./pages/StationPage";
@@ -15,6 +16,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/operations" component={OperationsPage} />
+      <Route path="/import" component={ImportPage} />
       <Route path="/station/:stationCode" component={StationPage} />
       <Route path="/sampling" component={SamplingPage} />
       <Route path="/kpi" component={EngineerKpiPage} />

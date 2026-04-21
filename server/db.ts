@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
+  defectOptions,
   engineerDailyProductivity,
   InsertUser,
   productArchives,
@@ -19,6 +20,7 @@ import { ENV } from "./_core/env";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 type StationCode = (typeof STATION_CODES)[number];
+type DefectOptionType = "fault" | "appearance";
 
 type StationStatusSummary = {
   stationCode: StationCode;
@@ -91,6 +93,27 @@ function statusForStation(code: StationCode) {
     | "pending_stock";
 }
 
+async function seedDefectOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
+  const existingOptions = await db.select({ count: sql<number>`count(*)` }).from(defectOptions);
+  if ((existingOptions[0]?.count ?? 0) > 0) {
+    return;
+  }
+
+  await db.insert(defectOptions).values([
+    { stationCode: "B", optionType: "fault", label: "無法開機", sortOrder: 10 },
+    { stationCode: "B", optionType: "fault", label: "觸控異常", sortOrder: 20 },
+    { stationCode: "B", optionType: "fault", label: "電池健康異常", sortOrder: 30 },
+    { stationCode: "C", optionType: "fault", label: "鏡頭故障", sortOrder: 10 },
+    { stationCode: "C", optionType: "fault", label: "Face ID / 指紋異常", sortOrder: 20 },
+    { stationCode: "C", optionType: "appearance", label: "螢幕刮傷", sortOrder: 10 },
+    { stationCode: "C", optionType: "appearance", label: "邊框凹傷", sortOrder: 20 },
+  ]);
+}
+
+function buildProductCode(seed: number, index: number) {
+  return `P-${seed}-${String(index + 1).padStart(3, "0")}`;
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
@@ -157,6 +180,8 @@ export async function getUserByOpenId(openId: string) {
 export async function ensureMvpSeedData() {
   const db = await getDb();
   if (!db) return;
+
+  await seedDefectOptionsIfNeeded(db);
 
   const existingProducts = await db.select({ count: sql<number>`count(*)` }).from(products);
   if ((existingProducts[0]?.count ?? 0) > 0) {
@@ -298,10 +323,24 @@ export async function getStationOverviewData() {
   });
 }
 
+export async function getDefectOptions(stationCode: StationCode, optionType: DefectOptionType) {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  await ensureMvpSeedData();
+  return db
+    .select()
+    .from(defectOptions)
+    .where(and(eq(defectOptions.stationCode, stationCode), eq(defectOptions.optionType, optionType)))
+    .orderBy(asc(defectOptions.sortOrder), asc(defectOptions.id));
+}
+
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
-    return { stationCode, label: stationToLabel(stationCode), tasks: [] };
+    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [] };
   }
 
   await ensureMvpSeedData();
@@ -326,10 +365,87 @@ export async function getStationPageData(stationCode: StationCode) {
     .where(and(eq(stationTasks.stationCode, stationCode), inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"])))
     .orderBy(desc(stationTasks.isOverdue), asc(stationTasks.id));
 
+  const [faultOptions, appearanceOptions] = await Promise.all([
+    stationCode === "B" || stationCode === "C" ? getDefectOptions(stationCode, "fault") : Promise.resolve([]),
+    stationCode === "C" ? getDefectOptions(stationCode, "appearance") : Promise.resolve([]),
+  ]);
+
   return {
     stationCode,
     label: stationToLabel(stationCode),
     tasks: rows,
+    faultOptions,
+    appearanceOptions,
+  };
+}
+
+export async function importProducts(input: {
+  poNumber?: string | null;
+  importedByUserId?: number | null;
+  rows: Array<{
+    batchNo?: string | null;
+    serialNumber?: string | null;
+    imei?: string | null;
+    productName: string;
+    categoryId?: number | null;
+  }>;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await ensureMvpSeedData();
+  const businessDate = todayDateString();
+  const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const importSeed = Date.now();
+  const createdProducts: Array<{ id: number; productCode: string; productName: string | null }> = [];
+
+  for (let index = 0; index < input.rows.length; index += 1) {
+    const row = input.rows[index]!;
+    const productCode = buildProductCode(importSeed, index);
+    await db.insert(products).values({
+      productCode,
+      batchNo: row.batchNo ?? null,
+      serialNumber: row.serialNumber ?? null,
+      imei: row.imei ?? null,
+      productName: row.productName,
+      categoryId: row.categoryId ?? null,
+      currentStationCode: "A1",
+      currentStatus: "pending_a1",
+      inspectionSummary: input.poNumber ? `PO:${input.poNumber}` : null,
+    });
+
+    const created = await db.select().from(products).where(eq(products.productCode, productCode)).limit(1);
+    const product = created[0];
+    if (!product) continue;
+
+    createdProducts.push({ id: product.id, productCode: product.productCode, productName: product.productName ?? null });
+
+    await db.insert(stationTasks).values({
+      productId: product.id,
+      stationCode: "A1",
+      taskStatus: "pending",
+      dueDate: businessDateValue,
+      resultSummary: "A1 點到貨待處理",
+      metadata: {
+        source: "import",
+        poNumber: input.poNumber ?? null,
+      },
+    });
+  }
+
+  await db.insert(sheetSyncJobs).values({
+    jobType: "product_import_sync",
+    targetSheetName: "手機檢測資料庫",
+    status: "queued",
+  });
+
+  return {
+    success: true as const,
+    importedCount: createdProducts.length,
+    poNumber: input.poNumber ?? null,
+    products: createdProducts,
   };
 }
 
@@ -341,6 +457,8 @@ export async function completeStationTask(input: {
   categoryId?: number | null;
   subtypeCode?: string | null;
   summary?: string;
+  faultOptionIds?: number[];
+  appearanceOptionIds?: number[];
 }) {
   const db = await getDb();
   if (!db) {
@@ -350,6 +468,12 @@ export async function completeStationTask(input: {
   const nextStation = nextStationFor(input.stationCode);
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const selectedOptionIds = Array.from(new Set([...(input.faultOptionIds ?? []), ...(input.appearanceOptionIds ?? [])]));
+  const selectedOptions = selectedOptionIds.length
+    ? await db.select().from(defectOptions).where(inArray(defectOptions.id, selectedOptionIds))
+    : [];
+  const faultLabels = selectedOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
+  const appearanceLabels = selectedOptions.filter((option) => option.optionType === "appearance").map((option) => option.label);
 
   await db
     .update(stationTasks)
@@ -370,7 +494,13 @@ export async function completeStationTask(input: {
     businessDate: businessDateValue,
     categoryId: input.categoryId ?? null,
     subtypeCode: input.subtypeCode ?? null,
-    payload: { summary: input.summary ?? "已完成站點作業" },
+    payload: {
+      summary: input.summary ?? "已完成站點作業",
+      faultOptionIds: input.faultOptionIds ?? [],
+      appearanceOptionIds: input.appearanceOptionIds ?? [],
+      faultLabels,
+      appearanceLabels,
+    },
   });
 
   await db.insert(sheetSyncJobs).values({
@@ -395,7 +525,11 @@ export async function completeStationTask(input: {
       taskStatus: "pending",
       dueDate: businessDateValue,
       resultSummary: `${stationToLabel(nextStation)} 待處理`,
-      metadata: { sourceStation: input.stationCode },
+      metadata: {
+        sourceStation: input.stationCode,
+        faultLabels,
+        appearanceLabels,
+      },
     });
   } else {
     await db
@@ -871,6 +1005,7 @@ export async function getAdminSetupData() {
     rules: await db.select().from(stationRules).orderBy(asc(stationRules.id)),
     categories: await db.select().from(productCategories).orderBy(asc(productCategories.id)),
     targets: await db.select().from(productivityTargetConfigs).orderBy(asc(productivityTargetConfigs.id)),
+    defectOptions: await db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
     syncSummary: {
       queuedJobs: queuedSyncJobs[0]?.count ?? 0,
       targetSheetName: "手機檢測資料庫",
@@ -881,6 +1016,52 @@ export async function getAdminSetupData() {
       policy: "主表僅保留六個月內資料，超過六個月資料移入歷史資料表。",
     },
   };
+}
+
+export async function upsertDefectOption(input: {
+  id?: number;
+  stationCode: StationCode;
+  optionType: DefectOptionType;
+  label: string;
+  active: boolean;
+  sortOrder: number;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  if (input.id) {
+    await db
+      .update(defectOptions)
+      .set({
+        stationCode: input.stationCode,
+        optionType: input.optionType,
+        label: input.label,
+        active: input.active,
+        sortOrder: input.sortOrder,
+      })
+      .where(eq(defectOptions.id, input.id));
+
+    const rows = await db.select().from(defectOptions).where(eq(defectOptions.id, input.id)).limit(1);
+    return rows[0] ?? null;
+  }
+
+  await db.insert(defectOptions).values({
+    stationCode: input.stationCode,
+    optionType: input.optionType,
+    label: input.label,
+    active: input.active,
+    sortOrder: input.sortOrder,
+  });
+
+  const rows = await db
+    .select()
+    .from(defectOptions)
+    .where(and(eq(defectOptions.stationCode, input.stationCode), eq(defectOptions.optionType, input.optionType), eq(defectOptions.label, input.label)))
+    .orderBy(desc(defectOptions.id))
+    .limit(1);
+  return rows[0] ?? null;
 }
 
 export async function updateStationRule(input: {
