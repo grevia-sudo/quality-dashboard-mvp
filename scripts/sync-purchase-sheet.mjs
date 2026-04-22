@@ -129,7 +129,7 @@ async function updateSheetRow(accessToken, rowNumber, rowValues) {
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
     query: {
-      valueInputOption: "USER_ENTERED",
+      valueInputOption: "RAW",
     },
     body: {
       values: [rowValues],
@@ -143,7 +143,7 @@ async function appendSheetRow(accessToken, rowValues) {
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}:append`, {
     method: "POST",
     query: {
-      valueInputOption: "USER_ENTERED",
+      valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
     },
     body: {

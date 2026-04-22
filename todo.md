@@ -144,3 +144,5 @@
 - [x] 修正 Google Sheet 回寫，確保品名寫入「採購單」工作表 G 欄
 - [x] 將 A1 完成後的行為改為留在 A1 等待下一筆輸入，不再自動跳轉 A2
 - [x] 修正 A1 補齊後的 Google Sheet G 欄品名仍為空白問題，確認當 A1 掃碼帶入品名時，products.productName 會更新，且同步後「採購單」工作表 G 欄會寫入實際品名
+- [x] 將 A1 回寫 Google Sheet 的日期時間格式統一改為 YYYY/MM/DD HH:mm，並確認 Google Sheet 實際顯示為固定文字格式
+- [x] 確認並優化 A1 掃碼比對流程完全使用本地資料庫，改為單次查詢比對 IMEI／序號／批號優先順序，避免等待過久

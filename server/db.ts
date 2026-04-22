@@ -223,35 +223,45 @@ async function findPendingA1ProductByIdentity(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null },
 ) {
-  const lookups = [
-    { field: "imei", value: normalizeOptionalText(input.imei) },
-    { field: "serialNumber", value: normalizeOptionalText(input.serialNumber) },
-    { field: "batchNo", value: normalizeOptionalText(input.batchNo) },
-  ] as const;
-
-  for (const lookup of lookups) {
-    if (!lookup.value) {
-      continue;
-    }
-
-    const rows = await db
-      .select()
-      .from(products)
-      .where(
-        and(
-          eq(products.currentStationCode, "A1"),
-          isNull(products.archivedAt),
-          eq(products[lookup.field], lookup.value),
-        ),
-      )
-      .limit(1);
-
-    if (rows[0]) {
-      return rows[0];
-    }
+  const imei = normalizeOptionalText(input.imei);
+  const serialNumber = normalizeOptionalText(input.serialNumber);
+  const batchNo = normalizeOptionalText(input.batchNo);
+  const matchConditions = [];
+  if (imei) {
+    matchConditions.push(eq(products.imei, imei));
+  }
+  if (serialNumber) {
+    matchConditions.push(eq(products.serialNumber, serialNumber));
+  }
+  if (batchNo) {
+    matchConditions.push(eq(products.batchNo, batchNo));
   }
 
-  return null;
+  if (matchConditions.length === 0) {
+    return null;
+  }
+
+  const rows = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.currentStationCode, "A1"),
+        isNull(products.archivedAt),
+        or(...matchConditions),
+      ),
+    )
+    .orderBy(sql`
+      CASE
+        WHEN ${imei} IS NOT NULL AND ${products.imei} = ${imei} THEN 0
+        WHEN ${serialNumber} IS NOT NULL AND ${products.serialNumber} = ${serialNumber} THEN 1
+        WHEN ${batchNo} IS NOT NULL AND ${products.batchNo} = ${batchNo} THEN 2
+        ELSE 9
+      END
+    `)
+    .limit(1);
+
+  return rows[0] ?? null;
 }
 
 async function ensurePendingA1Task(

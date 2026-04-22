@@ -9,6 +9,39 @@ export function stringifyCell(value) {
   return String(value).trim();
 }
 
+export function formatSheetDateTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return stringifyCell(value);
+  }
+
+  const formatter = new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const parts = Object.fromEntries(
+    formatter
+      .formatToParts(date)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  const hour = String(parts.hour ?? "").padStart(2, "0");
+  const minute = String(parts.minute ?? "").padStart(2, "0");
+
+  return `${parts.year}/${parts.month}/${parts.day} ${hour}:${minute}`;
+}
+
 export function buildSheetRow(product) {
   return [
     stringifyCell(product.poNumber),
@@ -18,13 +51,18 @@ export function buildSheetRow(product) {
     stringifyCell(product.serialNumber),
     stringifyCell(product.imei),
     stringifyCell(product.productName),
-    stringifyCell(product.a1CompletedAt),
+    formatSheetDateTime(product.a1CompletedAt),
   ];
 }
 
 export function mergeMissingCells(existingRow, generatedRow) {
   return generatedRow.map((value, index) => {
     const existingValue = stringifyCell(existingRow[index]);
+
+    if (index === 7) {
+      return value || existingValue;
+    }
+
     return existingValue || value;
   });
 }
