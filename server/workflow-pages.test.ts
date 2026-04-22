@@ -14,12 +14,13 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("CSV 檔案上傳");
     expect(importPageSource).toContain("選擇 CSV 檔案");
     expect(importPageSource).toContain("下載範例 CSV");
-    expect(importPageSource).toContain("/manus-storage/import-products-example_e9d20755.csv");
+    expect(importPageSource).toContain("/manus-storage/import-products-example_756ddafb.csv");
     expect(importPageSource).toContain("商品分類,商品批號,商品序號,IMEI,品名");
     expect(importPageSource).not.toContain("category,batchNo,serialNumber,imei,productName");
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
     expect(importPageSource).toContain("請選擇商品分類");
+    expect(importPageSource).toContain("normalizeImportedCell");
     expect(importPageSource).toContain("handleFileUpload");
     expect(importPageSource).toContain("目前已載入");
   });

@@ -31,7 +31,7 @@ const navItems: DashboardNavItem[] = [
   { label: "管理後台", path: "/admin", icon: ShieldCheck },
 ];
 
-const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_e9d20755.csv";
+const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_756ddafb.csv";
 
 const createEmptyRow = (): ImportDraftRow => ({
   categoryId: "",
@@ -57,13 +57,27 @@ function findCategoryIdByLabel(rawValue: string, categoryOptions: CategoryOption
   return matched ? String(matched.id) : "";
 }
 
+function normalizeImportedCell(rawValue: string) {
+  const trimmed = rawValue.trim();
+  const excelFormulaMatch = trimmed.match(/^="([\s\S]*)"$/);
+  if (excelFormulaMatch) {
+    return excelFormulaMatch[1].trim();
+  }
+
+  if (trimmed.startsWith("'")) {
+    return trimmed.slice(1).trim();
+  }
+
+  return trimmed;
+}
+
 function parseCsvContent(input: string, categoryOptions: CategoryOption[]): ImportDraftRow[] {
   return input
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line, index) => {
-      const cells = line.split(/[\t,]/).map((cell) => cell.trim());
+      const cells = line.split(/[\t,]/).map((cell) => normalizeImportedCell(cell));
       const hasCategoryColumn = cells.length >= 5;
       const [first = "", second = "", third = "", fourth = "", fifth = ""] = cells;
       const row = hasCategoryColumn
@@ -296,7 +310,7 @@ export default function ImportPage() {
                   下載範例 CSV
                 </a>
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-                  {selectedFileName ? `目前已載入：${selectedFileName}` : "尚未選擇檔案；也可先下載範例 CSV 再整理資料"}
+                  {selectedFileName ? `目前已載入：${selectedFileName}` : "尚未選擇檔案；可先下載 Excel 友善格式的範例 CSV 再整理資料"}
                 </div>
               </CardContent>
             </Card>
