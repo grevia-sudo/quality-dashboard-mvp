@@ -13,6 +13,8 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
     expect(importPageSource).toContain("CSV 檔案上傳");
     expect(importPageSource).toContain("選擇 CSV 檔案");
+    expect(importPageSource).toContain("下載範例 CSV");
+    expect(importPageSource).toContain("/manus-storage/import-products-example_8f82e9a9.csv");
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
     expect(importPageSource).toContain("請選擇商品分類");
