@@ -50,10 +50,14 @@ export default function StationPage() {
     batchNo: "",
     serialNumber: "",
     imei: "",
+    productName: "",
   });
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
+  const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
+    retry: false,
+  });
   const detailQuery = trpc.station.detail.useQuery(
     { stationCode },
     {
@@ -83,6 +87,7 @@ export default function StationPage() {
       batchNo: arrivalForm.batchNo.trim() || undefined,
       serialNumber: arrivalForm.serialNumber.trim() || undefined,
       imei: arrivalForm.imei.trim() || undefined,
+      productName: arrivalForm.productName.trim() || undefined,
     });
   };
 
@@ -113,11 +118,11 @@ export default function StationPage() {
         return;
       }
 
-      toast.success(`${result.productCode ?? "商品"} 已完成 A1 點到貨，正前往 A2`);
-      setArrivalForm({ batchNo: "", serialNumber: "", imei: "" });
+      toast.success(`${result.productCode ?? "商品"} 已完成 A1 點到貨，請直接掃描下一筆`);
+      setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });
       await invalidateStationData();
       await utils.station.detail.invalidate({ stationCode: "A2" });
-      setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);
+      focusBatchInput();
     },
     onError: (error) => {
       toast.error(error.message || "A1 點到貨處理失敗");
@@ -253,10 +258,10 @@ export default function StationPage() {
                   }}
                 >
                   <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                    A1 改為掃碼補齊模式。只要刷入商品批號、商品序號或 IMEI 任一欄位，系統就會優先比對既有匯入資料，補上缺少的識別資訊後直接完成 A1，並把商品推進到 A2。
+                    A1 改為掃碼補齊模式。只要刷入商品批號、商品序號或 IMEI 任一欄位，系統就會優先比對既有匯入資料；若需要，也可同步指定品名。完成後系統會直接完成 A1 並留在本頁，方便現場立即掃描下一筆。
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>商品批號</span>
                       <Input
@@ -289,12 +294,27 @@ export default function StationPage() {
                         placeholder="可補刷 IMEI 以補齊資料"
                       />
                     </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>品名</span>
+                      <select
+                        value={arrivalForm.productName}
+                        onChange={(event) => setArrivalForm((prev) => ({ ...prev, productName: event.target.value }))}
+                        className="h-14 w-full rounded-2xl border-0 bg-slate-50 px-4 text-base text-slate-900 outline-none ring-0"
+                      >
+                        <option value="">請選擇品名（可選）</option>
+                        {(productNameOptionsQuery.data ?? []).map((option) => (
+                          <option key={option.id} value={option.label}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-[#eef2f7] p-4 text-sm text-slate-600">
-                    <p>為了讓掃描槍操作更快，本區不再要求先填 PO、廠商、到貨時間與商品分類；只要任一識別碼命中已匯入的 A1 待處理商品，就會直接完成點到貨並切往 A2。</p>
+                    <p>為了讓掃描槍操作更快，本區不再要求先填 PO、廠商、到貨時間與商品分類；只要任一識別碼命中已匯入的 A1 待處理商品，就會直接完成點到貨、同步回寫資料，並留在 A1 等待下一筆。</p>
                     <Button type="submit" className="rounded-2xl" disabled={receiveMutation.isPending || !canReceiveA1}>
-                      {receiveMutation.isPending ? "比對中..." : "完成 A1 並前往 A2"}
+                      {receiveMutation.isPending ? "比對中..." : "完成 A1 並準備下一筆"}
                     </Button>
                   </div>
                 </form>

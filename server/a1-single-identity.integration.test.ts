@@ -187,6 +187,52 @@ describe("A1 single-identity scan integration", () => {
     expect(a2Task[0]?.taskStatus).toBe("pending");
   }, 10000);
 
+  it("writes productName back to the product record when A1 scan includes a selected name", async () => {
+    const seed = Date.now();
+    const serialNumber = `WITH-NAME-${seed}`;
+    const selectedProductName = "Apple iPhone 6 16GB 銀色";
+    const { importedProduct } = await importSingleIdentityRow({
+      poNumber: `TEST-A1-NAME-${seed}`,
+      row: {
+        serialNumber,
+        categoryName: "智慧手機",
+        productName: "",
+      },
+    });
+
+    const result = await completeA1ArrivalByScan({
+      operatorUserId: 1,
+      serialNumber,
+      productName: selectedProductName,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.productId).toBe(importedProduct.id);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const refreshedProduct = await db
+      .select({
+        serialNumber: products.serialNumber,
+        productName: products.productName,
+        currentStationCode: products.currentStationCode,
+        currentStatus: products.currentStatus,
+      })
+      .from(products)
+      .where(eq(products.id, importedProduct.id))
+      .limit(1);
+
+    expect(refreshedProduct[0]).toMatchObject({
+      serialNumber,
+      productName: selectedProductName,
+      currentStationCode: "A2",
+      currentStatus: "pending_a2",
+    });
+  }, 10000);
+
   it("matches and completes A1 with only serial number, keeping other identities empty", async () => {
     const seed = Date.now();
     const serialNumber = `ONLY-SN-${seed}`;

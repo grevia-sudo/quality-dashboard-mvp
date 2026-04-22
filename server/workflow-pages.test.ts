@@ -64,10 +64,12 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("商品序號");
     expect(stationPageSource).toContain("IMEI");
     expect(stationPageSource).toContain("trpc.station.receive.useMutation");
-    expect(stationPageSource).not.toContain("trpc.station.productNameOptions.useQuery");
+    expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
     expect(stationPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
     expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
-    expect(stationPageSource).toContain("完成 A1 並前往 A2");
+    expect(stationPageSource).toContain("請選擇品名（可選）");
+    expect(stationPageSource).toContain("完成 A1 並準備下一筆");
+    expect(stationPageSource).toContain("留在本頁");
   });
 
   it("renders B and C option menu sections on the station page", () => {

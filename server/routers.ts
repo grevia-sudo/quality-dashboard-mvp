@@ -133,6 +133,7 @@ export const appRouter = router({
           batchNo: optionalTextSchema,
           serialNumber: optionalTextSchema,
           imei: optionalTextSchema,
+          productName: optionalTextSchema,
         }).superRefine((value, ctx) => {
           if (!value.batchNo && !value.serialNumber && !value.imei) {
             ctx.addIssue({
@@ -149,6 +150,7 @@ export const appRouter = router({
           batchNo: input.batchNo,
           serialNumber: input.serialNumber,
           imei: input.imei,
+          productName: input.productName,
         });
       }),
     importBatch: protectedProcedure

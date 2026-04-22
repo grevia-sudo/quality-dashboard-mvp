@@ -324,6 +324,7 @@ export async function completeA1ArrivalByScan(input: {
   batchNo?: string | null;
   serialNumber?: string | null;
   imei?: string | null;
+  productName?: string | null;
 }) {
   const db = await getDb();
   if (!db) {
@@ -342,6 +343,7 @@ export async function completeA1ArrivalByScan(input: {
   const nextBatchNo = mergeScannedIdentityField("商品批號", matchedProduct.batchNo, input.batchNo);
   const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, input.serialNumber);
   const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, input.imei);
+  const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, input.productName);
   const businessDateValue = new Date(`${todayDateString()}T00:00:00`);
   const pendingTask = await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
     source: "a1_scan_receive",
@@ -357,6 +359,7 @@ export async function completeA1ArrivalByScan(input: {
       batchNo: nextBatchNo,
       serialNumber: nextSerialNumber,
       imei: nextImei,
+      productName: nextProductName,
       updatedAt: new Date(),
     })
     .where(eq(products.id, matchedProduct.id));

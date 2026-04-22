@@ -15,16 +15,14 @@ describe("A1 掃碼 UX source coverage", () => {
     expect(source.match(/onKeyDown=\{handleA1ScanSubmitKey\}/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
   });
 
-  it("clears A1 scan fields before redirecting to A2 after success", () => {
+  it("clears A1 scan fields and keeps the operator on A1 after success", () => {
     const successBlockStart = source.indexOf("const receiveMutation = trpc.station.receive.useMutation({");
     const successBlockEnd = source.indexOf("onError: (error) => {", successBlockStart);
     const successBlock = source.slice(successBlockStart, successBlockEnd);
 
-    expect(successBlock).toContain('setArrivalForm({ batchNo: "", serialNumber: "", imei: "" });');
-    expect(successBlock).toContain('setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);');
-    expect(successBlock.indexOf('setArrivalForm({ batchNo: "", serialNumber: "", imei: "" });')).toBeLessThan(
-      successBlock.indexOf('setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);'),
-    );
+    expect(successBlock).toContain('setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });');
+    expect(successBlock).toContain('focusBatchInput();');
+    expect(successBlock).not.toContain('setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);');
   });
 
   it("re-focuses the batch input on A1 page load and after receive errors", () => {

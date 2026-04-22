@@ -151,6 +151,7 @@ describe("warehouse MVP router", () => {
       batchNo: "BATCH-240421-01",
       serialNumber: "SN-1001",
       imei: "356000000000001",
+      productName: "iPhone 13",
     });
 
     expect(completeA1ArrivalByScan).toHaveBeenCalledWith({
@@ -158,6 +159,7 @@ describe("warehouse MVP router", () => {
       batchNo: "BATCH-240421-01",
       serialNumber: "SN-1001",
       imei: "356000000000001",
+      productName: "iPhone 13",
     });
   });
 
