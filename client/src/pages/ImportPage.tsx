@@ -8,7 +8,7 @@ import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, Packag
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import { buildPendingPoSummary, findCategoryIdByLabel, type CategoryOption, type ImportDraftRow } from "./import-page-utils";
+import { buildPendingPoSummary, parseImportedCsvContent, resolveImportedVendorName, type ImportDraftRow } from "./import-page-utils";
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
@@ -19,6 +19,7 @@ const navItems: DashboardNavItem[] = [
 ];
 
 const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_756ddafb.csv";
+const LARGE_IMPORT_PREVIEW_LIMIT = 30;
 
 const createEmptyRow = (): ImportDraftRow => ({
   categoryId: "",
@@ -27,59 +28,6 @@ const createEmptyRow = (): ImportDraftRow => ({
   imei: "",
   productName: "",
 });
-
-function normalizeImportedCell(rawValue: string) {
-  const trimmed = rawValue.trim();
-  const excelFormulaMatch = trimmed.match(/^="([\s\S]*)"$/);
-  if (excelFormulaMatch) {
-    return excelFormulaMatch[1].trim();
-  }
-
-  if (trimmed.startsWith("'")) {
-    return trimmed.slice(1).trim();
-  }
-
-  return trimmed;
-}
-
-function parseCsvContent(input: string, categoryOptions: CategoryOption[]): ImportDraftRow[] {
-  return input
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line, index) => {
-      const cells = line.split(/[\t,]/).map((cell) => normalizeImportedCell(cell));
-      const hasCategoryColumn = cells.length >= 5;
-      const [first = "", second = "", third = "", fourth = "", fifth = ""] = cells;
-      const row = hasCategoryColumn
-        ? {
-            categoryId: findCategoryIdByLabel(first, categoryOptions),
-            batchNo: second,
-            serialNumber: third,
-            imei: fourth,
-            productName: fifth,
-          }
-        : {
-            categoryId: "",
-            batchNo: first,
-            serialNumber: second,
-            imei: third,
-            productName: fourth,
-          };
-
-      const headerSignature = [first, second, third, fourth, fifth].join(",").replace(/\s+/g, "").toLowerCase();
-      const looksLikeHeader = index === 0 && (
-        headerSignature === "商品分類,商品批號,商品序號,imei,品名"
-        || headerSignature === "category,batchno,serialnumber,imei,productname"
-        || headerSignature === "batchno,serialnumber,imei,productname,"
-        || headerSignature === "商品批號,商品序號,imei,品名,"
-      );
-
-      return looksLikeHeader ? null : row;
-    })
-    .filter((row): row is ImportDraftRow => Boolean(row))
-    .filter((row) => row.categoryId || row.batchNo || row.serialNumber || row.imei || row.productName);
-}
 
 export default function ImportPage() {
   const [, setLocation] = useLocation();
@@ -93,6 +41,7 @@ export default function ImportPage() {
   const [rows, setRows] = useState<ImportDraftRow[]>([createEmptyRow(), createEmptyRow()]);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [expandedSummaryKeys, setExpandedSummaryKeys] = useState<Record<string, boolean>>({});
+  const [showAllRows, setShowAllRows] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
 
@@ -104,6 +53,7 @@ export default function ImportPage() {
       setArrivalAt("");
       setRows([createEmptyRow(), createEmptyRow()]);
       setSelectedFileName("");
+      setShowAllRows(false);
       await productNameOptionsQuery.refetch();
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -155,6 +105,8 @@ export default function ImportPage() {
   }, [preparedRows, rows, vendorName]);
 
   const pendingPoSummary = useMemo(() => buildPendingPoSummary(pendingA1Query.data?.tasks ?? []), [pendingA1Query.data?.tasks]);
+  const visibleRows = useMemo(() => (showAllRows ? rows : rows.slice(0, LARGE_IMPORT_PREVIEW_LIMIT)), [rows, showAllRows]);
+  const hiddenRowCount = Math.max(rows.length - visibleRows.length, 0);
 
   const canImport = !importValidationMessage;
   const isAdmin = ["admin", "manager", "supervisor"].includes(authQuery.data?.role ?? "user");
@@ -184,22 +136,27 @@ export default function ImportPage() {
 
     try {
       const content = await file.text();
-      const parsedRows = parseCsvContent(content, categoryOptionsQuery.data ?? []);
-      if (parsedRows.length === 0) {
-        toast.error("檔案內容為空，或欄位格式不符合 商品分類、商品批號、商品序號、IMEI、品名");
+      const parsed = parseImportedCsvContent(content, categoryOptionsQuery.data ?? []);
+      setShowAllRows(false);
+      if (parsed.rows.length === 0) {
+        toast.error("檔案內容為空，或欄位格式不符合 廠商、商品分類、商品批號、商品序號、IMEI、品名");
         return;
       }
 
-      setRows(parsedRows);
+      setRows(parsed.rows);
+      setVendorName((currentVendorName) => resolveImportedVendorName(currentVendorName, parsed));
 
-      const importableCount = parsedRows.filter((row) => Number(row.categoryId) > 0 && (row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim())).length;
-      const skippedCount = parsedRows.length - importableCount;
+      if (parsed.detectedVendorNames.length > 1) {
+        toast.warning(`CSV 內偵測到 ${parsed.detectedVendorNames.length} 個不同廠商名稱，請確認這批資料是否應共用同一廠商後再匯入`);
+      }
+
+      const importableCount = parsed.rows.filter((row) => Number(row.categoryId) > 0 && (row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim())).length;
+      const skippedCount = parsed.rows.length - importableCount;
       if (skippedCount > 0) {
-        toast.warning(`已載入 ${parsedRows.length} 筆 CSV；其中 ${skippedCount} 筆尚未補齊分類或識別欄位，暫時不會送出`);
-        return;
+        toast.warning(`已載入 ${parsed.rows.length} 筆 CSV；其中 ${skippedCount} 筆尚未補齊分類或識別欄位，暫時不會送出`);
+      } else {
+        toast.success(parsed.sharedVendorName ? `已載入 ${parsed.rows.length} 筆 CSV 資料，並自動帶入廠商：${parsed.sharedVendorName}` : `已載入 ${parsed.rows.length} 筆 CSV 資料`);
       }
-
-      toast.success(`已載入 ${parsedRows.length} 筆 CSV 資料`);
     } catch {
       toast.error("讀取檔案失敗，請重新上傳 CSV");
     }
@@ -236,6 +193,41 @@ export default function ImportPage() {
           </CardContent>
         </Card>
 
+        <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900"><Upload className="h-4 w-4 text-[#7ca3d9]" /> CSV 檔案上傳</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.tsv,text/csv,text/tab-separated-values"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+            <div className="rounded-[24px] bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+              <p>建議欄位順序為：廠商、商品分類、商品批號、商品序號、IMEI、品名；若未提供廠商欄位，也可在下方共用欄位手動填寫。</p>
+              <p>若檔案第一列為標題列，系統會自動辨識 `廠商,商品分類,商品批號,商品序號,IMEI,品名` 或舊版 `商品分類,商品批號,商品序號,IMEI,品名`。</p>
+              <p>若 CSV 使用 Excel 匯出格式、帶有 BOM、引號或欄位中含逗號，系統也會一併處理；若 CSV 沒帶商品分類，載入後可直接在主表逐列補選。</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
+              <Button variant="outline" className="w-full rounded-2xl" onClick={openFilePicker}>
+                <FileUp className="mr-2 h-4 w-4" /> 選擇 CSV 檔案
+              </Button>
+              <a
+                href={IMPORT_EXAMPLE_CSV_URL}
+                download
+                className="inline-flex h-10 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                下載範例 CSV
+              </a>
+            </div>
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+              {selectedFileName ? `目前已載入：${selectedFileName}` : "尚未選擇檔案；可先下載 Excel 友善格式的範例 CSV 再整理資料"}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
             <CardHeader>
@@ -258,7 +250,7 @@ export default function ImportPage() {
               </div>
 
               <div className="space-y-3">
-                {rows.map((row, index) => (
+                {visibleRows.map((row, index) => (
                   <div key={`row-${index}`} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-5">
                     <select
                       value={row.categoryId}
@@ -273,19 +265,31 @@ export default function ImportPage() {
                     <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品批號（可留空）" />
                     <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品序號（可留空）" />
                     <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="IMEI（可留空）" />
-                    <select
+                    <Input
                       value={row.productName}
                       onChange={(event) => updateRow(index, { productName: event.target.value })}
-                      className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none"
-                    >
-                      <option value="">品名可先留空</option>
-                      {(productNameOptionsQuery.data ?? []).map((option) => (
-                        <option key={option.id} value={option.label}>{option.label}</option>
-                      ))}
-                    </select>
+                      className="rounded-2xl border-0 bg-white"
+                      placeholder="品名可先留空"
+                      list="import-product-name-options"
+                    />
                   </div>
                 ))}
               </div>
+
+              {rows.length > LARGE_IMPORT_PREVIEW_LIMIT ? (
+                <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-900">
+                  目前已載入 {rows.length} 筆資料；為避免瀏覽器因大量欄位與品名選項同時渲染而無回應，頁面先顯示前 {visibleRows.length} 筆。
+                  {hiddenRowCount > 0 ? ` 尚有 ${hiddenRowCount} 筆仍會一併匯入。` : " 目前已展開全部資料列。"}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {hiddenRowCount > 0 ? (
+                      <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setShowAllRows(true)}>仍要顯示全部資料列</Button>
+                    ) : null}
+                    {showAllRows ? (
+                      <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setShowAllRows(false)}>改回只顯示前 {LARGE_IMPORT_PREVIEW_LIMIT} 筆</Button>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
 
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" className="rounded-2xl" onClick={() => setRows((prev) => [...prev, createEmptyRow()])}>新增一列</Button>
@@ -377,39 +381,6 @@ export default function ImportPage() {
           <div className="space-y-4">
             <Card className="rounded-[28px] border-0 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900"><Upload className="h-4 w-4 text-[#7ca3d9]" /> CSV 檔案上傳</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv,.tsv,text/csv,text/tab-separated-values"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-                <div className="rounded-[24px] bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  <p>建議欄位順序為：商品分類、商品批號、商品序號、IMEI、品名。</p>
-                  <p>若檔案第一列為標題列，系統會自動略過 `商品分類,商品批號,商品序號,IMEI,品名`。</p>
-                  <p>若 CSV 沒帶商品分類，載入後可直接在主表逐列補選；廠商與到貨時間則由同批共用欄位統一帶入。</p>
-                </div>
-                <Button variant="outline" className="w-full rounded-2xl" onClick={openFilePicker}>
-                  <FileUp className="mr-2 h-4 w-4" /> 選擇 CSV 檔案
-                </Button>
-                <a
-                  href={IMPORT_EXAMPLE_CSV_URL}
-                  download
-                  className="inline-flex h-10 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                >
-                  下載範例 CSV
-                </a>
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-                  {selectedFileName ? `目前已載入：${selectedFileName}` : "尚未選擇檔案；可先下載 Excel 友善格式的範例 CSV 再整理資料"}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-              <CardHeader>
                 <CardTitle className="text-base font-bold">匯入說明</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm leading-7 text-slate-600">
@@ -420,6 +391,11 @@ export default function ImportPage() {
             </Card>
           </div>
         </div>
+        <datalist id="import-product-name-options">
+          {(productNameOptionsQuery.data ?? []).map((option) => (
+            <option key={option.id} value={option.label} />
+          ))}
+        </datalist>
       </div>
     </DashboardLayout>
   );

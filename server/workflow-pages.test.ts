@@ -16,11 +16,12 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("下載範例 CSV");
     expect(importPageSource).toContain("/manus-storage/import-products-example_756ddafb.csv");
     expect(importPageSource).toContain("商品分類,商品批號,商品序號,IMEI,品名");
+    expect(importPageSource).toContain("若 CSV 使用 Excel 匯出格式、帶有 BOM、引號或欄位中含逗號，系統也會一併處理");
     expect(importPageSource).not.toContain("category,batchNo,serialNumber,imei,productName");
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
     expect(importPageSource).toContain("PO 單號（留空自動生成）");
-    expect(importPageSource).toContain("trpc.station.detail.useQuery({ stationCode: \"A1\" }");
+    expect(importPageSource).toContain('trpc.station.detail.useQuery({ stationCode: "A1" }');
     expect(importPageSource).toContain("已匯入未完成點貨的採購單");
     expect(importPageSource).toContain("採購單號");
     expect(importPageSource).toContain("商品類別");
@@ -36,9 +37,16 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("toast.error(importValidationMessage)");
     expect(importPageSource).toContain("toast.warning(`已載入");
     expect(importPageSource).toContain("請選擇商品分類");
-    expect(importPageSource).toContain("normalizeImportedCell");
+    expect(importPageSource).toContain("parseImportedCsvContent");
     expect(importPageSource).toContain("handleFileUpload");
     expect(importPageSource).toContain("目前已載入");
+    expect(importPageSource).toContain("LARGE_IMPORT_PREVIEW_LIMIT");
+    expect(importPageSource).toContain("showAllRows");
+    expect(importPageSource).toContain("visibleRows");
+    expect(importPageSource).toContain("import-product-name-options");
+    expect(importPageSource).toContain("仍要顯示全部資料列");
+    expect(importPageSource).toContain("為避免瀏覽器因大量欄位與品名選項同時渲染而無回應");
+    expect(importPageSource.indexOf("CSV 檔案上傳")).toBeLessThan(importPageSource.indexOf("匯入主表"));
   });
 
   it("provides A1 arrival fields, pending category summary, and vendor data on the station page", () => {
