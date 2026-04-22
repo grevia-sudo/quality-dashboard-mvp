@@ -27,12 +27,15 @@ const dbMocks = vi.hoisted(() => ({
   })),
   getStationPageData: vi.fn(async (stationCode: string) => ({ stationCode, label: `${stationCode} 測試站`, tasks: [], faultOptions: [], appearanceOptions: [] })),
   getDefectOptions: vi.fn(async (stationCode: string, optionType: string) => [{ id: 1, stationCode, optionType, label: "觸控異常", active: true, sortOrder: 10 }]),
+  getProductNameOptions: vi.fn(async () => [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }]),
   completeStationTask: vi.fn(async () => ({ success: true as const })),
   importProducts: vi.fn(async (input: unknown) => ({ success: true as const, importedCount: 1, products: [], ...((typeof input === "object" && input) ? input : {}) })),
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
-  getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [], targets: [], defectOptions: [], syncSummary: { queuedJobs: 0, targetSheetName: "手機檢測資料庫" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
+  getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [], targets: [], defectOptions: [], productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }], syncSummary: { queuedJobs: 0, targetSheetName: "手機檢測資料庫" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
   upsertDefectOption: vi.fn(async (input: unknown) => ({ success: true as const, input })),
+  createProductNameOption: vi.fn(async (input: unknown) => ({ id: 99, active: true, sortOrder: 60, ...(typeof input === "object" && input ? input : {}) })),
+  deleteProductNameOption: vi.fn(async (id: number) => ({ success: true as const, id })),
   updateStationRule: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   updateProductivityTarget: vi.fn(async (input: unknown) => ({ success: true as const, input })),
 }));
@@ -45,12 +48,15 @@ const {
   getEngineerKpiSummary,
   getStationPageData,
   getDefectOptions,
+  getProductNameOptions,
   completeStationTask,
   importProducts,
   getSamplingQueue,
   submitSamplingResult,
   getAdminSetupData,
   upsertDefectOption,
+  createProductNameOption,
+  deleteProductNameOption,
   updateStationRule,
   updateProductivityTarget,
 } = dbMocks;
@@ -220,6 +226,14 @@ describe("warehouse MVP router", () => {
     expect(getDefectOptions).toHaveBeenCalledWith("B", "fault");
   });
 
+  it("loads product name options for import and A1 dropdowns", async () => {
+    const caller = appRouter.createCaller(createContext("user"));
+
+    await caller.station.productNameOptions();
+
+    expect(getProductNameOptions).toHaveBeenCalled();
+  });
+
   it("allows admins to upsert defect options", async () => {
     const caller = appRouter.createCaller(createContext("admin"));
 
@@ -269,6 +283,28 @@ describe("warehouse MVP router", () => {
         },
       ],
     });
+  });
+
+  it("allows admins to create product name options", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    await caller.admin.createProductNameOption({
+      label: "iPhone 14 Pro",
+    });
+
+    expect(createProductNameOption).toHaveBeenCalledWith({
+      label: "iPhone 14 Pro",
+    });
+  });
+
+  it("allows admins to delete product name options", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    await caller.admin.deleteProductNameOption({
+      id: 9,
+    });
+
+    expect(deleteProductNameOption).toHaveBeenCalledWith(9);
   });
 
   it("allows admins to update station rules", async () => {

@@ -84,6 +84,15 @@ export const defectOptions = mysqlTable("defect_options", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const productNameOptions = mysqlTable("product_name_options", {
+  id: int("id").autoincrement().primaryKey(),
+  label: varchar("label", { length: 160 }).notNull(),
+  active: boolean("active").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const products = mysqlTable("products", {
   id: int("id").autoincrement().primaryKey(),
   productCode: varchar("productCode", { length: 120 }).notNull().unique(),

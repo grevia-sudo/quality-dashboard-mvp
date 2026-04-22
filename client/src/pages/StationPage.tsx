@@ -60,6 +60,7 @@ export default function StationPage() {
       retry: false,
     },
   );
+  const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -83,6 +84,7 @@ export default function StationPage() {
       toast.success("A1 到貨商品已建立");
       setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });
       await invalidateStationData();
+      await productNameOptionsQuery.refetch();
     },
     onError: (error) => {
       toast.error(error.message || "A1 到貨建立失敗");
@@ -167,11 +169,20 @@ export default function StationPage() {
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
                   <span>品名</span>
-                  <Input value={arrivalForm.productName} onChange={(event) => setArrivalForm((prev) => ({ ...prev, productName: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 13" />
+                  <select
+                    value={arrivalForm.productName}
+                    onChange={(event) => setArrivalForm((prev) => ({ ...prev, productName: event.target.value }))}
+                    className="h-11 w-full rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none"
+                  >
+                    <option value="">請選擇品名</option>
+                    {(productNameOptionsQuery.data ?? []).map((option) => (
+                      <option key={option.id} value={option.label}>{option.label}</option>
+                    ))}
+                  </select>
                 </label>
               </div>
               <div className="flex flex-wrap justify-between gap-3 rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
-                <p>建立後會先寫入 DB，並建立 A1 待處理任務，再由背景程序非同步回寫 Google Sheet。</p>
+                <p>建立後會先寫入 DB，並建立 A1 待處理任務，再由背景程序非同步回寫 Google Sheet。品名由管理後台的清單統一維護。</p>
                 <Button
                   className="rounded-2xl"
                   disabled={receiveMutation.isPending || !arrivalForm.batchNo || !arrivalForm.serialNumber || !arrivalForm.productName}

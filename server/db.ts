@@ -6,6 +6,7 @@ import {
   InsertUser,
   productArchives,
   productCategories,
+  productNameOptions,
   productivityScoreDetails,
   productivityTargetConfigs,
   products,
@@ -110,6 +111,21 @@ async function seedDefectOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<type
   ]);
 }
 
+async function seedProductNameOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
+  const existingOptions = await db.select({ count: sql<number>`count(*)` }).from(productNameOptions);
+  if ((existingOptions[0]?.count ?? 0) > 0) {
+    return;
+  }
+
+  await db.insert(productNameOptions).values([
+    { label: "iPhone 13", sortOrder: 10 },
+    { label: "iPhone 12", sortOrder: 20 },
+    { label: "iPhone 11", sortOrder: 30 },
+    { label: "Galaxy S22", sortOrder: 40 },
+    { label: "Pixel 8", sortOrder: 50 },
+  ]);
+}
+
 function buildProductCode(seed: number, index: number) {
   return `P-${seed}-${String(index + 1).padStart(3, "0")}`;
 }
@@ -182,6 +198,7 @@ export async function ensureMvpSeedData() {
   if (!db) return;
 
   await seedDefectOptionsIfNeeded(db);
+  await seedProductNameOptionsIfNeeded(db);
 
   const existingProducts = await db.select({ count: sql<number>`count(*)` }).from(products);
   if ((existingProducts[0]?.count ?? 0) > 0) {
@@ -335,6 +352,20 @@ export async function getDefectOptions(stationCode: StationCode, optionType: Def
     .from(defectOptions)
     .where(and(eq(defectOptions.stationCode, stationCode), eq(defectOptions.optionType, optionType)))
     .orderBy(asc(defectOptions.sortOrder), asc(defectOptions.id));
+}
+
+export async function getProductNameOptions() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  await ensureMvpSeedData();
+  return db
+    .select()
+    .from(productNameOptions)
+    .where(eq(productNameOptions.active, true))
+    .orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id));
 }
 
 export async function getStationPageData(stationCode: StationCode) {
@@ -986,7 +1017,7 @@ export async function archiveExpiredData() {
 export async function getAdminSetupData() {
   const db = await getDb();
   if (!db) {
-    return { users: [], rules: [], categories: [], targets: [] };
+    return { users: [], rules: [], categories: [], targets: [], productNameOptions: [] };
   }
 
   await ensureMvpSeedData();
@@ -1006,6 +1037,7 @@ export async function getAdminSetupData() {
     categories: await db.select().from(productCategories).orderBy(asc(productCategories.id)),
     targets: await db.select().from(productivityTargetConfigs).orderBy(asc(productivityTargetConfigs.id)),
     defectOptions: await db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
+    productNameOptions: await db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
     syncSummary: {
       queuedJobs: queuedSyncJobs[0]?.count ?? 0,
       targetSheetName: "手機檢測資料庫",
@@ -1062,6 +1094,52 @@ export async function upsertDefectOption(input: {
     .orderBy(desc(defectOptions.id))
     .limit(1);
   return rows[0] ?? null;
+}
+
+export async function createProductNameOption(input: { label: string }) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const normalizedLabel = input.label.trim();
+  if (!normalizedLabel) {
+    throw new Error("Product name is required");
+  }
+
+  const existing = await db
+    .select()
+    .from(productNameOptions)
+    .where(eq(productNameOptions.label, normalizedLabel))
+    .limit(1);
+  if (existing[0]) {
+    return existing[0];
+  }
+
+  const currentMaxSortOrder = await db.select({ value: sql<number>`coalesce(max(${productNameOptions.sortOrder}), 0)` }).from(productNameOptions);
+  await db.insert(productNameOptions).values({
+    label: normalizedLabel,
+    active: true,
+    sortOrder: (currentMaxSortOrder[0]?.value ?? 0) + 10,
+  });
+
+  const rows = await db
+    .select()
+    .from(productNameOptions)
+    .where(eq(productNameOptions.label, normalizedLabel))
+    .orderBy(desc(productNameOptions.id))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function deleteProductNameOption(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await db.delete(productNameOptions).where(eq(productNameOptions.id, id));
+  return { success: true as const };
 }
 
 export async function updateStationRule(input: {

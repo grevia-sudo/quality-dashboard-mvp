@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Gauge, PackagePlus, ShieldCheck } from "lucide-react";
+import { Boxes, ClipboardCheck, Gauge, PackagePlus, ShieldCheck, Trash2 } from "lucide-react";
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
@@ -69,6 +69,7 @@ export default function AdminPage() {
   const [ruleDrafts, setRuleDrafts] = useState<RuleDraft[]>([]);
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
   const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
+  const [newProductName, setNewProductName] = useState("");
 
   useEffect(() => {
     if (!query.data) {
@@ -138,6 +139,29 @@ export default function AdminPage() {
     },
     onError: (error) => {
       toast.error(error.message || "功能表項目更新失敗");
+    },
+  });
+
+  const createProductNameMutation = trpc.admin.createProductNameOption.useMutation({
+    onSuccess: async () => {
+      toast.success("品名已新增");
+      setNewProductName("");
+      await utils.admin.setup.invalidate();
+      await utils.station.productNameOptions.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品名新增失敗");
+    },
+  });
+
+  const deleteProductNameMutation = trpc.admin.deleteProductNameOption.useMutation({
+    onSuccess: async () => {
+      toast.success("品名已刪除");
+      await utils.admin.setup.invalidate();
+      await utils.station.productNameOptions.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品名刪除失敗");
     },
   });
 
@@ -213,12 +237,13 @@ export default function AdminPage() {
           </Card>
           <Card className="rounded-[26px] border-0 bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-base font-bold">功能表項目統計</CardTitle>
+              <CardTitle className="text-base font-bold">功能表與品名統計</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-slate-600">
               <p>B 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.bFault.length}</span></p>
               <p>C 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cFault.length}</span></p>
               <p>C 站外觀選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cAppearance.length}</span></p>
+              <p>可用品名數：<span className="font-semibold text-slate-900">{query.data?.productNameOptions?.length ?? 0}</span></p>
             </CardContent>
           </Card>
         </div>
@@ -451,33 +476,74 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="categories">
-            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-bold">品類設定</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {(query.data?.categories ?? []).map((category) => (
-                  <div key={category.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-4">
-                    <div>
-                      <p className="text-xs text-slate-400">品類</p>
-                      <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+            <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">品類設定</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(query.data?.categories ?? []).map((category) => (
+                    <div key={category.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-4">
+                      <div>
+                        <p className="text-xs text-slate-400">品類</p>
+                        <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400">子分類</p>
+                        <p className="mt-1 font-semibold text-slate-900">{category.subtypeCode}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400">品牌</p>
+                        <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400">狀態</p>
+                        <p className="mt-1 font-semibold text-slate-900">{category.active ? "啟用" : "停用"}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-400">子分類</p>
-                      <p className="mt-1 font-semibold text-slate-900">{category.subtypeCode}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400">品牌</p>
-                      <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400">狀態</p>
-                      <p className="mt-1 font-semibold text-slate-900">{category.active ? "啟用" : "停用"}</p>
-                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">品名管理</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="text-sm leading-7 text-slate-600">這裡新增或刪除的品名，會同步提供給匯入作業頁與 A1 點到貨頁的下拉式選單使用。</p>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                  <div className="flex gap-3">
+                    <Input value={newProductName} onChange={(event) => setNewProductName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 14 Pro" />
+                    <Button
+                      className="rounded-2xl"
+                      disabled={createProductNameMutation.isPending || !newProductName.trim()}
+                      onClick={() => createProductNameMutation.mutate({ label: newProductName.trim() })}
+                    >
+                      新增品名
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {(query.data?.productNameOptions ?? []).map((option) => (
+                      <div key={option.id} className="flex items-center justify-between gap-3 rounded-[24px] bg-slate-50 p-4">
+                        <div>
+                          <p className="font-semibold text-slate-900">{option.label}</p>
+                          <p className="text-xs text-slate-500">排序 {option.sortOrder}</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="rounded-2xl"
+                          disabled={deleteProductNameMutation.isPending}
+                          onClick={() => deleteProductNameMutation.mutate({ id: option.id })}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> 刪除
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

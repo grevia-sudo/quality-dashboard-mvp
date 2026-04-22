@@ -6,10 +6,13 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import {
   archiveExpiredData,
   completeStationTask,
+  createProductNameOption,
+  deleteProductNameOption,
   ensureMvpSeedData,
   getAdminSetupData,
   getDefectOptions,
   getEngineerKpiSummary,
+  getProductNameOptions,
   getSamplingQueue,
   getStationOverviewData,
   getStationPageData,
@@ -67,6 +70,10 @@ export const appRouter = router({
     detail: protectedProcedure.input(z.object({ stationCode: stationCodeSchema })).query(async ({ input }) => {
       await ensureMvpSeedData();
       return getStationPageData(input.stationCode);
+    }),
+    productNameOptions: protectedProcedure.query(async () => {
+      await ensureMvpSeedData();
+      return getProductNameOptions();
     }),
     complete: protectedProcedure
       .input(
@@ -263,6 +270,24 @@ export const appRouter = router({
           importedByUserId: ctx.user.id,
           rows: input.rows,
         });
+      }),
+    createProductNameOption: adminProcedure
+      .input(
+        z.object({
+          label: z.string().min(1),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return createProductNameOption({ label: input.label });
+      }),
+    deleteProductNameOption: adminProcedure
+      .input(
+        z.object({
+          id: z.number().int().positive(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return deleteProductNameOption(input.id);
       }),
   }),
 });

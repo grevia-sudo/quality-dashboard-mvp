@@ -57,6 +57,7 @@ function parseCsvContent(input: string): ImportDraftRow[] {
 export default function ImportPage() {
   const [, setLocation] = useLocation();
   const authQuery = trpc.auth.me.useQuery(undefined, { retry: false });
+  const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
   const [poNumber, setPoNumber] = useState("");
   const [rows, setRows] = useState<ImportDraftRow[]>([createEmptyRow(), createEmptyRow()]);
   const [selectedFileName, setSelectedFileName] = useState("");
@@ -68,6 +69,7 @@ export default function ImportPage() {
       toast.success(`已匯入 ${result.importedCount} 筆商品資料`);
       setRows([createEmptyRow(), createEmptyRow()]);
       setSelectedFileName("");
+      await productNameOptionsQuery.refetch();
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -162,7 +164,16 @@ export default function ImportPage() {
                     <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品批號" />
                     <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品序號" />
                     <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="IMEI（選填）" />
-                    <Input value={row.productName} onChange={(event) => updateRow(index, { productName: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="品名" />
+                    <select
+                      value={row.productName}
+                      onChange={(event) => updateRow(index, { productName: event.target.value })}
+                      className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none"
+                    >
+                      <option value="">請選擇品名</option>
+                      {(productNameOptionsQuery.data ?? []).map((option) => (
+                        <option key={option.id} value={option.label}>{option.label}</option>
+                      ))}
+                    </select>
                   </div>
                 ))}
               </div>
@@ -207,6 +218,7 @@ export default function ImportPage() {
                 <div className="rounded-[24px] bg-slate-50 p-5 text-sm leading-7 text-slate-600">
                   <p>請上傳 CSV 或 TSV 檔案，欄位順序需為：商品批號、商品序號、IMEI、品名。</p>
                   <p>若檔案第一列為標題列，系統會自動略過 `batchNo,serialNumber,imei,productName`。</p>
+                  <p>上傳後仍可在主表中把品名改成下拉選單內的標準值，避免現場輸入不一致。</p>
                 </div>
                 <Button variant="outline" className="w-full rounded-2xl" onClick={openFilePicker}>
                   <FileUp className="mr-2 h-4 w-4" /> 選擇 CSV 檔案
