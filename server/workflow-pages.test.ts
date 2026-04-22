@@ -29,6 +29,12 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("ChevronDown");
     expect(importPageSource).toContain("ChevronRight");
     expect(importPageSource).toContain("目前沒有已匯入且尚未完成 A1 點貨的採購單");
+    expect(importPageSource).toContain("請先填寫廠商名稱後再匯入");
+    expect(importPageSource).toContain("目前沒有可匯入的資料");
+    expect(importPageSource).toContain("尚未補齊必要欄位");
+    expect(importPageSource).toContain("handleImport");
+    expect(importPageSource).toContain("toast.error(importValidationMessage)");
+    expect(importPageSource).toContain("toast.warning(`已載入");
     expect(importPageSource).toContain("請選擇商品分類");
     expect(importPageSource).toContain("normalizeImportedCell");
     expect(importPageSource).toContain("handleFileUpload");

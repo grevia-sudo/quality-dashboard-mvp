@@ -177,6 +177,27 @@ export default function ImportPage() {
     [rows],
   );
 
+  const importValidationMessage = useMemo(() => {
+    if (!vendorName.trim()) {
+      return "請先填寫廠商名稱後再匯入";
+    }
+
+    const filledRows = rows.filter((row) => row.categoryId || row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim() || row.productName.trim());
+    if (filledRows.length === 0) {
+      return "請先新增或載入至少一筆匯入資料";
+    }
+
+    if (preparedRows.length === 0) {
+      return "目前沒有可匯入的資料，請確認每列都已選擇商品分類，且商品批號／商品序號／IMEI 至少填寫一項";
+    }
+
+    if (preparedRows.length < filledRows.length) {
+      return `仍有 ${filledRows.length - preparedRows.length} 筆資料尚未補齊必要欄位，請先完成商品分類或識別欄位`;
+    }
+
+    return null;
+  }, [preparedRows, rows, vendorName]);
+
   const pendingPoSummary = useMemo<PendingPoSummaryRow[]>(() => {
     const summaryMap = new Map<string, PendingPoSummaryRow>();
 
@@ -215,7 +236,7 @@ export default function ImportPage() {
     });
   }, [pendingA1Query.data?.tasks]);
 
-  const canImport = vendorName.trim() && preparedRows.length > 0;
+  const canImport = !importValidationMessage;
   const isAdmin = ["admin", "manager", "supervisor"].includes(authQuery.data?.role ?? "user");
 
   const updateRow = (index: number, patch: Partial<ImportDraftRow>) => {
@@ -250,10 +271,32 @@ export default function ImportPage() {
       }
 
       setRows(parsedRows);
+
+      const importableCount = parsedRows.filter((row) => Number(row.categoryId) > 0 && (row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim())).length;
+      const skippedCount = parsedRows.length - importableCount;
+      if (skippedCount > 0) {
+        toast.warning(`已載入 ${parsedRows.length} 筆 CSV；其中 ${skippedCount} 筆尚未補齊分類或識別欄位，暫時不會送出`);
+        return;
+      }
+
       toast.success(`已載入 ${parsedRows.length} 筆 CSV 資料`);
     } catch {
       toast.error("讀取檔案失敗，請重新上傳 CSV");
     }
+  };
+
+  const handleImport = () => {
+    if (importValidationMessage) {
+      toast.error(importValidationMessage);
+      return;
+    }
+
+    importMutation.mutate({
+      poNumber: poNumber.trim() || undefined,
+      vendorName: vendorName.trim(),
+      arrivalAt: arrivalAt || undefined,
+      rows: preparedRows,
+    });
   };
 
   return (
@@ -326,21 +369,20 @@ export default function ImportPage() {
 
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" className="rounded-2xl" onClick={() => setRows((prev) => [...prev, createEmptyRow()])}>新增一列</Button>
-                <Button
-                  className="rounded-2xl"
-                  disabled={importMutation.isPending || !canImport}
-                  onClick={() =>
-                    importMutation.mutate({
-                      poNumber: poNumber.trim() || undefined,
-                      vendorName: vendorName.trim(),
-                      arrivalAt: arrivalAt || undefined,
-                      rows: preparedRows,
-                    })
-                  }
-                >
+                <Button className="rounded-2xl" disabled={importMutation.isPending} onClick={handleImport}>
                   開始匯入 {preparedRows.length > 0 ? `(${preparedRows.length} 筆)` : ""}
                 </Button>
               </div>
+
+              {importValidationMessage ? (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+                  {importValidationMessage}
+                </div>
+              ) : canImport ? (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
+                  已可送出 {preparedRows.length} 筆資料；按下「開始匯入」後系統會建立或自動產生採購單號。
+                </div>
+              ) : null}
 
               <div className="rounded-[24px] bg-slate-50 p-4 md:p-5">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
