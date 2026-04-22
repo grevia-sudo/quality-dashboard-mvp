@@ -58,6 +58,83 @@ function triggerPurchaseSheetSyncInBackground() {
   child.unref();
 }
 
+function queueA1CompletionSideEffectsInBackground(input: {
+  productId: number;
+  stationTaskId: number;
+  operatorUserId: number;
+  businessDate: Date;
+  completedAt: Date;
+  categoryId?: number | null;
+  nextStation?: StationCode | null;
+}) {
+  void (async () => {
+    const db = await getDb();
+    if (!db) {
+      return;
+    }
+
+    await db
+      .update(stationTasks)
+      .set({
+        taskStatus: "completed",
+        completedAt: input.completedAt,
+        resultSummary: "A1 掃碼點到貨完成",
+        updatedAt: input.completedAt,
+      })
+      .where(eq(stationTasks.id, input.stationTaskId));
+
+    await db.insert(stationEvents).values({
+      productId: input.productId,
+      stationTaskId: input.stationTaskId,
+      stationCode: "A1",
+      eventType: "complete",
+      operatorUserId: input.operatorUserId,
+      businessDate: input.businessDate,
+      categoryId: input.categoryId ?? null,
+      subtypeCode: null,
+      payload: {
+        summary: "A1 掃碼點到貨完成",
+        faultOptionIds: [],
+        appearanceOptionIds: [],
+        faultLabels: [],
+        appearanceLabels: [],
+      },
+    });
+
+    if (input.nextStation) {
+      await db.insert(stationTasks).values({
+        productId: input.productId,
+        stationCode: input.nextStation,
+        taskStatus: "pending",
+        dueDate: input.businessDate,
+        resultSummary: `${stationToLabel(input.nextStation)} 待處理`,
+        metadata: {
+          sourceStation: "A1",
+          faultLabels: [],
+          appearanceLabels: [],
+        },
+      });
+    }
+
+    await db.insert(sheetSyncJobs).values([
+      {
+        jobType: "station_task_sync",
+        targetSheetName: "手機檢測資料庫",
+        status: "queued",
+      },
+      {
+        jobType: "purchase_sheet_sync",
+        targetSheetName: "採購單",
+        status: "queued",
+      },
+    ]);
+
+    triggerPurchaseSheetSyncInBackground();
+  })().catch((error) => {
+    console.error("[A1 Completion Background Sync] Failed to persist side effects", error);
+  });
+}
+
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -242,8 +319,30 @@ async function findPendingA1ProductByIdentity(
   }
 
   const rows = await db
-    .select()
+    .select({
+      id: products.id,
+      productCode: products.productCode,
+      poNumber: products.poNumber,
+      vendorName: products.vendorName,
+      importedCategoryName: products.importedCategoryName,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      productName: products.productName,
+      categoryId: products.categoryId,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      pendingTaskId: stationTasks.id,
+    })
     .from(products)
+    .leftJoin(
+      stationTasks,
+      and(
+        eq(stationTasks.productId, products.id),
+        eq(stationTasks.stationCode, "A1"),
+        inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"]),
+      ),
+    )
     .where(
       and(
         eq(products.currentStationCode, "A1"),
@@ -355,13 +454,16 @@ export async function completeA1ArrivalByScan(input: {
   const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, input.imei);
   const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, input.productName);
   const businessDateValue = new Date(`${todayDateString()}T00:00:00`);
-  const pendingTask = await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
+  const pendingTaskId = matchedProduct.pendingTaskId ?? (await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
     source: "a1_scan_receive",
-  });
+  }))?.id;
 
-  if (!pendingTask) {
+  if (!pendingTaskId) {
     return { success: false as const, message: "找不到可完成的 A1 任務" };
   }
+
+  const completedAt = new Date();
+  const nextStation = nextStationFor("A1");
 
   await db
     .update(products)
@@ -370,30 +472,24 @@ export async function completeA1ArrivalByScan(input: {
       serialNumber: nextSerialNumber,
       imei: nextImei,
       productName: nextProductName,
-      updatedAt: new Date(),
+      currentStationCode: nextStation ?? matchedProduct.currentStationCode,
+      currentStatus: nextStation ? statusForStation(nextStation) : matchedProduct.currentStatus,
+      updatedAt: completedAt,
     })
     .where(eq(products.id, matchedProduct.id));
 
-  const completionResult = await completeStationTask({
-    taskId: pendingTask.id,
-    stationCode: "A1",
-    operatorUserId: input.operatorUserId,
+  queueA1CompletionSideEffectsInBackground({
     productId: matchedProduct.id,
+    stationTaskId: pendingTaskId,
+    operatorUserId: input.operatorUserId,
+    businessDate: businessDateValue,
+    completedAt,
     categoryId: matchedProduct.categoryId ?? null,
-    summary: "A1 掃碼點到貨完成",
+    nextStation,
   });
 
-  if (completionResult.success) {
-    await db.insert(sheetSyncJobs).values({
-      jobType: "purchase_sheet_sync",
-      targetSheetName: "採購單",
-      status: "queued",
-    });
-    triggerPurchaseSheetSyncInBackground();
-  }
-
   return {
-    ...completionResult,
+    success: true as const,
     nextStationCode: "A2" as const,
     productId: matchedProduct.id,
     productCode: matchedProduct.productCode,
@@ -734,7 +830,11 @@ export async function getStationPageData(stationCode: StationCode) {
     .from(stationTasks)
     .innerJoin(products, eq(stationTasks.productId, products.id))
     .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
-    .where(and(eq(stationTasks.stationCode, stationCode), inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"])))
+    .where(and(
+      eq(stationTasks.stationCode, stationCode),
+      eq(products.currentStationCode, stationCode),
+      inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"]),
+    ))
     .orderBy(desc(stationTasks.isOverdue), asc(stationTasks.id));
 
   const [faultOptions, appearanceOptions] = await Promise.all([

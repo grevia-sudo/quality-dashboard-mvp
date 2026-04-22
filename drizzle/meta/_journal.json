@@ -43,6 +43,13 @@
       "when": 1776848615483,
       "tag": "0005_solid_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1776869480462,
+      "tag": "0006_colorful_christian_walker",
+      "breakpoints": true
     }
   ]
 }

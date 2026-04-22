@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   decimal,
+  index,
   int,
   json,
   mysqlEnum,
@@ -116,7 +117,12 @@ export const products = mysqlTable("products", {
   archivedAt: timestamp("archivedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  a1ImeiLookupIdx: index("products_a1_imei_lookup_idx").on(table.currentStationCode, table.archivedAt, table.imei),
+  a1SerialLookupIdx: index("products_a1_serial_lookup_idx").on(table.currentStationCode, table.archivedAt, table.serialNumber),
+  a1BatchLookupIdx: index("products_a1_batch_lookup_idx").on(table.currentStationCode, table.archivedAt, table.batchNo),
+  stationStatusIdx: index("products_station_status_idx").on(table.currentStationCode, table.currentStatus, table.archivedAt),
+}));
 
 export const stationTasks = mysqlTable("station_tasks", {
   id: int("id").autoincrement().primaryKey(),
@@ -132,7 +138,10 @@ export const stationTasks = mysqlTable("station_tasks", {
   metadata: json("metadata"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  productStationStatusIdx: index("station_tasks_product_station_status_idx").on(table.productId, table.stationCode, table.taskStatus),
+  stationQueueIdx: index("station_tasks_station_queue_idx").on(table.stationCode, table.taskStatus, table.isOverdue, table.id),
+}));
 
 export const stationEvents = mysqlTable("station_events", {
   id: int("id").autoincrement().primaryKey(),

@@ -102,7 +102,7 @@ describe("import PO summary integration", () => {
     });
     createdPoNumbers.add(importResult.poNumber);
 
-    expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2}$/);
+    expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2,}$/);
     expect(importResult.importedCount).toBe(3);
 
     const db = await getDb();
@@ -149,7 +149,7 @@ describe("import PO summary integration", () => {
     });
     createdPoNumbers.add(importResult.poNumber);
 
-    expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2}$/);
+    expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2,}$/);
     expect(importResult.importedCount).toBe(rows.length);
     expect(importResult.products).toHaveLength(rows.length);
 

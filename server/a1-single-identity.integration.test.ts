@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { productArchives, products, stationTasks } from "../drizzle/schema";
+import { productArchives, products, sheetSyncJobs, stationTasks } from "../drizzle/schema";
 
 const { spawnMock } = vi.hoisted(() => ({
   spawnMock: vi.fn(() => ({
@@ -12,7 +12,7 @@ vi.mock("node:child_process", () => ({
   spawn: spawnMock,
 }));
 
-import { completeA1ArrivalByScan, ensureMvpSeedData, getDb, importProducts } from "./db";
+import { completeA1ArrivalByScan, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
 
 const createdPoNumbers = new Set<string>();
 
@@ -59,6 +59,32 @@ async function archiveCreatedImportTestRows() {
 
 function uniqueDigits(seed: number, length: number) {
   return `${seed}`.padStart(length, "0").slice(-length);
+}
+
+async function waitForQueuedJobTypes(expectedJobTypes: string[]) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const queuedJobs = await db
+      .select({
+        jobType: sheetSyncJobs.jobType,
+        status: sheetSyncJobs.status,
+      })
+      .from(sheetSyncJobs)
+      .where(eq(sheetSyncJobs.status, "queued"));
+
+    if (expectedJobTypes.every((jobType) => queuedJobs.some((job) => job.jobType === jobType))) {
+      return queuedJobs;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  throw new Error(`Timed out waiting for queued jobs: ${expectedJobTypes.join(", ")}`);
 }
 
 async function importSingleIdentityRow(input: {
@@ -174,6 +200,8 @@ describe("A1 single-identity scan integration", () => {
       .orderBy(stationTasks.id)
       .limit(1);
 
+    const queuedJobs = await waitForQueuedJobTypes(["station_task_sync", "purchase_sheet_sync"]);
+
     expect(refreshedProduct[0]).toMatchObject({
       id: importedProduct.id,
       batchNo: null,
@@ -185,6 +213,8 @@ describe("A1 single-identity scan integration", () => {
     expect(a1Task[0]?.taskStatus).toBe("completed");
     expect(a1Task[0]?.completedAt).toBeInstanceOf(Date);
     expect(a2Task[0]?.taskStatus).toBe("pending");
+    expect(queuedJobs.some((job) => job.jobType === "station_task_sync")).toBe(true);
+    expect(queuedJobs.some((job) => job.jobType === "purchase_sheet_sync")).toBe(true);
   }, 10000);
 
   it("writes productName back to the product record when A1 scan includes a selected name", async () => {
@@ -349,6 +379,29 @@ describe("A1 single-identity scan integration", () => {
     });
     expect(a1Task[0]?.taskStatus).toBe("completed");
     expect(a1Task[0]?.completedAt).toBeInstanceOf(Date);
+  }, 10000);
+
+  it("keeps A1 station detail free of products already moved to A2 even before background task cleanup finishes", async () => {
+    const seed = Date.now();
+    const serialNumber = `A1-GHOST-${uniqueDigits(seed, 10)}`;
+    const { importedProduct } = await importSingleIdentityRow({
+      poNumber: `TEST-A1-GHOST-${seed}`,
+      row: {
+        serialNumber,
+        categoryName: "智慧手機",
+        productName: "Ghost Guard Device",
+      },
+    });
+
+    const result = await completeA1ArrivalByScan({
+      operatorUserId: 1,
+      serialNumber,
+    });
+
+    expect(result.success).toBe(true);
+
+    const stationData = await getStationPageData("A1");
+    expect(stationData.tasks.some((task) => task.productId === importedProduct.id)).toBe(false);
   }, 10000);
 
   it("does not spawn duplicate background sync processes during these assertions", () => {
