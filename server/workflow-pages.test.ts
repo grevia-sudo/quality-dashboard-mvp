@@ -10,13 +10,13 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain('title="匯入作業"');
     expect(importPageSource).toContain("trpc.station.importBatch.useMutation");
     expect(importPageSource).toContain("trpc.station.productNameOptions.useQuery");
-    expect(importPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(importPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
     expect(importPageSource).toContain("CSV 檔案上傳");
-    expect(importPageSource).toContain("選擇 CSV 檔案");
-    expect(importPageSource).toContain("下載範例 CSV");
+    expect(importPageSource).toContain("選擇 CSV");
+    expect(importPageSource).toContain("下載範例");
     expect(importPageSource).toContain("/manus-storage/import-products-example_756ddafb.csv");
-    expect(importPageSource).toContain("商品分類,商品批號,商品序號,IMEI,品名");
-    expect(importPageSource).toContain("若 CSV 使用 Excel 匯出格式、帶有 BOM、引號或欄位中含逗號，系統也會一併處理");
+    expect(importPageSource).toContain("廠商、商品分類、商品批號、商品序號、IMEI、品名");
+    expect(importPageSource).toContain("系統會讀取檔案中的廠商與商品分類原文");
     expect(importPageSource).not.toContain("category,batchNo,serialNumber,imei,productName");
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
@@ -36,7 +36,8 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("handleImport");
     expect(importPageSource).toContain("toast.error(importValidationMessage)");
     expect(importPageSource).toContain("toast.warning(`已載入");
-    expect(importPageSource).toContain("請選擇商品分類");
+    expect(importPageSource).toContain("商品分類（必填）");
+    expect(importPageSource).not.toContain("請選擇品牌");
     expect(importPageSource).toContain("parseImportedCsvContent");
     expect(importPageSource).toContain("handleFileUpload");
     expect(importPageSource).toContain("目前已載入");
@@ -46,7 +47,7 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("import-product-name-options");
     expect(importPageSource).toContain("仍要顯示全部資料列");
     expect(importPageSource).toContain("為避免瀏覽器因大量欄位與品名選項同時渲染而無回應");
-    expect(importPageSource.indexOf("CSV 檔案上傳")).toBeLessThan(importPageSource.indexOf("匯入主表"));
+    expect(importPageSource.indexOf("CSV 檔案上傳")).toBeLessThan(importPageSource.indexOf("已載入資料預覽"));
   });
 
   it("provides A1 arrival fields, pending category summary, and vendor data on the station page", () => {
@@ -63,8 +64,9 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("IMEI");
     expect(stationPageSource).toContain("trpc.station.receive.useMutation");
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
-    expect(stationPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(stationPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
     expect(stationPageSource).toContain("品名可先留空");
+    expect(stationPageSource).toContain("例如 智慧手機");
   });
 
   it("renders B and C option menu sections on the station page", () => {

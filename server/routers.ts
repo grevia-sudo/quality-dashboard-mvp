@@ -5,8 +5,12 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   archiveExpiredData,
+  clearProductCategoryOptions,
   completeStationTask,
+  createProductCategoryOption,
   createProductNameOption,
+  deleteImportedPurchaseOrder,
+  deleteProductCategoryOption,
   deleteProductNameOption,
   ensureMvpSeedData,
   getAdminSetupData,
@@ -34,7 +38,7 @@ const importRowSchema = z.object({
   serialNumber: optionalTextSchema,
   imei: optionalTextSchema,
   productName: optionalTextSchema,
-  categoryId: z.number().int().positive(),
+  categoryName: z.string().trim().min(1),
 }).superRefine((value, ctx) => {
   if (!value.batchNo && !value.serialNumber && !value.imei) {
     ctx.addIssue({
@@ -132,7 +136,7 @@ export const appRouter = router({
           serialNumber: optionalTextSchema,
           imei: optionalTextSchema,
           productName: optionalTextSchema,
-          categoryId: z.number().int().positive(),
+          categoryName: z.string().trim().min(1),
         }).superRefine((value, ctx) => {
           if (!value.batchNo && !value.serialNumber && !value.imei) {
             ctx.addIssue({
@@ -155,7 +159,7 @@ export const appRouter = router({
               serialNumber: input.serialNumber,
               imei: input.imei,
               productName: input.productName,
-              categoryId: input.categoryId,
+              categoryName: input.categoryName,
             },
           ],
         });
@@ -315,6 +319,37 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         return deleteProductNameOption(input.id);
+      }),
+    createProductCategoryOption: adminProcedure
+      .input(
+        z.object({
+          categoryName: z.string().trim().min(1),
+          brandName: z.string().trim().min(1),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return createProductCategoryOption({ categoryName: input.categoryName, brandName: input.brandName });
+      }),
+    deleteProductCategoryOption: adminProcedure
+      .input(
+        z.object({
+          id: z.number().int().positive(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return deleteProductCategoryOption(input.id);
+      }),
+    clearProductCategoryOptions: adminProcedure.mutation(async () => {
+      return clearProductCategoryOptions();
+    }),
+    deleteImportedPurchaseOrder: adminProcedure
+      .input(
+        z.object({
+          poNumber: z.string().trim().min(1),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return deleteImportedPurchaseOrder(input.poNumber);
       }),
   }),
 });

@@ -70,6 +70,9 @@ export default function AdminPage() {
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
   const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
   const [newProductName, setNewProductName] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newBrandName, setNewBrandName] = useState("");
+  const [deletePoNumber, setDeletePoNumber] = useState("PO-20260422-21");
 
   useEffect(() => {
     if (!query.data) {
@@ -162,6 +165,54 @@ export default function AdminPage() {
     },
     onError: (error) => {
       toast.error(error.message || "品名刪除失敗");
+    },
+  });
+
+  const createCategoryMutation = trpc.admin.createProductCategoryOption.useMutation({
+    onSuccess: async () => {
+      toast.success("品類已新增");
+      setNewCategoryName("");
+      setNewBrandName("");
+      await utils.admin.setup.invalidate();
+      await utils.station.productCategoryOptions.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品類新增失敗");
+    },
+  });
+
+  const deleteCategoryMutation = trpc.admin.deleteProductCategoryOption.useMutation({
+    onSuccess: async () => {
+      toast.success("品類已刪除");
+      await utils.admin.setup.invalidate();
+      await utils.station.productCategoryOptions.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品類刪除失敗");
+    },
+  });
+
+  const clearCategoriesMutation = trpc.admin.clearProductCategoryOptions.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已清空 ${result.clearedCount} 筆品類設定`);
+      await utils.admin.setup.invalidate();
+      await utils.station.productCategoryOptions.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "清空品類失敗");
+    },
+  });
+
+  const deletePoMutation = trpc.admin.deleteImportedPurchaseOrder.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已刪除 ${result.poNumber}`);
+      await utils.admin.setup.invalidate();
+      await utils.station.detail.invalidate({ stationCode: "A1" });
+      await utils.station.list.invalidate();
+      await utils.dashboard.home.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "刪除採購單失敗");
     },
   });
 
@@ -481,27 +532,62 @@ export default function AdminPage() {
                 <CardHeader>
                   <CardTitle className="text-base font-bold">品類設定</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {(query.data?.categories ?? []).map((category) => (
-                    <div key={category.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-4">
-                      <div>
-                        <p className="text-xs text-slate-400">品類</p>
-                        <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+                <CardContent className="space-y-4">
+                  <div className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="text-sm leading-7 text-slate-600">匯入作業改為分開選擇「商品類別」與「品牌」。這裡新增或刪除的組合，會同步提供給匯入作業頁與 A1 點到貨頁使用。</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                    <Input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="商品類別，例如 智慧手機" />
+                    <Input value={newBrandName} onChange={(event) => setNewBrandName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="品牌，例如 Apple" />
+                    <Button
+                      className="rounded-2xl"
+                      disabled={createCategoryMutation.isPending || !newCategoryName.trim() || !newBrandName.trim()}
+                      onClick={() => createCategoryMutation.mutate({ categoryName: newCategoryName.trim(), brandName: newBrandName.trim() })}
+                    >
+                      新增品類
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <Input value={deletePoNumber} onChange={(event) => setDeletePoNumber(event.target.value)} className="max-w-sm rounded-2xl border-0 bg-slate-50" placeholder="輸入要刪除的 PO 單號" />
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl"
+                      disabled={deletePoMutation.isPending || !deletePoNumber.trim()}
+                      onClick={() => deletePoMutation.mutate({ poNumber: deletePoNumber.trim() })}
+                    >
+                      刪除指定採購單
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl border-red-200 text-red-600 hover:bg-red-50"
+                      disabled={clearCategoriesMutation.isPending}
+                      onClick={() => clearCategoriesMutation.mutate()}
+                    >
+                      清空所有品類設定
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {(query.data?.categories ?? []).length > 0 ? (query.data?.categories ?? []).map((category) => (
+                      <div key={category.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto] md:items-center">
+                        <div>
+                          <p className="text-xs text-slate-400">商品類別</p>
+                          <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400">品牌</p>
+                          <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? category.subtypeCode ?? "-"}</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="rounded-2xl"
+                          disabled={deleteCategoryMutation.isPending}
+                          onClick={() => deleteCategoryMutation.mutate({ id: category.id })}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> 刪除
+                        </Button>
                       </div>
-                      <div>
-                        <p className="text-xs text-slate-400">子分類</p>
-                        <p className="mt-1 font-semibold text-slate-900">{category.subtypeCode}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-400">品牌</p>
-                        <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? "-"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-400">狀態</p>
-                        <p className="mt-1 font-semibold text-slate-900">{category.active ? "啟用" : "停用"}</p>
-                      </div>
-                    </div>
-                  ))}
+                    )) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先新增商品類別與品牌組合。</div>}
+                  </div>
                 </CardContent>
               </Card>
 

@@ -1,15 +1,9 @@
 export type ImportDraftRow = {
-  categoryId: string;
+  categoryName: string;
   batchNo: string;
   serialNumber: string;
   imei: string;
   productName: string;
-};
-
-export type CategoryOption = {
-  id: number;
-  categoryName: string;
-  subtypeCode: string;
 };
 
 export type ParsedImportCsv = {
@@ -40,7 +34,7 @@ export type PendingTaskLike = {
   imei?: string | null;
   poNumber?: string | null;
   categoryName?: string | null;
-  subtypeCode?: string | null;
+  importedCategoryName?: string | null;
 };
 
 export type PendingPoSummaryRow = {
@@ -55,46 +49,20 @@ export type PendingPoSummaryRow = {
     batchNo: string | null;
     serialNumber: string | null;
     imei: string | null;
+    categoryName: string | null;
   }>;
 };
 
-type CsvHeaderKey = "vendorName" | "category" | "batchNo" | "serialNumber" | "imei" | "productName";
+type CsvHeaderKey = "vendorName" | "categoryName" | "batchNo" | "serialNumber" | "imei" | "productName";
 
 const HEADER_ALIASES: Record<CsvHeaderKey, string[]> = {
   vendorName: ["廠商", "供應商", "vendor", "vendorname", "supplier"],
-  category: ["商品分類", "分類", "category", "productcategory"],
+  categoryName: ["商品分類", "分類", "category", "productcategory", "商品類別", "類別"],
   batchNo: ["商品批號", "批號", "batchno", "batch", "lotno"],
   serialNumber: ["商品序號", "序號", "serialnumber", "serialno", "sn"],
   imei: ["imei"],
   productName: ["品名", "productname", "name", "modelname"],
 };
-
-function normalizeCategoryToken(rawValue: string) {
-  return rawValue
-    .trim()
-    .toLowerCase()
-    .replace(/\s*[／/]\s*/g, "/")
-    .replace(/\s+/g, " ");
-}
-
-function normalizeCategoryFamilyToken(rawValue: string) {
-  return normalizeCategoryToken(rawValue)
-    .replace(/智慧型手機/g, "智慧手機")
-    .replace(/智能手機/g, "智慧手機")
-    .replace(/行動電話/g, "手機")
-    .replace(/移動電話/g, "手機");
-}
-
-function getCategorySubtypePriority(rawValue: string) {
-  const normalized = normalizeCategoryToken(rawValue);
-  if (normalized.includes("android") || normalized.includes("安卓")) {
-    return 0;
-  }
-  if (normalized.includes("iphone") || normalized.includes("ios") || normalized.includes("蘋果")) {
-    return 1;
-  }
-  return 2;
-}
 
 function normalizeHeaderToken(rawValue: string) {
   return rawValue
@@ -187,46 +155,17 @@ function getCell(cells: string[], headerMap: Map<CsvHeaderKey, number>, key: Csv
   return cells[index] ?? "";
 }
 
-export function findCategoryIdByLabel(rawValue: string, categoryOptions: CategoryOption[]) {
-  const normalized = normalizeCategoryToken(rawValue);
-  if (!normalized) {
-    return "";
-  }
-
-  const matched = categoryOptions.find((option) => {
-    const categoryName = normalizeCategoryToken(option.categoryName);
-    const subtypeCode = normalizeCategoryToken(option.subtypeCode);
-    const combinedCompact = `${categoryName}/${subtypeCode}`;
-    const combinedDisplay = normalizeCategoryToken(`${option.categoryName} / ${option.subtypeCode}`);
-    return normalized === categoryName || normalized === subtypeCode || normalized === combinedCompact || normalized === combinedDisplay;
-  });
-
-  if (matched) {
-    return String(matched.id);
-  }
-
-  const normalizedFamily = normalizeCategoryFamilyToken(rawValue);
-  const familyCandidates = categoryOptions.filter((option) => {
-    const categoryFamily = normalizeCategoryFamilyToken(option.categoryName);
-    return normalizedFamily === categoryFamily || categoryFamily.includes(normalizedFamily) || normalizedFamily.includes(categoryFamily);
-  });
-
-  if (familyCandidates.length === 0) {
-    return "";
-  }
-
-  const preferred = [...familyCandidates].sort((left, right) => {
-    const subtypePriorityDiff = getCategorySubtypePriority(left.subtypeCode) - getCategorySubtypePriority(right.subtypeCode);
-    if (subtypePriorityDiff !== 0) {
-      return subtypePriorityDiff;
-    }
-    return left.id - right.id;
-  })[0];
-
-  return preferred ? String(preferred.id) : "";
+function toDraftRow(categoryName: string, batchNo: string, serialNumber: string, imei: string, productName: string) {
+  return {
+    categoryName: normalizeImportedCell(categoryName),
+    batchNo: normalizeImportedCell(batchNo),
+    serialNumber: normalizeImportedCell(serialNumber),
+    imei: normalizeImportedCell(imei),
+    productName: normalizeImportedCell(productName),
+  } satisfies ImportDraftRow;
 }
 
-export function parseImportedCsvContent(input: string, categoryOptions: CategoryOption[]): ParsedImportCsv {
+export function parseImportedCsvContent(input: string): ParsedImportCsv {
   const lines = input
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -238,7 +177,7 @@ export function parseImportedCsvContent(input: string, categoryOptions: Category
 
   const firstRowCells = parseDelimitedLine(lines[0]!);
   const headerMap = buildHeaderMap(firstRowCells);
-  const hasStructuredHeader = headerMap.has("category") || headerMap.has("batchNo") || headerMap.has("serialNumber") || headerMap.has("imei") || headerMap.has("productName") || headerMap.has("vendorName");
+  const hasStructuredHeader = headerMap.size > 0;
   const hasVendorColumn = headerMap.has("vendorName");
   const dataLines = hasStructuredHeader ? lines.slice(1) : lines;
   const detectedVendorNames = new Set<string>();
@@ -252,34 +191,19 @@ export function parseImportedCsvContent(input: string, categoryOptions: Category
           detectedVendorNames.add(vendorName);
         }
 
-        return {
-          categoryId: findCategoryIdByLabel(getCell(cells, headerMap, "category"), categoryOptions),
-          batchNo: getCell(cells, headerMap, "batchNo"),
-          serialNumber: getCell(cells, headerMap, "serialNumber"),
-          imei: getCell(cells, headerMap, "imei"),
-          productName: getCell(cells, headerMap, "productName"),
-        } satisfies ImportDraftRow;
+        return toDraftRow(
+          getCell(cells, headerMap, "categoryName"),
+          getCell(cells, headerMap, "batchNo"),
+          getCell(cells, headerMap, "serialNumber"),
+          getCell(cells, headerMap, "imei"),
+          getCell(cells, headerMap, "productName"),
+        );
       }
 
-      const hasCategoryColumn = cells.length >= 5;
-      const [first = "", second = "", third = "", fourth = "", fifth = ""] = cells;
-      return hasCategoryColumn
-        ? {
-            categoryId: findCategoryIdByLabel(first, categoryOptions),
-            batchNo: second,
-            serialNumber: third,
-            imei: fourth,
-            productName: fifth,
-          }
-        : {
-            categoryId: "",
-            batchNo: first,
-            serialNumber: second,
-            imei: third,
-            productName: fourth,
-          };
+      const [categoryName = "", batchNo = "", serialNumber = "", imei = "", productName = ""] = cells;
+      return toDraftRow(categoryName, batchNo, serialNumber, imei, productName);
     })
-    .filter((row) => row.categoryId || row.batchNo || row.serialNumber || row.imei || row.productName);
+    .filter((row) => row.categoryName || row.batchNo || row.serialNumber || row.imei || row.productName);
 
   const vendorList = Array.from(detectedVendorNames.values());
   return {
@@ -290,18 +214,18 @@ export function parseImportedCsvContent(input: string, categoryOptions: Category
   };
 }
 
-function formatCategorySummary(categoryLabels: string[]) {
-  const labels = Array.from(new Set(categoryLabels.filter(Boolean)));
-  if (labels.length === 0) {
-    return "未分類";
+function formatSummary(labels: string[], fallback: string) {
+  const uniqueLabels = Array.from(new Set(labels.filter(Boolean)));
+  if (uniqueLabels.length === 0) {
+    return fallback;
   }
-  if (labels.length === 1) {
-    return labels[0]!;
+  if (uniqueLabels.length === 1) {
+    return uniqueLabels[0]!;
   }
-  if (labels.length === 2) {
-    return labels.join("、");
+  if (uniqueLabels.length === 2) {
+    return uniqueLabels.join("、");
   }
-  return `${labels[0]} 等 ${labels.length} 類`;
+  return `${uniqueLabels[0]} 等 ${uniqueLabels.length} 項`;
 }
 
 export function buildPendingPoSummary(tasks: PendingTaskLike[]) {
@@ -309,18 +233,18 @@ export function buildPendingPoSummary(tasks: PendingTaskLike[]) {
 
   for (const task of tasks) {
     const poNumber = task.poNumber?.trim() || "系統補號中";
-    const categoryLabel = [task.categoryName, task.subtypeCode].filter(Boolean).join(" / ") || task.subtypeCode || task.categoryName || "未分類";
+    const categoryName = task.categoryName?.trim() || task.importedCategoryName?.trim() || "未分類";
     const current = summaryMap.get(poNumber) ?? {
       key: poNumber,
       poNumber,
-      categoryLabel,
+      categoryLabel: categoryName,
       totalQuantity: 0,
       details: [],
       categoryLabels: [],
     };
 
     current.totalQuantity += 1;
-    current.categoryLabels.push(categoryLabel);
+    current.categoryLabels.push(categoryName);
     current.details.push({
       productId: task.productId,
       productCode: task.productCode,
@@ -328,6 +252,7 @@ export function buildPendingPoSummary(tasks: PendingTaskLike[]) {
       batchNo: task.batchNo ?? null,
       serialNumber: task.serialNumber ?? null,
       imei: task.imei ?? null,
+      categoryName: task.categoryName ?? task.importedCategoryName ?? null,
     });
     summaryMap.set(poNumber, current);
   }
@@ -335,7 +260,7 @@ export function buildPendingPoSummary(tasks: PendingTaskLike[]) {
   return Array.from(summaryMap.values())
     .map(({ categoryLabels, ...item }) => ({
       ...item,
-      categoryLabel: formatCategorySummary(categoryLabels),
+      categoryLabel: formatSummary(categoryLabels, "未分類"),
     }))
     .sort((left, right) => {
       if (left.poNumber !== right.poNumber) {

@@ -1,6 +1,6 @@
 export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 export const SHEET_NAME = "採購單";
-export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名"];
+export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品類別", "品牌", "商品批號", "商品序號", "IMEI", "品名"];
 
 export function stringifyCell(value) {
   if (value === null || value === undefined) {
@@ -13,7 +13,8 @@ export function buildSheetRow(product) {
   return [
     stringifyCell(product.poNumber),
     stringifyCell(product.vendorName),
-    stringifyCell(product.subtypeCode ?? product.categoryName),
+    stringifyCell(product.categoryName),
+    stringifyCell(product.brandName ?? product.subtypeCode),
     stringifyCell(product.batchNo),
     stringifyCell(product.serialNumber),
     stringifyCell(product.imei),
@@ -35,9 +36,9 @@ export function findMatchingRowNumber(values, product) {
 
   for (let index = 1; index < values.length; index += 1) {
     const row = values[index] ?? [];
-    const rowBatchNo = stringifyCell(row[3]);
-    const rowSerialNumber = stringifyCell(row[4]);
-    const rowImei = stringifyCell(row[5]);
+    const rowBatchNo = stringifyCell(row[4]);
+    const rowSerialNumber = stringifyCell(row[5]);
+    const rowImei = stringifyCell(row[6]);
 
     if (imei && rowImei && rowImei === imei) {
       return index + 1;

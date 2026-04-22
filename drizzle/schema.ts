@@ -104,6 +104,7 @@ export const products = mysqlTable("products", {
   productName: varchar("productName", { length: 160 }),
   arrivalAt: timestamp("arrivalAt"),
   warrantyDate: date("warrantyDate"),
+  importedCategoryName: varchar("importedCategoryName", { length: 120 }),
   categoryId: int("categoryId").references(() => productCategories.id),
   currentStationCode: stationCodeEnum.default("A1").notNull(),
   currentStatus: productStatusEnum.default("pending_a1").notNull(),

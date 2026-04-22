@@ -353,11 +353,6 @@ export async function ensureMvpSeedData() {
   const today = todayDateString();
   const todayDate = new Date(`${today}T00:00:00`);
 
-  await db.insert(productCategories).values([
-    { categoryName: "智慧型手機", subtypeCode: "iPhone", brandName: "Apple" },
-    { categoryName: "智慧型手機", subtypeCode: "Android", brandName: "Android" },
-  ]);
-
   const categories = await db.select().from(productCategories).orderBy(asc(productCategories.id));
   const iphone = categories.find((item) => item.subtypeCode === "iPhone");
   const android = categories.find((item) => item.subtypeCode === "Android");
@@ -524,7 +519,7 @@ export async function getProductCategoryOptions() {
     .select()
     .from(productCategories)
     .where(eq(productCategories.active, true))
-    .orderBy(asc(productCategories.categoryName), asc(productCategories.subtypeCode), asc(productCategories.id));
+    .orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.subtypeCode), asc(productCategories.id));
 }
 
 async function backfillMissingImportPoNumbers(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
@@ -602,9 +597,11 @@ export async function getStationPageData(stationCode: StationCode) {
       serialNumber: products.serialNumber,
       imei: products.imei,
       productName: products.productName,
+      importedCategoryName: products.importedCategoryName,
       currentStationCode: products.currentStationCode,
       subtypeCode: productCategories.subtypeCode,
       categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
     })
     .from(stationTasks)
     .innerJoin(products, eq(stationTasks.productId, products.id))
@@ -636,7 +633,7 @@ export async function importProducts(input: {
     serialNumber?: string | null;
     imei?: string | null;
     productName?: string | null;
-    categoryId?: number | null;
+    categoryName?: string | null;
   }>;
 }) {
   const db = await getDb();
@@ -658,7 +655,7 @@ export async function importProducts(input: {
   const importSeed = Date.now();
   const createdProducts: Array<{ id: number; productCode: string; productName: string | null }> = [];
   const normalizedRows = input.rows.map((row) => ({
-    categoryId: row.categoryId ?? null,
+    categoryName: normalizeOptionalText(row.categoryName),
     batchNo: normalizeOptionalText(row.batchNo),
     serialNumber: normalizeOptionalText(row.serialNumber),
     imei: normalizeOptionalText(row.imei),
@@ -667,7 +664,7 @@ export async function importProducts(input: {
 
   for (let index = 0; index < normalizedRows.length; index += 1) {
     const row = normalizedRows[index]!;
-    if (!row.categoryId) {
+    if (!row.categoryName) {
       throw new Error(`第 ${index + 1} 列缺少商品分類`);
     }
     if (!hasImportIdentity(row)) {
@@ -743,25 +740,27 @@ export async function importProducts(input: {
   const newProductEntries: Array<{
     productCode: string;
     productName: string | null;
-    values: {
-      productCode: string;
-      poNumber: string;
-      vendorName: string;
-      batchNo: string | null;
-      serialNumber: string | null;
-      imei: string | null;
-      productName: string | null;
-      arrivalAt: Date | null;
-      categoryId: number;
-      currentStationCode: "A1";
-      currentStatus: "pending_a1";
-      inspectionSummary: string;
-    };
+      values: {
+        productCode: string;
+        poNumber: string;
+        vendorName: string;
+        batchNo: string | null;
+        serialNumber: string | null;
+        imei: string | null;
+        productName: string | null;
+        arrivalAt: Date | null;
+        importedCategoryName: string;
+        categoryId: null;
+        currentStationCode: "A1";
+        currentStatus: "pending_a1";
+        inspectionSummary: string;
+      };
+
   }> = [];
 
   for (let index = 0; index < normalizedRows.length; index += 1) {
     const row = normalizedRows[index]!;
-    const categoryId = row.categoryId as number;
+    const categoryName = row.categoryName as string;
     const matchedProduct = (row.imei ? matchedByImei.get(row.imei) : undefined)
       ?? (row.serialNumber ? matchedBySerialNumber.get(row.serialNumber) : undefined)
       ?? (row.batchNo ? matchedByBatchNo.get(row.batchNo) : undefined)
@@ -772,7 +771,7 @@ export async function importProducts(input: {
       const nextSerialNumber = matchedProduct.serialNumber ?? row.serialNumber;
       const nextImei = matchedProduct.imei ?? row.imei;
       const nextProductName = matchedProduct.productName ?? row.productName;
-      const nextCategoryId = matchedProduct.categoryId ?? categoryId;
+      const nextImportedCategoryName = matchedProduct.importedCategoryName ?? categoryName;
       const nextPoNumber = matchedProduct.poNumber ?? resolvedPoNumber;
       const nextVendorName = matchedProduct.vendorName ?? vendorName;
       const nextArrivalAt = matchedProduct.arrivalAt ?? arrivalAt;
@@ -787,7 +786,8 @@ export async function importProducts(input: {
           imei: nextImei,
           productName: nextProductName,
           arrivalAt: nextArrivalAt,
-          categoryId: nextCategoryId,
+          importedCategoryName: nextImportedCategoryName,
+          categoryId: null,
           currentStationCode: "A1",
           currentStatus: "pending_a1",
           inspectionSummary: nextPoNumber ? `PO:${nextPoNumber}` : matchedProduct.inspectionSummary,
@@ -831,7 +831,8 @@ export async function importProducts(input: {
         imei: row.imei,
         productName: row.productName,
         arrivalAt,
-        categoryId,
+        importedCategoryName: categoryName,
+        categoryId: null,
         currentStationCode: "A1",
         currentStatus: "pending_a1",
         inspectionSummary: `PO:${resolvedPoNumber}`,
@@ -1453,7 +1454,7 @@ export async function getAdminSetupData() {
   return {
     users: await db.select().from(users).orderBy(asc(users.id)),
     rules: await db.select().from(stationRules).orderBy(asc(stationRules.id)),
-    categories: await db.select().from(productCategories).orderBy(asc(productCategories.id)),
+    categories: await db.select().from(productCategories).orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.id)),
     targets: await db.select().from(productivityTargetConfigs).orderBy(asc(productivityTargetConfigs.id)),
     defectOptions: await db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
     productNameOptions: await db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
@@ -1559,6 +1560,111 @@ export async function deleteProductNameOption(id: number) {
 
   await db.delete(productNameOptions).where(eq(productNameOptions.id, id));
   return { success: true as const };
+}
+
+export async function createProductCategoryOption(input: { categoryName: string; brandName: string }) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const normalizedCategoryName = normalizeOptionalText(input.categoryName);
+  const normalizedBrandName = normalizeOptionalText(input.brandName);
+  if (!normalizedCategoryName || !normalizedBrandName) {
+    throw new Error("商品類別與品牌皆為必填欄位");
+  }
+
+  const existing = await db
+    .select()
+    .from(productCategories)
+    .where(and(eq(productCategories.categoryName, normalizedCategoryName), eq(productCategories.brandName, normalizedBrandName)))
+    .limit(1);
+  if (existing[0]) {
+    return existing[0];
+  }
+
+  await db.insert(productCategories).values({
+    categoryName: normalizedCategoryName,
+    subtypeCode: normalizedBrandName,
+    brandName: normalizedBrandName,
+    active: true,
+  });
+
+  const rows = await db
+    .select()
+    .from(productCategories)
+    .where(and(eq(productCategories.categoryName, normalizedCategoryName), eq(productCategories.brandName, normalizedBrandName)))
+    .orderBy(desc(productCategories.id))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function deleteProductCategoryOption(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await db.update(products).set({ categoryId: null, updatedAt: new Date() }).where(eq(products.categoryId, id));
+  await db.update(stationEvents).set({ categoryId: null, subtypeCode: null }).where(eq(stationEvents.categoryId, id));
+  await db.delete(productivityScoreDetails).where(eq(productivityScoreDetails.categoryId, id));
+  await db.delete(productivityTargetConfigs).where(eq(productivityTargetConfigs.categoryId, id));
+  await db.delete(productCategories).where(eq(productCategories.id, id));
+  return { success: true as const };
+}
+
+export async function clearProductCategoryOptions() {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const rows = await db.select({ id: productCategories.id }).from(productCategories);
+  const ids = rows.map((row) => row.id);
+  if (ids.length === 0) {
+    return { success: true as const, clearedCount: 0 };
+  }
+
+  await db.update(products).set({ categoryId: null, updatedAt: new Date() }).where(inArray(products.categoryId, ids));
+  await db.update(stationEvents).set({ categoryId: null, subtypeCode: null }).where(inArray(stationEvents.categoryId, ids));
+  await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.categoryId, ids));
+  await db.delete(productivityTargetConfigs).where(inArray(productivityTargetConfigs.categoryId, ids));
+  await db.delete(productCategories).where(inArray(productCategories.id, ids));
+  return { success: true as const, clearedCount: ids.length };
+}
+
+export async function deleteImportedPurchaseOrder(poNumber: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const normalizedPoNumber = normalizeOptionalText(poNumber);
+  if (!normalizedPoNumber) {
+    throw new Error("PO 單號為必填欄位");
+  }
+
+  const productRows = await db
+    .select({ id: products.id })
+    .from(products)
+    .where(eq(products.poNumber, normalizedPoNumber));
+  const productIds = productRows.map((row) => row.id);
+  if (productIds.length === 0) {
+    return { success: true as const, poNumber: normalizedPoNumber, deletedProducts: 0, deletedTasks: 0 };
+  }
+
+  const deletedTasks = await db.delete(stationTasks).where(inArray(stationTasks.productId, productIds));
+  await db.delete(stationEvents).where(inArray(stationEvents.productId, productIds));
+  await db.delete(samplingResults).where(inArray(samplingResults.productId, productIds));
+  await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.productId, productIds));
+  const deletedProducts = await db.delete(products).where(inArray(products.id, productIds));
+
+  return {
+    success: true as const,
+    poNumber: normalizedPoNumber,
+    deletedProducts: typeof deletedProducts === "number" ? deletedProducts : productIds.length,
+    deletedTasks: typeof deletedTasks === "number" ? deletedTasks : 0,
+  };
 }
 
 export async function updateStationRule(input: {

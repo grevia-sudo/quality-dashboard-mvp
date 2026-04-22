@@ -36,6 +36,13 @@
       "when": 1776822253042,
       "tag": "0004_unique_wendell_vaughn",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1776848615483,
+      "tag": "0005_solid_bishop",
+      "breakpoints": true
     }
   ]
 }

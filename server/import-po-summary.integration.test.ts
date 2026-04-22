@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { and, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { productArchives, products, stationTasks } from "../drizzle/schema";
 import { ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
 
@@ -65,7 +65,7 @@ describe("import PO summary integration", () => {
     expect(pendingWithoutPo).toHaveLength(0);
 
     const groupedKeys = new Set(
-      tasks.map((task) => `${task.poNumber}__${task.categoryName ?? task.subtypeCode ?? "未分類"}`),
+      tasks.map((task) => `${task.poNumber}__${task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類"}`),
     );
     expect(groupedKeys.size).toBeGreaterThanOrEqual(0);
   });
@@ -78,21 +78,21 @@ describe("import PO summary integration", () => {
         serialNumber: `AUTO-SN-${uniqueSuffix}-01`,
         imei: `35${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
-        categoryId: 4,
+        categoryName: "智慧手機",
       },
       {
         batchNo: `AUTO-PO-${uniqueSuffix}-02`,
         serialNumber: `AUTO-SN-${uniqueSuffix}-02`,
         imei: `35${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
-        categoryId: 4,
+        categoryName: "智慧手機",
       },
       {
         batchNo: `AUTO-PO-${uniqueSuffix}-03`,
         serialNumber: `AUTO-SN-${uniqueSuffix}-03`,
         imei: `35${`${Number(uniqueSuffix) + 3}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
-        categoryId: 5,
+        categoryName: "平板",
       },
     ];
 
@@ -105,12 +105,29 @@ describe("import PO summary integration", () => {
     expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2}$/);
     expect(importResult.importedCount).toBe(3);
 
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const importedProducts = await db
+      .select({
+        poNumber: products.poNumber,
+        batchNo: products.batchNo,
+        importedCategoryName: products.importedCategoryName,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)));
+
+    expect(importedProducts).toHaveLength(3);
+    expect(new Set(importedProducts.map((product) => product.poNumber))).toEqual(new Set([importResult.poNumber]));
+    expect(new Set(importedProducts.map((product) => product.batchNo))).toEqual(new Set(rows.map((row) => row.batchNo)));
+    expect(new Set(importedProducts.map((product) => product.importedCategoryName))).toEqual(new Set(["智慧手機", "平板"]));
+
     const stationData = await getStationPageData("A1");
     const importedTasks = stationData.tasks.filter((task) => task.poNumber === importResult.poNumber);
-
     expect(importedTasks).toHaveLength(3);
-    expect(new Set(importedTasks.map((task) => task.poNumber))).toEqual(new Set([importResult.poNumber]));
-    expect(new Set(importedTasks.map((task) => task.batchNo))).toEqual(new Set(rows.map((row) => row.batchNo)));
+    expect(new Set(importedTasks.map((task) => task.importedCategoryName ?? task.categoryName))).toEqual(new Set(["智慧手機", "平板"]));
   }, 10000);
 
   it("imports a large batch with consistent row count under a single PO", async () => {
@@ -122,7 +139,7 @@ describe("import PO summary integration", () => {
         serialNumber: `LARGE-SN-${uniqueSuffix}-${String(sequence).padStart(3, "0")}`,
         imei: `86${`${Number(uniqueSuffix) + sequence}`.padStart(13, "0").slice(-13)}`,
         productName: `Large Import Device ${String(sequence).padStart(3, "0")}`,
-        categoryId: sequence % 2 === 0 ? 4 : 5,
+        categoryName: sequence % 2 === 0 ? "智慧手機" : "平板",
       };
     });
 
@@ -142,5 +159,6 @@ describe("import PO summary integration", () => {
     expect(importedTasks).toHaveLength(rows.length);
     expect(new Set(importedTasks.map((task) => task.poNumber))).toEqual(new Set([importResult.poNumber]));
     expect(new Set(importedTasks.map((task) => task.batchNo))).toEqual(new Set(rows.map((row) => row.batchNo)));
+    expect(new Set(importedTasks.map((task) => task.importedCategoryName ?? task.categoryName))).toEqual(new Set(["智慧手機", "平板"]));
   }, 20000);
 });

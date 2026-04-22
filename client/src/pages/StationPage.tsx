@@ -50,7 +50,7 @@ export default function StationPage() {
     poNumber: "",
     vendorName: "",
     arrivalAt: "",
-    categoryId: "",
+    categoryName: "",
     batchNo: "",
     serialNumber: "",
     imei: "",
@@ -65,7 +65,6 @@ export default function StationPage() {
     },
   );
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
-  const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, { retry: false });
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -87,7 +86,7 @@ export default function StationPage() {
   const receiveMutation = trpc.station.receive.useMutation({
     onSuccess: async () => {
       toast.success("A1 到貨資料已建立或補齊");
-      setArrivalForm({ poNumber: "", vendorName: "", arrivalAt: "", categoryId: "", batchNo: "", serialNumber: "", imei: "", productName: "" });
+      setArrivalForm({ poNumber: "", vendorName: "", arrivalAt: "", categoryName: "", batchNo: "", serialNumber: "", imei: "", productName: "" });
       await invalidateStationData();
       await productNameOptionsQuery.refetch();
     },
@@ -114,7 +113,7 @@ export default function StationPage() {
     const summaryMap = new Map<string, { label: string; count: number }>();
 
     for (const task of detailQuery.data?.tasks ?? []) {
-      const label = task.subtypeCode ?? task.categoryName ?? "未分類";
+      const label = task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類";
       const current = summaryMap.get(label);
       summaryMap.set(label, {
         label,
@@ -151,7 +150,7 @@ export default function StationPage() {
   const getTaskSelections = (taskId: number) => selectedOptions[taskId] ?? defaultSelections();
   const canReceiveA1 = Boolean(
     arrivalForm.vendorName.trim()
-    && arrivalForm.categoryId
+    && arrivalForm.categoryName.trim()
     && (arrivalForm.batchNo.trim() || arrivalForm.serialNumber.trim() || arrivalForm.imei.trim()),
   );
 
@@ -227,16 +226,12 @@ export default function StationPage() {
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
                   <span>商品分類（必填）</span>
-                  <select
-                    value={arrivalForm.categoryId}
-                    onChange={(event) => setArrivalForm((prev) => ({ ...prev, categoryId: event.target.value }))}
-                    className="h-11 w-full rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none"
-                  >
-                    <option value="">請選擇商品分類</option>
-                    {(categoryOptionsQuery.data ?? []).map((option) => (
-                      <option key={option.id} value={option.id}>{option.categoryName} / {option.subtypeCode}</option>
-                    ))}
-                  </select>
+                  <Input
+                    value={arrivalForm.categoryName}
+                    onChange={(event) => setArrivalForm((prev) => ({ ...prev, categoryName: event.target.value }))}
+                    className="rounded-2xl border-0 bg-slate-50"
+                    placeholder="例如 智慧手機"
+                  />
                 </label>
               </div>
 
@@ -281,7 +276,7 @@ export default function StationPage() {
                       serialNumber: arrivalForm.serialNumber.trim() || undefined,
                       imei: arrivalForm.imei.trim() || undefined,
                       productName: arrivalForm.productName.trim() || undefined,
-                      categoryId: Number(arrivalForm.categoryId),
+                      categoryName: arrivalForm.categoryName.trim(),
                     })
                   }
                 >
@@ -322,7 +317,7 @@ export default function StationPage() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-2">
                     <div><p className="text-xs text-slate-400">商品名稱</p><p className="mt-1 font-semibold text-slate-900">{task.productName ?? "-"}</p></div>
-                    <div><p className="text-xs text-slate-400">品類</p><p className="mt-1 font-semibold text-slate-900">{task.subtypeCode ?? task.categoryName ?? "-"}</p></div>
+                    <div><p className="text-xs text-slate-400">品類</p><p className="mt-1 font-semibold text-slate-900">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">批號</p><p className="mt-1 font-semibold text-slate-900">{task.batchNo ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">序號</p><p className="mt-1 font-semibold text-slate-900">{task.serialNumber ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? "-"}</p></div>

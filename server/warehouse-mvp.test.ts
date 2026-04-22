@@ -153,7 +153,7 @@ describe("warehouse MVP router", () => {
       serialNumber: "SN-1001",
       imei: "356000000000001",
       productName: "iPhone 13",
-      categoryId: 3,
+      categoryName: "智慧手機",
     });
 
     expect(importProducts).toHaveBeenCalledWith({
@@ -167,7 +167,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1001",
           imei: "356000000000001",
           productName: "iPhone 13",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
@@ -186,7 +186,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1001",
           imei: "356000000000001",
           productName: "iPhone 13",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
@@ -202,7 +202,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1001",
           imei: "356000000000001",
           productName: "iPhone 13",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
@@ -220,7 +220,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1002",
           imei: "356000000000002",
           productName: "iPhone 13",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
@@ -236,7 +236,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1002",
           imei: "356000000000002",
           productName: "iPhone 13",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
@@ -315,7 +315,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1002",
           imei: "356000000000002",
           productName: "Galaxy S22",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
@@ -331,7 +331,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1002",
           imei: "356000000000002",
           productName: "Galaxy S22",
-          categoryId: 3,
+          categoryName: "智慧手機",
         },
       ],
     });
