@@ -67,7 +67,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
     expect(stationPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
     expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
-    expect(stationPageSource).toContain("請選擇品名（可選）");
+    expect(stationPageSource).toContain("輸入品名關鍵字搜尋（可選）");
     expect(stationPageSource).toContain("完成 A1 並準備下一筆");
     expect(stationPageSource).toContain("留在本頁");
   });

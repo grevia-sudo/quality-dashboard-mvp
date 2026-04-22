@@ -23,11 +23,25 @@ describe("A1 掃碼 UX source coverage", () => {
     expect(source).toContain("const refreshA1StationDataInBackground = () => {");
     expect(source).toContain("const removeCompletedA1TaskFromCache = (productId?: number | null) => {");
     expect(successBlock).toContain("removeCompletedA1TaskFromCache(result.productId);");
+    expect(successBlock).toContain("setProductNamePickerOpen(false);");
     expect(successBlock).toContain('setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });');
     expect(successBlock).toContain('focusBatchInput();');
     expect(successBlock).toContain("refreshA1StationDataInBackground();");
     expect(successBlock).not.toContain("await invalidateStationData();");
     expect(successBlock).not.toContain('setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);');
+  });
+
+  it("uses a fuzzy-search product-name input instead of a native select", () => {
+    expect(source).toContain("const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);");
+    expect(source).toContain("const filteredProductNameOptions = useMemo(() => {");
+    expect(source).toContain('placeholder="輸入品名關鍵字搜尋（可選）"');
+    expect(source).toContain("setProductNamePickerOpen(true);");
+    expect(source).toContain('setArrivalForm((prev) => ({ ...prev, productName: nextValue }));');
+    expect(source).toContain('setArrivalForm((prev) => ({ ...prev, productName: option.label }));');
+    expect(source).toContain('productName: arrivalForm.productName.trim() || undefined,');
+    expect(source).toContain("onMouseDown={(event) => event.preventDefault()}");
+    expect(source).toContain("找不到符合的品名，可直接保留目前輸入。");
+    expect(source).not.toContain("<select");
   });
 
   it("re-focuses the batch input on A1 page load and after receive errors", () => {
@@ -37,5 +51,6 @@ describe("A1 掃碼 UX source coverage", () => {
     expect(source).toContain("if (stationCode === \"A1\" && !detailQuery.isLoading) {");
     expect(source).toContain("focusBatchInput();");
     expect(source).toContain("onError: (error) => {");
+    expect(source).toContain("setProductNamePickerOpen(false);");
   });
 });

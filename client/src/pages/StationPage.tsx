@@ -53,6 +53,7 @@ export default function StationPage() {
     productName: "",
   });
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
+  const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
@@ -64,6 +65,7 @@ export default function StationPage() {
       retry: false,
     },
   );
+  const productNameOptions = productNameOptionsQuery.data ?? [];
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -144,12 +146,14 @@ export default function StationPage() {
 
       removeCompletedA1TaskFromCache(result.productId);
       toast.success(`${result.productCode ?? "商品"} 已完成 A1 點到貨，請直接掃描下一筆`);
+      setProductNamePickerOpen(false);
       setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });
       focusBatchInput();
       refreshA1StationDataInBackground();
     },
     onError: (error) => {
       toast.error(error.message || "A1 點到貨處理失敗");
+      setProductNamePickerOpen(false);
       focusBatchInput();
     },
   });
@@ -173,6 +177,17 @@ export default function StationPage() {
       return text.includes(keyword.toLowerCase());
     });
   }, [detailQuery.data?.tasks, keyword]);
+
+  const filteredProductNameOptions = useMemo(() => {
+    const normalizedKeyword = arrivalForm.productName.trim().toLowerCase();
+    if (!normalizedKeyword) {
+      return productNameOptions.slice(0, 20);
+    }
+
+    return productNameOptions
+      .filter((option) => option.label.toLowerCase().includes(normalizedKeyword))
+      .slice(0, 20);
+  }, [arrivalForm.productName, productNameOptions]);
 
   const pendingCategorySummary = useMemo(() => {
     const summaryMap = new Map<string, { label: string; count: number }>();
@@ -320,18 +335,60 @@ export default function StationPage() {
                     </label>
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>品名</span>
-                      <select
-                        value={arrivalForm.productName}
-                        onChange={(event) => setArrivalForm((prev) => ({ ...prev, productName: event.target.value }))}
-                        className="h-14 w-full rounded-2xl border-0 bg-slate-50 px-4 text-base text-slate-900 outline-none ring-0"
-                      >
-                        <option value="">請選擇品名（可選）</option>
-                        {(productNameOptionsQuery.data ?? []).map((option) => (
-                          <option key={option.id} value={option.label}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <Input
+                          value={arrivalForm.productName}
+                          onChange={(event) => {
+                            const nextValue = event.target.value;
+                            setArrivalForm((prev) => ({ ...prev, productName: nextValue }));
+                            setProductNamePickerOpen(true);
+                          }}
+                          onFocus={() => setProductNamePickerOpen(true)}
+                          onBlur={() => {
+                            window.setTimeout(() => setProductNamePickerOpen(false), 120);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                              setProductNamePickerOpen(false);
+                            }
+                          }}
+                          className="h-14 rounded-2xl border-0 bg-slate-50 pr-12 text-base"
+                          placeholder="輸入品名關鍵字搜尋（可選）"
+                          autoComplete="off"
+                        />
+                        <Search className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
+                        {productNamePickerOpen ? (
+                          <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                            {productNameOptionsQuery.isLoading ? (
+                              <p className="px-3 py-4 text-sm text-slate-500">品名載入中…</p>
+                            ) : filteredProductNameOptions.length > 0 ? (
+                              <div className="space-y-1">
+                                {filteredProductNameOptions.map((option) => {
+                                  const isActive = option.label === arrivalForm.productName;
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${isActive ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}
+                                      onMouseDown={(event) => event.preventDefault()}
+                                      onClick={() => {
+                                        setArrivalForm((prev) => ({ ...prev, productName: option.label }));
+                                        setProductNamePickerOpen(false);
+                                      }}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : arrivalForm.productName.trim() ? (
+                              <p className="px-3 py-4 text-sm text-slate-500">找不到符合的品名，可直接保留目前輸入。</p>
+                            ) : (
+                              <p className="px-3 py-4 text-sm text-slate-500">請輸入關鍵字搜尋品名。</p>
+                            )}
+                          </div>
+                        ) : null}
+                      </div>
                     </label>
                   </div>
 
