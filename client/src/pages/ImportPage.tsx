@@ -31,7 +31,7 @@ const navItems: DashboardNavItem[] = [
   { label: "管理後台", path: "/admin", icon: ShieldCheck },
 ];
 
-const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_8f82e9a9.csv";
+const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_e9d20755.csv";
 
 const createEmptyRow = (): ImportDraftRow => ({
   categoryId: "",
@@ -282,7 +282,7 @@ export default function ImportPage() {
                 />
                 <div className="rounded-[24px] bg-slate-50 p-5 text-sm leading-7 text-slate-600">
                   <p>建議欄位順序為：商品分類、商品批號、商品序號、IMEI、品名。</p>
-                  <p>若檔案第一列為標題列，系統會自動略過 `商品分類,商品批號,商品序號,IMEI,品名` 或 `category,batchNo,serialNumber,imei,productName`。</p>
+                  <p>若檔案第一列為標題列，系統會自動略過 `商品分類,商品批號,商品序號,IMEI,品名`。</p>
                   <p>若 CSV 沒帶商品分類，載入後可直接在主表逐列補選；廠商與到貨時間則由同批共用欄位統一帶入。</p>
                 </div>
                 <Button variant="outline" className="w-full rounded-2xl" onClick={openFilePicker}>
