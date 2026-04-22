@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, like, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   defectOptions,
@@ -657,28 +657,122 @@ export async function importProducts(input: {
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
   const importSeed = Date.now();
   const createdProducts: Array<{ id: number; productCode: string; productName: string | null }> = [];
+  const normalizedRows = input.rows.map((row) => ({
+    categoryId: row.categoryId ?? null,
+    batchNo: normalizeOptionalText(row.batchNo),
+    serialNumber: normalizeOptionalText(row.serialNumber),
+    imei: normalizeOptionalText(row.imei),
+    productName: normalizeOptionalText(row.productName),
+  }));
 
-  for (let index = 0; index < input.rows.length; index += 1) {
-    const row = input.rows[index]!;
+  for (let index = 0; index < normalizedRows.length; index += 1) {
+    const row = normalizedRows[index]!;
     if (!row.categoryId) {
       throw new Error(`第 ${index + 1} 列缺少商品分類`);
     }
     if (!hasImportIdentity(row)) {
       throw new Error(`第 ${index + 1} 列至少要填寫商品批號、商品序號、IMEI 其中一項`);
     }
+  }
 
-    const batchNo = normalizeOptionalText(row.batchNo);
-    const serialNumber = normalizeOptionalText(row.serialNumber);
-    const imei = normalizeOptionalText(row.imei);
-    const productName = normalizeOptionalText(row.productName);
-    const matchedProduct = await findPendingA1ProductByIdentity(db, { batchNo, serialNumber, imei });
+  const imeis = Array.from(new Set(normalizedRows.map((row) => row.imei).filter((value): value is string => Boolean(value))));
+  const serialNumbers = Array.from(new Set(normalizedRows.map((row) => row.serialNumber).filter((value): value is string => Boolean(value))));
+  const batchNumbers = Array.from(new Set(normalizedRows.map((row) => row.batchNo).filter((value): value is string => Boolean(value))));
+  const identityConditions = [
+    ...(imeis.length > 0 ? [inArray(products.imei, imeis)] : []),
+    ...(serialNumbers.length > 0 ? [inArray(products.serialNumber, serialNumbers)] : []),
+    ...(batchNumbers.length > 0 ? [inArray(products.batchNo, batchNumbers)] : []),
+  ];
+
+  const matchedProducts = identityConditions.length > 0
+    ? await db
+        .select()
+        .from(products)
+        .where(
+          and(
+            eq(products.currentStationCode, "A1"),
+            isNull(products.archivedAt),
+            or(...identityConditions),
+          ),
+        )
+    : [];
+
+  const matchedByImei = new Map<string, (typeof matchedProducts)[number]>();
+  const matchedBySerialNumber = new Map<string, (typeof matchedProducts)[number]>();
+  const matchedByBatchNo = new Map<string, (typeof matchedProducts)[number]>();
+
+  for (const product of matchedProducts) {
+    if (product.imei && !matchedByImei.has(product.imei)) {
+      matchedByImei.set(product.imei, product);
+    }
+    if (product.serialNumber && !matchedBySerialNumber.has(product.serialNumber)) {
+      matchedBySerialNumber.set(product.serialNumber, product);
+    }
+    if (product.batchNo && !matchedByBatchNo.has(product.batchNo)) {
+      matchedByBatchNo.set(product.batchNo, product);
+    }
+  }
+
+  const matchedProductIds = Array.from(new Set(matchedProducts.map((product) => product.id)));
+  const pendingA1TaskProductIds = new Set<number>();
+  if (matchedProductIds.length > 0) {
+    const existingTasks = await db
+      .select({ productId: stationTasks.productId })
+      .from(stationTasks)
+      .where(
+        and(
+          inArray(stationTasks.productId, matchedProductIds),
+          eq(stationTasks.stationCode, "A1"),
+          inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"]),
+        ),
+      );
+
+    for (const task of existingTasks) {
+      pendingA1TaskProductIds.add(task.productId);
+    }
+  }
+
+  const pendingTaskInserts: Array<{
+    productId: number;
+    stationCode: "A1";
+    taskStatus: "pending";
+    dueDate: Date;
+    resultSummary: string;
+    metadata: Record<string, unknown>;
+  }> = [];
+  const newProductEntries: Array<{
+    productCode: string;
+    productName: string | null;
+    values: {
+      productCode: string;
+      poNumber: string;
+      vendorName: string;
+      batchNo: string | null;
+      serialNumber: string | null;
+      imei: string | null;
+      productName: string | null;
+      arrivalAt: Date | null;
+      categoryId: number;
+      currentStationCode: "A1";
+      currentStatus: "pending_a1";
+      inspectionSummary: string;
+    };
+  }> = [];
+
+  for (let index = 0; index < normalizedRows.length; index += 1) {
+    const row = normalizedRows[index]!;
+    const categoryId = row.categoryId as number;
+    const matchedProduct = (row.imei ? matchedByImei.get(row.imei) : undefined)
+      ?? (row.serialNumber ? matchedBySerialNumber.get(row.serialNumber) : undefined)
+      ?? (row.batchNo ? matchedByBatchNo.get(row.batchNo) : undefined)
+      ?? null;
 
     if (matchedProduct) {
-      const nextBatchNo = matchedProduct.batchNo ?? batchNo;
-      const nextSerialNumber = matchedProduct.serialNumber ?? serialNumber;
-      const nextImei = matchedProduct.imei ?? imei;
-      const nextProductName = matchedProduct.productName ?? productName;
-      const nextCategoryId = matchedProduct.categoryId ?? row.categoryId;
+      const nextBatchNo = matchedProduct.batchNo ?? row.batchNo;
+      const nextSerialNumber = matchedProduct.serialNumber ?? row.serialNumber;
+      const nextImei = matchedProduct.imei ?? row.imei;
+      const nextProductName = matchedProduct.productName ?? row.productName;
+      const nextCategoryId = matchedProduct.categoryId ?? categoryId;
       const nextPoNumber = matchedProduct.poNumber ?? resolvedPoNumber;
       const nextVendorName = matchedProduct.vendorName ?? vendorName;
       const nextArrivalAt = matchedProduct.arrivalAt ?? arrivalAt;
@@ -701,10 +795,20 @@ export async function importProducts(input: {
         })
         .where(eq(products.id, matchedProduct.id));
 
-      await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
-        source: "import_patch",
-        poNumber: nextPoNumber ?? null,
-      });
+      if (!pendingA1TaskProductIds.has(matchedProduct.id)) {
+        pendingTaskInserts.push({
+          productId: matchedProduct.id,
+          stationCode: "A1",
+          taskStatus: "pending",
+          dueDate: businessDateValue,
+          resultSummary: "A1 點到貨待處理",
+          metadata: {
+            source: "import_patch",
+            poNumber: nextPoNumber ?? null,
+          },
+        });
+        pendingA1TaskProductIds.add(matchedProduct.id);
+      }
 
       createdProducts.push({
         id: matchedProduct.id,
@@ -715,30 +819,67 @@ export async function importProducts(input: {
     }
 
     const productCode = buildProductCode(importSeed, index);
-    await db.insert(products).values({
+    newProductEntries.push({
       productCode,
-      poNumber: resolvedPoNumber,
-      vendorName,
-      batchNo,
-      serialNumber,
-      imei,
-      productName,
-      arrivalAt,
-      categoryId: row.categoryId,
-      currentStationCode: "A1",
-      currentStatus: "pending_a1",
-      inspectionSummary: `PO:${resolvedPoNumber}`,
+      productName: row.productName,
+      values: {
+        productCode,
+        poNumber: resolvedPoNumber,
+        vendorName,
+        batchNo: row.batchNo,
+        serialNumber: row.serialNumber,
+        imei: row.imei,
+        productName: row.productName,
+        arrivalAt,
+        categoryId,
+        currentStationCode: "A1",
+        currentStatus: "pending_a1",
+        inspectionSummary: `PO:${resolvedPoNumber}`,
+      },
     });
+  }
 
-    const created = await db.select().from(products).where(eq(products.productCode, productCode)).limit(1);
-    const product = created[0];
-    if (!product) continue;
+  if (pendingTaskInserts.length > 0) {
+    await db.insert(stationTasks).values(pendingTaskInserts);
+  }
 
-    createdProducts.push({ id: product.id, productCode: product.productCode, productName: product.productName ?? null });
+  const insertChunkSize = 200;
+  for (let index = 0; index < newProductEntries.length; index += insertChunkSize) {
+    const chunk = newProductEntries.slice(index, index + insertChunkSize);
+    const insertedProducts = await db.insert(products).values(chunk.map((entry) => entry.values)).$returningId();
+    const taskValues = insertedProducts.flatMap((product, offset) => (
+      product?.id
+        ? [{
+            productId: product.id,
+            stationCode: "A1" as const,
+            taskStatus: "pending" as const,
+            dueDate: businessDateValue,
+            resultSummary: "A1 點到貨待處理",
+            metadata: {
+              source: "import",
+              poNumber: resolvedPoNumber,
+            },
+          }]
+        : []
+    ));
 
-    await ensurePendingA1Task(db, product.id, businessDateValue, {
-      source: "import",
-      poNumber: resolvedPoNumber,
+    if (taskValues.length > 0) {
+      await db.insert(stationTasks).values(taskValues);
+    }
+
+    insertedProducts.forEach((product, offset) => {
+      if (!product?.id) {
+        return;
+      }
+      const entry = chunk[offset];
+      if (!entry) {
+        return;
+      }
+      createdProducts.push({
+        id: product.id,
+        productCode: entry.productCode,
+        productName: entry.productName,
+      });
     });
   }
 

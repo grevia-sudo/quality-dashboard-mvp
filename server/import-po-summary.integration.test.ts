@@ -112,4 +112,35 @@ describe("import PO summary integration", () => {
     expect(new Set(importedTasks.map((task) => task.poNumber))).toEqual(new Set([importResult.poNumber]));
     expect(new Set(importedTasks.map((task) => task.batchNo))).toEqual(new Set(rows.map((row) => row.batchNo)));
   }, 10000);
+
+  it("imports a large batch with consistent row count under a single PO", async () => {
+    const uniqueSuffix = `${Date.now()}`;
+    const rows = Array.from({ length: 120 }, (_, index) => {
+      const sequence = index + 1;
+      return {
+        batchNo: `LARGE-PO-${uniqueSuffix}-${String(sequence).padStart(3, "0")}`,
+        serialNumber: `LARGE-SN-${uniqueSuffix}-${String(sequence).padStart(3, "0")}`,
+        imei: `86${`${Number(uniqueSuffix) + sequence}`.padStart(13, "0").slice(-13)}`,
+        productName: `Large Import Device ${String(sequence).padStart(3, "0")}`,
+        categoryId: sequence % 2 === 0 ? 4 : 5,
+      };
+    });
+
+    const importResult = await importProducts({
+      vendorName: "大批量驗證廠商",
+      rows,
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2}$/);
+    expect(importResult.importedCount).toBe(rows.length);
+    expect(importResult.products).toHaveLength(rows.length);
+
+    const stationData = await getStationPageData("A1");
+    const importedTasks = stationData.tasks.filter((task) => task.poNumber === importResult.poNumber);
+
+    expect(importedTasks).toHaveLength(rows.length);
+    expect(new Set(importedTasks.map((task) => task.poNumber))).toEqual(new Set([importResult.poNumber]));
+    expect(new Set(importedTasks.map((task) => task.batchNo))).toEqual(new Set(rows.map((row) => row.batchNo)));
+  }, 20000);
 });
