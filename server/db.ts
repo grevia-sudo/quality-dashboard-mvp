@@ -1138,6 +1138,8 @@ export async function completeStationTask(input: {
   summary?: string;
   faultOptionIds?: number[];
   appearanceOptionIds?: number[];
+  batteryNote?: string;
+  batteryIssueLabels?: Array<"電池膨脹" | "副廠電池" | "電池異常">;
 }) {
   const db = await getDb();
   if (!db) {
@@ -1154,6 +1156,14 @@ export async function completeStationTask(input: {
     : [];
   const faultLabels = selectedOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
   const appearanceLabels = selectedOptions.filter((option) => option.optionType === "appearance").map((option) => option.label);
+  const batteryNote = input.batteryNote?.trim() || undefined;
+  const batteryIssueLabels = Array.from(new Set(input.batteryIssueLabels ?? []));
+  const batterySummary = input.stationCode === "B"
+    ? [batteryNote, ...batteryIssueLabels].filter(Boolean).join(", ") || "正常"
+    : undefined;
+  const faultSummary = input.stationCode === "B"
+    ? faultLabels.join(", ") || "正常"
+    : undefined;
 
   await db
     .update(stationTasks)
@@ -1161,6 +1171,17 @@ export async function completeStationTask(input: {
       taskStatus: "completed",
       completedAt,
       resultSummary: input.summary ?? "已完成站點作業",
+      metadata: {
+        summary: input.summary ?? "已完成站點作業",
+        faultOptionIds: input.faultOptionIds ?? [],
+        appearanceOptionIds: input.appearanceOptionIds ?? [],
+        faultLabels,
+        appearanceLabels,
+        batteryNote,
+        batteryIssueLabels,
+        batterySummary,
+        faultSummary,
+      },
       updatedAt: completedAt,
     })
     .where(eq(stationTasks.id, input.taskId));
@@ -1180,6 +1201,10 @@ export async function completeStationTask(input: {
       appearanceOptionIds: input.appearanceOptionIds ?? [],
       faultLabels,
       appearanceLabels,
+      batteryNote,
+      batteryIssueLabels,
+      batterySummary,
+      faultSummary,
     },
   });
 
@@ -1189,7 +1214,7 @@ export async function completeStationTask(input: {
     status: "queued",
   });
 
-  if (input.stationCode === "A2") {
+  if (input.stationCode === "A2" || input.stationCode === "B") {
     await db.insert(sheetSyncJobs).values({
       jobType: "purchase_sheet_sync",
       targetSheetName: "採購單",

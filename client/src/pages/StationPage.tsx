@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
@@ -22,15 +23,23 @@ const navItems: DashboardNavItem[] = [
 const stationCodes = ["A1", "A2", "B", "C", "E", "STOCK"] as const;
 type StationCode = (typeof stationCodes)[number];
 
+type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
+
 type OptionSelections = {
   faultOptionIds: number[];
   appearanceOptionIds: number[];
+  batteryNote: string;
+  batteryIssueLabels: BatteryIssueLabel[];
 };
 
 const defaultSelections = (): OptionSelections => ({
   faultOptionIds: [],
   appearanceOptionIds: [],
+  batteryNote: "",
+  batteryIssueLabels: [],
 });
+
+const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
 
 export function normalizeStationCodeParam(value?: string | null): StationCode | null {
   if (!value) return null;
@@ -54,6 +63,7 @@ export default function StationPage() {
   });
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
   const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);
+  const [batteryDialogTaskId, setBatteryDialogTaskId] = useState<number | null>(null);
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const quickScanInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
@@ -232,6 +242,16 @@ export default function StationPage() {
         return;
       }
 
+      if (variables.stationCode === "B") {
+        removeCompletedTaskFromCache("B", variables.productId);
+        setBatteryDialogTaskId(null);
+        setKeyword("");
+        toast.success("B 站軟體測試已完成並推進下一站，請直接輸入下一筆批號");
+        focusQuickScanInput();
+        refreshStationDataInBackground("B", "C");
+        return;
+      }
+
       toast.success("站點作業已完成");
       void invalidateStationData();
     },
@@ -272,7 +292,7 @@ export default function StationPage() {
       focusBatchInput();
     }
 
-    if (stationCode === "A2" && !detailQuery.isLoading) {
+    if ((stationCode === "A2" || stationCode === "B") && !detailQuery.isLoading) {
       focusQuickScanInput();
     }
   }, [detailQuery.isLoading, stationCode]);
@@ -318,7 +338,7 @@ export default function StationPage() {
 
   const pendingTotalCount = detailQuery.data?.tasks.length ?? 0;
 
-  const toggleSelection = (taskId: number, key: keyof OptionSelections, optionId: number, checked: boolean) => {
+  const toggleSelection = (taskId: number, key: "faultOptionIds" | "appearanceOptionIds", optionId: number, checked: boolean) => {
     setSelectedOptions((prev) => {
       const current = prev[taskId] ?? defaultSelections();
       const currentList = current[key];
@@ -329,6 +349,36 @@ export default function StationPage() {
         [taskId]: {
           ...current,
           [key]: nextList,
+        },
+      };
+    });
+  };
+
+  const updateBatteryNote = (taskId: number, nextValue: string) => {
+    setSelectedOptions((prev) => {
+      const current = prev[taskId] ?? defaultSelections();
+      return {
+        ...prev,
+        [taskId]: {
+          ...current,
+          batteryNote: nextValue,
+        },
+      };
+    });
+  };
+
+  const toggleBatteryIssueLabel = (taskId: number, label: BatteryIssueLabel, checked: boolean) => {
+    setSelectedOptions((prev) => {
+      const current = prev[taskId] ?? defaultSelections();
+      const nextLabels = checked
+        ? Array.from(new Set([...current.batteryIssueLabels, label]))
+        : current.batteryIssueLabels.filter((item) => item !== label);
+
+      return {
+        ...prev,
+        [taskId]: {
+          ...current,
+          batteryIssueLabels: nextLabels,
         },
       };
     });
@@ -524,12 +574,15 @@ export default function StationPage() {
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
                   onKeyDown={handleStationScanInputKey}
-                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : "輸入產品代碼、批號、序號或 IMEI"}
+                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : "輸入產品代碼、批號、序號或 IMEI"}
                   className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
                 />
               </div>
               {stationCode === "A2" ? (
                 <p className="text-sm text-slate-500">A2 已改為掃碼快速完工模式。刷入商品批號 QR 後會立即完成 A2、推進到下一站，並在背景回寫安裝完成時間。</p>
+              ) : null}
+              {stationCode === "B" ? (
+                <p className="text-sm text-slate-500">B 站可先用商品批號快速定位待測商品，再補充電池檢測與故障狀態；完成軟體測試後會立即推進下一站，並在背景回寫 B 站完成、電池檢測與故障摘要。</p>
               ) : null}
             </div>
           </CardContent>
@@ -559,16 +612,70 @@ export default function StationPage() {
                     <div><p className="text-xs text-slate-400">目前站點</p><p className="mt-1 font-semibold text-slate-900">{task.currentStationCode}</p></div>
                   </div>
 
-                  {stationCode === "B" && (detailQuery.data?.faultOptions?.length ?? 0) > 0 ? (
-                    <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
-                      <p className="text-sm font-bold text-slate-900">B 站故障狀態</p>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {(detailQuery.data?.faultOptions ?? []).filter((option) => option.active).map((option) => (
-                          <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
-                            <Checkbox checked={selections.faultOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "faultOptionIds", option.id, Boolean(checked))} />
-                            <span>{option.label}</span>
-                          </label>
-                        ))}
+                  {stationCode === "B" ? (
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+                      <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
+                        <p className="text-sm font-bold text-slate-900">B 站故障狀態</p>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {(detailQuery.data?.faultOptions ?? []).filter((option) => option.active).map((option) => (
+                            <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                              <Checkbox checked={selections.faultOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "faultOptionIds", option.id, Boolean(checked))} />
+                              <span>{option.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-3 rounded-[24px] bg-[#f8fbff] p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">電池檢測</p>
+                            <p className="mt-1 text-xs leading-6 text-slate-500">可輸入健康度或數字符號，並勾選電池異常標記，完成後會同步寫入 Google Sheet K 欄。</p>
+                          </div>
+                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBatteryDialogTaskId(task.taskId)}>
+                            編輯電池檢測
+                          </Button>
+                        </div>
+                        <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                          {[selections.batteryNote.trim(), ...selections.batteryIssueLabels].filter(Boolean).join(", ") || "正常"}
+                        </div>
+                        <Dialog open={batteryDialogTaskId === task.taskId} onOpenChange={(open) => setBatteryDialogTaskId(open ? task.taskId : null)}>
+                          <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-xl">
+                            <div className="space-y-6 p-6">
+                              <DialogHeader>
+                                <DialogTitle>電池檢測</DialogTitle>
+                                <DialogDescription>可手動輸入數字或符號，並勾選電池狀態；未填寫時會在 Google Sheet K 欄回寫為「正常」。</DialogDescription>
+                              </DialogHeader>
+                              <label className="space-y-2 text-sm text-slate-600">
+                                <span>檢測回覆</span>
+                                <Input
+                                  value={selections.batteryNote}
+                                  onChange={(event) => updateBatteryNote(task.taskId, event.target.value)}
+                                  className="h-12 rounded-2xl border-0 bg-slate-50"
+                                  placeholder="例如：88、85%、待更換"
+                                />
+                              </label>
+                              <div className="space-y-3">
+                                <p className="text-sm font-medium text-slate-700">異常標記</p>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
+                                    <label key={optionLabel} className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                                      <Checkbox
+                                        checked={selections.batteryIssueLabels.includes(optionLabel)}
+                                        onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
+                                      />
+                                      <span>{optionLabel}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                              <DialogFooter>
+                                <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBatteryDialogTaskId(null)}>
+                                  完成
+                                </Button>
+                              </DialogFooter>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   ) : null}
@@ -610,12 +717,14 @@ export default function StationPage() {
                         productId: task.productId,
                         categoryId: undefined,
                         subtypeCode: task.subtypeCode ?? null,
-                        summary: `${detailQuery.data?.label} 完成`,
+                        summary: stationCode === "B" ? "B 站軟體測試完成" : `${detailQuery.data?.label} 完成`,
                         faultOptionIds: selections.faultOptionIds,
                         appearanceOptionIds: selections.appearanceOptionIds,
+                        batteryNote: stationCode === "B" ? selections.batteryNote : undefined,
+                        batteryIssueLabels: stationCode === "B" ? selections.batteryIssueLabels : undefined,
                       })}
                     >
-                      完成並推進下一站
+                      {stationCode === "B" ? "完成軟體測試並推進下一站" : "完成並推進下一站"}
                     </Button>
                     <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>
                       返回總覽

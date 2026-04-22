@@ -53,18 +53,18 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain("onError: (error) => {");
     expect(source).toContain("setProductNamePickerOpen(false);");
   });
-
   it("supports A2 QR scan submit, success tone, re-focus, and background refresh after success", () => {
     expect(source).toContain("const quickScanInputRef = useRef<HTMLInputElement | null>(null);");
     expect(source).toContain("const playA2SuccessTone = () => {");
-    expect(source).toContain("const AudioContextConstructor = window.AudioContext");
+    expect(source).toContain("const AudioContextConstructor = window.AudioContext")
+;
     expect(source).toContain("const submitA2ScanComplete = () => {");
     expect(source).toContain("const handleStationScanInputKey = (event: React.KeyboardEvent<HTMLInputElement>) => {");
     expect(source).toContain("if (stationCode !== \"A2\" || event.key !== \"Enter\") {");
     expect(source).toContain("find((task) => (");
     expect(source).toContain("[task.batchNo, task.productCode, task.serialNumber, task.imei]");
     expect(source).toContain('toast.error("找不到符合的 A2 待處理商品");');
-    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : "輸入產品代碼、批號、序號或 IMEI"}');
+    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : "輸入產品代碼、批號、序號或 IMEI"}');
     expect(source).toContain("A2 已改為掃碼快速完工模式");
     expect(source).toContain('removeCompletedTaskFromCache("A2", variables.productId);');
     expect(source).toContain('setKeyword("");');
@@ -72,5 +72,19 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain('focusQuickScanInput();');
     expect(source).toContain('refreshStationDataInBackground("A2", "B");');
     expect(source).not.toContain("await invalidateStationData();");
+  });
+
+  it("supports B station battery dialog, quick completion, and success refocus", () => {
+    expect(source).toContain('stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目"');
+    expect(source).toContain('setBatteryDialogTaskId(task.taskId)');
+    expect(source).toContain('電池檢測');
+    expect(source).toContain('batteryNote: stationCode === "B" ? selections.batteryNote : undefined,');
+    expect(source).toContain('batteryIssueLabels: stationCode === "B" ? selections.batteryIssueLabels : undefined,');
+    expect(source).toContain('[selections.batteryNote.trim(), ...selections.batteryIssueLabels].filter(Boolean).join(", ") || "正常"');
+    expect(source).toContain('faultOptionIds: selections.faultOptionIds,');
+    expect(source).toContain('removeCompletedTaskFromCache("B", variables.productId);');
+    expect(source).toContain('refreshStationDataInBackground("B", "C");');
+    expect(source).toContain('setBatteryDialogTaskId(null);');
+    expect(source).toContain('focusQuickScanInput();');
   });
 });

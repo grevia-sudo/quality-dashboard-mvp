@@ -118,13 +118,13 @@ async function callSheetsApi(accessToken, path, { method = "GET", query = {}, bo
 }
 
 async function getSheetValues(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:I`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:L`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`);
 }
 
 async function updateSheetRow(accessToken, rowNumber, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:I${rowNumber}`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:L${rowNumber}`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -138,7 +138,7 @@ async function updateSheetRow(accessToken, rowNumber, rowValues) {
 }
 
 async function appendSheetRow(accessToken, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:I`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:L`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}:append`, {
     method: "POST",
@@ -177,7 +177,10 @@ async function main() {
           p.updatedAt,
           c.categoryName,
           a1.completedAt AS a1CompletedAt,
-          a2.completedAt AS a2CompletedAt
+          a2.completedAt AS a2CompletedAt,
+          b.completedAt AS bCompletedAt,
+          bMeta.bBatterySummary,
+          bMeta.bFaultSummary
         FROM products p
         LEFT JOIN product_categories c ON c.id = p.categoryId
         LEFT JOIN (
@@ -192,6 +195,26 @@ async function main() {
           WHERE \`stationCode\` = 'A2' AND \`stationTaskStatus\` = 'completed'
           GROUP BY \`productId\`
         ) a2 ON a2.productId = p.id
+        LEFT JOIN (
+          SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+          FROM \`station_tasks\`
+          WHERE \`stationCode\` = 'B' AND \`stationTaskStatus\` = 'completed'
+          GROUP BY \`productId\`
+        ) b ON b.productId = p.id
+        LEFT JOIN (
+          SELECT
+            latestB.\`productId\`,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.batterySummary')) AS bBatterySummary,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.faultSummary')) AS bFaultSummary
+          FROM \`station_tasks\` st
+          INNER JOIN (
+            SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+            FROM \`station_tasks\`
+            WHERE \`stationCode\` = 'B' AND \`stationTaskStatus\` = 'completed'
+            GROUP BY \`productId\`
+          ) latestB ON latestB.\`productId\` = st.\`productId\` AND latestB.\`completedAt\` = st.\`completedAt\`
+          WHERE st.\`stationCode\` = 'B' AND st.\`stationTaskStatus\` = 'completed'
+        ) bMeta ON bMeta.\`productId\` = p.id
         WHERE p.archivedAt IS NULL
           AND p.vendorName IS NOT NULL
           AND (p.importedCategoryName IS NOT NULL OR c.categoryName IS NOT NULL)
@@ -202,6 +225,7 @@ async function main() {
             OR p.sheetRowNumber IS NULL
             OR (a1.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a1.completedAt > p.lastSheetSyncedAt))
             OR (a2.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a2.completedAt > p.lastSheetSyncedAt))
+            OR (b.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR b.completedAt > p.lastSheetSyncedAt))
           )
         ORDER BY p.id ASC
       `,

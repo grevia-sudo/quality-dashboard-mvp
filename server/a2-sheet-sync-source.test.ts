@@ -8,7 +8,7 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
   const syncHelperSource = readFileSync(resolve(process.cwd(), "scripts/purchase-sheet-sync-helpers.mjs"), "utf8");
 
   it("queues purchase sheet sync when A2 completes", () => {
-    expect(dbSource).toContain('if (input.stationCode === "A2") {');
+    expect(dbSource).toContain('if (input.stationCode === "A2" || input.stationCode === "B") {');
     expect(dbSource).toContain('jobType: "purchase_sheet_sync"');
     expect(dbSource).toContain('targetSheetName: "採購單"');
     expect(dbSource).toContain('currentStationCode: nextStation');
@@ -18,7 +18,10 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
   it("includes A2 completed time in purchase sheet row generation and merge rules", () => {
     expect(syncHelperSource).toContain('"安裝完成時間"');
     expect(syncHelperSource).toContain('formatSheetDateTime(product.a2CompletedAt)');
-    expect(syncHelperSource).toContain('if (index === 7 || index === 8) {');
+    expect(syncHelperSource).toContain('"B站完成時間"');
+    expect(syncHelperSource).toContain('"電池檢測"');
+    expect(syncHelperSource).toContain('"B站故障狀態"');
+    expect(syncHelperSource).toContain('if (index === 7 || index === 8 || index === 9 || index === 10 || index === 11) {');
   });
 
   it("tracks A2 completedAt as a trigger for purchase sheet updates", () => {

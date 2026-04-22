@@ -83,10 +83,19 @@ describe("warehouse workflow pages", () => {
 
   it("renders B and C option menu sections on the station page", () => {
     expect(stationPageSource).toContain("B 站故障狀態");
+    expect(stationPageSource).toContain("電池檢測");
+    expect(stationPageSource).toContain("電池膨脹");
+    expect(stationPageSource).toContain("副廠電池");
+    expect(stationPageSource).toContain("電池異常");
+    expect(stationPageSource).toContain("輸入數字或符號");
+    expect(stationPageSource).toContain("完成軟體測試並推進下一站");
+    expect(stationPageSource).toContain("B 站軟體測試完成");
     expect(stationPageSource).toContain("C 站故障項目");
     expect(stationPageSource).toContain("C 站外觀項目");
     expect(stationPageSource).toContain("faultOptionIds");
     expect(stationPageSource).toContain("appearanceOptionIds");
+    expect(stationPageSource).toContain("batteryIssueLabels");
+    expect(stationPageSource).toContain("batteryNote");
   });
 
   it("includes product name and defect option maintenance sections in the admin page", () => {

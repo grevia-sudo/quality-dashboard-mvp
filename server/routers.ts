@@ -33,6 +33,7 @@ import {
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
 const defectOptionStationSchema = z.enum(["B", "C"]);
 const defectOptionTypeSchema = z.enum(["fault", "appearance"]);
+const batteryIssueLabelSchema = z.enum(["電池膨脹", "副廠電池", "電池異常"]);
 const optionalTextSchema = z.string().trim().optional().transform((value) => value || undefined);
 const importRowSchema = z.object({
   batchNo: optionalTextSchema,
@@ -112,6 +113,8 @@ export const appRouter = router({
           summary: z.string().optional(),
           faultOptionIds: z.array(z.number().int().positive()).optional(),
           appearanceOptionIds: z.array(z.number().int().positive()).optional(),
+          batteryNote: optionalTextSchema,
+          batteryIssueLabels: z.array(batteryIssueLabelSchema).optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -125,6 +128,8 @@ export const appRouter = router({
           summary: input.summary,
           faultOptionIds: input.faultOptionIds,
           appearanceOptionIds: input.appearanceOptionIds,
+          batteryNote: input.batteryNote,
+          batteryIssueLabels: input.batteryIssueLabels,
         });
       }),
     receive: protectedProcedure
