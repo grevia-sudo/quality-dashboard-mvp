@@ -54,8 +54,10 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain("setProductNamePickerOpen(false);");
   });
 
-  it("supports A2 QR scan submit, clears the field, and refreshes only in background after success", () => {
+  it("supports A2 QR scan submit, success tone, re-focus, and background refresh after success", () => {
     expect(source).toContain("const quickScanInputRef = useRef<HTMLInputElement | null>(null);");
+    expect(source).toContain("const playA2SuccessTone = () => {");
+    expect(source).toContain("const AudioContextConstructor = window.AudioContext");
     expect(source).toContain("const submitA2ScanComplete = () => {");
     expect(source).toContain("const handleStationScanInputKey = (event: React.KeyboardEvent<HTMLInputElement>) => {");
     expect(source).toContain("if (stationCode !== \"A2\" || event.key !== \"Enter\") {");
@@ -66,6 +68,7 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain("A2 已改為掃碼快速完工模式");
     expect(source).toContain('removeCompletedTaskFromCache("A2", variables.productId);');
     expect(source).toContain('setKeyword("");');
+    expect(source).toContain('playA2SuccessTone();');
     expect(source).toContain('focusQuickScanInput();');
     expect(source).toContain('refreshStationDataInBackground("A2", "B");');
     expect(source).not.toContain("await invalidateStationData();");

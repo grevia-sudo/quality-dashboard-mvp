@@ -121,6 +121,40 @@ export default function StationPage() {
     });
   };
 
+  const playA2SuccessTone = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const AudioContextConstructor = window.AudioContext
+      ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+    if (!AudioContextConstructor) {
+      return;
+    }
+
+    const audioContext = new AudioContextConstructor();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    const startTime = audioContext.currentTime;
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(1046.5, startTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1318.5, startTime + 0.12);
+
+    gainNode.gain.setValueAtTime(0.0001, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.16, startTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.18);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + 0.2);
+    oscillator.onended = () => {
+      void audioContext.close().catch(() => undefined);
+    };
+  };
+
   const submitA1Receive = () => {
     if (receiveMutation.isPending || !canReceiveA1) {
       return;
@@ -191,6 +225,7 @@ export default function StationPage() {
       if (variables.stationCode === "A2") {
         removeCompletedTaskFromCache("A2", variables.productId);
         setKeyword("");
+        playA2SuccessTone();
         toast.success("A2 已完成並推進下一站，請直接掃描下一筆");
         focusQuickScanInput();
         refreshStationDataInBackground("A2", "B");
