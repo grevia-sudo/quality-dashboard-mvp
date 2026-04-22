@@ -21,7 +21,9 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
     expect(importPageSource).toContain("PO 單號（留空自動生成）");
-    expect(importPageSource).toContain('trpc.station.detail.useQuery({ stationCode: "A1" }');
+    expect(importPageSource).toContain("const pendingA1Query = trpc.station.detail.useQuery(");
+    expect(importPageSource).toContain('    { stationCode: "A1" },');
+    expect(importPageSource).toContain("      retry: shouldRetryTransientQuery,");
     expect(importPageSource).toContain("已匯入未完成點貨的採購單");
     expect(importPageSource).toContain("採購單號");
     expect(importPageSource).toContain("商品類別");

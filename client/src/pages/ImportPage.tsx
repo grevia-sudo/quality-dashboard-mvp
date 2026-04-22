@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { shouldRetryTransientQuery } from "@/lib/query-retry";
 import { trpc } from "@/lib/trpc";
 import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
@@ -44,8 +45,15 @@ function hasAnyRowValue(row: ImportDraftRow) {
 
 export default function ImportPage() {
   const [, setLocation] = useLocation();
-  const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
-  const pendingA1Query = trpc.station.detail.useQuery({ stationCode: "A1" }, { retry: false });
+  const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
+    retry: shouldRetryTransientQuery,
+  });
+  const pendingA1Query = trpc.station.detail.useQuery(
+    { stationCode: "A1" },
+    {
+      retry: shouldRetryTransientQuery,
+    },
+  );
   const [poNumber, setPoNumber] = useState("");
   const [vendorName, setVendorName] = useState("");
   const [arrivalAt, setArrivalAt] = useState("");

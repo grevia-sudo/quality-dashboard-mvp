@@ -1,4 +1,5 @@
 import { getLoginUrl } from "@/const";
+import { shouldRetryTransientQuery } from "@/lib/query-retry";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
@@ -14,7 +15,7 @@ export function useAuth(options?: UseAuthOptions) {
   const utils = trpc.useUtils();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
-    retry: false,
+    retry: shouldRetryTransientQuery,
     refetchOnWindowFocus: false,
   });
 
