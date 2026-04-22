@@ -47,6 +47,10 @@ export default function StationPage() {
   const [, setLocation] = useLocation();
   const [keyword, setKeyword] = useState("");
   const [arrivalForm, setArrivalForm] = useState({
+    poNumber: "",
+    vendorName: "",
+    arrivalAt: "",
+    categoryId: "",
     batchNo: "",
     serialNumber: "",
     imei: "",
@@ -61,6 +65,7 @@ export default function StationPage() {
     },
   );
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
+  const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, { retry: false });
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -81,8 +86,8 @@ export default function StationPage() {
 
   const receiveMutation = trpc.station.receive.useMutation({
     onSuccess: async () => {
-      toast.success("A1 到貨商品已建立");
-      setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });
+      toast.success("A1 到貨資料已建立或補齊");
+      setArrivalForm({ poNumber: "", vendorName: "", arrivalAt: "", categoryId: "", batchNo: "", serialNumber: "", imei: "", productName: "" });
       await invalidateStationData();
       await productNameOptionsQuery.refetch();
     },
@@ -122,6 +127,11 @@ export default function StationPage() {
   };
 
   const getTaskSelections = (taskId: number) => selectedOptions[taskId] ?? defaultSelections();
+  const canReceiveA1 = Boolean(
+    arrivalForm.vendorName.trim()
+    && arrivalForm.categoryId
+    && (arrivalForm.batchNo.trim() || arrivalForm.serialNumber.trim() || arrivalForm.imei.trim()),
+  );
 
   if (detailQuery.isLoading) {
     return <div className="grid gap-4 p-6"><Skeleton className="h-28 rounded-3xl" /><Skeleton className="h-40 rounded-3xl" /></div>;
@@ -135,7 +145,7 @@ export default function StationPage() {
             <div>
               <Badge className="bg-white/80 text-slate-700">掃碼、補錄與推進下一站</Badge>
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900">{detailQuery.data?.label}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">支援站內搜尋與快速完工。A1 站可直接建立到貨商品；B、C 站則可套用可維護的故障與外觀功能表，讓現場紀錄更一致。</p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">支援站內搜尋與快速完工。A1 站可直接補齊已匯入商品的缺漏欄位，B、C 站則可套用可維護的故障與外觀功能表，讓現場紀錄更一致。</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/import")}>
@@ -151,21 +161,49 @@ export default function StationPage() {
         {stationCode === "A1" ? (
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-base font-bold">A1 點到貨新增</CardTitle>
+              <CardTitle className="text-base font-bold">A1 點到貨新增／補齊</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <label className="space-y-2 text-sm text-slate-600">
+                  <span>PO 單號</span>
+                  <Input value={arrivalForm.poNumber} onChange={(event) => setArrivalForm((prev) => ({ ...prev, poNumber: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 PO-20260421-01" />
+                </label>
+                <label className="space-y-2 text-sm text-slate-600">
+                  <span>廠商（必填）</span>
+                  <Input value={arrivalForm.vendorName} onChange={(event) => setArrivalForm((prev) => ({ ...prev, vendorName: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 綠途未來股份有限公司" />
+                </label>
+                <label className="space-y-2 text-sm text-slate-600">
+                  <span>到貨時間</span>
+                  <Input type="datetime-local" value={arrivalForm.arrivalAt} onChange={(event) => setArrivalForm((prev) => ({ ...prev, arrivalAt: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" />
+                </label>
+                <label className="space-y-2 text-sm text-slate-600">
+                  <span>商品分類（必填）</span>
+                  <select
+                    value={arrivalForm.categoryId}
+                    onChange={(event) => setArrivalForm((prev) => ({ ...prev, categoryId: event.target.value }))}
+                    className="h-11 w-full rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none"
+                  >
+                    <option value="">請選擇商品分類</option>
+                    {(categoryOptionsQuery.data ?? []).map((option) => (
+                      <option key={option.id} value={option.id}>{option.categoryName} / {option.subtypeCode}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <label className="space-y-2 text-sm text-slate-600">
                   <span>商品批號</span>
-                  <Input value={arrivalForm.batchNo} onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 BATCH-240421-01" />
+                  <Input value={arrivalForm.batchNo} onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="可留空，但需與序號／IMEI 任一擇一" />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
                   <span>商品序號</span>
-                  <Input value={arrivalForm.serialNumber} onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 SN-IP-1001" />
+                  <Input value={arrivalForm.serialNumber} onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="可留空，但需與批號／IMEI 任一擇一" />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
-                  <span>IMEI（選填）</span>
-                  <Input value={arrivalForm.imei} onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="若無可留空" />
+                  <span>IMEI</span>
+                  <Input value={arrivalForm.imei} onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="可留空，但需與批號／序號 任一擇一" />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
                   <span>品名</span>
@@ -174,7 +212,7 @@ export default function StationPage() {
                     onChange={(event) => setArrivalForm((prev) => ({ ...prev, productName: event.target.value }))}
                     className="h-11 w-full rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none"
                   >
-                    <option value="">請選擇品名</option>
+                    <option value="">品名可先留空</option>
                     {(productNameOptionsQuery.data ?? []).map((option) => (
                       <option key={option.id} value={option.label}>{option.label}</option>
                     ))}
@@ -182,21 +220,24 @@ export default function StationPage() {
                 </label>
               </div>
               <div className="flex flex-wrap justify-between gap-3 rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
-                <p>建立後會先寫入 DB，並建立 A1 待處理任務，再由背景程序非同步回寫 Google Sheet。品名由管理後台的清單統一維護。</p>
+                <p>若系統中已有相同批號、序號或 IMEI 的 A1 待處理商品，這裡會優先補齊缺少欄位，而不是再新增一筆。到貨時間會與匯入時間分開保存，供每日回寫採購單使用。</p>
                 <Button
                   className="rounded-2xl"
-                  disabled={receiveMutation.isPending || !arrivalForm.batchNo || !arrivalForm.serialNumber || !arrivalForm.productName}
+                  disabled={receiveMutation.isPending || !canReceiveA1}
                   onClick={() =>
                     receiveMutation.mutate({
-                      batchNo: arrivalForm.batchNo.trim(),
-                      serialNumber: arrivalForm.serialNumber.trim(),
+                      poNumber: arrivalForm.poNumber.trim() || undefined,
+                      vendorName: arrivalForm.vendorName.trim(),
+                      arrivalAt: arrivalForm.arrivalAt || undefined,
+                      batchNo: arrivalForm.batchNo.trim() || undefined,
+                      serialNumber: arrivalForm.serialNumber.trim() || undefined,
                       imei: arrivalForm.imei.trim() || undefined,
-                      productName: arrivalForm.productName.trim(),
-                      categoryId: null,
+                      productName: arrivalForm.productName.trim() || undefined,
+                      categoryId: Number(arrivalForm.categoryId),
                     })
                   }
                 >
-                  新增 A1 到貨商品
+                  建立／補齊 A1 到貨商品
                 </Button>
               </div>
             </CardContent>
@@ -288,7 +329,7 @@ export default function StationPage() {
                         taskId: task.taskId,
                         stationCode,
                         productId: task.productId,
-                        categoryId: null,
+                        categoryId: undefined,
                         subtypeCode: task.subtypeCode ?? null,
                         summary: `${detailQuery.data?.label} 完成`,
                         faultOptionIds: selections.faultOptionIds,

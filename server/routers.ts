@@ -12,6 +12,7 @@ import {
   getAdminSetupData,
   getDefectOptions,
   getEngineerKpiSummary,
+  getProductCategoryOptions,
   getProductNameOptions,
   getSamplingQueue,
   getStationOverviewData,
@@ -27,6 +28,22 @@ import {
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
 const defectOptionStationSchema = z.enum(["B", "C"]);
 const defectOptionTypeSchema = z.enum(["fault", "appearance"]);
+const optionalTextSchema = z.string().trim().optional().transform((value) => value || undefined);
+const importRowSchema = z.object({
+  batchNo: optionalTextSchema,
+  serialNumber: optionalTextSchema,
+  imei: optionalTextSchema,
+  productName: optionalTextSchema,
+  categoryId: z.number().int().positive(),
+}).superRefine((value, ctx) => {
+  if (!value.batchNo && !value.serialNumber && !value.imei) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["batchNo"],
+      message: "商品批號、商品序號、IMEI 至少要填一項",
+    });
+  }
+});
 
 export const appRouter = router({
   system: systemRouter,
@@ -75,6 +92,10 @@ export const appRouter = router({
       await ensureMvpSeedData();
       return getProductNameOptions();
     }),
+    productCategoryOptions: protectedProcedure.query(async () => {
+      await ensureMvpSeedData();
+      return getProductCategoryOptions();
+    }),
     complete: protectedProcedure
       .input(
         z.object({
@@ -104,21 +125,35 @@ export const appRouter = router({
     receive: protectedProcedure
       .input(
         z.object({
-          batchNo: z.string().min(1),
-          serialNumber: z.string().min(1),
-          imei: z.string().optional(),
-          productName: z.string().min(1),
-          categoryId: z.number().nullable().optional(),
+          poNumber: optionalTextSchema,
+          vendorName: z.string().trim().min(1),
+          arrivalAt: optionalTextSchema,
+          batchNo: optionalTextSchema,
+          serialNumber: optionalTextSchema,
+          imei: optionalTextSchema,
+          productName: optionalTextSchema,
+          categoryId: z.number().int().positive(),
+        }).superRefine((value, ctx) => {
+          if (!value.batchNo && !value.serialNumber && !value.imei) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["batchNo"],
+              message: "商品批號、商品序號、IMEI 至少要填一項",
+            });
+          }
         }),
       )
       .mutation(async ({ ctx, input }) => {
         return importProducts({
+          poNumber: input.poNumber,
+          vendorName: input.vendorName,
+          arrivalAt: input.arrivalAt,
           importedByUserId: ctx.user.id,
           rows: [
             {
               batchNo: input.batchNo,
               serialNumber: input.serialNumber,
-              imei: input.imei ?? null,
+              imei: input.imei,
               productName: input.productName,
               categoryId: input.categoryId,
             },
@@ -128,21 +163,17 @@ export const appRouter = router({
     importBatch: protectedProcedure
       .input(
         z.object({
-          poNumber: z.string().min(1).optional(),
-          rows: z.array(
-            z.object({
-              batchNo: z.string().min(1),
-              serialNumber: z.string().min(1),
-              imei: z.string().optional(),
-              productName: z.string().min(1),
-              categoryId: z.number().nullable().optional(),
-            }),
-          ).min(1),
+          poNumber: optionalTextSchema,
+          vendorName: z.string().trim().min(1),
+          arrivalAt: optionalTextSchema,
+          rows: z.array(importRowSchema).min(1),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         return importProducts({
           poNumber: input.poNumber,
+          vendorName: input.vendorName,
+          arrivalAt: input.arrivalAt,
           importedByUserId: ctx.user.id,
           rows: input.rows,
         });
@@ -252,21 +283,17 @@ export const appRouter = router({
     importProducts: adminProcedure
       .input(
         z.object({
-          poNumber: z.string().min(1).optional(),
-          rows: z.array(
-            z.object({
-              batchNo: z.string().min(1),
-              serialNumber: z.string().min(1),
-              imei: z.string().optional(),
-              productName: z.string().min(1),
-              categoryId: z.number().nullable().optional(),
-            }),
-          ).min(1),
+          poNumber: optionalTextSchema,
+          vendorName: z.string().trim().min(1),
+          arrivalAt: optionalTextSchema,
+          rows: z.array(importRowSchema).min(1),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         return importProducts({
           poNumber: input.poNumber,
+          vendorName: input.vendorName,
+          arrivalAt: input.arrivalAt,
           importedByUserId: ctx.user.id,
           rows: input.rows,
         });

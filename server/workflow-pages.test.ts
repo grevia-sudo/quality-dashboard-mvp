@@ -6,26 +6,32 @@ const importPageSource = readFileSync(new URL("../client/src/pages/ImportPage.ts
 const adminPageSource = readFileSync(new URL("../client/src/pages/AdminPage.tsx", import.meta.url), "utf8");
 
 describe("warehouse workflow pages", () => {
-  it("exposes file upload import workflow and product name dropdown on the import page", () => {
+  it("exposes file upload import workflow and shared batch fields on the import page", () => {
     expect(importPageSource).toContain('title="匯入作業"');
     expect(importPageSource).toContain("trpc.station.importBatch.useMutation");
     expect(importPageSource).toContain("trpc.station.productNameOptions.useQuery");
+    expect(importPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
     expect(importPageSource).toContain("CSV 檔案上傳");
     expect(importPageSource).toContain("選擇 CSV 檔案");
-    expect(importPageSource).toContain("請選擇品名");
+    expect(importPageSource).toContain("廠商（必填）");
+    expect(importPageSource).toContain("到貨時間（同批共用）");
+    expect(importPageSource).toContain("請選擇商品分類");
     expect(importPageSource).toContain("handleFileUpload");
     expect(importPageSource).toContain("目前已載入");
   });
 
-  it("provides A1 arrival fields and product name dropdown on the station page", () => {
+  it("provides A1 arrival fields, category dropdown, and vendor data on the station page", () => {
     expect(stationPageSource).toContain('stationCode === "A1"');
-    expect(stationPageSource).toContain("A1 點到貨新增");
+    expect(stationPageSource).toContain("A1 點到貨新增／補齊");
+    expect(stationPageSource).toContain("廠商（必填）");
+    expect(stationPageSource).toContain("到貨時間");
     expect(stationPageSource).toContain("商品批號");
     expect(stationPageSource).toContain("商品序號");
-    expect(stationPageSource).toContain("IMEI（選填）");
+    expect(stationPageSource).toContain("IMEI");
     expect(stationPageSource).toContain("trpc.station.receive.useMutation");
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
-    expect(stationPageSource).toContain("請選擇品名");
+    expect(stationPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(stationPageSource).toContain("品名可先留空");
   });
 
   it("renders B and C option menu sections on the station page", () => {

@@ -1,0 +1,58 @@
+export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
+export const SHEET_NAME = "採購單";
+export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名"];
+
+export function stringifyCell(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  return String(value).trim();
+}
+
+export function buildSheetRow(product) {
+  return [
+    stringifyCell(product.poNumber),
+    stringifyCell(product.vendorName),
+    stringifyCell(product.subtypeCode ?? product.categoryName),
+    stringifyCell(product.batchNo),
+    stringifyCell(product.serialNumber),
+    stringifyCell(product.imei),
+    stringifyCell(product.productName),
+  ];
+}
+
+export function mergeMissingCells(existingRow, generatedRow) {
+  return generatedRow.map((value, index) => {
+    const existingValue = stringifyCell(existingRow[index]);
+    return existingValue || value;
+  });
+}
+
+export function findMatchingRowNumber(values, product) {
+  const imei = stringifyCell(product.imei);
+  const serialNumber = stringifyCell(product.serialNumber);
+  const batchNo = stringifyCell(product.batchNo);
+
+  for (let index = 1; index < values.length; index += 1) {
+    const row = values[index] ?? [];
+    const rowBatchNo = stringifyCell(row[3]);
+    const rowSerialNumber = stringifyCell(row[4]);
+    const rowImei = stringifyCell(row[5]);
+
+    if (imei && rowImei && rowImei === imei) {
+      return index + 1;
+    }
+    if (serialNumber && rowSerialNumber && rowSerialNumber === serialNumber) {
+      return index + 1;
+    }
+    if (batchNo && rowBatchNo && rowBatchNo === batchNo) {
+      return index + 1;
+    }
+  }
+
+  return null;
+}
+
+export function createInitialSheetValues(values) {
+  return Array.isArray(values) && values.length > 0 ? values : [PURCHASE_SHEET_HEADER];
+}

@@ -27,12 +27,13 @@ const dbMocks = vi.hoisted(() => ({
   })),
   getStationPageData: vi.fn(async (stationCode: string) => ({ stationCode, label: `${stationCode} 測試站`, tasks: [], faultOptions: [], appearanceOptions: [] })),
   getDefectOptions: vi.fn(async (stationCode: string, optionType: string) => [{ id: 1, stationCode, optionType, label: "觸控異常", active: true, sortOrder: 10 }]),
+  getProductCategoryOptions: vi.fn(async () => [{ id: 3, categoryName: "手機", subtypeCode: "iPhone", active: true }]),
   getProductNameOptions: vi.fn(async () => [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }]),
   completeStationTask: vi.fn(async () => ({ success: true as const })),
   importProducts: vi.fn(async (input: unknown) => ({ success: true as const, importedCount: 1, products: [], ...((typeof input === "object" && input) ? input : {}) })),
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
-  getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [], targets: [], defectOptions: [], productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }], syncSummary: { queuedJobs: 0, targetSheetName: "手機檢測資料庫" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
+  getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [], targets: [], defectOptions: [], productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }], syncSummary: { queuedJobs: 0, targetSheetName: "採購單" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
   upsertDefectOption: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   createProductNameOption: vi.fn(async (input: unknown) => ({ id: 99, active: true, sortOrder: 60, ...(typeof input === "object" && input ? input : {}) })),
   deleteProductNameOption: vi.fn(async (id: number) => ({ success: true as const, id })),
@@ -48,6 +49,7 @@ const {
   getEngineerKpiSummary,
   getStationPageData,
   getDefectOptions,
+  getProductCategoryOptions,
   getProductNameOptions,
   completeStationTask,
   importProducts,
@@ -144,14 +146,20 @@ describe("warehouse MVP router", () => {
     const caller = appRouter.createCaller(createContext("user"));
 
     await caller.station.receive({
+      poNumber: "PO-20260421-01",
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T09:30",
       batchNo: "BATCH-240421-01",
       serialNumber: "SN-1001",
       imei: "356000000000001",
       productName: "iPhone 13",
-      categoryId: null,
+      categoryId: 3,
     });
 
     expect(importProducts).toHaveBeenCalledWith({
+      poNumber: "PO-20260421-01",
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T09:30",
       importedByUserId: 7,
       rows: [
         {
@@ -159,7 +167,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1001",
           imei: "356000000000001",
           productName: "iPhone 13",
-          categoryId: null,
+          categoryId: 3,
         },
       ],
     });
@@ -170,19 +178,23 @@ describe("warehouse MVP router", () => {
 
     await caller.station.importBatch({
       poNumber: "PO-20260421-01",
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T10:00",
       rows: [
         {
           batchNo: "BATCH-240421-01",
           serialNumber: "SN-1001",
           imei: "356000000000001",
           productName: "iPhone 13",
-          categoryId: null,
+          categoryId: 3,
         },
       ],
     });
 
     expect(importProducts).toHaveBeenCalledWith({
       poNumber: "PO-20260421-01",
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T10:00",
       importedByUserId: 7,
       rows: [
         {
@@ -190,7 +202,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1001",
           imei: "356000000000001",
           productName: "iPhone 13",
-          categoryId: null,
+          categoryId: 3,
         },
       ],
     });
@@ -226,12 +238,14 @@ describe("warehouse MVP router", () => {
     expect(getDefectOptions).toHaveBeenCalledWith("B", "fault");
   });
 
-  it("loads product name options for import and A1 dropdowns", async () => {
+  it("loads product name and category options for import and A1 dropdowns", async () => {
     const caller = appRouter.createCaller(createContext("user"));
 
     await caller.station.productNameOptions();
+    await caller.station.productCategoryOptions();
 
     expect(getProductNameOptions).toHaveBeenCalled();
+    expect(getProductCategoryOptions).toHaveBeenCalled();
   });
 
   it("allows admins to upsert defect options", async () => {
@@ -259,19 +273,23 @@ describe("warehouse MVP router", () => {
 
     await caller.admin.importProducts({
       poNumber: "PO-20260421-02",
+      vendorName: "循環供應商",
+      arrivalAt: "2026-04-21T14:00",
       rows: [
         {
           batchNo: "BATCH-240421-02",
           serialNumber: "SN-1002",
           imei: "356000000000002",
           productName: "Galaxy S22",
-          categoryId: null,
+          categoryId: 3,
         },
       ],
     });
 
     expect(importProducts).toHaveBeenCalledWith({
       poNumber: "PO-20260421-02",
+      vendorName: "循環供應商",
+      arrivalAt: "2026-04-21T14:00",
       importedByUserId: 7,
       rows: [
         {
@@ -279,7 +297,7 @@ describe("warehouse MVP router", () => {
           serialNumber: "SN-1002",
           imei: "356000000000002",
           productName: "Galaxy S22",
-          categoryId: null,
+          categoryId: 3,
         },
       ],
     });

@@ -130,6 +130,113 @@ function buildProductCode(seed: number, index: number) {
   return `P-${seed}-${String(index + 1).padStart(3, "0")}`;
 }
 
+function normalizeOptionalText(value?: string | null) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function parseArrivalAt(value?: string | Date | null) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function hasImportIdentity(input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null }) {
+  return Boolean(
+    normalizeOptionalText(input.batchNo)
+    || normalizeOptionalText(input.serialNumber)
+    || normalizeOptionalText(input.imei),
+  );
+}
+
+async function findPendingA1ProductByIdentity(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null },
+) {
+  const lookups = [
+    { field: "imei", value: normalizeOptionalText(input.imei) },
+    { field: "serialNumber", value: normalizeOptionalText(input.serialNumber) },
+    { field: "batchNo", value: normalizeOptionalText(input.batchNo) },
+  ] as const;
+
+  for (const lookup of lookups) {
+    if (!lookup.value) {
+      continue;
+    }
+
+    const rows = await db
+      .select()
+      .from(products)
+      .where(
+        and(
+          eq(products.currentStationCode, "A1"),
+          isNull(products.archivedAt),
+          eq(products[lookup.field], lookup.value),
+        ),
+      )
+      .limit(1);
+
+    if (rows[0]) {
+      return rows[0];
+    }
+  }
+
+  return null;
+}
+
+async function ensurePendingA1Task(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  productId: number,
+  businessDateValue: Date,
+  metadata: Record<string, unknown>,
+) {
+  const existingTask = await db
+    .select()
+    .from(stationTasks)
+    .where(
+      and(
+        eq(stationTasks.productId, productId),
+        eq(stationTasks.stationCode, "A1"),
+        inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"]),
+      ),
+    )
+    .limit(1);
+
+  if (existingTask[0]) {
+    return existingTask[0];
+  }
+
+  await db.insert(stationTasks).values({
+    productId,
+    stationCode: "A1",
+    taskStatus: "pending",
+    dueDate: businessDateValue,
+    resultSummary: "A1 點到貨待處理",
+    metadata,
+  });
+
+  const createdTask = await db
+    .select()
+    .from(stationTasks)
+    .where(
+      and(
+        eq(stationTasks.productId, productId),
+        eq(stationTasks.stationCode, "A1"),
+      ),
+    )
+    .orderBy(desc(stationTasks.id))
+    .limit(1);
+
+  return createdTask[0] ?? null;
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
@@ -368,6 +475,20 @@ export async function getProductNameOptions() {
     .orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id));
 }
 
+export async function getProductCategoryOptions() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  await ensureMvpSeedData();
+  return db
+    .select()
+    .from(productCategories)
+    .where(eq(productCategories.active, true))
+    .orderBy(asc(productCategories.categoryName), asc(productCategories.subtypeCode), asc(productCategories.id));
+}
+
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
@@ -412,12 +533,14 @@ export async function getStationPageData(stationCode: StationCode) {
 
 export async function importProducts(input: {
   poNumber?: string | null;
+  vendorName?: string | null;
+  arrivalAt?: string | Date | null;
   importedByUserId?: number | null;
   rows: Array<{
     batchNo?: string | null;
     serialNumber?: string | null;
     imei?: string | null;
-    productName: string;
+    productName?: string | null;
     categoryId?: number | null;
   }>;
 }) {
@@ -427,6 +550,13 @@ export async function importProducts(input: {
   }
 
   await ensureMvpSeedData();
+
+  const vendorName = normalizeOptionalText(input.vendorName);
+  if (!vendorName) {
+    throw new Error("廠商為必填欄位");
+  }
+
+  const arrivalAt = parseArrivalAt(input.arrivalAt);
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
   const importSeed = Date.now();
@@ -434,14 +564,71 @@ export async function importProducts(input: {
 
   for (let index = 0; index < input.rows.length; index += 1) {
     const row = input.rows[index]!;
+    if (!row.categoryId) {
+      throw new Error(`第 ${index + 1} 列缺少商品分類`);
+    }
+    if (!hasImportIdentity(row)) {
+      throw new Error(`第 ${index + 1} 列至少要填寫商品批號、商品序號、IMEI 其中一項`);
+    }
+
+    const batchNo = normalizeOptionalText(row.batchNo);
+    const serialNumber = normalizeOptionalText(row.serialNumber);
+    const imei = normalizeOptionalText(row.imei);
+    const productName = normalizeOptionalText(row.productName);
+    const matchedProduct = await findPendingA1ProductByIdentity(db, { batchNo, serialNumber, imei });
+
+    if (matchedProduct) {
+      const nextBatchNo = matchedProduct.batchNo ?? batchNo;
+      const nextSerialNumber = matchedProduct.serialNumber ?? serialNumber;
+      const nextImei = matchedProduct.imei ?? imei;
+      const nextProductName = matchedProduct.productName ?? productName;
+      const nextCategoryId = matchedProduct.categoryId ?? row.categoryId;
+      const nextPoNumber = matchedProduct.poNumber ?? normalizeOptionalText(input.poNumber);
+      const nextVendorName = matchedProduct.vendorName ?? vendorName;
+      const nextArrivalAt = matchedProduct.arrivalAt ?? arrivalAt;
+
+      await db
+        .update(products)
+        .set({
+          poNumber: nextPoNumber,
+          vendorName: nextVendorName,
+          batchNo: nextBatchNo,
+          serialNumber: nextSerialNumber,
+          imei: nextImei,
+          productName: nextProductName,
+          arrivalAt: nextArrivalAt,
+          categoryId: nextCategoryId,
+          currentStationCode: "A1",
+          currentStatus: "pending_a1",
+          inspectionSummary: nextPoNumber ? `PO:${nextPoNumber}` : matchedProduct.inspectionSummary,
+          updatedAt: new Date(),
+        })
+        .where(eq(products.id, matchedProduct.id));
+
+      await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
+        source: "import_patch",
+        poNumber: nextPoNumber ?? null,
+      });
+
+      createdProducts.push({
+        id: matchedProduct.id,
+        productCode: matchedProduct.productCode,
+        productName: nextProductName,
+      });
+      continue;
+    }
+
     const productCode = buildProductCode(importSeed, index);
     await db.insert(products).values({
       productCode,
-      batchNo: row.batchNo ?? null,
-      serialNumber: row.serialNumber ?? null,
-      imei: row.imei ?? null,
-      productName: row.productName,
-      categoryId: row.categoryId ?? null,
+      poNumber: normalizeOptionalText(input.poNumber),
+      vendorName,
+      batchNo,
+      serialNumber,
+      imei,
+      productName,
+      arrivalAt,
+      categoryId: row.categoryId,
       currentStationCode: "A1",
       currentStatus: "pending_a1",
       inspectionSummary: input.poNumber ? `PO:${input.poNumber}` : null,
@@ -453,29 +640,24 @@ export async function importProducts(input: {
 
     createdProducts.push({ id: product.id, productCode: product.productCode, productName: product.productName ?? null });
 
-    await db.insert(stationTasks).values({
-      productId: product.id,
-      stationCode: "A1",
-      taskStatus: "pending",
-      dueDate: businessDateValue,
-      resultSummary: "A1 點到貨待處理",
-      metadata: {
-        source: "import",
-        poNumber: input.poNumber ?? null,
-      },
+    await ensurePendingA1Task(db, product.id, businessDateValue, {
+      source: "import",
+      poNumber: normalizeOptionalText(input.poNumber),
     });
   }
 
   await db.insert(sheetSyncJobs).values({
-    jobType: "product_import_sync",
-    targetSheetName: "手機檢測資料庫",
+    jobType: "purchase_sheet_sync",
+    targetSheetName: "採購單",
     status: "queued",
   });
 
   return {
     success: true as const,
     importedCount: createdProducts.length,
-    poNumber: input.poNumber ?? null,
+    poNumber: normalizeOptionalText(input.poNumber),
+    vendorName,
+    arrivalAt,
     products: createdProducts,
   };
 }
@@ -1040,7 +1222,7 @@ export async function getAdminSetupData() {
     productNameOptions: await db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
     syncSummary: {
       queuedJobs: queuedSyncJobs[0]?.count ?? 0,
-      targetSheetName: "手機檢測資料庫",
+      targetSheetName: "採購單",
     },
     archiveSummary: {
       retentionMonths: 6,

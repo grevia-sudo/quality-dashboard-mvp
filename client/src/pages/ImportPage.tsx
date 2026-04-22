@@ -10,10 +10,17 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 
 type ImportDraftRow = {
+  categoryId: string;
   batchNo: string;
   serialNumber: string;
   imei: string;
   productName: string;
+};
+
+type CategoryOption = {
+  id: number;
+  categoryName: string;
+  subtypeCode: string;
 };
 
 const navItems: DashboardNavItem[] = [
@@ -25,40 +32,76 @@ const navItems: DashboardNavItem[] = [
 ];
 
 const createEmptyRow = (): ImportDraftRow => ({
+  categoryId: "",
   batchNo: "",
   serialNumber: "",
   imei: "",
   productName: "",
 });
 
-function parseCsvContent(input: string): ImportDraftRow[] {
+function findCategoryIdByLabel(rawValue: string, categoryOptions: CategoryOption[]) {
+  const normalized = rawValue.trim().toLowerCase();
+  if (!normalized) {
+    return "";
+  }
+
+  const matched = categoryOptions.find((option) => {
+    const categoryName = option.categoryName.trim().toLowerCase();
+    const subtypeCode = option.subtypeCode.trim().toLowerCase();
+    const combined = `${categoryName}/${subtypeCode}`;
+    return normalized === categoryName || normalized === subtypeCode || normalized === combined;
+  });
+
+  return matched ? String(matched.id) : "";
+}
+
+function parseCsvContent(input: string, categoryOptions: CategoryOption[]): ImportDraftRow[] {
   return input
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((line) => {
-      const [batchNo = "", serialNumber = "", imei = "", productName = ""] = line
-        .split(/[\t,]/)
-        .map((cell) => cell.trim());
+    .map((line, index) => {
+      const cells = line.split(/[\t,]/).map((cell) => cell.trim());
+      const hasCategoryColumn = cells.length >= 5;
+      const [first = "", second = "", third = "", fourth = "", fifth = ""] = cells;
+      const row = hasCategoryColumn
+        ? {
+            categoryId: findCategoryIdByLabel(first, categoryOptions),
+            batchNo: second,
+            serialNumber: third,
+            imei: fourth,
+            productName: fifth,
+          }
+        : {
+            categoryId: "",
+            batchNo: first,
+            serialNumber: second,
+            imei: third,
+            productName: fourth,
+          };
 
-      return {
-        batchNo,
-        serialNumber,
-        imei,
-        productName,
-      };
+      const headerSignature = [first, second, third, fourth, fifth].join(",").replace(/\s+/g, "").toLowerCase();
+      const looksLikeHeader = index === 0 && (
+        headerSignature === "商品分類,商品批號,商品序號,imei,品名"
+        || headerSignature === "category,batchno,serialnumber,imei,productname"
+        || headerSignature === "batchno,serialnumber,imei,productname,"
+        || headerSignature === "商品批號,商品序號,imei,品名,"
+      );
+
+      return looksLikeHeader ? null : row;
     })
-    .filter((row, index) => {
-      const looksLikeHeader = index === 0 && [row.batchNo, row.serialNumber, row.imei, row.productName].join(",").toLowerCase() === "batchno,serialnumber,imei,productname";
-      return !looksLikeHeader && (row.batchNo || row.serialNumber || row.productName);
-    });
+    .filter((row): row is ImportDraftRow => Boolean(row))
+    .filter((row) => row.categoryId || row.batchNo || row.serialNumber || row.imei || row.productName);
 }
 
 export default function ImportPage() {
   const [, setLocation] = useLocation();
   const authQuery = trpc.auth.me.useQuery(undefined, { retry: false });
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
+  const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, { retry: false });
   const [poNumber, setPoNumber] = useState("");
+  const [vendorName, setVendorName] = useState("");
+  const [arrivalAt, setArrivalAt] = useState("");
   const [rows, setRows] = useState<ImportDraftRow[]>([createEmptyRow(), createEmptyRow()]);
   const [selectedFileName, setSelectedFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -67,6 +110,9 @@ export default function ImportPage() {
   const importMutation = trpc.station.importBatch.useMutation({
     onSuccess: async (result) => {
       toast.success(`已匯入 ${result.importedCount} 筆商品資料`);
+      setPoNumber("");
+      setVendorName("");
+      setArrivalAt("");
       setRows([createEmptyRow(), createEmptyRow()]);
       setSelectedFileName("");
       await productNameOptionsQuery.refetch();
@@ -87,16 +133,17 @@ export default function ImportPage() {
     () =>
       rows
         .map((row) => ({
-          batchNo: row.batchNo.trim(),
-          serialNumber: row.serialNumber.trim(),
-          imei: row.imei.trim(),
-          productName: row.productName.trim(),
+          categoryId: Number(row.categoryId),
+          batchNo: row.batchNo.trim() || undefined,
+          serialNumber: row.serialNumber.trim() || undefined,
+          imei: row.imei.trim() || undefined,
+          productName: row.productName.trim() || undefined,
         }))
-        .filter((row) => row.batchNo && row.serialNumber && row.productName),
+        .filter((row) => row.categoryId > 0 && (row.batchNo || row.serialNumber || row.imei)),
     [rows],
   );
 
-  const canImport = preparedRows.length > 0;
+  const canImport = vendorName.trim() && preparedRows.length > 0;
   const isAdmin = ["admin", "manager", "supervisor"].includes(authQuery.data?.role ?? "user");
 
   const updateRow = (index: number, patch: Partial<ImportDraftRow>) => {
@@ -117,9 +164,9 @@ export default function ImportPage() {
 
     try {
       const content = await file.text();
-      const parsedRows = parseCsvContent(content);
+      const parsedRows = parseCsvContent(content, categoryOptionsQuery.data ?? []);
       if (parsedRows.length === 0) {
-        toast.error("檔案內容為空，或欄位格式不符合 batchNo, serialNumber, imei, productName");
+        toast.error("檔案內容為空，或欄位格式不符合 商品分類、商品批號、商品序號、IMEI、品名");
         return;
       }
 
@@ -135,10 +182,10 @@ export default function ImportPage() {
       <div className="space-y-6">
         <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
           <CardContent className="space-y-4 p-8">
-            <Badge className="bg-white/80 text-slate-700">PO 與 A1 建檔入口</Badge>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">先上傳 CSV，再交由 A1 點到貨與各站點接續處理</h1>
+            <Badge className="bg-white/80 text-slate-700">PO、到貨時間與 A1 補欄入口</Badge>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">先上傳 CSV，再交由 A1 點到貨與各站點接續補齊資料</h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              同一次匯入可共用一個 PO 單號。每列資料包含商品批號、序號、IMEI 與品名；匯入完成後，系統會先寫入 DB 並建立 A1 待處理任務，再由背景程序非同步回寫 Google Sheet。
+              同一次匯入可共用 PO 單號、廠商與到貨時間。每列資料的商品分類必填，商品批號、商品序號、IMEI 只要任一有值即可；品名可先留空，後續在 A1 補齊後會回寫到採購單工作表。
             </p>
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>返回站點總覽</Button>
@@ -147,29 +194,49 @@ export default function ImportPage() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base font-bold">匯入主表</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <label className="space-y-2 text-sm text-slate-600">
-                <span>PO 單號（同批共用）</span>
-                <Input value={poNumber} onChange={(event) => setPoNumber(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 PO-20260421-01" />
-              </label>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <label className="space-y-2 text-sm text-slate-600">
+                  <span>PO 單號（同批共用）</span>
+                  <Input value={poNumber} onChange={(event) => setPoNumber(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 PO-20260421-01" />
+                </label>
+                <label className="space-y-2 text-sm text-slate-600">
+                  <span>廠商（必填）</span>
+                  <Input value={vendorName} onChange={(event) => setVendorName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 綠途未來股份有限公司" />
+                </label>
+                <label className="space-y-2 text-sm text-slate-600">
+                  <span>到貨時間（同批共用）</span>
+                  <Input type="datetime-local" value={arrivalAt} onChange={(event) => setArrivalAt(event.target.value)} className="rounded-2xl border-0 bg-slate-50" />
+                </label>
+              </div>
 
               <div className="space-y-3">
                 {rows.map((row, index) => (
-                  <div key={`row-${index}`} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-4">
-                    <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品批號" />
-                    <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品序號" />
-                    <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="IMEI（選填）" />
+                  <div key={`row-${index}`} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-5">
+                    <select
+                      value={row.categoryId}
+                      onChange={(event) => updateRow(index, { categoryId: event.target.value })}
+                      className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none"
+                    >
+                      <option value="">請選擇商品分類</option>
+                      {(categoryOptionsQuery.data ?? []).map((option) => (
+                        <option key={option.id} value={option.id}>{option.categoryName} / {option.subtypeCode}</option>
+                      ))}
+                    </select>
+                    <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品批號（可留空）" />
+                    <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品序號（可留空）" />
+                    <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="IMEI（可留空）" />
                     <select
                       value={row.productName}
                       onChange={(event) => updateRow(index, { productName: event.target.value })}
                       className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none"
                     >
-                      <option value="">請選擇品名</option>
+                      <option value="">品名可先留空</option>
                       {(productNameOptionsQuery.data ?? []).map((option) => (
                         <option key={option.id} value={option.label}>{option.label}</option>
                       ))}
@@ -186,13 +253,9 @@ export default function ImportPage() {
                   onClick={() =>
                     importMutation.mutate({
                       poNumber: poNumber.trim() || undefined,
-                      rows: preparedRows.map((row) => ({
-                        batchNo: row.batchNo,
-                        serialNumber: row.serialNumber,
-                        imei: row.imei || undefined,
-                        productName: row.productName,
-                        categoryId: null,
-                      })),
+                      vendorName: vendorName.trim(),
+                      arrivalAt: arrivalAt || undefined,
+                      rows: preparedRows,
                     })
                   }
                 >
@@ -216,9 +279,9 @@ export default function ImportPage() {
                   onChange={handleFileUpload}
                 />
                 <div className="rounded-[24px] bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                  <p>請上傳 CSV 或 TSV 檔案，欄位順序需為：商品批號、商品序號、IMEI、品名。</p>
-                  <p>若檔案第一列為標題列，系統會自動略過 `batchNo,serialNumber,imei,productName`。</p>
-                  <p>上傳後仍可在主表中把品名改成下拉選單內的標準值，避免現場輸入不一致。</p>
+                  <p>建議欄位順序為：商品分類、商品批號、商品序號、IMEI、品名。</p>
+                  <p>若檔案第一列為標題列，系統會自動略過 `商品分類,商品批號,商品序號,IMEI,品名` 或 `category,batchNo,serialNumber,imei,productName`。</p>
+                  <p>若 CSV 沒帶商品分類，載入後可直接在主表逐列補選；廠商與到貨時間則由同批共用欄位統一帶入。</p>
                 </div>
                 <Button variant="outline" className="w-full rounded-2xl" onClick={openFilePicker}>
                   <FileUp className="mr-2 h-4 w-4" /> 選擇 CSV 檔案
@@ -234,9 +297,9 @@ export default function ImportPage() {
                 <CardTitle className="text-base font-bold">匯入說明</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm leading-7 text-slate-600">
-                <p>商品批號建議維持唯一識別，序號則允許因二次回收而重複；IMEI 若無可先留空，後續可在 A1 頁面直接補錄。</p>
-                <p>上傳後資料會先帶入匯入主表，你仍可在送出前逐列修正內容，再正式建立 A1 待處理任務。</p>
-                <p>{isAdmin ? "你目前具備管理視角，可同時從管理後台維護功能表與站點規則。" : "你目前使用一般作業視角，仍可執行必要匯入並前往 A1 站處理到貨。"}</p>
+                <p>每列商品一定要有廠商與商品分類，其中商品分類在主表逐列維護；商品批號、商品序號、IMEI 三者只要任一有值即可建立本地資料。</p>
+                <p>到貨時間會以同批共用方式寫入本地資料庫，與系統匯入時間分開保存，方便之後每日補齊採購單資料。</p>
+                <p>{isAdmin ? "你目前具備管理視角，可同時從管理後台維護品名與站點規則。" : "你目前使用一般作業視角，仍可執行必要匯入並前往 A1 補齊缺欄。"}</p>
               </CardContent>
             </Card>
           </div>
