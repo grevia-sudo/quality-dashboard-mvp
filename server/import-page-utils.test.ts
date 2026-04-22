@@ -12,6 +12,33 @@ describe("import page utils", () => {
     expect(findCategoryIdByLabel("智慧型手機/Android", options)).toBe("4");
     expect(findCategoryIdByLabel("Android", options)).toBe("4");
     expect(findCategoryIdByLabel("智慧型手機 ／ iPhone", options)).toBe("5");
+    expect(findCategoryIdByLabel("智慧手機", options)).toBe("4");
+    expect(findCategoryIdByLabel("手機", options)).toBe("4");
+  });
+
+  it("parses rows from user csv when category is written as 手機 and identifiers rely on serial number plus imei", () => {
+    const options = [
+      { id: 4, categoryName: "智慧型手機", subtypeCode: "Android" },
+      { id: 5, categoryName: "智慧型手機", subtypeCode: "iPhone" },
+    ];
+
+    const parsed = parseImportedCsvContent(
+      [
+        "廠商,商品分類,商品批號,商品序號,IMEI,品名",
+        "悠優,手機,,W56PJQ6J22,357140954529759,",
+      ].join("\n"),
+      options,
+    );
+
+    expect(parsed.sharedVendorName).toBe("悠優");
+    expect(parsed.rows).toHaveLength(1);
+    expect(parsed.rows[0]).toMatchObject({
+      categoryId: "4",
+      batchNo: "",
+      serialNumber: "W56PJQ6J22",
+      imei: "357140954529759",
+      productName: "",
+    });
   });
 
   it("parses vendor from CSV header rows and auto-fills shared vendor name", () => {

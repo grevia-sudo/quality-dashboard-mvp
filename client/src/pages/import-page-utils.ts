@@ -77,6 +77,25 @@ function normalizeCategoryToken(rawValue: string) {
     .replace(/\s+/g, " ");
 }
 
+function normalizeCategoryFamilyToken(rawValue: string) {
+  return normalizeCategoryToken(rawValue)
+    .replace(/智慧型手機/g, "智慧手機")
+    .replace(/智能手機/g, "智慧手機")
+    .replace(/行動電話/g, "手機")
+    .replace(/移動電話/g, "手機");
+}
+
+function getCategorySubtypePriority(rawValue: string) {
+  const normalized = normalizeCategoryToken(rawValue);
+  if (normalized.includes("android") || normalized.includes("安卓")) {
+    return 0;
+  }
+  if (normalized.includes("iphone") || normalized.includes("ios") || normalized.includes("蘋果")) {
+    return 1;
+  }
+  return 2;
+}
+
 function normalizeHeaderToken(rawValue: string) {
   return rawValue
     .replace(/^\uFEFF/, "")
@@ -182,7 +201,29 @@ export function findCategoryIdByLabel(rawValue: string, categoryOptions: Categor
     return normalized === categoryName || normalized === subtypeCode || normalized === combinedCompact || normalized === combinedDisplay;
   });
 
-  return matched ? String(matched.id) : "";
+  if (matched) {
+    return String(matched.id);
+  }
+
+  const normalizedFamily = normalizeCategoryFamilyToken(rawValue);
+  const familyCandidates = categoryOptions.filter((option) => {
+    const categoryFamily = normalizeCategoryFamilyToken(option.categoryName);
+    return normalizedFamily === categoryFamily || categoryFamily.includes(normalizedFamily) || normalizedFamily.includes(categoryFamily);
+  });
+
+  if (familyCandidates.length === 0) {
+    return "";
+  }
+
+  const preferred = [...familyCandidates].sort((left, right) => {
+    const subtypePriorityDiff = getCategorySubtypePriority(left.subtypeCode) - getCategorySubtypePriority(right.subtypeCode);
+    if (subtypePriorityDiff !== 0) {
+      return subtypePriorityDiff;
+    }
+    return left.id - right.id;
+  })[0];
+
+  return preferred ? String(preferred.id) : "";
 }
 
 export function parseImportedCsvContent(input: string, categoryOptions: CategoryOption[]): ParsedImportCsv {
