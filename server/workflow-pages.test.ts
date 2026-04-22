@@ -25,8 +25,12 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("目前已載入");
   });
 
-  it("provides A1 arrival fields, category dropdown, and vendor data on the station page", () => {
+  it("provides A1 arrival fields, pending category summary, and vendor data on the station page", () => {
     expect(stationPageSource).toContain('stationCode === "A1"');
+    expect(stationPageSource).toContain("目前待點貨商品分類與數量");
+    expect(stationPageSource).toContain("待點貨總數");
+    expect(stationPageSource).toContain("待點貨數量");
+    expect(stationPageSource).toContain("pendingCategorySummary");
     expect(stationPageSource).toContain("A1 點到貨新增／補齊");
     expect(stationPageSource).toContain("廠商（必填）");
     expect(stationPageSource).toContain("到貨時間");

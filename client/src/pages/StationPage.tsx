@@ -110,6 +110,28 @@ export default function StationPage() {
     });
   }, [detailQuery.data?.tasks, keyword]);
 
+  const pendingCategorySummary = useMemo(() => {
+    const summaryMap = new Map<string, { label: string; count: number }>();
+
+    for (const task of detailQuery.data?.tasks ?? []) {
+      const label = task.subtypeCode ?? task.categoryName ?? "未分類";
+      const current = summaryMap.get(label);
+      summaryMap.set(label, {
+        label,
+        count: (current?.count ?? 0) + 1,
+      });
+    }
+
+    return Array.from(summaryMap.values()).sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+      return left.label.localeCompare(right.label, "zh-Hant");
+    });
+  }, [detailQuery.data?.tasks]);
+
+  const pendingTotalCount = detailQuery.data?.tasks.length ?? 0;
+
   const toggleSelection = (taskId: number, key: keyof OptionSelections, optionId: number, checked: boolean) => {
     setSelectedOptions((prev) => {
       const current = prev[taskId] ?? defaultSelections();
@@ -159,11 +181,37 @@ export default function StationPage() {
         </Card>
 
         {stationCode === "A1" ? (
-          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base font-bold">A1 點到貨新增／補齊</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="space-y-6">
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold">目前待點貨商品分類與數量</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap items-center gap-3 rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
+                  <Badge className="bg-slate-900 text-white">待點貨總數 {pendingTotalCount}</Badge>
+                  <span>匯入完成後，A1 可先依商品分類確認目前待處理分布，再開始逐筆點到貨。</span>
+                </div>
+                {pendingCategorySummary.length > 0 ? (
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    {pendingCategorySummary.map((item) => (
+                      <div key={item.label} className="rounded-[24px] bg-[#eef2f7] p-4 shadow-sm">
+                        <p className="text-xs font-medium tracking-wide text-slate-500">商品分類</p>
+                        <p className="mt-2 text-base font-bold text-slate-900">{item.label}</p>
+                        <p className="mt-3 text-sm text-slate-600">待點貨數量 <span className="font-bold text-slate-900">{item.count}</span></p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有待點貨商品，完成匯入後會在這裡顯示各商品分類的待處理數量。</div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-bold">A1 點到貨新增／補齊</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <label className="space-y-2 text-sm text-slate-600">
                   <span>PO 單號</span>
@@ -240,8 +288,9 @@ export default function StationPage() {
                   建立／補齊 A1 到貨商品
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         ) : null}
 
         <Card className="rounded-[28px] border-0 bg-white shadow-sm">
