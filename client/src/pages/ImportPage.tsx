@@ -8,35 +8,7 @@ import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, Packag
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-
-type ImportDraftRow = {
-  categoryId: string;
-  batchNo: string;
-  serialNumber: string;
-  imei: string;
-  productName: string;
-};
-
-type CategoryOption = {
-  id: number;
-  categoryName: string;
-  subtypeCode: string;
-};
-
-type PendingPoSummaryRow = {
-  key: string;
-  poNumber: string;
-  categoryLabel: string;
-  totalQuantity: number;
-  details: Array<{
-    productId: number;
-    productCode: string;
-    productName: string | null;
-    batchNo: string | null;
-    serialNumber: string | null;
-    imei: string | null;
-  }>;
-};
+import { buildPendingPoSummary, findCategoryIdByLabel, type CategoryOption, type ImportDraftRow } from "./import-page-utils";
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
@@ -55,22 +27,6 @@ const createEmptyRow = (): ImportDraftRow => ({
   imei: "",
   productName: "",
 });
-
-function findCategoryIdByLabel(rawValue: string, categoryOptions: CategoryOption[]) {
-  const normalized = rawValue.trim().toLowerCase();
-  if (!normalized) {
-    return "";
-  }
-
-  const matched = categoryOptions.find((option) => {
-    const categoryName = option.categoryName.trim().toLowerCase();
-    const subtypeCode = option.subtypeCode.trim().toLowerCase();
-    const combined = `${categoryName}/${subtypeCode}`;
-    return normalized === categoryName || normalized === subtypeCode || normalized === combined;
-  });
-
-  return matched ? String(matched.id) : "";
-}
 
 function normalizeImportedCell(rawValue: string) {
   const trimmed = rawValue.trim();
@@ -198,43 +154,7 @@ export default function ImportPage() {
     return null;
   }, [preparedRows, rows, vendorName]);
 
-  const pendingPoSummary = useMemo<PendingPoSummaryRow[]>(() => {
-    const summaryMap = new Map<string, PendingPoSummaryRow>();
-
-    for (const task of pendingA1Query.data?.tasks ?? []) {
-      const poNumber = task.poNumber?.trim() || "系統補號中";
-      const categoryLabel = [task.categoryName, task.subtypeCode].filter(Boolean).join(" / ") || task.subtypeCode || task.categoryName || "未分類";
-      const key = `${poNumber}__${categoryLabel}`;
-      const current = summaryMap.get(key) ?? {
-        key,
-        poNumber,
-        categoryLabel,
-        totalQuantity: 0,
-        details: [],
-      };
-
-      current.totalQuantity += 1;
-      current.details.push({
-        productId: task.productId,
-        productCode: task.productCode,
-        productName: task.productName ?? null,
-        batchNo: task.batchNo ?? null,
-        serialNumber: task.serialNumber ?? null,
-        imei: task.imei ?? null,
-      });
-      summaryMap.set(key, current);
-    }
-
-    return Array.from(summaryMap.values()).sort((left, right) => {
-      if (left.poNumber !== right.poNumber) {
-        return right.poNumber.localeCompare(left.poNumber);
-      }
-      if (right.totalQuantity !== left.totalQuantity) {
-        return right.totalQuantity - left.totalQuantity;
-      }
-      return left.categoryLabel.localeCompare(right.categoryLabel, "zh-Hant");
-    });
-  }, [pendingA1Query.data?.tasks]);
+  const pendingPoSummary = useMemo(() => buildPendingPoSummary(pendingA1Query.data?.tasks ?? []), [pendingA1Query.data?.tasks]);
 
   const canImport = !importValidationMessage;
   const isAdmin = ["admin", "manager", "supervisor"].includes(authQuery.data?.role ?? "user");

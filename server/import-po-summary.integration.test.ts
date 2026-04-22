@@ -1,9 +1,58 @@
-import { beforeAll, describe, expect, it } from "vitest";
-import { ensureMvpSeedData, getStationPageData, importProducts } from "./db";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { and, inArray, isNull } from "drizzle-orm";
+import { productArchives, products, stationTasks } from "../drizzle/schema";
+import { ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
+
+const createdPoNumbers = new Set<string>();
+
+async function archiveCreatedImportTestRows() {
+  const db = await getDb();
+  if (!db || createdPoNumbers.size === 0) {
+    return;
+  }
+
+  const targetProducts = await db
+    .select()
+    .from(products)
+    .where(and(inArray(products.poNumber, Array.from(createdPoNumbers)), isNull(products.archivedAt)));
+
+  if (targetProducts.length === 0) {
+    return;
+  }
+
+  const productIds = targetProducts.map((product) => product.id);
+  const archiveMonth = new Date().toISOString().slice(0, 7);
+
+  await db.insert(productArchives).values(
+    targetProducts.map((product) => ({
+      originalProductId: product.id,
+      productSnapshot: product,
+      archiveMonth,
+    })),
+  );
+
+  await db
+    .update(products)
+    .set({
+      archivedAt: new Date(),
+      currentStatus: "archived",
+      updatedAt: new Date(),
+    })
+    .where(inArray(products.id, productIds));
+
+  await db
+    .update(stationTasks)
+    .set({ taskStatus: "archived" })
+    .where(inArray(stationTasks.productId, productIds));
+}
 
 describe("import PO summary integration", () => {
   beforeAll(async () => {
     await ensureMvpSeedData();
+  });
+
+  afterAll(async () => {
+    await archiveCreatedImportTestRows();
   });
 
   it("backfills missing pending A1 PO numbers and exposes grouped data for the import page", async () => {
@@ -21,31 +70,46 @@ describe("import PO summary integration", () => {
     expect(groupedKeys.size).toBeGreaterThanOrEqual(0);
   });
 
-  it("auto-generates a PO number when importing without manually entering one", async () => {
+  it("auto-generates a single shared PO number for the whole import batch", async () => {
     const uniqueSuffix = `${Date.now()}`;
-    const batchNo = `AUTO-PO-${uniqueSuffix}`;
-    const serialNumber = `AUTO-SN-${uniqueSuffix}`;
-    const imei = `35${uniqueSuffix.padStart(13, "0").slice(-13)}`;
+    const rows = [
+      {
+        batchNo: `AUTO-PO-${uniqueSuffix}-01`,
+        serialNumber: `AUTO-SN-${uniqueSuffix}-01`,
+        imei: `35${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
+        productName: "Apple iPhone 6 16GB 銀色",
+        categoryId: 4,
+      },
+      {
+        batchNo: `AUTO-PO-${uniqueSuffix}-02`,
+        serialNumber: `AUTO-SN-${uniqueSuffix}-02`,
+        imei: `35${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
+        productName: "Apple iPhone 6 16GB 銀色",
+        categoryId: 4,
+      },
+      {
+        batchNo: `AUTO-PO-${uniqueSuffix}-03`,
+        serialNumber: `AUTO-SN-${uniqueSuffix}-03`,
+        imei: `35${`${Number(uniqueSuffix) + 3}`.padStart(13, "0").slice(-13)}`,
+        productName: "Apple iPhone 6 16GB 銀色",
+        categoryId: 5,
+      },
+    ];
 
     const importResult = await importProducts({
       vendorName: "自動補號驗證廠商",
-      rows: [
-        {
-          batchNo,
-          serialNumber,
-          imei,
-          productName: "Apple iPhone 6 16GB 銀色",
-          categoryId: 4,
-        },
-      ],
+      rows,
     });
+    createdPoNumbers.add(importResult.poNumber);
 
     expect(importResult.poNumber).toMatch(/^PO-\d{8}-\d{2}$/);
+    expect(importResult.importedCount).toBe(3);
 
     const stationData = await getStationPageData("A1");
-    const importedTask = stationData.tasks.find((task) => task.batchNo === batchNo || task.serialNumber === serialNumber || task.imei === imei);
+    const importedTasks = stationData.tasks.filter((task) => task.poNumber === importResult.poNumber);
 
-    expect(importedTask).toBeDefined();
-    expect(importedTask?.poNumber).toBe(importResult.poNumber);
-  });
+    expect(importedTasks).toHaveLength(3);
+    expect(new Set(importedTasks.map((task) => task.poNumber))).toEqual(new Set([importResult.poNumber]));
+    expect(new Set(importedTasks.map((task) => task.batchNo))).toEqual(new Set(rows.map((row) => row.batchNo)));
+  }, 10000);
 });
