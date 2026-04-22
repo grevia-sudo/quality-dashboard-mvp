@@ -30,6 +30,7 @@ const dbMocks = vi.hoisted(() => ({
   getProductCategoryOptions: vi.fn(async () => [{ id: 3, categoryName: "手機", subtypeCode: "iPhone", active: true }]),
   getProductNameOptions: vi.fn(async () => [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }]),
   completeStationTask: vi.fn(async () => ({ success: true as const })),
+  completeA1ArrivalByScan: vi.fn(async (input: unknown) => ({ success: true as const, productCode: "P-100001", nextStationCode: "A2", ...((typeof input === "object" && input) ? input : {}) })),
   importProducts: vi.fn(async (input: unknown) => ({ success: true as const, importedCount: 1, products: [], ...((typeof input === "object" && input) ? input : {}) })),
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
@@ -52,6 +53,7 @@ const {
   getProductCategoryOptions,
   getProductNameOptions,
   completeStationTask,
+  completeA1ArrivalByScan,
   importProducts,
   getSamplingQueue,
   submitSamplingResult,
@@ -142,34 +144,20 @@ describe("warehouse MVP router", () => {
     });
   });
 
-  it("allows engineers to create a single A1 arrival record", async () => {
+  it("allows engineers to complete A1 by scanning existing identifiers", async () => {
     const caller = appRouter.createCaller(createContext("user"));
 
     await caller.station.receive({
-      poNumber: "PO-20260421-01",
-      vendorName: "綠途未來",
-      arrivalAt: "2026-04-21T09:30",
       batchNo: "BATCH-240421-01",
       serialNumber: "SN-1001",
       imei: "356000000000001",
-      productName: "iPhone 13",
-      categoryName: "智慧手機",
     });
 
-    expect(importProducts).toHaveBeenCalledWith({
-      poNumber: "PO-20260421-01",
-      vendorName: "綠途未來",
-      arrivalAt: "2026-04-21T09:30",
-      importedByUserId: 7,
-      rows: [
-        {
-          batchNo: "BATCH-240421-01",
-          serialNumber: "SN-1001",
-          imei: "356000000000001",
-          productName: "iPhone 13",
-          categoryName: "智慧手機",
-        },
-      ],
+    expect(completeA1ArrivalByScan).toHaveBeenCalledWith({
+      operatorUserId: 7,
+      batchNo: "BATCH-240421-01",
+      serialNumber: "SN-1001",
+      imei: "356000000000001",
     });
   });
 

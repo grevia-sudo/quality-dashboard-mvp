@@ -6,6 +6,7 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import {
   archiveExpiredData,
   clearProductCategoryOptions,
+  completeA1ArrivalByScan,
   completeStationTask,
   createProductCategoryOption,
   createProductNameOption,
@@ -129,14 +130,9 @@ export const appRouter = router({
     receive: protectedProcedure
       .input(
         z.object({
-          poNumber: optionalTextSchema,
-          vendorName: z.string().trim().min(1),
-          arrivalAt: optionalTextSchema,
           batchNo: optionalTextSchema,
           serialNumber: optionalTextSchema,
           imei: optionalTextSchema,
-          productName: optionalTextSchema,
-          categoryName: z.string().trim().min(1),
         }).superRefine((value, ctx) => {
           if (!value.batchNo && !value.serialNumber && !value.imei) {
             ctx.addIssue({
@@ -148,20 +144,11 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        return importProducts({
-          poNumber: input.poNumber,
-          vendorName: input.vendorName,
-          arrivalAt: input.arrivalAt,
-          importedByUserId: ctx.user.id,
-          rows: [
-            {
-              batchNo: input.batchNo,
-              serialNumber: input.serialNumber,
-              imei: input.imei,
-              productName: input.productName,
-              categoryName: input.categoryName,
-            },
-          ],
+        return completeA1ArrivalByScan({
+          operatorUserId: ctx.user.id,
+          batchNo: input.batchNo,
+          serialNumber: input.serialNumber,
+          imei: input.imei,
         });
       }),
     importBatch: protectedProcedure

@@ -52,23 +52,22 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource.indexOf("CSV 檔案上傳")).toBeLessThan(importPageSource.indexOf("已載入資料預覽"));
   });
 
-  it("provides A1 arrival fields, pending category summary, and vendor data on the station page", () => {
+  it("provides A1 scan-to-complete fields and pending category summary on the station page", () => {
     expect(stationPageSource).toContain('stationCode === "A1"');
     expect(stationPageSource).toContain("目前待點貨商品分類與數量");
     expect(stationPageSource).toContain("待點貨總數");
     expect(stationPageSource).toContain("待點貨數量");
     expect(stationPageSource).toContain("pendingCategorySummary");
     expect(stationPageSource).toContain("A1 點到貨新增／補齊");
-    expect(stationPageSource).toContain("廠商（必填）");
-    expect(stationPageSource).toContain("到貨時間");
+    expect(stationPageSource).not.toContain("廠商（必填）");
     expect(stationPageSource).toContain("商品批號");
     expect(stationPageSource).toContain("商品序號");
     expect(stationPageSource).toContain("IMEI");
     expect(stationPageSource).toContain("trpc.station.receive.useMutation");
-    expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
+    expect(stationPageSource).not.toContain("trpc.station.productNameOptions.useQuery");
     expect(stationPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
-    expect(stationPageSource).toContain("品名可先留空");
-    expect(stationPageSource).toContain("例如 智慧手機");
+    expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
+    expect(stationPageSource).toContain("完成 A1 並前往 A2");
   });
 
   it("renders B and C option menu sections on the station page", () => {

@@ -1,4 +1,5 @@
-import { and, asc, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
+import { spawn } from "node:child_process";
+import { and, asc, count, desc, eq, gte, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   defectOptions,
@@ -32,6 +33,30 @@ type StationStatusSummary = {
 };
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let purchaseSheetSyncTriggeredAt = 0;
+
+function triggerPurchaseSheetSyncInBackground() {
+  const now = Date.now();
+  if (now - purchaseSheetSyncTriggeredAt < 10_000) {
+    return;
+  }
+
+  purchaseSheetSyncTriggeredAt = now;
+
+  const command = "cd /home/ubuntu/quality-dashboard-mvp && pnpm sync:purchase-sheet >/tmp/quality-dashboard-purchase-sheet-sync.log 2>&1";
+  const child = spawn("bash", ["-lc", command], {
+    detached: true,
+    stdio: "ignore",
+    env: {
+      ...process.env,
+      HOME: process.env.HOME ?? "/home/ubuntu",
+      GOOGLE_WORKSPACE_CLI_TOKEN: process.env.GOOGLE_WORKSPACE_CLI_TOKEN,
+      GOOGLE_DRIVE_TOKEN: process.env.GOOGLE_DRIVE_TOKEN,
+    },
+  });
+
+  child.unref();
+}
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -273,6 +298,96 @@ async function ensurePendingA1Task(
     .limit(1);
 
   return createdTask[0] ?? null;
+}
+
+function mergeScannedIdentityField(fieldLabel: string, currentValue?: string | null, incomingValue?: string | null) {
+  const normalizedCurrent = normalizeOptionalText(currentValue);
+  const normalizedIncoming = normalizeOptionalText(incomingValue);
+
+  if (!normalizedIncoming) {
+    return normalizedCurrent;
+  }
+
+  if (!normalizedCurrent) {
+    return normalizedIncoming;
+  }
+
+  if (normalizedCurrent === normalizedIncoming) {
+    return normalizedCurrent;
+  }
+
+  throw new Error(`${fieldLabel} 與既有待點貨資料不一致，請確認掃碼內容是否正確`);
+}
+
+export async function completeA1ArrivalByScan(input: {
+  operatorUserId: number;
+  batchNo?: string | null;
+  serialNumber?: string | null;
+  imei?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) {
+    return { success: false as const, message: "Database unavailable" };
+  }
+
+  if (!hasImportIdentity(input)) {
+    return { success: false as const, message: "商品批號、商品序號、IMEI 至少要填一項" };
+  }
+
+  const matchedProduct = await findPendingA1ProductByIdentity(db, input);
+  if (!matchedProduct) {
+    return { success: false as const, message: "找不到符合批號、序號或 IMEI 的 A1 待處理商品" };
+  }
+
+  const nextBatchNo = mergeScannedIdentityField("商品批號", matchedProduct.batchNo, input.batchNo);
+  const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, input.serialNumber);
+  const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, input.imei);
+  const businessDateValue = new Date(`${todayDateString()}T00:00:00`);
+  const pendingTask = await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
+    source: "a1_scan_receive",
+  });
+
+  if (!pendingTask) {
+    return { success: false as const, message: "找不到可完成的 A1 任務" };
+  }
+
+  await db
+    .update(products)
+    .set({
+      batchNo: nextBatchNo,
+      serialNumber: nextSerialNumber,
+      imei: nextImei,
+      updatedAt: new Date(),
+    })
+    .where(eq(products.id, matchedProduct.id));
+
+  const completionResult = await completeStationTask({
+    taskId: pendingTask.id,
+    stationCode: "A1",
+    operatorUserId: input.operatorUserId,
+    productId: matchedProduct.id,
+    categoryId: matchedProduct.categoryId ?? null,
+    summary: "A1 掃碼點到貨完成",
+  });
+
+  if (completionResult.success) {
+    await db.insert(sheetSyncJobs).values({
+      jobType: "purchase_sheet_sync",
+      targetSheetName: "採購單",
+      status: "queued",
+    });
+    triggerPurchaseSheetSyncInBackground();
+  }
+
+  return {
+    ...completionResult,
+    nextStationCode: "A2" as const,
+    productId: matchedProduct.id,
+    productCode: matchedProduct.productCode,
+    poNumber: matchedProduct.poNumber,
+    vendorName: matchedProduct.vendorName,
+    categoryName: matchedProduct.importedCategoryName,
+  };
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldCheck, Undo2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
 
@@ -47,16 +47,12 @@ export default function StationPage() {
   const [, setLocation] = useLocation();
   const [keyword, setKeyword] = useState("");
   const [arrivalForm, setArrivalForm] = useState({
-    poNumber: "",
-    vendorName: "",
-    arrivalAt: "",
-    categoryName: "",
     batchNo: "",
     serialNumber: "",
     imei: "",
-    productName: "",
   });
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
+  const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
   const detailQuery = trpc.station.detail.useQuery(
     { stationCode },
@@ -64,12 +60,39 @@ export default function StationPage() {
       retry: false,
     },
   );
-  const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
     await utils.station.list.invalidate();
     await utils.dashboard.home.invalidate();
+  };
+
+  const focusBatchInput = () => {
+    window.requestAnimationFrame(() => {
+      batchNoInputRef.current?.focus();
+      batchNoInputRef.current?.select();
+    });
+  };
+
+  const submitA1Receive = () => {
+    if (receiveMutation.isPending || !canReceiveA1) {
+      return;
+    }
+
+    receiveMutation.mutate({
+      batchNo: arrivalForm.batchNo.trim() || undefined,
+      serialNumber: arrivalForm.serialNumber.trim() || undefined,
+      imei: arrivalForm.imei.trim() || undefined,
+    });
+  };
+
+  const handleA1ScanSubmitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    submitA1Receive();
   };
 
   const completeMutation = trpc.station.complete.useMutation({
@@ -84,14 +107,21 @@ export default function StationPage() {
   });
 
   const receiveMutation = trpc.station.receive.useMutation({
-    onSuccess: async () => {
-      toast.success("A1 到貨資料已建立或補齊");
-      setArrivalForm({ poNumber: "", vendorName: "", arrivalAt: "", categoryName: "", batchNo: "", serialNumber: "", imei: "", productName: "" });
+    onSuccess: async (result) => {
+      if (!result.success) {
+        toast.error(result.message || "A1 點到貨處理失敗");
+        return;
+      }
+
+      toast.success(`${result.productCode ?? "商品"} 已完成 A1 點到貨，正前往 A2`);
+      setArrivalForm({ batchNo: "", serialNumber: "", imei: "" });
       await invalidateStationData();
-      await productNameOptionsQuery.refetch();
+      await utils.station.detail.invalidate({ stationCode: "A2" });
+      setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);
     },
     onError: (error) => {
-      toast.error(error.message || "A1 到貨建立失敗");
+      toast.error(error.message || "A1 點到貨處理失敗");
+      focusBatchInput();
     },
   });
 
@@ -100,6 +130,12 @@ export default function StationPage() {
       setLocation(`/station/${stationCode}`);
     }
   }, [rawStationCode, setLocation, stationCode]);
+
+  useEffect(() => {
+    if (stationCode === "A1" && !detailQuery.isLoading) {
+      focusBatchInput();
+    }
+  }, [detailQuery.isLoading, stationCode]);
 
   const filteredTasks = useMemo(() => {
     const tasks = detailQuery.data?.tasks ?? [];
@@ -149,9 +185,7 @@ export default function StationPage() {
 
   const getTaskSelections = (taskId: number) => selectedOptions[taskId] ?? defaultSelections();
   const canReceiveA1 = Boolean(
-    arrivalForm.vendorName.trim()
-    && arrivalForm.categoryName.trim()
-    && (arrivalForm.batchNo.trim() || arrivalForm.serialNumber.trim() || arrivalForm.imei.trim()),
+    arrivalForm.batchNo.trim() || arrivalForm.serialNumber.trim() || arrivalForm.imei.trim(),
   );
 
   if (detailQuery.isLoading) {
@@ -211,78 +245,59 @@ export default function StationPage() {
                 <CardTitle className="text-base font-bold">A1 點到貨新增／補齊</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>PO 單號</span>
-                  <Input value={arrivalForm.poNumber} onChange={(event) => setArrivalForm((prev) => ({ ...prev, poNumber: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 PO-20260421-01" />
-                </label>
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>廠商（必填）</span>
-                  <Input value={arrivalForm.vendorName} onChange={(event) => setArrivalForm((prev) => ({ ...prev, vendorName: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 綠途未來股份有限公司" />
-                </label>
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>到貨時間</span>
-                  <Input type="datetime-local" value={arrivalForm.arrivalAt} onChange={(event) => setArrivalForm((prev) => ({ ...prev, arrivalAt: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" />
-                </label>
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>商品分類（必填）</span>
-                  <Input
-                    value={arrivalForm.categoryName}
-                    onChange={(event) => setArrivalForm((prev) => ({ ...prev, categoryName: event.target.value }))}
-                    className="rounded-2xl border-0 bg-slate-50"
-                    placeholder="例如 智慧手機"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>商品批號</span>
-                  <Input value={arrivalForm.batchNo} onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="可留空，但需與序號／IMEI 任一擇一" />
-                </label>
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>商品序號</span>
-                  <Input value={arrivalForm.serialNumber} onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="可留空，但需與批號／IMEI 任一擇一" />
-                </label>
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>IMEI</span>
-                  <Input value={arrivalForm.imei} onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))} className="rounded-2xl border-0 bg-slate-50" placeholder="可留空，但需與批號／序號 任一擇一" />
-                </label>
-                <label className="space-y-2 text-sm text-slate-600">
-                  <span>品名</span>
-                  <select
-                    value={arrivalForm.productName}
-                    onChange={(event) => setArrivalForm((prev) => ({ ...prev, productName: event.target.value }))}
-                    className="h-11 w-full rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none"
-                  >
-                    <option value="">品名可先留空</option>
-                    {(productNameOptionsQuery.data ?? []).map((option) => (
-                      <option key={option.id} value={option.label}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="flex flex-wrap justify-between gap-3 rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
-                <p>若系統中已有相同批號、序號或 IMEI 的 A1 待處理商品，這裡會優先補齊缺少欄位，而不是再新增一筆。到貨時間會與匯入時間分開保存，供每日回寫採購單使用。</p>
-                <Button
-                  className="rounded-2xl"
-                  disabled={receiveMutation.isPending || !canReceiveA1}
-                  onClick={() =>
-                    receiveMutation.mutate({
-                      poNumber: arrivalForm.poNumber.trim() || undefined,
-                      vendorName: arrivalForm.vendorName.trim(),
-                      arrivalAt: arrivalForm.arrivalAt || undefined,
-                      batchNo: arrivalForm.batchNo.trim() || undefined,
-                      serialNumber: arrivalForm.serialNumber.trim() || undefined,
-                      imei: arrivalForm.imei.trim() || undefined,
-                      productName: arrivalForm.productName.trim() || undefined,
-                      categoryName: arrivalForm.categoryName.trim(),
-                    })
-                  }
+                <form
+                  className="space-y-4"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    submitA1Receive();
+                  }}
                 >
-                  建立／補齊 A1 到貨商品
-                </Button>
-              </div>
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                    A1 改為掃碼補齊模式。只要刷入商品批號、商品序號或 IMEI 任一欄位，系統就會優先比對既有匯入資料，補上缺少的識別資訊後直接完成 A1，並把商品推進到 A2。
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>商品批號</span>
+                      <Input
+                        ref={batchNoInputRef}
+                        autoFocus
+                        value={arrivalForm.batchNo}
+                        onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))}
+                        onKeyDown={handleA1ScanSubmitKey}
+                        className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
+                        placeholder="掃描批號後可直接按 Enter"
+                      />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>商品序號</span>
+                      <Input
+                        value={arrivalForm.serialNumber}
+                        onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))}
+                        onKeyDown={handleA1ScanSubmitKey}
+                        className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
+                        placeholder="可補刷序號以補齊資料"
+                      />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>IMEI</span>
+                      <Input
+                        value={arrivalForm.imei}
+                        onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))}
+                        onKeyDown={handleA1ScanSubmitKey}
+                        className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
+                        placeholder="可補刷 IMEI 以補齊資料"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-[#eef2f7] p-4 text-sm text-slate-600">
+                    <p>為了讓掃描槍操作更快，本區不再要求先填 PO、廠商、到貨時間與商品分類；只要任一識別碼命中已匯入的 A1 待處理商品，就會直接完成點到貨並切往 A2。</p>
+                    <Button type="submit" className="rounded-2xl" disabled={receiveMutation.isPending || !canReceiveA1}>
+                      {receiveMutation.isPending ? "比對中..." : "完成 A1 並前往 A2"}
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>
           </div>

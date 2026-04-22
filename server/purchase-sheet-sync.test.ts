@@ -13,21 +13,21 @@ describe("purchase sheet sync helpers", () => {
       buildSheetRow({
         poNumber: "PO-1",
         vendorName: "綠途未來",
-        categoryName: "智慧型手機",
-        brandName: "Apple",
+        importedCategoryName: "智慧型手機",
         batchNo: null,
         serialNumber: "SN-1",
         imei: undefined,
         productName: "",
+        a1CompletedAt: "2026-04-22 10:30:00",
       }),
-    ).toEqual(["PO-1", "綠途未來", "智慧型手機", "Apple", "", "SN-1", "", ""]);
+    ).toEqual(["PO-1", "綠途未來", "智慧型手機", "", "SN-1", "", "", "2026-04-22 10:30:00"]);
   });
 
   it("matches existing rows by IMEI first, then serial number, then batch number", () => {
     const values = [
       PURCHASE_SHEET_HEADER,
-      ["PO-1", "綠途未來", "智慧型手機", "Android", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13"],
-      ["PO-2", "循環供應商", "平板", "Samsung", "BATCH-2", "SN-2", "", "iPad mini"],
+      ["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13", "2026-04-22 10:30:00"],
+      ["PO-2", "循環供應商", "平板", "BATCH-2", "SN-2", "", "iPad mini", ""],
     ];
 
     expect(findMatchingRowNumber(values, { imei: "IMEI-1", serialNumber: "SN-X", batchNo: "BATCH-X" })).toBe(2);
@@ -37,18 +37,18 @@ describe("purchase sheet sync helpers", () => {
   });
 
   it("fills only blank cells and preserves non-empty sheet values", () => {
-    const existingRow = ["PO-1", "綠途未來", "智慧型手機", "Apple", "", "SN-1", "IMEI-1", "現場已填品名"];
-    const generatedRow = ["PO-1", "綠途未來", "智慧型手機", "Apple", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13"];
+    const existingRow = ["PO-1", "綠途未來", "智慧型手機", "", "SN-1", "IMEI-1", "現場已填品名", ""];
+    const generatedRow = ["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13", "2026-04-22 10:30:00"];
 
     expect(mergeMissingCells(existingRow, generatedRow)).toEqual([
       "PO-1",
       "綠途未來",
       "智慧型手機",
-      "Apple",
       "BATCH-1",
       "SN-1",
       "IMEI-1",
       "現場已填品名",
+      "2026-04-22 10:30:00",
     ]);
   });
 
