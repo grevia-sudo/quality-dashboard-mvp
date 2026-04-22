@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-describe("A1 掃碼 UX source coverage", () => {
+describe("A1/A2 掃碼 UX source coverage", () => {
   const source = readFileSync(
     resolve(process.cwd(), "client/src/pages/StationPage.tsx"),
     "utf8",
@@ -21,8 +21,8 @@ describe("A1 掃碼 UX source coverage", () => {
     const successBlock = source.slice(successBlockStart, successBlockEnd);
 
     expect(source).toContain("const refreshA1StationDataInBackground = () => {");
-    expect(source).toContain("const removeCompletedA1TaskFromCache = (productId?: number | null) => {");
-    expect(successBlock).toContain("removeCompletedA1TaskFromCache(result.productId);");
+    expect(source).toContain("const removeCompletedTaskFromCache = (currentStationCode: StationCode, productId?: number | null) => {");
+    expect(successBlock).toContain('removeCompletedTaskFromCache("A1", result.productId);');
     expect(successBlock).toContain("setProductNamePickerOpen(false);");
     expect(successBlock).toContain('setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });');
     expect(successBlock).toContain('focusBatchInput();');
@@ -52,5 +52,22 @@ describe("A1 掃碼 UX source coverage", () => {
     expect(source).toContain("focusBatchInput();");
     expect(source).toContain("onError: (error) => {");
     expect(source).toContain("setProductNamePickerOpen(false);");
+  });
+
+  it("supports A2 QR scan submit, clears the field, and refreshes only in background after success", () => {
+    expect(source).toContain("const quickScanInputRef = useRef<HTMLInputElement | null>(null);");
+    expect(source).toContain("const submitA2ScanComplete = () => {");
+    expect(source).toContain("const handleStationScanInputKey = (event: React.KeyboardEvent<HTMLInputElement>) => {");
+    expect(source).toContain("if (stationCode !== \"A2\" || event.key !== \"Enter\") {");
+    expect(source).toContain("find((task) => (");
+    expect(source).toContain("[task.batchNo, task.productCode, task.serialNumber, task.imei]");
+    expect(source).toContain('toast.error("找不到符合的 A2 待處理商品");');
+    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : "輸入產品代碼、批號、序號或 IMEI"}');
+    expect(source).toContain("A2 已改為掃碼快速完工模式");
+    expect(source).toContain('removeCompletedTaskFromCache("A2", variables.productId);');
+    expect(source).toContain('setKeyword("");');
+    expect(source).toContain('focusQuickScanInput();');
+    expect(source).toContain('refreshStationDataInBackground("A2", "B");');
+    expect(source).not.toContain("await invalidateStationData();");
   });
 });

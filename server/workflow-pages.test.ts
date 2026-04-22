@@ -72,6 +72,15 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("留在本頁");
   });
 
+  it("supports A2 scan-to-complete workflow on the station page", () => {
+    expect(stationPageSource).toContain('stationCode === "A2"');
+    expect(stationPageSource).toContain("submitA2ScanComplete");
+    expect(stationPageSource).toContain("handleStationScanInputKey");
+    expect(stationPageSource).toContain("掃描商品批號 QR 後可直接按 Enter 完成 A2");
+    expect(stationPageSource).toContain("A2 已改為掃碼快速完工模式");
+    expect(stationPageSource).toContain("A2 已完成並推進下一站，請直接掃描下一筆");
+  });
+
   it("renders B and C option menu sections on the station page", () => {
     expect(stationPageSource).toContain("B 站故障狀態");
     expect(stationPageSource).toContain("C 站故障項目");

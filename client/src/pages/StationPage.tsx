@@ -55,6 +55,7 @@ export default function StationPage() {
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
   const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
+  const quickScanInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
     retry: false,
@@ -80,12 +81,21 @@ export default function StationPage() {
     void utils.dashboard.home.invalidate();
   };
 
-  const removeCompletedA1TaskFromCache = (productId?: number | null) => {
+  const refreshStationDataInBackground = (currentStationCode: StationCode, nextStationCode?: StationCode | null) => {
+    void utils.station.detail.invalidate({ stationCode: currentStationCode });
+    if (nextStationCode) {
+      void utils.station.detail.invalidate({ stationCode: nextStationCode });
+    }
+    void utils.station.list.invalidate();
+    void utils.dashboard.home.invalidate();
+  };
+
+  const removeCompletedTaskFromCache = (currentStationCode: StationCode, productId?: number | null) => {
     if (!productId) {
       return;
     }
 
-    utils.station.detail.setData({ stationCode: "A1" }, (current) => {
+    utils.station.detail.setData({ stationCode: currentStationCode }, (current) => {
       if (!current) {
         return current;
       }
@@ -101,6 +111,13 @@ export default function StationPage() {
     window.requestAnimationFrame(() => {
       batchNoInputRef.current?.focus();
       batchNoInputRef.current?.select();
+    });
+  };
+
+  const focusQuickScanInput = () => {
+    window.requestAnimationFrame(() => {
+      quickScanInputRef.current?.focus();
+      quickScanInputRef.current?.select();
     });
   };
 
@@ -126,11 +143,62 @@ export default function StationPage() {
     submitA1Receive();
   };
 
+  const submitA2ScanComplete = () => {
+    if (stationCode !== "A2" || completeMutation.isPending) {
+      return;
+    }
+
+    const normalizedScanValue = keyword.trim().toLowerCase();
+    if (!normalizedScanValue) {
+      return;
+    }
+
+    const matchedTask = (detailQuery.data?.tasks ?? []).find((task) => (
+      [task.batchNo, task.productCode, task.serialNumber, task.imei]
+        .filter((candidate): candidate is string => Boolean(candidate?.trim()))
+        .some((candidate) => candidate.trim().toLowerCase() === normalizedScanValue)
+    ));
+
+    if (!matchedTask) {
+      toast.error("找不到符合的 A2 待處理商品");
+      focusQuickScanInput();
+      return;
+    }
+
+    completeMutation.mutate({
+      taskId: matchedTask.taskId,
+      stationCode: "A2",
+      productId: matchedTask.productId,
+      categoryId: undefined,
+      subtypeCode: matchedTask.subtypeCode ?? null,
+      summary: `${detailQuery.data?.label ?? "A2 安裝"} 掃碼完成`,
+    });
+  };
+
+  const handleStationScanInputKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (stationCode !== "A2" || event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    submitA2ScanComplete();
+  };
+
   const completeMutation = trpc.station.complete.useMutation({
-    onSuccess: async () => {
-      toast.success("站點作業已完成");
+    onSuccess: (_result, variables) => {
       setSelectedOptions({});
-      await invalidateStationData();
+
+      if (variables.stationCode === "A2") {
+        removeCompletedTaskFromCache("A2", variables.productId);
+        setKeyword("");
+        toast.success("A2 已完成並推進下一站，請直接掃描下一筆");
+        focusQuickScanInput();
+        refreshStationDataInBackground("A2", "B");
+        return;
+      }
+
+      toast.success("站點作業已完成");
+      void invalidateStationData();
     },
     onError: (error) => {
       toast.error(error.message || "站點作業更新失敗");
@@ -144,7 +212,7 @@ export default function StationPage() {
         return;
       }
 
-      removeCompletedA1TaskFromCache(result.productId);
+      removeCompletedTaskFromCache("A1", result.productId);
       toast.success(`${result.productCode ?? "商品"} 已完成 A1 點到貨，請直接掃描下一筆`);
       setProductNamePickerOpen(false);
       setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });
@@ -167,6 +235,10 @@ export default function StationPage() {
   useEffect(() => {
     if (stationCode === "A1" && !detailQuery.isLoading) {
       focusBatchInput();
+    }
+
+    if (stationCode === "A2" && !detailQuery.isLoading) {
+      focusQuickScanInput();
     }
   }, [detailQuery.isLoading, stationCode]);
 
@@ -409,9 +481,21 @@ export default function StationPage() {
             <CardTitle className="text-base font-bold">掃碼／條碼輸入</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative max-w-xl">
-              <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-              <Input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="輸入產品代碼、批號、序號或 IMEI" className="h-12 rounded-2xl border-0 bg-slate-50 pl-11" />
+            <div className="relative max-w-xl space-y-3">
+              <div className="relative">
+                <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                <Input
+                  ref={quickScanInputRef}
+                  value={keyword}
+                  onChange={(event) => setKeyword(event.target.value)}
+                  onKeyDown={handleStationScanInputKey}
+                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : "輸入產品代碼、批號、序號或 IMEI"}
+                  className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
+                />
+              </div>
+              {stationCode === "A2" ? (
+                <p className="text-sm text-slate-500">A2 已改為掃碼快速完工模式。刷入商品批號 QR 後會立即完成 A2、推進到下一站，並在背景回寫安裝完成時間。</p>
+              ) : null}
             </div>
           </CardContent>
         </Card>

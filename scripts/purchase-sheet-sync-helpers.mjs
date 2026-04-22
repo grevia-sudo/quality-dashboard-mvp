@@ -1,6 +1,6 @@
 export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 export const SHEET_NAME = "採購單";
-export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間"];
+export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "安裝完成時間"];
 
 export function stringifyCell(value) {
   if (value === null || value === undefined) {
@@ -52,6 +52,7 @@ export function buildSheetRow(product) {
     stringifyCell(product.imei),
     stringifyCell(product.productName),
     formatSheetDateTime(product.a1CompletedAt),
+    formatSheetDateTime(product.a2CompletedAt),
   ];
 }
 
@@ -59,7 +60,7 @@ export function mergeMissingCells(existingRow, generatedRow) {
   return generatedRow.map((value, index) => {
     const existingValue = stringifyCell(existingRow[index]);
 
-    if (index === 7) {
+    if (index === 7 || index === 8) {
       return value || existingValue;
     }
 

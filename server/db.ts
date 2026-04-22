@@ -1147,6 +1147,7 @@ export async function completeStationTask(input: {
   const nextStation = nextStationFor(input.stationCode);
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const completedAt = new Date();
   const selectedOptionIds = Array.from(new Set([...(input.faultOptionIds ?? []), ...(input.appearanceOptionIds ?? [])]));
   const selectedOptions = selectedOptionIds.length
     ? await db.select().from(defectOptions).where(inArray(defectOptions.id, selectedOptionIds))
@@ -1158,9 +1159,9 @@ export async function completeStationTask(input: {
     .update(stationTasks)
     .set({
       taskStatus: "completed",
-      completedAt: new Date(),
+      completedAt,
       resultSummary: input.summary ?? "已完成站點作業",
-      updatedAt: new Date(),
+      updatedAt: completedAt,
     })
     .where(eq(stationTasks.id, input.taskId));
 
@@ -1188,13 +1189,23 @@ export async function completeStationTask(input: {
     status: "queued",
   });
 
+  if (input.stationCode === "A2") {
+    await db.insert(sheetSyncJobs).values({
+      jobType: "purchase_sheet_sync",
+      targetSheetName: "採購單",
+      status: "queued",
+    });
+
+    triggerPurchaseSheetSyncInBackground();
+  }
+
   if (nextStation) {
     await db
       .update(products)
       .set({
         currentStationCode: nextStation,
         currentStatus: statusForStation(nextStation),
-        updatedAt: new Date(),
+        updatedAt: completedAt,
       })
       .where(eq(products.id, input.productId));
 
@@ -1216,7 +1227,7 @@ export async function completeStationTask(input: {
       .set({
         currentStatus: "completed",
         stockStatus: "stocked",
-        updatedAt: new Date(),
+        updatedAt: completedAt,
       })
       .where(eq(products.id, input.productId));
   }
