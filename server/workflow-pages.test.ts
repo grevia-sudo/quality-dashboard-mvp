@@ -19,6 +19,16 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).not.toContain("category,batchNo,serialNumber,imei,productName");
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
+    expect(importPageSource).toContain("PO 單號（留空自動生成）");
+    expect(importPageSource).toContain("trpc.station.detail.useQuery({ stationCode: \"A1\" }");
+    expect(importPageSource).toContain("已匯入未完成點貨的採購單");
+    expect(importPageSource).toContain("採購單號");
+    expect(importPageSource).toContain("商品類別");
+    expect(importPageSource).toContain("總數量");
+    expect(importPageSource).toContain("toggleSummaryRow");
+    expect(importPageSource).toContain("ChevronDown");
+    expect(importPageSource).toContain("ChevronRight");
+    expect(importPageSource).toContain("目前沒有已匯入且尚未完成 A1 點貨的採購單");
     expect(importPageSource).toContain("請選擇商品分類");
     expect(importPageSource).toContain("normalizeImportedCell");
     expect(importPageSource).toContain("handleFileUpload");

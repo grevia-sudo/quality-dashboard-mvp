@@ -208,6 +208,40 @@ describe("warehouse MVP router", () => {
     });
   });
 
+  it("allows batch import without manually entering a PO number", async () => {
+    const caller = appRouter.createCaller(createContext("user"));
+
+    await caller.station.importBatch({
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T10:00",
+      rows: [
+        {
+          batchNo: "BATCH-240421-02",
+          serialNumber: "SN-1002",
+          imei: "356000000000002",
+          productName: "iPhone 13",
+          categoryId: 3,
+        },
+      ],
+    });
+
+    expect(importProducts).toHaveBeenLastCalledWith({
+      poNumber: undefined,
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T10:00",
+      importedByUserId: 7,
+      rows: [
+        {
+          batchNo: "BATCH-240421-02",
+          serialNumber: "SN-1002",
+          imei: "356000000000002",
+          productName: "iPhone 13",
+          categoryId: 3,
+        },
+      ],
+    });
+  });
+
   it("submits sampling result with authenticated sampler id", async () => {
     const caller = appRouter.createCaller(createContext("user"));
 

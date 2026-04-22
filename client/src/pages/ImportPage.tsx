@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
+import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -21,6 +21,21 @@ type CategoryOption = {
   id: number;
   categoryName: string;
   subtypeCode: string;
+};
+
+type PendingPoSummaryRow = {
+  key: string;
+  poNumber: string;
+  categoryLabel: string;
+  totalQuantity: number;
+  details: Array<{
+    productId: number;
+    productCode: string;
+    productName: string | null;
+    batchNo: string | null;
+    serialNumber: string | null;
+    imei: string | null;
+  }>;
 };
 
 const navItems: DashboardNavItem[] = [
@@ -115,17 +130,19 @@ export default function ImportPage() {
   const authQuery = trpc.auth.me.useQuery(undefined, { retry: false });
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, { retry: false });
   const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, { retry: false });
+  const pendingA1Query = trpc.station.detail.useQuery({ stationCode: "A1" }, { retry: false });
   const [poNumber, setPoNumber] = useState("");
   const [vendorName, setVendorName] = useState("");
   const [arrivalAt, setArrivalAt] = useState("");
   const [rows, setRows] = useState<ImportDraftRow[]>([createEmptyRow(), createEmptyRow()]);
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [expandedSummaryKeys, setExpandedSummaryKeys] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
 
   const importMutation = trpc.station.importBatch.useMutation({
     onSuccess: async (result) => {
-      toast.success(`已匯入 ${result.importedCount} 筆商品資料`);
+      toast.success(`已匯入 ${result.importedCount} 筆商品資料，採購單號 ${result.poNumber}`);
       setPoNumber("");
       setVendorName("");
       setArrivalAt("");
@@ -138,6 +155,7 @@ export default function ImportPage() {
       await utils.station.list.invalidate();
       await utils.dashboard.home.invalidate();
       await utils.station.detail.invalidate({ stationCode: "A1" });
+      await pendingA1Query.refetch();
       setLocation("/station/A1");
     },
     onError: (error) => {
@@ -159,6 +177,44 @@ export default function ImportPage() {
     [rows],
   );
 
+  const pendingPoSummary = useMemo<PendingPoSummaryRow[]>(() => {
+    const summaryMap = new Map<string, PendingPoSummaryRow>();
+
+    for (const task of pendingA1Query.data?.tasks ?? []) {
+      const poNumber = task.poNumber?.trim() || "系統補號中";
+      const categoryLabel = [task.categoryName, task.subtypeCode].filter(Boolean).join(" / ") || task.subtypeCode || task.categoryName || "未分類";
+      const key = `${poNumber}__${categoryLabel}`;
+      const current = summaryMap.get(key) ?? {
+        key,
+        poNumber,
+        categoryLabel,
+        totalQuantity: 0,
+        details: [],
+      };
+
+      current.totalQuantity += 1;
+      current.details.push({
+        productId: task.productId,
+        productCode: task.productCode,
+        productName: task.productName ?? null,
+        batchNo: task.batchNo ?? null,
+        serialNumber: task.serialNumber ?? null,
+        imei: task.imei ?? null,
+      });
+      summaryMap.set(key, current);
+    }
+
+    return Array.from(summaryMap.values()).sort((left, right) => {
+      if (left.poNumber !== right.poNumber) {
+        return right.poNumber.localeCompare(left.poNumber);
+      }
+      if (right.totalQuantity !== left.totalQuantity) {
+        return right.totalQuantity - left.totalQuantity;
+      }
+      return left.categoryLabel.localeCompare(right.categoryLabel, "zh-Hant");
+    });
+  }, [pendingA1Query.data?.tasks]);
+
   const canImport = vendorName.trim() && preparedRows.length > 0;
   const isAdmin = ["admin", "manager", "supervisor"].includes(authQuery.data?.role ?? "user");
 
@@ -168,6 +224,13 @@ export default function ImportPage() {
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const toggleSummaryRow = (key: string) => {
+    setExpandedSummaryKeys((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -218,8 +281,8 @@ export default function ImportPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <label className="space-y-2 text-sm text-slate-600">
-                  <span>PO 單號（同批共用）</span>
-                  <Input value={poNumber} onChange={(event) => setPoNumber(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 PO-20260421-01" />
+                  <span>PO 單號（留空自動生成）</span>
+                  <Input value={poNumber} onChange={(event) => setPoNumber(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="留空時由系統自動產生，例如 PO-20260421-01" />
                 </label>
                 <label className="space-y-2 text-sm text-slate-600">
                   <span>廠商（必填）</span>
@@ -277,6 +340,74 @@ export default function ImportPage() {
                 >
                   開始匯入 {preparedRows.length > 0 ? `(${preparedRows.length} 筆)` : ""}
                 </Button>
+              </div>
+
+              <div className="rounded-[24px] bg-slate-50 p-4 md:p-5">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">已匯入未完成點貨的採購單</h2>
+                    <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊採購單列可展開查看尚未完成 A1 點貨的品項細項。</p>
+                  </div>
+                  <Badge className="w-fit bg-slate-900 text-white">待點貨 {pendingPoSummary.reduce((total, item) => total + item.totalQuantity, 0)} 筆</Badge>
+                </div>
+
+                <div className="mt-4 overflow-hidden rounded-[20px] border border-slate-200 bg-white">
+                  <div className="hidden grid-cols-[1.2fr_1fr_100px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid">
+                    <div>採購單號</div>
+                    <div>商品類別</div>
+                    <div className="text-right">總數量</div>
+                  </div>
+
+                  {pendingPoSummary.length > 0 ? (
+                    <div className="divide-y divide-slate-100">
+                      {pendingPoSummary.map((item) => {
+                        const isExpanded = Boolean(expandedSummaryKeys[item.key]);
+                        return (
+                          <div key={item.key} className="bg-white">
+                            <button
+                              type="button"
+                              className="grid w-full gap-3 px-4 py-4 text-left transition hover:bg-slate-50 md:grid-cols-[1.2fr_1fr_100px] md:items-center"
+                              onClick={() => toggleSummaryRow(item.key)}
+                            >
+                              <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
+                                {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
+                                <span>{item.poNumber}</span>
+                              </div>
+                              <div className="text-sm text-slate-700">{item.categoryLabel}</div>
+                              <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
+                            </button>
+
+                            {isExpanded ? (
+                              <div className="border-t border-slate-100 bg-slate-50 px-4 py-4">
+                                <div className="grid gap-3 text-xs font-semibold tracking-wide text-slate-500 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
+                                  <div>品項 / 品名</div>
+                                  <div>商品批號</div>
+                                  <div>商品序號</div>
+                                  <div>IMEI</div>
+                                </div>
+                                <div className="mt-3 space-y-2">
+                                  {item.details.map((detail) => (
+                                    <div key={detail.productId} className="grid gap-3 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm md:grid-cols-[1.2fr_1fr_1fr_1fr]">
+                                      <div>
+                                        <p className="font-semibold text-slate-900">{detail.productName || detail.productCode}</p>
+                                        <p className="mt-1 text-xs text-slate-500">產品代碼：{detail.productCode}</p>
+                                      </div>
+                                      <div>{detail.batchNo || "—"}</div>
+                                      <div>{detail.serialNumber || "—"}</div>
+                                      <div>{detail.imei || "—"}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="px-4 py-8 text-sm text-slate-600">目前沒有已匯入且尚未完成 A1 點貨的採購單；完成匯入後，系統會在這裡依採購單號整理待處理資料。</div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

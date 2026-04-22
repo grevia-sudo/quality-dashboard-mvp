@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   defectOptions,
@@ -128,6 +128,44 @@ async function seedProductNameOptionsIfNeeded(db: NonNullable<Awaited<ReturnType
 
 function buildProductCode(seed: number, index: number) {
   return `P-${seed}-${String(index + 1).padStart(3, "0")}`;
+}
+
+function formatPoDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+function parsePoSequence(poNumber: string | null | undefined, prefix: string) {
+  if (!poNumber?.startsWith(`${prefix}-`)) {
+    return 0;
+  }
+
+  const sequence = Number(poNumber.slice(prefix.length + 1));
+  return Number.isInteger(sequence) && sequence > 0 ? sequence : 0;
+}
+
+async function generateAutoPoNumber(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  dateSeed: Date,
+  reservedPoNumbers: Set<string> = new Set(),
+) {
+  const prefix = `PO-${formatPoDate(dateSeed)}`;
+  const existingRows = await db
+    .select({ poNumber: products.poNumber })
+    .from(products)
+    .where(like(products.poNumber, `${prefix}-%`));
+
+  let maxSequence = 0;
+  for (const row of existingRows) {
+    maxSequence = Math.max(maxSequence, parsePoSequence(row.poNumber, prefix));
+  }
+  reservedPoNumbers.forEach((poNumber) => {
+    maxSequence = Math.max(maxSequence, parsePoSequence(poNumber, prefix));
+  });
+
+  return `${prefix}-${String(maxSequence + 1).padStart(2, "0")}`;
 }
 
 function normalizeOptionalText(value?: string | null) {
@@ -489,6 +527,58 @@ export async function getProductCategoryOptions() {
     .orderBy(asc(productCategories.categoryName), asc(productCategories.subtypeCode), asc(productCategories.id));
 }
 
+async function backfillMissingImportPoNumbers(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
+  const pendingRows = await db
+    .select({
+      id: products.id,
+      vendorName: products.vendorName,
+      arrivalAt: products.arrivalAt,
+      createdAt: products.createdAt,
+    })
+    .from(products)
+    .where(
+      and(
+        eq(products.currentStationCode, "A1"),
+        eq(products.currentStatus, "pending_a1"),
+        isNull(products.archivedAt),
+        sql`(${products.poNumber} is null or ${products.poNumber} = '')`,
+      ),
+    )
+    .orderBy(asc(products.createdAt), asc(products.id));
+
+  if (pendingRows.length === 0) {
+    return 0;
+  }
+
+  const groupedRows = new Map<string, typeof pendingRows>();
+  for (const row of pendingRows) {
+    const createdDate = row.createdAt.toISOString().slice(0, 10);
+    const arrivalKey = row.arrivalAt ? row.arrivalAt.toISOString() : "";
+    const groupKey = [row.vendorName ?? "", arrivalKey, createdDate].join("|");
+    const current = groupedRows.get(groupKey) ?? [];
+    current.push(row);
+    groupedRows.set(groupKey, current);
+  }
+
+  const reservedPoNumbers = new Set<string>();
+  for (const rows of Array.from(groupedRows.values())) {
+    const seedDate = rows[0]?.arrivalAt ?? rows[0]?.createdAt ?? new Date();
+    const poNumber = await generateAutoPoNumber(db, seedDate, reservedPoNumbers);
+    reservedPoNumbers.add(poNumber);
+
+    await db
+      .update(products)
+      .set({
+        poNumber,
+        inspectionSummary: `PO:${poNumber}`,
+        updatedAt: new Date(),
+      })
+      .where(inArray(products.id, rows.map((row: (typeof pendingRows)[number]) => row.id)));
+  }
+
+  return pendingRows.length;
+}
+
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
@@ -496,6 +586,10 @@ export async function getStationPageData(stationCode: StationCode) {
   }
 
   await ensureMvpSeedData();
+  if (stationCode === "A1") {
+    await backfillMissingImportPoNumbers(db);
+  }
+
   const rows = await db
     .select({
       taskId: stationTasks.id,
@@ -503,6 +597,7 @@ export async function getStationPageData(stationCode: StationCode) {
       isOverdue: stationTasks.isOverdue,
       productId: products.id,
       productCode: products.productCode,
+      poNumber: products.poNumber,
       batchNo: products.batchNo,
       serialNumber: products.serialNumber,
       imei: products.imei,
@@ -557,6 +652,7 @@ export async function importProducts(input: {
   }
 
   const arrivalAt = parseArrivalAt(input.arrivalAt);
+  const resolvedPoNumber = normalizeOptionalText(input.poNumber) ?? await generateAutoPoNumber(db, arrivalAt ?? new Date());
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
   const importSeed = Date.now();
@@ -583,7 +679,7 @@ export async function importProducts(input: {
       const nextImei = matchedProduct.imei ?? imei;
       const nextProductName = matchedProduct.productName ?? productName;
       const nextCategoryId = matchedProduct.categoryId ?? row.categoryId;
-      const nextPoNumber = matchedProduct.poNumber ?? normalizeOptionalText(input.poNumber);
+      const nextPoNumber = matchedProduct.poNumber ?? resolvedPoNumber;
       const nextVendorName = matchedProduct.vendorName ?? vendorName;
       const nextArrivalAt = matchedProduct.arrivalAt ?? arrivalAt;
 
@@ -621,7 +717,7 @@ export async function importProducts(input: {
     const productCode = buildProductCode(importSeed, index);
     await db.insert(products).values({
       productCode,
-      poNumber: normalizeOptionalText(input.poNumber),
+      poNumber: resolvedPoNumber,
       vendorName,
       batchNo,
       serialNumber,
@@ -631,7 +727,7 @@ export async function importProducts(input: {
       categoryId: row.categoryId,
       currentStationCode: "A1",
       currentStatus: "pending_a1",
-      inspectionSummary: input.poNumber ? `PO:${input.poNumber}` : null,
+      inspectionSummary: `PO:${resolvedPoNumber}`,
     });
 
     const created = await db.select().from(products).where(eq(products.productCode, productCode)).limit(1);
@@ -642,7 +738,7 @@ export async function importProducts(input: {
 
     await ensurePendingA1Task(db, product.id, businessDateValue, {
       source: "import",
-      poNumber: normalizeOptionalText(input.poNumber),
+      poNumber: resolvedPoNumber,
     });
   }
 
@@ -655,7 +751,7 @@ export async function importProducts(input: {
   return {
     success: true as const,
     importedCount: createdProducts.length,
-    poNumber: normalizeOptionalText(input.poNumber),
+    poNumber: resolvedPoNumber,
     vendorName,
     arrivalAt,
     products: createdProducts,
