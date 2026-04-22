@@ -15,13 +15,18 @@ describe("A1 掃碼 UX source coverage", () => {
     expect(source.match(/onKeyDown=\{handleA1ScanSubmitKey\}/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
   });
 
-  it("clears A1 scan fields and keeps the operator on A1 after success", () => {
+  it("clears A1 scan fields, keeps the operator on A1, and refreshes in background after success", () => {
     const successBlockStart = source.indexOf("const receiveMutation = trpc.station.receive.useMutation({");
     const successBlockEnd = source.indexOf("onError: (error) => {", successBlockStart);
     const successBlock = source.slice(successBlockStart, successBlockEnd);
 
+    expect(source).toContain("const refreshA1StationDataInBackground = () => {");
+    expect(source).toContain("const removeCompletedA1TaskFromCache = (productId?: number | null) => {");
+    expect(successBlock).toContain("removeCompletedA1TaskFromCache(result.productId);");
     expect(successBlock).toContain('setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });');
     expect(successBlock).toContain('focusBatchInput();');
+    expect(successBlock).toContain("refreshA1StationDataInBackground();");
+    expect(successBlock).not.toContain("await invalidateStationData();");
     expect(successBlock).not.toContain('setLocation(`/station/A2?from=A1&productCode=${encodeURIComponent(result.productCode ?? "")}`);');
   });
 

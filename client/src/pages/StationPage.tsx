@@ -71,6 +71,30 @@ export default function StationPage() {
     await utils.dashboard.home.invalidate();
   };
 
+  const refreshA1StationDataInBackground = () => {
+    void utils.station.detail.invalidate({ stationCode: "A1" });
+    void utils.station.detail.invalidate({ stationCode: "A2" });
+    void utils.station.list.invalidate();
+    void utils.dashboard.home.invalidate();
+  };
+
+  const removeCompletedA1TaskFromCache = (productId?: number | null) => {
+    if (!productId) {
+      return;
+    }
+
+    utils.station.detail.setData({ stationCode: "A1" }, (current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        tasks: current.tasks.filter((task) => task.productId !== productId),
+      };
+    });
+  };
+
   const focusBatchInput = () => {
     window.requestAnimationFrame(() => {
       batchNoInputRef.current?.focus();
@@ -112,17 +136,17 @@ export default function StationPage() {
   });
 
   const receiveMutation = trpc.station.receive.useMutation({
-    onSuccess: async (result) => {
+    onSuccess: (result) => {
       if (!result.success) {
         toast.error(result.message || "A1 點到貨處理失敗");
         return;
       }
 
+      removeCompletedA1TaskFromCache(result.productId);
       toast.success(`${result.productCode ?? "商品"} 已完成 A1 點到貨，請直接掃描下一筆`);
       setArrivalForm({ batchNo: "", serialNumber: "", imei: "", productName: "" });
-      await invalidateStationData();
-      await utils.station.detail.invalidate({ stationCode: "A2" });
       focusBatchInput();
+      refreshA1StationDataInBackground();
     },
     onError: (error) => {
       toast.error(error.message || "A1 點到貨處理失敗");
