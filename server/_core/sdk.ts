@@ -1,6 +1,7 @@
 import { AXIOS_TIMEOUT_MS, COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ForbiddenError } from "@shared/_core/errors";
 import axios, { type AxiosInstance } from "axios";
+import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
@@ -27,6 +28,13 @@ export type SessionPayload = {
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
+const LOCAL_AUTH_OPEN_ID_PREFIX = "local:";
+const LOCAL_AUTH_BOOTSTRAP = {
+  username: "Kiddliao",
+  password: "Kidd1985",
+  role: "admin" as const,
+  name: "Kiddliao",
+};
 
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {
@@ -163,6 +171,65 @@ class SDKServer {
     } as GetUserInfoResponse;
   }
 
+  private createPasswordHash(password: string): string {
+    const salt = randomBytes(16).toString("hex");
+    const derivedKey = scryptSync(password, salt, 64).toString("hex");
+    return `scrypt:${salt}:${derivedKey}`;
+  }
+
+  private verifyPasswordHash(password: string, passwordHash: string): boolean {
+    const [algorithm, salt, expectedHash] = passwordHash.split(":");
+    if (algorithm !== "scrypt" || !salt || !expectedHash) {
+      return false;
+    }
+
+    const actualHash = scryptSync(password, salt, 64);
+    const expectedBuffer = Buffer.from(expectedHash, "hex");
+
+    if (actualHash.length !== expectedBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(actualHash, expectedBuffer);
+  }
+
+  async ensureLocalPasswordBootstrapUser(): Promise<void> {
+    const existingUser = await db.getUserByUsername(LOCAL_AUTH_BOOTSTRAP.username);
+    if (existingUser?.passwordHash) {
+      return;
+    }
+
+    await db.upsertUser({
+      openId: `${LOCAL_AUTH_OPEN_ID_PREFIX}${LOCAL_AUTH_BOOTSTRAP.username}`,
+      username: LOCAL_AUTH_BOOTSTRAP.username,
+      passwordHash: this.createPasswordHash(LOCAL_AUTH_BOOTSTRAP.password),
+      name: existingUser?.name ?? LOCAL_AUTH_BOOTSTRAP.name,
+      loginMethod: "password",
+      role: existingUser?.role ?? LOCAL_AUTH_BOOTSTRAP.role,
+      lastSignedIn: existingUser?.lastSignedIn ?? new Date(),
+    });
+  }
+
+  async authenticatePasswordUser(username: string, password: string): Promise<User> {
+    await this.ensureLocalPasswordBootstrapUser();
+
+    const normalizedUsername = username.trim();
+    const user = await db.getUserByUsername(normalizedUsername);
+
+    if (!user?.passwordHash || !this.verifyPasswordHash(password, user.passwordHash)) {
+      throw ForbiddenError("Invalid username or password");
+    }
+
+    await db.upsertUser({
+      openId: user.openId,
+      username: user.username,
+      lastSignedIn: new Date(),
+      loginMethod: "password",
+    });
+
+    return (await db.getUserByOpenId(user.openId)) ?? user;
+  }
+
   private parseCookies(cookieHeader: string | undefined) {
     if (!cookieHeader) {
       return new Map<string, string>();
@@ -287,6 +354,11 @@ class SDKServer {
     const sessionUserId = session.openId;
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
+
+    // Local password sessions do not require OAuth user sync.
+    if (!user && sessionUserId.startsWith(LOCAL_AUTH_OPEN_ID_PREFIX)) {
+      throw ForbiddenError("Local user not found");
+    }
 
     // If user not in DB, sync from OAuth server automatically
     if (!user) {

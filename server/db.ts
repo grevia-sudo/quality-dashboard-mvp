@@ -51,6 +51,9 @@ function createDatabaseClient(databaseUrl: string) {
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   }));
 }
 
@@ -582,7 +585,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   };
   const updateSet: Record<string, unknown> = {};
 
-  const textFields = ["name", "email", "loginMethod"] as const;
+  const textFields = ["username", "passwordHash", "name", "email", "loginMethod"] as const;
   type TextField = (typeof textFields)[number];
 
   const assignNullable = (field: TextField) => {
@@ -626,6 +629,17 @@ export async function getUserByOpenId(openId: string) {
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByUsername(username: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user by username: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 

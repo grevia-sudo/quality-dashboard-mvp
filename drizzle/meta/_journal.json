@@ -57,6 +57,13 @@
       "when": 1776955626947,
       "tag": "0007_last_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1776968258390,
+      "tag": "0008_blushing_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import EngineerKpiPage from "./pages/EngineerKpiPage";
 import Home from "./pages/Home";
 import ImportPage from "./pages/ImportPage";
+import LoginPage from "./pages/LoginPage";
 import OperationsPage from "./pages/OperationsPage";
 import SamplingPage from "./pages/SamplingPage";
 import StationPage from "./pages/StationPage";
@@ -15,6 +16,7 @@ import StationPage from "./pages/StationPage";
 function Router() {
   return (
     <Switch>
+      <Route path="/login" component={LoginPage} />
       <Route path="/operations" component={OperationsPage} />
       <Route path="/import" component={ImportPage} />
       <Route path="/station/:stationCode" component={StationPage} />

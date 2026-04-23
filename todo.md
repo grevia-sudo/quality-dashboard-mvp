@@ -242,7 +242,12 @@
 - [ ] 修正 E 站完成時間的 Google Sheet 時區或格式轉換問題，確認 Z 欄顯示為正確的現場時間
 - [ ] 統一修正 A1、A2、B、C、D、E 站完成時間來源，改為以應用端實際時間為準
 - [ ] 排查並校正各站 Google Sheet 完成時間欄位，避免資料庫時鐘快 4 小時造成寫入時間錯誤
-- [ ] 排查目前無法登入的問題，確認是 OAuth、Cookie、回呼網址或服務設定哪一段失敗
-- [ ] 修正登入流程，讓使用者可重新正常登入 quality-dashboard-mvp
-- [ ] 排查登入時出現 403 與 OAuth callback failed 的原因，確認是回呼網址、授權設定、Cookie 或站內流程哪一段失敗
-- [ ] 修正登入流程，讓 quality-dashboard-mvp 可正常完成 OAuth callback 並建立登入狀態
+- [x] 排查目前無法登入的問題，確認是 OAuth、Cookie、回呼網址或服務設定哪一段失敗
+- [x] 修正登入流程，讓使用者可重新正常登入 quality-dashboard-mvp
+- [x] 排查登入時出現 403 與 OAuth callback failed 的原因，確認是回呼網址、授權設定、Cookie 或站內流程哪一段失敗
+- [ ] 修正登入流程，讓 quality-dashboard-mvp 可正常完成 OAuth callback 並建立登入狀態（此需求已取消，改為本地帳密登入）
+- [x] 依使用者最新回報的 `{"error":"OAuth callback failed"}` 重新抓取 callback 日誌與上游回應，定位正式網域目前仍失敗的實際原因
+- [x] 依使用者最新決策放棄 OAuth，改為帳號密碼登入，先盤點現有 user 資料模型、session 流程與前端入口的最小改造路徑
+- [x] 以最小改動重做登入流程，讓 quality-dashboard-mvp 支援帳號密碼登入並停用原本 OAuth 入口
+- [x] 重新提交本地帳密登入並保留成功證據，確認 `Kiddliao / Kidd1985` 可建立 session，且 `auth.me` 已讀到 `admin` 使用者
+
