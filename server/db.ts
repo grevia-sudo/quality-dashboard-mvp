@@ -223,20 +223,41 @@ function statusForStation(code: StationCode) {
 }
 
 async function seedDefectOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
-  const existingOptions = await db.select({ count: sql<number>`count(*)` }).from(defectOptions);
-  if ((existingOptions[0]?.count ?? 0) > 0) {
-    return;
-  }
-
-  await db.insert(defectOptions).values([
+  const desiredOptions: Array<{ stationCode: "B" | "C"; optionType: "fault" | "appearance"; label: string; sortOrder: number }> = [
     { stationCode: "B", optionType: "fault", label: "無法開機", sortOrder: 10 },
     { stationCode: "B", optionType: "fault", label: "觸控異常", sortOrder: 20 },
     { stationCode: "B", optionType: "fault", label: "電池健康異常", sortOrder: 30 },
-    { stationCode: "C", optionType: "fault", label: "鏡頭故障", sortOrder: 10 },
-    { stationCode: "C", optionType: "fault", label: "Face ID / 指紋異常", sortOrder: 20 },
-    { stationCode: "C", optionType: "appearance", label: "螢幕刮傷", sortOrder: 10 },
-    { stationCode: "C", optionType: "appearance", label: "邊框凹傷", sortOrder: 20 },
-  ]);
+    { stationCode: "C", optionType: "fault", label: "破裂", sortOrder: 10 },
+    { stationCode: "C", optionType: "fault", label: "刮傷", sortOrder: 20 },
+    { stationCode: "C", optionType: "appearance", label: "破裂", sortOrder: 10 },
+    { stationCode: "C", optionType: "appearance", label: "刮傷", sortOrder: 20 },
+  ];
+
+  const existingOptions = await db.select().from(defectOptions);
+  if (existingOptions.length === 0) {
+    await db.insert(defectOptions).values(desiredOptions);
+    return;
+  }
+
+  for (const desiredOption of desiredOptions) {
+    const matchedOption = existingOptions.find((option) => (
+      option.stationCode === desiredOption.stationCode
+      && option.optionType === desiredOption.optionType
+      && Number(option.sortOrder ?? 0) === desiredOption.sortOrder
+    ));
+
+    if (!matchedOption) {
+      await db.insert(defectOptions).values(desiredOption);
+      continue;
+    }
+
+    if (matchedOption.label !== desiredOption.label) {
+      await db
+        .update(defectOptions)
+        .set({ label: desiredOption.label, active: true, updatedAt: new Date() })
+        .where(eq(defectOptions.id, matchedOption.id));
+    }
+  }
 }
 
 async function seedProductNameOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
@@ -824,10 +845,41 @@ async function backfillMissingImportPoNumbers(db: NonNullable<Awaited<ReturnType
   return pendingRows.length;
 }
 
+function normalizeTextArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+}
+
+function normalizeNumberArray(value: unknown): number[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (typeof item === "number" && Number.isFinite(item)) {
+        return item;
+      }
+
+      if (typeof item === "string" && item.trim()) {
+        const parsed = Number(item);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      return null;
+    })
+    .filter((item): item is number => item !== null);
+}
+
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
-    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [] };
+    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [], bFaultOptions: [] };
   }
 
   await ensureMvpSeedData();
@@ -852,6 +904,7 @@ export async function getStationPageData(stationCode: StationCode) {
       subtypeCode: productCategories.subtypeCode,
       categoryName: productCategories.categoryName,
       brandName: productCategories.brandName,
+      taskMetadata: stationTasks.metadata,
     })
     .from(stationTasks)
     .innerJoin(products, eq(stationTasks.productId, products.id))
@@ -863,17 +916,86 @@ export async function getStationPageData(stationCode: StationCode) {
     ))
     .orderBy(desc(stationTasks.isOverdue), asc(stationTasks.id));
 
-  const [faultOptions, appearanceOptions] = await Promise.all([
+  const [faultOptions, appearanceOptions, bFaultOptions] = await Promise.all([
     stationCode === "B" || stationCode === "C" ? getDefectOptions(stationCode, "fault") : Promise.resolve([]),
     stationCode === "C" ? getDefectOptions(stationCode, "appearance") : Promise.resolve([]),
+    stationCode === "C" ? getDefectOptions("B", "fault") : Promise.resolve([]),
   ]);
+
+  const nextRows = stationCode === "C"
+    ? await (async () => {
+        const productIds = rows.map((row) => row.productId);
+        if (productIds.length === 0) {
+          return rows.map((row) => ({
+            ...row,
+            inheritedBFaultOptionIds: [],
+            inheritedBFaultLabels: [],
+            inheritedBatteryNote: "",
+            inheritedBatteryIssueLabels: [],
+            inheritedBatterySummary: "正常",
+            inheritedBFaultSummary: "正常",
+          }));
+        }
+
+        const completedBRows = await db
+          .select({
+            productId: stationTasks.productId,
+            metadata: stationTasks.metadata,
+            completedAt: stationTasks.completedAt,
+          })
+          .from(stationTasks)
+          .where(and(
+            inArray(stationTasks.productId, productIds),
+            eq(stationTasks.stationCode, "B"),
+            eq(stationTasks.taskStatus, "completed"),
+          ))
+          .orderBy(desc(stationTasks.completedAt));
+
+        const latestBMetaByProductId = new Map<number, Record<string, unknown>>();
+        for (const completedTask of completedBRows) {
+          if (latestBMetaByProductId.has(completedTask.productId)) {
+            continue;
+          }
+
+          latestBMetaByProductId.set(completedTask.productId, (completedTask.metadata ?? {}) as Record<string, unknown>);
+        }
+
+        return rows.map((row) => {
+          const taskMetadata = (row.taskMetadata ?? {}) as Record<string, unknown>;
+          const latestBMetadata = latestBMetaByProductId.get(row.productId) ?? {};
+          const inheritedBFaultOptionIds = normalizeNumberArray(taskMetadata.bFaultOptionIds ?? latestBMetadata.faultOptionIds);
+          const inheritedBFaultLabels = normalizeTextArray(taskMetadata.bFaultLabels ?? latestBMetadata.faultLabels);
+          const inheritedBatteryIssueLabels = normalizeTextArray(taskMetadata.batteryIssueLabels ?? latestBMetadata.batteryIssueLabels);
+          const inheritedBatteryNote = typeof (taskMetadata.batteryNote ?? latestBMetadata.batteryNote) === "string"
+            ? String(taskMetadata.batteryNote ?? latestBMetadata.batteryNote).trim()
+            : "";
+          const inheritedBatterySummary = typeof latestBMetadata.batterySummary === "string" && latestBMetadata.batterySummary.trim()
+            ? latestBMetadata.batterySummary.trim()
+            : [inheritedBatteryNote, ...inheritedBatteryIssueLabels].filter(Boolean).join(", ") || "正常";
+          const inheritedBFaultSummary = typeof latestBMetadata.faultSummary === "string" && latestBMetadata.faultSummary.trim()
+            ? latestBMetadata.faultSummary.trim()
+            : inheritedBFaultLabels.join(", ") || "正常";
+
+          return {
+            ...row,
+            inheritedBFaultOptionIds,
+            inheritedBFaultLabels,
+            inheritedBatteryNote,
+            inheritedBatteryIssueLabels,
+            inheritedBatterySummary,
+            inheritedBFaultSummary,
+          };
+        });
+      })()
+    : rows;
 
   return {
     stationCode,
     label: stationToLabel(stationCode),
-    tasks: rows,
+    tasks: nextRows,
     faultOptions,
     appearanceOptions,
+    bFaultOptions,
   };
 }
 
@@ -1164,8 +1286,10 @@ export async function completeStationTask(input: {
   summary?: string;
   faultOptionIds?: number[];
   appearanceOptionIds?: number[];
+  bFaultOptionIds?: number[];
   batteryNote?: string;
   batteryIssueLabels?: Array<"電池膨脹" | "副廠電池" | "電池異常">;
+  applyBChanges?: boolean;
 }) {
   const db = await getDb();
   if (!db) {
@@ -1177,19 +1301,37 @@ export async function completeStationTask(input: {
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
   const completedAt = new Date();
   const selectedOptionIds = Array.from(new Set([...(input.faultOptionIds ?? []), ...(input.appearanceOptionIds ?? [])]));
-  const selectedOptions = selectedOptionIds.length
-    ? await db.select().from(defectOptions).where(inArray(defectOptions.id, selectedOptionIds))
+  const bFaultOptionIds = Array.from(new Set(input.bFaultOptionIds ?? []));
+  const queriedOptionIds = Array.from(new Set([...selectedOptionIds, ...bFaultOptionIds]));
+  const selectedOptions = queriedOptionIds.length
+    ? await db.select().from(defectOptions).where(inArray(defectOptions.id, queriedOptionIds))
     : [];
-  const faultLabels = selectedOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
-  const appearanceLabels = selectedOptions.filter((option) => option.optionType === "appearance").map((option) => option.label);
+  const currentStationOptions = selectedOptions.filter((option) => !bFaultOptionIds.includes(option.id));
+  const carriedBOptions = selectedOptions.filter((option) => bFaultOptionIds.includes(option.id));
+  const faultLabels = currentStationOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
+  const appearanceLabels = currentStationOptions.filter((option) => option.optionType === "appearance").map((option) => option.label);
+  const bFaultLabels = carriedBOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
   const batteryNote = input.batteryNote?.trim() || undefined;
   const batteryIssueLabels = Array.from(new Set(input.batteryIssueLabels ?? []));
-  const batterySummary = input.stationCode === "B"
+  const batterySummary = input.stationCode === "B" || input.stationCode === "C"
     ? [batteryNote, ...batteryIssueLabels].filter(Boolean).join(", ") || "正常"
     : undefined;
   const faultSummary = input.stationCode === "B"
     ? faultLabels.join(", ") || "正常"
     : undefined;
+  const carriedBFaultSummary = input.stationCode === "C"
+    ? bFaultLabels.join(", ") || "正常"
+    : undefined;
+  const cFaultSummary = input.stationCode === "C"
+    ? faultLabels.join(", ") || "正常"
+    : undefined;
+  const cAppearanceSummary = input.stationCode === "C"
+    ? appearanceLabels.join(", ") || "正常"
+    : undefined;
+  const cInspectionSummary = input.stationCode === "C"
+    ? [...faultLabels, ...appearanceLabels].filter(Boolean).join(", ") || "正常"
+    : undefined;
+  const applyBChanges = input.stationCode === "C" ? Boolean(input.applyBChanges) : false;
 
   await db
     .update(stationTasks)
@@ -1201,12 +1343,20 @@ export async function completeStationTask(input: {
         summary: input.summary ?? "已完成站點作業",
         faultOptionIds: input.faultOptionIds ?? [],
         appearanceOptionIds: input.appearanceOptionIds ?? [],
+        bFaultOptionIds,
         faultLabels,
         appearanceLabels,
+        bFaultLabels,
         batteryNote,
         batteryIssueLabels,
         batterySummary,
         faultSummary,
+        cFaultSummary,
+        cAppearanceSummary,
+        cInspectionSummary,
+        applyBChanges,
+        cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
+        cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
       },
       updatedAt: completedAt,
     })
@@ -1221,17 +1371,26 @@ export async function completeStationTask(input: {
     businessDate: businessDateValue,
     categoryId: input.categoryId ?? null,
     subtypeCode: input.subtypeCode ?? null,
-    payload: {
-      summary: input.summary ?? "已完成站點作業",
-      faultOptionIds: input.faultOptionIds ?? [],
-      appearanceOptionIds: input.appearanceOptionIds ?? [],
-      faultLabels,
-      appearanceLabels,
-      batteryNote,
-      batteryIssueLabels,
-      batterySummary,
-      faultSummary,
-    },
+      payload: {
+        summary: input.summary ?? "已完成站點作業",
+        faultOptionIds: input.faultOptionIds ?? [],
+        appearanceOptionIds: input.appearanceOptionIds ?? [],
+        bFaultOptionIds,
+        faultLabels,
+        appearanceLabels,
+        bFaultLabels,
+        batteryNote,
+        batteryIssueLabels,
+        batterySummary,
+        faultSummary,
+        cFaultSummary,
+        cAppearanceSummary,
+        cInspectionSummary,
+        applyBChanges,
+        cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
+        cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
+      },
+
   });
 
   await db.insert(sheetSyncJobs).values({
@@ -1240,7 +1399,7 @@ export async function completeStationTask(input: {
     status: "queued",
   });
 
-  if (input.stationCode === "A2" || input.stationCode === "B") {
+  if (input.stationCode === "A2" || input.stationCode === "B" || input.stationCode === "C") {
     await db.insert(sheetSyncJobs).values({
       jobType: "purchase_sheet_sync",
       targetSheetName: "採購單",
@@ -1270,6 +1429,13 @@ export async function completeStationTask(input: {
         sourceStation: input.stationCode,
         faultLabels,
         appearanceLabels,
+        bFaultOptionIds,
+        bFaultLabels,
+        batteryNote,
+        batteryIssueLabels,
+        batterySummary,
+        faultSummary: applyBChanges ? carriedBFaultSummary : undefined,
+        applyBChanges,
       },
     });
   } else {

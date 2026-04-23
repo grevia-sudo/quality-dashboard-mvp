@@ -28,6 +28,7 @@ type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
 type OptionSelections = {
   faultOptionIds: number[];
   appearanceOptionIds: number[];
+  bFaultOptionIds: number[];
   batteryNote: string;
   batteryIssueLabels: BatteryIssueLabel[];
 };
@@ -35,9 +36,13 @@ type OptionSelections = {
 const defaultSelections = (): OptionSelections => ({
   faultOptionIds: [],
   appearanceOptionIds: [],
+  bFaultOptionIds: [],
   batteryNote: "",
   batteryIssueLabels: [],
 });
+
+const normalizeIdList = (values: number[]) => Array.from(new Set(values)).sort((left, right) => left - right);
+const normalizeTextList = (values: string[]) => Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((left, right) => left.localeCompare(right, "zh-Hant"));
 
 const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
 
@@ -91,7 +96,7 @@ export default function StationPage() {
     void utils.dashboard.home.invalidate();
   };
 
-  const refreshStationDataInBackground = (currentStationCode: StationCode, nextStationCode?: StationCode | null) => {
+  const refreshStationDataInBackground = (currentStationCode: StationCode, nextStationCode?: StationCode | "D" | null) => {
     void utils.station.detail.invalidate({ stationCode: currentStationCode });
     if (nextStationCode) {
       void utils.station.detail.invalidate({ stationCode: nextStationCode });
@@ -252,6 +257,16 @@ export default function StationPage() {
         return;
       }
 
+      if (variables.stationCode === "C") {
+        removeCompletedTaskFromCache("C", variables.productId);
+        setBatteryDialogTaskId(null);
+        setKeyword("");
+        toast.success("C 站品檢已完成並推進下一站，請直接輸入下一筆批號");
+        focusQuickScanInput();
+        refreshStationDataInBackground("C", "D");
+        return;
+      }
+
       toast.success("站點作業已完成");
       void invalidateStationData();
     },
@@ -292,10 +307,41 @@ export default function StationPage() {
       focusBatchInput();
     }
 
-    if ((stationCode === "A2" || stationCode === "B") && !detailQuery.isLoading) {
+    if ((stationCode === "A2" || stationCode === "B" || stationCode === "C") && !detailQuery.isLoading) {
       focusQuickScanInput();
     }
   }, [detailQuery.isLoading, stationCode]);
+
+  useEffect(() => {
+    setSelectedOptions((prev) => {
+      const tasks = detailQuery.data?.tasks ?? [];
+      let changed = false;
+      const next = { ...prev };
+
+      for (const task of tasks) {
+        if (next[task.taskId]) {
+          continue;
+        }
+
+        const carryoverTask = task as typeof task & {
+          inheritedBFaultOptionIds?: number[];
+          inheritedBatteryNote?: string;
+          inheritedBatteryIssueLabels?: BatteryIssueLabel[];
+        };
+
+        next[task.taskId] = {
+          faultOptionIds: [],
+          appearanceOptionIds: [],
+          bFaultOptionIds: carryoverTask.inheritedBFaultOptionIds ?? [],
+          batteryNote: carryoverTask.inheritedBatteryNote ?? "",
+          batteryIssueLabels: carryoverTask.inheritedBatteryIssueLabels ?? [],
+        };
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [detailQuery.data?.tasks]);
 
   const filteredTasks = useMemo(() => {
     const tasks = detailQuery.data?.tasks ?? [];
@@ -338,7 +384,7 @@ export default function StationPage() {
 
   const pendingTotalCount = detailQuery.data?.tasks.length ?? 0;
 
-  const toggleSelection = (taskId: number, key: "faultOptionIds" | "appearanceOptionIds", optionId: number, checked: boolean) => {
+  const toggleSelection = (taskId: number, key: "faultOptionIds" | "appearanceOptionIds" | "bFaultOptionIds", optionId: number, checked: boolean) => {
     setSelectedOptions((prev) => {
       const current = prev[taskId] ?? defaultSelections();
       const currentList = current[key];
@@ -385,6 +431,61 @@ export default function StationPage() {
   };
 
   const getTaskSelections = (taskId: number) => selectedOptions[taskId] ?? defaultSelections();
+
+  const submitStationCompletion = (task: (typeof filteredTasks)[number]) => {
+    const selections = getTaskSelections(task.taskId);
+    const basePayload = {
+      taskId: task.taskId,
+      stationCode,
+      productId: task.productId,
+      categoryId: undefined,
+      subtypeCode: task.subtypeCode ?? null,
+      summary: stationCode === "B" ? "B 站軟體測試完成" : stationCode === "C" ? "C 站品檢完成" : `${detailQuery.data?.label} 完成`,
+      faultOptionIds: selections.faultOptionIds,
+      appearanceOptionIds: selections.appearanceOptionIds,
+    };
+
+    if (stationCode === "B") {
+      completeMutation.mutate({
+        ...basePayload,
+        batteryNote: selections.batteryNote,
+        batteryIssueLabels: selections.batteryIssueLabels,
+      });
+      return;
+    }
+
+    if (stationCode === "C") {
+      const carryoverTask = task as typeof task & {
+        inheritedBFaultOptionIds?: number[];
+        inheritedBatteryNote?: string;
+        inheritedBatteryIssueLabels?: BatteryIssueLabel[];
+      };
+      const originalBFaultOptionIds = normalizeIdList(carryoverTask.inheritedBFaultOptionIds ?? []);
+      const originalBatteryIssueLabels = normalizeTextList(carryoverTask.inheritedBatteryIssueLabels ?? []);
+      const nextBFaultOptionIds = normalizeIdList(selections.bFaultOptionIds);
+      const nextBatteryIssueLabels = normalizeTextList(selections.batteryIssueLabels);
+      const nextBatteryNote = selections.batteryNote.trim();
+      const originalBatteryNote = (carryoverTask.inheritedBatteryNote ?? "").trim();
+      const hasBChanges = nextBatteryNote !== originalBatteryNote
+        || JSON.stringify(nextBatteryIssueLabels) !== JSON.stringify(originalBatteryIssueLabels)
+        || JSON.stringify(nextBFaultOptionIds) !== JSON.stringify(originalBFaultOptionIds);
+      const applyBChanges = hasBChanges
+        ? window.confirm("是否修改電池／非螢幕功能狀態？按下「確定」會將更新後的電池檢測與 B 站故障狀態回寫到 Google Sheet M/N 欄，並在 Q 欄標記 Y。")
+        : false;
+
+      completeMutation.mutate({
+        ...basePayload,
+        bFaultOptionIds: applyBChanges ? selections.bFaultOptionIds : carryoverTask.inheritedBFaultOptionIds ?? [],
+        batteryNote: applyBChanges ? selections.batteryNote : carryoverTask.inheritedBatteryNote ?? undefined,
+        batteryIssueLabels: applyBChanges ? selections.batteryIssueLabels : carryoverTask.inheritedBatteryIssueLabels ?? [],
+        applyBChanges,
+      });
+      return;
+    }
+
+    completeMutation.mutate(basePayload);
+  };
+
   const canReceiveA1 = Boolean(
     arrivalForm.batchNo.trim() || arrivalForm.serialNumber.trim() || arrivalForm.imei.trim(),
   );
@@ -401,7 +502,7 @@ export default function StationPage() {
             <div>
               <Badge className="bg-white/80 text-slate-700">掃碼、補錄與推進下一站</Badge>
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900">{detailQuery.data?.label}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">支援站內搜尋與快速完工。A1 站可直接補齊已匯入商品的缺漏欄位，B、C 站則可套用可維護的故障與外觀功能表，讓現場紀錄更一致。</p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">支援站內搜尋與快速完工。A1 站可直接補齊已匯入商品的缺漏欄位；B 站可補記電池檢測與非螢幕功能狀態；C 站則會承接 B 站資料，補記螢幕狀態與機身外觀，並可視需要修正上一站紀錄。</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/import")}>
@@ -574,7 +675,7 @@ export default function StationPage() {
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
                   onKeyDown={handleStationScanInputKey}
-                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : "輸入產品代碼、批號、序號或 IMEI"}
+                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : "輸入產品代碼、批號、序號或 IMEI"}
                   className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
                 />
               </div>
@@ -583,6 +684,9 @@ export default function StationPage() {
               ) : null}
               {stationCode === "B" ? (
                 <p className="text-sm text-slate-500">B 站可先用商品批號快速定位待測商品，再補充電池檢測與故障狀態；完成軟體測試後會立即推進下一站，並在背景回寫 B 站完成、電池檢測與故障摘要。</p>
+              ) : null}
+              {stationCode === "C" ? (
+                <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態與必要的上一站修正標記。</p>
               ) : null}
             </div>
           </CardContent>
@@ -612,14 +716,17 @@ export default function StationPage() {
                     <div><p className="text-xs text-slate-400">目前站點</p><p className="mt-1 font-semibold text-slate-900">{task.currentStationCode}</p></div>
                   </div>
 
-                  {stationCode === "B" ? (
+                  {stationCode === "B" || stationCode === "C" ? (
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
                       <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
-                        <p className="text-sm font-bold text-slate-900">B 站故障狀態</p>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{stationCode === "B" ? "B 站故障狀態" : "B 站故障狀態（C 站可修改）"}</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "完成軟體測試後會同步回寫 Google Sheet 的 L / M / N / O 欄。" : "這裡承接 B 站完成結果；若你在 C 站調整，完成時可選擇是否一併回寫 Google Sheet M / N / Q 欄。"}</p>
+                        </div>
                         <div className="grid gap-3 md:grid-cols-2">
-                          {(detailQuery.data?.faultOptions ?? []).filter((option) => option.active).map((option) => (
+                          {((stationCode === "B" ? detailQuery.data?.faultOptions : detailQuery.data?.bFaultOptions) ?? []).filter((option) => option.active).map((option) => (
                             <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
-                              <Checkbox checked={selections.faultOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "faultOptionIds", option.id, Boolean(checked))} />
+                              <Checkbox checked={(stationCode === "B" ? selections.faultOptionIds : selections.bFaultOptionIds).includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, stationCode === "B" ? "faultOptionIds" : "bFaultOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
                           ))}
@@ -629,7 +736,7 @@ export default function StationPage() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-bold text-slate-900">電池檢測</p>
-                            <p className="mt-1 text-xs leading-6 text-slate-500">可輸入健康度或數字符號，並勾選電池異常標記，完成後會同步寫入 Google Sheet K 欄。</p>
+                            <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "可輸入健康度或數字符號，並勾選電池異常標記，完成後會同步寫入 Google Sheet K 欄。" : "C 站會先帶入 B 站的電池檢測結果；若有調整，可在完成時選擇是否回寫 Google Sheet K / N 欄。"}</p>
                           </div>
                           <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBatteryDialogTaskId(task.taskId)}>
                             編輯電池檢測
@@ -643,7 +750,7 @@ export default function StationPage() {
                             <div className="space-y-6 p-6">
                               <DialogHeader>
                                 <DialogTitle>電池檢測</DialogTitle>
-                                <DialogDescription>可手動輸入數字或符號，並勾選電池狀態；未填寫時會在 Google Sheet K 欄回寫為「正常」。</DialogDescription>
+                                <DialogDescription>{stationCode === "B" ? "可手動輸入數字或符號，並勾選電池狀態；未填寫時會在 Google Sheet K 欄回寫為「正常」。" : "此區會先帶入 B 站已記錄的電池檢測結果。若你有調整，完成 C 站時可選擇是否同步回 Google Sheet K 欄，並在 N 欄標記為已修改上一關狀態。"}</DialogDescription>
                               </DialogHeader>
                               <label className="space-y-2 text-sm text-slate-600">
                                 <span>檢測回覆</span>
@@ -683,7 +790,10 @@ export default function StationPage() {
                   {stationCode === "C" ? (
                     <div className="grid gap-4 lg:grid-cols-2">
                       <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
-                        <p className="text-sm font-bold text-slate-900">C 站故障項目</p>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">C 站螢幕狀態</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet O 欄；若未勾選任何項目則回寫「正常」。</p>
+                        </div>
                         <div className="grid gap-3">
                           {(detailQuery.data?.faultOptions ?? []).filter((option) => option.active).map((option) => (
                             <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
@@ -694,7 +804,10 @@ export default function StationPage() {
                         </div>
                       </div>
                       <div className="space-y-3 rounded-[24px] bg-[#f7e8ee] p-4">
-                        <p className="text-sm font-bold text-slate-900">C 站外觀項目</p>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">C 站機身外觀</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">機身外觀會與螢幕狀態一起合併後回寫到 Google Sheet O 欄。</p>
+                        </div>
                         <div className="grid gap-3">
                           {(detailQuery.data?.appearanceOptions ?? []).filter((option) => option.active).map((option) => (
                             <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
@@ -711,20 +824,9 @@ export default function StationPage() {
                     <Button
                       className="rounded-2xl"
                       disabled={completeMutation.isPending}
-                      onClick={() => completeMutation.mutate({
-                        taskId: task.taskId,
-                        stationCode,
-                        productId: task.productId,
-                        categoryId: undefined,
-                        subtypeCode: task.subtypeCode ?? null,
-                        summary: stationCode === "B" ? "B 站軟體測試完成" : `${detailQuery.data?.label} 完成`,
-                        faultOptionIds: selections.faultOptionIds,
-                        appearanceOptionIds: selections.appearanceOptionIds,
-                        batteryNote: stationCode === "B" ? selections.batteryNote : undefined,
-                        batteryIssueLabels: stationCode === "B" ? selections.batteryIssueLabels : undefined,
-                      })}
+                      onClick={() => submitStationCompletion(task)}
                     >
-                      {stationCode === "B" ? "完成軟體測試並推進下一站" : "完成並推進下一站"}
+                      {stationCode === "B" ? "完成軟體測試並推進下一站" : stationCode === "C" ? "完成 C 站品檢並推進下一站" : "完成並推進下一站"}
                     </Button>
                     <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>
                       返回總覽

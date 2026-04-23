@@ -64,7 +64,7 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain("find((task) => (");
     expect(source).toContain("[task.batchNo, task.productCode, task.serialNumber, task.imei]");
     expect(source).toContain('toast.error("找不到符合的 A2 待處理商品");');
-    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : "輸入產品代碼、批號、序號或 IMEI"}');
+    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : "輸入產品代碼、批號、序號或 IMEI"}');
     expect(source).toContain("A2 已改為掃碼快速完工模式");
     expect(source).toContain('removeCompletedTaskFromCache("A2", variables.productId);');
     expect(source).toContain('setKeyword("");');
@@ -78,9 +78,11 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain('stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目"');
     expect(source).toContain('setBatteryDialogTaskId(task.taskId)');
     expect(source).toContain('電池檢測');
-    expect(source).toContain('batteryNote: stationCode === "B" ? selections.batteryNote : undefined,');
-    expect(source).toContain('batteryIssueLabels: stationCode === "B" ? selections.batteryIssueLabels : undefined,');
+    expect(source).toContain('if (stationCode === "B") {');
+    expect(source).toContain('batteryNote: selections.batteryNote,');
+    expect(source).toContain('batteryIssueLabels: selections.batteryIssueLabels,');
     expect(source).toContain('[selections.batteryNote.trim(), ...selections.batteryIssueLabels].filter(Boolean).join(", ") || "正常"');
+    expect(source).toContain('const submitStationCompletion = (task: (typeof filteredTasks)[number]) => {');
     expect(source).toContain('faultOptionIds: selections.faultOptionIds,');
     expect(source).toContain('removeCompletedTaskFromCache("B", variables.productId);');
     expect(source).toContain('refreshStationDataInBackground("B", "C");');

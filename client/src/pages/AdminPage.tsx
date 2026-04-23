@@ -292,8 +292,8 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-slate-600">
               <p>B 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.bFault.length}</span></p>
-              <p>C 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cFault.length}</span></p>
-              <p>C 站外觀選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cAppearance.length}</span></p>
+              <p>C 站螢幕狀態選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cFault.length}</span></p>
+              <p>C 站機身外觀選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cAppearance.length}</span></p>
               <p>可用品名數：<span className="font-semibold text-slate-900">{query.data?.productNameOptions?.length ?? 0}</span></p>
             </CardContent>
           </Card>
@@ -443,8 +443,8 @@ export default function AdminPage() {
             <div className="grid gap-4 xl:grid-cols-3">
               {[
                 { key: "bFault", title: "B 站軟測故障狀態", stationCode: "B" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
-                { key: "cFault", title: "C 站品檢故障項目", stationCode: "C" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
-                { key: "cAppearance", title: "C 站品檢外觀項目", stationCode: "C" as const, optionType: "appearance" as const, tone: "bg-[#f7e8ee]" },
+                { key: "cFault", title: "C 站螢幕狀態", stationCode: "C" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
+                { key: "cAppearance", title: "C 站機身外觀", stationCode: "C" as const, optionType: "appearance" as const, tone: "bg-[#f7e8ee]" },
               ].map((section) => {
                 const sectionItems = groupedOptionDrafts[section.key as keyof typeof groupedOptionDrafts];
 

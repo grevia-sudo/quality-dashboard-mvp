@@ -90,19 +90,22 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("輸入數字或符號");
     expect(stationPageSource).toContain("完成軟體測試並推進下一站");
     expect(stationPageSource).toContain("B 站軟體測試完成");
-    expect(stationPageSource).toContain("C 站故障項目");
-    expect(stationPageSource).toContain("C 站外觀項目");
+    expect(stationPageSource).toContain("B 站故障狀態（C 站可修改）");
+    expect(stationPageSource).toContain("C 站螢幕狀態");
+    expect(stationPageSource).toContain("C 站機身外觀");
+    expect(stationPageSource).toContain("bFaultOptionIds");
     expect(stationPageSource).toContain("faultOptionIds");
     expect(stationPageSource).toContain("appearanceOptionIds");
     expect(stationPageSource).toContain("batteryIssueLabels");
     expect(stationPageSource).toContain("batteryNote");
+    expect(stationPageSource).toContain("是否修改電池／非螢幕功能狀態");
   });
 
   it("includes product name and defect option maintenance sections in the admin page", () => {
     expect(adminPageSource).toContain("功能表設定");
     expect(adminPageSource).toContain("B 站軟測故障狀態");
-    expect(adminPageSource).toContain("C 站品檢故障項目");
-    expect(adminPageSource).toContain("C 站品檢外觀項目");
+    expect(adminPageSource).toContain("C 站螢幕狀態");
+    expect(adminPageSource).toContain("C 站機身外觀");
     expect(adminPageSource).toContain("品名管理");
     expect(adminPageSource).toContain("trpc.admin.createProductNameOption.useMutation");
     expect(adminPageSource).toContain("trpc.admin.deleteProductNameOption.useMutation");

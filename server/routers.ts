@@ -113,8 +113,10 @@ export const appRouter = router({
           summary: z.string().optional(),
           faultOptionIds: z.array(z.number().int().positive()).optional(),
           appearanceOptionIds: z.array(z.number().int().positive()).optional(),
+          bFaultOptionIds: z.array(z.number().int().positive()).optional(),
           batteryNote: optionalTextSchema,
           batteryIssueLabels: z.array(batteryIssueLabelSchema).optional(),
+          applyBChanges: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -128,8 +130,10 @@ export const appRouter = router({
           summary: input.summary,
           faultOptionIds: input.faultOptionIds,
           appearanceOptionIds: input.appearanceOptionIds,
+          bFaultOptionIds: input.bFaultOptionIds,
           batteryNote: input.batteryNote,
           batteryIssueLabels: input.batteryIssueLabels,
+          applyBChanges: input.applyBChanges,
         });
       }),
     receive: protectedProcedure
