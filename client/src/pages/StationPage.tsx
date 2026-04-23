@@ -31,6 +31,9 @@ type OptionSelections = {
   bFaultOptionIds: number[];
   batteryNote: string;
   batteryIssueLabels: BatteryIssueLabel[];
+  isEditingBFaults: boolean;
+  hasOpenedBFaultEditor: boolean;
+  hasOpenedBatteryEditor: boolean;
 };
 
 const defaultSelections = (): OptionSelections => ({
@@ -39,10 +42,14 @@ const defaultSelections = (): OptionSelections => ({
   bFaultOptionIds: [],
   batteryNote: "",
   batteryIssueLabels: [],
+  isEditingBFaults: false,
+  hasOpenedBFaultEditor: false,
+  hasOpenedBatteryEditor: false,
 });
 
 const normalizeIdList = (values: number[]) => Array.from(new Set(values)).sort((left, right) => left - right);
 const normalizeTextList = (values: string[]) => Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((left, right) => left.localeCompare(right, "zh-Hant"));
+const summarizeTextResult = (values: string[]) => values.map((value) => value.trim()).filter(Boolean).join(", ") || "正常";
 
 const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
 
@@ -335,6 +342,9 @@ export default function StationPage() {
           bFaultOptionIds: carryoverTask.inheritedBFaultOptionIds ?? [],
           batteryNote: carryoverTask.inheritedBatteryNote ?? "",
           batteryIssueLabels: carryoverTask.inheritedBatteryIssueLabels ?? [],
+          isEditingBFaults: false,
+          hasOpenedBFaultEditor: false,
+          hasOpenedBatteryEditor: false,
         };
         changed = true;
       }
@@ -432,6 +442,34 @@ export default function StationPage() {
 
   const getTaskSelections = (taskId: number) => selectedOptions[taskId] ?? defaultSelections();
 
+  const setBFaultEditing = (taskId: number, isEditingBFaults: boolean) => {
+    setSelectedOptions((prev) => {
+      const current = prev[taskId] ?? defaultSelections();
+      return {
+        ...prev,
+        [taskId]: {
+          ...current,
+          isEditingBFaults,
+          hasOpenedBFaultEditor: current.hasOpenedBFaultEditor || isEditingBFaults,
+        },
+      };
+    });
+  };
+
+  const openBatteryEditor = (taskId: number) => {
+    setSelectedOptions((prev) => {
+      const current = prev[taskId] ?? defaultSelections();
+      return {
+        ...prev,
+        [taskId]: {
+          ...current,
+          hasOpenedBatteryEditor: true,
+        },
+      };
+    });
+    setBatteryDialogTaskId(taskId);
+  };
+
   const submitStationCompletion = (task: (typeof filteredTasks)[number]) => {
     const selections = getTaskSelections(task.taskId);
     const basePayload = {
@@ -466,9 +504,13 @@ export default function StationPage() {
       const nextBatteryIssueLabels = normalizeTextList(selections.batteryIssueLabels);
       const nextBatteryNote = selections.batteryNote.trim();
       const originalBatteryNote = (carryoverTask.inheritedBatteryNote ?? "").trim();
-      const hasBChanges = nextBatteryNote !== originalBatteryNote
+      const hasBatteryChanges = selections.hasOpenedBatteryEditor && (
+        nextBatteryNote !== originalBatteryNote
         || JSON.stringify(nextBatteryIssueLabels) !== JSON.stringify(originalBatteryIssueLabels)
-        || JSON.stringify(nextBFaultOptionIds) !== JSON.stringify(originalBFaultOptionIds);
+      );
+      const hasBFaultChanges = selections.hasOpenedBFaultEditor
+        && JSON.stringify(nextBFaultOptionIds) !== JSON.stringify(originalBFaultOptionIds);
+      const hasBChanges = hasBatteryChanges || hasBFaultChanges;
       const applyBChanges = hasBChanges
         ? window.confirm("是否修改電池／非螢幕功能狀態？按下「確定」會將更新後的電池檢測與 B 站故障狀態回寫到 Google Sheet M/N 欄，並在 Q 欄標記 Y。")
         : false;
@@ -695,6 +737,30 @@ export default function StationPage() {
         <div className="grid gap-4 xl:grid-cols-2">
           {filteredTasks.map((task) => {
             const selections = getTaskSelections(task.taskId);
+            const carryoverTask = task as typeof task & {
+              inheritedBFaultLabels?: string[];
+              inheritedBFaultSummary?: string | null;
+            };
+            const editableBFaultOptions = ((stationCode === "B" ? detailQuery.data?.faultOptions : detailQuery.data?.bFaultOptions) ?? []).filter((option) => option.active);
+            const allBFaultOptions = (stationCode === "B" ? detailQuery.data?.faultOptions : detailQuery.data?.bFaultOptions) ?? [];
+            const selectedBFaultIds = stationCode === "B" ? selections.faultOptionIds : selections.bFaultOptionIds;
+            const selectedBFaultLabels = allBFaultOptions
+              .filter((option) => selectedBFaultIds.includes(option.id))
+              .map((option) => option.label);
+            const fallbackBFaultLabels = stationCode === "C"
+              ? normalizeTextList([
+                  ...(carryoverTask.inheritedBFaultLabels ?? []),
+                  ...(carryoverTask.inheritedBFaultSummary
+                    ? carryoverTask.inheritedBFaultSummary.split(",")
+                    : []),
+                ])
+              : [];
+            const displayedBFaultLabels = selectedBFaultLabels.length > 0 ? selectedBFaultLabels : fallbackBFaultLabels;
+            const batterySummary = summarizeTextResult([
+              selections.batteryNote.trim(),
+              ...selections.batteryIssueLabels,
+            ]);
+            const bFaultSummary = summarizeTextResult(displayedBFaultLabels);
 
             return (
               <Card key={task.taskId} className="rounded-[26px] border-0 bg-white shadow-sm">
@@ -721,36 +787,58 @@ export default function StationPage() {
                       <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
                         <div>
                           <p className="text-sm font-bold text-slate-900">{stationCode === "B" ? "B 站故障狀態" : "B 站故障狀態（C 站可修改）"}</p>
-                          <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "完成軟體測試後會同步回寫 Google Sheet 的 L / M / N / O 欄。" : "這裡承接 B 站完成結果；若你在 C 站調整，完成時可選擇是否一併回寫 Google Sheet M / N / Q 欄。"}</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "完成軟體測試後會同步回寫 Google Sheet 的 L / M / N / O 欄。" : "這裡先帶入 B 站完成後的文字結果；如需調整，再按修改按鈕進入編輯，完成時可選擇是否一併回寫 Google Sheet M / N / Q 欄。"}</p>
                         </div>
-                        <div className="grid gap-3 md:grid-cols-2">
-                          {((stationCode === "B" ? detailQuery.data?.faultOptions : detailQuery.data?.bFaultOptions) ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
-                              <Checkbox checked={(stationCode === "B" ? selections.faultOptionIds : selections.bFaultOptionIds).includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, stationCode === "B" ? "faultOptionIds" : "bFaultOptionIds", option.id, Boolean(checked))} />
-                              <span>{option.label}</span>
-                            </label>
-                          ))}
-                        </div>
+                        {stationCode === "C" && !selections.isEditingBFaults ? (
+                          <div className="space-y-3">
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                              {bFaultSummary}
+                            </div>
+                            <div className="flex justify-end">
+                              <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBFaultEditing(task.taskId, true)}>
+                                修改故障狀態
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="grid gap-3 md:grid-cols-2">
+                              {editableBFaultOptions.map((option) => (
+                                <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                                  <Checkbox checked={(stationCode === "B" ? selections.faultOptionIds : selections.bFaultOptionIds).includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, stationCode === "B" ? "faultOptionIds" : "bFaultOptionIds", option.id, Boolean(checked))} />
+                                  <span>{option.label}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {stationCode === "C" ? (
+                              <div className="flex justify-end">
+                                <Button type="button" variant="ghost" className="rounded-2xl" onClick={() => setBFaultEditing(task.taskId, false)}>
+                                  取消修改
+                                </Button>
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-3 rounded-[24px] bg-[#f8fbff] p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-bold text-slate-900">電池檢測</p>
-                            <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "可輸入健康度或數字符號，並勾選電池異常標記，完成後會同步寫入 Google Sheet K 欄。" : "C 站會先帶入 B 站的電池檢測結果；若有調整，可在完成時選擇是否回寫 Google Sheet K / N 欄。"}</p>
+                            <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "可輸入健康度或數字符號，並勾選電池異常標記，完成後會同步寫入 Google Sheet M 欄。" : "這裡先帶入 B 站的電池檢測文字結果；如需調整，再按修改按鈕編輯，完成時可選擇是否回寫 Google Sheet M / Q 欄。"}</p>
                           </div>
-                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBatteryDialogTaskId(task.taskId)}>
-                            編輯電池檢測
+                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openBatteryEditor(task.taskId)}>
+                            修改電池檢測
                           </Button>
                         </div>
                         <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
-                          {[selections.batteryNote.trim(), ...selections.batteryIssueLabels].filter(Boolean).join(", ") || "正常"}
+                          {batterySummary}
                         </div>
                         <Dialog open={batteryDialogTaskId === task.taskId} onOpenChange={(open) => setBatteryDialogTaskId(open ? task.taskId : null)}>
                           <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-xl">
                             <div className="space-y-6 p-6">
                               <DialogHeader>
                                 <DialogTitle>電池檢測</DialogTitle>
-                                <DialogDescription>{stationCode === "B" ? "可手動輸入數字或符號，並勾選電池狀態；未填寫時會在 Google Sheet K 欄回寫為「正常」。" : "此區會先帶入 B 站已記錄的電池檢測結果。若你有調整，完成 C 站時可選擇是否同步回 Google Sheet K 欄，並在 N 欄標記為已修改上一關狀態。"}</DialogDescription>
+                                <DialogDescription>{stationCode === "B" ? "可手動輸入數字或符號，並勾選電池狀態；未填寫時會在 Google Sheet M 欄回寫為「正常」。" : "此區會先帶入 B 站已記錄的電池檢測文字結果。若你有調整，完成 C 站時可選擇是否同步回 Google Sheet M 欄，並在 Q 欄標記為已修改上一關狀態。"}</DialogDescription>
                               </DialogHeader>
                               <label className="space-y-2 text-sm text-slate-600">
                                 <span>檢測回覆</span>

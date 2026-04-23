@@ -91,6 +91,10 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("完成軟體測試並推進下一站");
     expect(stationPageSource).toContain("B 站軟體測試完成");
     expect(stationPageSource).toContain("B 站故障狀態（C 站可修改）");
+    expect(stationPageSource).toContain("這裡先帶入 B 站完成後的文字結果");
+    expect(stationPageSource).toContain("修改 B 站狀態");
+    expect(stationPageSource).toContain("isEditingBFaults");
+    expect(stationPageSource).toContain("setBFaultEditing");
     expect(stationPageSource).toContain("C 站螢幕狀態");
     expect(stationPageSource).toContain("C 站機身外觀");
     expect(stationPageSource).toContain("bFaultOptionIds");
@@ -98,6 +102,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("appearanceOptionIds");
     expect(stationPageSource).toContain("batteryIssueLabels");
     expect(stationPageSource).toContain("batteryNote");
+    expect(stationPageSource).toContain("summarizeTextResult");
     expect(stationPageSource).toContain("是否修改電池／非螢幕功能狀態");
   });
 
