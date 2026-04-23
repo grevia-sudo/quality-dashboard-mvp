@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { and, asc, count, desc, eq, gte, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { createPool } from "mysql2/promise";
 import {
   defectOptions,
   engineerDailyProductivity,
@@ -32,9 +33,26 @@ type StationStatusSummary = {
   overdueCount: number;
 };
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let _db: ReturnType<typeof createDatabaseClient> | null = null;
 let purchaseSheetSyncTriggeredAt = 0;
 let purchaseSheetSyncPromise: Promise<void> | null = null;
+
+function createDatabaseClient(databaseUrl: string) {
+  const parsed = new URL(databaseUrl);
+  const databaseName = parsed.pathname.replace(/^\//, "");
+
+  return drizzle(createPool({
+    host: parsed.hostname,
+    port: parsed.port ? Number(parsed.port) : 3306,
+    user: decodeURIComponent(parsed.username),
+    password: decodeURIComponent(parsed.password),
+    database: decodeURIComponent(databaseName),
+    timezone: "Z",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  }));
+}
 
 async function runPurchaseSheetSyncInProcess() {
   if (purchaseSheetSyncPromise) {
@@ -164,7 +182,7 @@ function queueA1CompletionSideEffectsInBackground(input: {
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = createDatabaseClient(process.env.DATABASE_URL);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

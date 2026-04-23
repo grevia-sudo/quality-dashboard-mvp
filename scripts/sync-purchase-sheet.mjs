@@ -167,13 +167,27 @@ async function appendSheetRow(accessToken, rowValues) {
   });
 }
 
+function createUtcMysqlConnection(databaseUrl) {
+  const parsed = new URL(databaseUrl);
+  const databaseName = parsed.pathname.replace(/^\//, "");
+
+  return mysql.createConnection({
+    host: parsed.hostname,
+    port: parsed.port ? Number(parsed.port) : 3306,
+    user: decodeURIComponent(parsed.username),
+    password: decodeURIComponent(parsed.password),
+    database: decodeURIComponent(databaseName),
+    timezone: "Z",
+  });
+}
+
 export async function runPurchaseSheetSync() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL 不存在，無法執行採購單同步");
   }
 
   const accessToken = await getGoogleAccessToken();
-  const connection = await mysql.createConnection(process.env.DATABASE_URL);
+  const connection = await createUtcMysqlConnection(process.env.DATABASE_URL);
 
   try {
     const [products] = await connection.query(
