@@ -34,6 +34,27 @@ type StationStatusSummary = {
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let purchaseSheetSyncTriggeredAt = 0;
+let purchaseSheetSyncPromise: Promise<void> | null = null;
+
+async function runPurchaseSheetSyncInProcess() {
+  if (purchaseSheetSyncPromise) {
+    return purchaseSheetSyncPromise;
+  }
+
+  purchaseSheetSyncPromise = (async () => {
+    try {
+      // @ts-expect-error runtime import of reusable ESM sync script
+      const { runPurchaseSheetSync } = await import("../scripts/sync-purchase-sheet.mjs");
+      await runPurchaseSheetSync();
+    } catch (error) {
+      console.error("[purchase-sheet-sync] background sync failed", error);
+    } finally {
+      purchaseSheetSyncPromise = null;
+    }
+  })();
+
+  return purchaseSheetSyncPromise;
+}
 
 function triggerPurchaseSheetSyncInBackground() {
   const now = Date.now();
@@ -43,19 +64,24 @@ function triggerPurchaseSheetSyncInBackground() {
 
   purchaseSheetSyncTriggeredAt = now;
 
-  const command = "cd /home/ubuntu/quality-dashboard-mvp && pnpm sync:purchase-sheet >/tmp/quality-dashboard-purchase-sheet-sync.log 2>&1";
-  const child = spawn("bash", ["-lc", command], {
-    detached: true,
-    stdio: "ignore",
-    env: {
-      ...process.env,
-      HOME: process.env.HOME ?? "/home/ubuntu",
-      GOOGLE_WORKSPACE_CLI_TOKEN: process.env.GOOGLE_WORKSPACE_CLI_TOKEN,
-      GOOGLE_DRIVE_TOKEN: process.env.GOOGLE_DRIVE_TOKEN,
-    },
-  });
+  if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+    const command = "cd /home/ubuntu/quality-dashboard-mvp && pnpm sync:purchase-sheet >/tmp/quality-dashboard-purchase-sheet-sync.log 2>&1";
+    const child = spawn("bash", ["-lc", command], {
+      detached: true,
+      stdio: "ignore",
+      env: {
+        ...process.env,
+        HOME: process.env.HOME ?? "/home/ubuntu",
+        GOOGLE_WORKSPACE_CLI_TOKEN: process.env.GOOGLE_WORKSPACE_CLI_TOKEN,
+        GOOGLE_DRIVE_TOKEN: process.env.GOOGLE_DRIVE_TOKEN,
+      },
+    });
 
-  child.unref();
+    child.unref();
+    return;
+  }
+
+  void runPurchaseSheetSyncInProcess();
 }
 
 function queueA1CompletionSideEffectsInBackground(input: {

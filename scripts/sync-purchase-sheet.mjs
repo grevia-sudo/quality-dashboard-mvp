@@ -152,7 +152,7 @@ async function appendSheetRow(accessToken, rowValues) {
   });
 }
 
-async function main() {
+export async function runPurchaseSheetSync() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL 不存在，無法執行採購單同步");
   }
@@ -282,7 +282,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({ success: false, message: error instanceof Error ? error.message : String(error) }));
-  process.exit(1);
-});
+const isDirectRun = process.argv[1] ? process.argv[1].endsWith("scripts/sync-purchase-sheet.mjs") : false;
+
+if (isDirectRun) {
+  runPurchaseSheetSync().catch((error) => {
+    console.error(JSON.stringify({ success: false, message: error instanceof Error ? error.message : String(error) }));
+    process.exit(1);
+  });
+}

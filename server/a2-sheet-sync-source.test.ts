@@ -26,7 +26,14 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
 
   it("tracks A2 completedAt as a trigger for purchase sheet updates", () => {
     expect(syncScriptSource).toContain('a2.completedAt AS a2CompletedAt');
-    expect(syncScriptSource).toContain("WHERE \\`stationCode\\` = 'A2' AND \\`stationTaskStatus\\` = 'completed'");
+    expect(syncScriptSource).toContain(") a2 ON a2.productId = p.id");
     expect(syncScriptSource).toContain('OR (a2.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a2.completedAt > p.lastSheetSyncedAt))');
   });
+
+  it("keeps an in-process purchase sheet sync path for deployed runtime", () => {
+    expect(dbSource).toContain('async function runPurchaseSheetSyncInProcess()');
+    expect(dbSource).toContain('await import("../scripts/sync-purchase-sheet.mjs")');
+    expect(syncScriptSource).toContain('export async function runPurchaseSheetSync()');
+  });
 });
+
