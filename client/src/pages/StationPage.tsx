@@ -276,6 +276,15 @@ export default function StationPage() {
         return;
       }
 
+      if (variables.stationCode === "E") {
+        removeCompletedTaskFromCache("E", variables.productId);
+        setKeyword("");
+        toast.success("E 站抹除已完成並推進下一站，請直接掃描下一筆");
+        focusQuickScanInput();
+        refreshStationDataInBackground("E", "STOCK");
+        return;
+      }
+
       toast.success("站點作業已完成");
       void invalidateStationData();
     },
@@ -316,7 +325,7 @@ export default function StationPage() {
       focusBatchInput();
     }
 
-    if ((stationCode === "A2" || stationCode === "B" || stationCode === "C") && !detailQuery.isLoading) {
+    if ((stationCode === "A2" || stationCode === "B" || stationCode === "C" || stationCode === "E") && !detailQuery.isLoading) {
       focusQuickScanInput();
     }
   }, [detailQuery.isLoading, stationCode]);
@@ -721,7 +730,7 @@ export default function StationPage() {
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
                   onKeyDown={handleStationScanInputKey}
-                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : "輸入產品代碼、批號、序號或 IMEI"}
+                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}
                   className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
                 />
               </div>
@@ -733,6 +742,9 @@ export default function StationPage() {
               ) : null}
               {stationCode === "C" ? (
                 <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態、鏡頭狀態與必要的上一站修正標記。</p>
+              ) : null}
+              {stationCode === "E" ? (
+                <p className="text-sm text-slate-500">E 站支援掃碼／條碼快速定位待抹除商品。確認完成抹除後按下完成並推進下一站，系統會自動回到待輸入狀態，並在背景回寫抹除完成時間與執行人員。</p>
               ) : null}
             </div>
           </CardContent>
@@ -933,7 +945,7 @@ export default function StationPage() {
                       disabled={completeMutation.isPending}
                       onClick={() => submitStationCompletion(task)}
                     >
-                      {stationCode === "B" ? "完成軟體測試並推進下一站" : stationCode === "C" ? "完成 C 站品檢並推進下一站" : "完成並推進下一站"}
+                      {stationCode === "B" ? "完成軟體測試並推進下一站" : stationCode === "C" ? "完成 C 站品檢並推進下一站" : stationCode === "E" ? "完成抹除並推進下一站" : "完成並推進下一站"}
                     </Button>
                     <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>
                       返回總覽

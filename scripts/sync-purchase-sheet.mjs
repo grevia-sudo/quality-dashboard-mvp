@@ -119,13 +119,13 @@ async function callSheetsApi(accessToken, path, { method = "GET", query = {}, bo
 }
 
 async function getSheetValues(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:V`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:AA`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`);
 }
 
 async function updateSheetRow(accessToken, rowNumber, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:V${rowNumber}`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AA${rowNumber}`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -139,7 +139,7 @@ async function updateSheetRow(accessToken, rowNumber, rowValues) {
 }
 
 async function updateSheetHeader(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:V1`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:AA1`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -153,7 +153,7 @@ async function updateSheetHeader(accessToken) {
 }
 
 async function appendSheetRow(accessToken, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:V`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:AA`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}:append`, {
     method: "POST",
@@ -199,6 +199,10 @@ export async function runPurchaseSheetSync() {
           bOperator.bOperatorName,
           cTask.completedAt AS cCompletedAt,
           cOperator.cOperatorName,
+          dTask.completedAt AS dCompletedAt,
+          dOperator.dOperatorName,
+          eTask.completedAt AS eCompletedAt,
+          eOperator.eOperatorName,
           bMeta.bBatterySummary,
           bMeta.bFaultSummary,
           cMeta.cModifiedPreviousStage,
@@ -206,7 +210,13 @@ export async function runPurchaseSheetSync() {
           cMeta.cModifiedBFaultSummary,
           cMeta.cFaultSummary,
           cMeta.cAppearanceSummary,
-          cMeta.cCameraSummary
+          cMeta.cCameraSummary,
+          dMeta.dModifiedInspection,
+          dMeta.dBatterySummary,
+          dMeta.dBFaultSummary,
+          dMeta.dCFaultSummary,
+          dMeta.dCAppearanceSummary,
+          dMeta.dCCameraSummary
         FROM products p
         LEFT JOIN product_categories c ON c.id = p.categoryId
         LEFT JOIN (
@@ -261,24 +271,60 @@ export async function runPurchaseSheetSync() {
           LEFT JOIN \`users\` u ON u.\`id\` = se.\`operatorUserId\`
         ) bOperator ON bOperator.\`productId\` = p.id
         LEFT JOIN (
-          SELECT `productId`, MAX(`completedAt`) AS `completedAt`
-          FROM `station_tasks`
-          WHERE `stationCode` = 'C' AND `stationTaskStatus` = 'completed'
-          GROUP BY `productId`
+          SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+          FROM \`station_tasks\`
+          WHERE \`stationCode\` = 'C' AND \`stationTaskStatus\` = 'completed'
+          GROUP BY \`productId\`
         ) cTask ON cTask.productId = p.id
         LEFT JOIN (
-          SELECT latestCEvent.`productId`, COALESCE(u.`name`, '') AS cOperatorName
-          FROM `station_events` se
+          SELECT latestCEvent.\`productId\`, COALESCE(u.\`name\`, '') AS cOperatorName
+          FROM \`station_events\` se
           INNER JOIN (
-            SELECT `productId`, MAX(`id`) AS `eventId`
-            FROM `station_events`
-            WHERE `stationCode` = 'C' AND `stationEventType` = 'complete'
-            GROUP BY `productId`
-          ) latestCEvent ON latestCEvent.`eventId` = se.`id`
-          LEFT JOIN `users` u ON u.`id` = se.`operatorUserId`
-        ) cOperator ON cOperator.`productId` = p.id
+            SELECT \`productId\`, MAX(\`id\`) AS \`eventId\`
+            FROM \`station_events\`
+            WHERE \`stationCode\` = 'C' AND \`stationEventType\` = 'complete'
+            GROUP BY \`productId\`
+          ) latestCEvent ON latestCEvent.\`eventId\` = se.\`id\`
+          LEFT JOIN \`users\` u ON u.\`id\` = se.\`operatorUserId\`
+        ) cOperator ON cOperator.\`productId\` = p.id
+        LEFT JOIN (
+          SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+          FROM \`station_tasks\`
+          WHERE \`stationCode\` = 'D' AND \`stationTaskStatus\` = 'completed'
+          GROUP BY \`productId\`
+        ) dTask ON dTask.productId = p.id
+        LEFT JOIN (
+          SELECT latestDEvent.\`productId\`, COALESCE(u.\`name\`, '') AS dOperatorName
+          FROM \`station_events\` se
+          INNER JOIN (
+            SELECT \`productId\`, MAX(\`id\`) AS \`eventId\`
+            FROM \`station_events\`
+            WHERE \`stationCode\` = 'D' AND \`stationEventType\` IN ('sampling_pass', 'sampling_fail')
+            GROUP BY \`productId\`
+          ) latestDEvent ON latestDEvent.\`eventId\` = se.\`id\`
+          LEFT JOIN \`users\` u ON u.\`id\` = se.\`operatorUserId\`
+        ) dOperator ON dOperator.\`productId\` = p.id
+        LEFT JOIN (
+          SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+          FROM \`station_tasks\`
+          WHERE \`stationCode\` = 'E' AND \`stationTaskStatus\` = 'completed'
+          GROUP BY \`productId\`
+        ) eTask ON eTask.productId = p.id
+        LEFT JOIN (
+          SELECT latestEEvent.\`productId\`, COALESCE(u.\`name\`, '') AS eOperatorName
+          FROM \`station_events\` se
+          INNER JOIN (
+            SELECT \`productId\`, MAX(\`id\`) AS \`eventId\`
+            FROM \`station_events\`
+            WHERE \`stationCode\` = 'E' AND \`stationEventType\` = 'complete'
+            GROUP BY \`productId\`
+          ) latestEEvent ON latestEEvent.\`eventId\` = se.\`id\`
+          LEFT JOIN \`users\` u ON u.\`id\` = se.\`operatorUserId\`
+        ) eOperator ON eOperator.\`productId\` = p.id
 
         LEFT JOIN (
+
+
           SELECT
             latestB.\`productId\`,
             JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.batterySummary')) AS bBatterySummary,
@@ -312,9 +358,31 @@ export async function runPurchaseSheetSync() {
             GROUP BY \`productId\`
           ) latestC ON latestC.\`productId\` = st.\`productId\` AND latestC.\`completedAt\` = st.\`completedAt\`
           WHERE st.\`stationCode\` = 'C' AND st.\`stationTaskStatus\` = 'completed'
-        ) cMeta ON cMeta.\`productId\` = p.id
+         ) cMeta ON cMeta.\`productId\` = p.id
+        LEFT JOIN (
+          SELECT
+            latestD.\`productId\`,
+            CASE
+              WHEN JSON_EXTRACT(st.\`metadata\`, '$.applyInspectionChanges') = true THEN 'Y'
+              ELSE 'N'
+            END AS dModifiedInspection,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.batterySummary')) AS dBatterySummary,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.bFaultSummary')) AS dBFaultSummary,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cFaultSummary')) AS dCFaultSummary,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cAppearanceSummary')) AS dCAppearanceSummary,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cCameraSummary')) AS dCCameraSummary
+          FROM \`station_tasks\` st
+          INNER JOIN (
+            SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+            FROM \`station_tasks\`
+            WHERE \`stationCode\` = 'D' AND \`stationTaskStatus\` = 'completed'
+            GROUP BY \`productId\`
+          ) latestD ON latestD.\`productId\` = st.\`productId\` AND latestD.\`completedAt\` = st.\`completedAt\`
+          WHERE st.\`stationCode\` = 'D' AND st.\`stationTaskStatus\` = 'completed'
+        ) dMeta ON dMeta.\`productId\` = p.id
 
         WHERE p.archivedAt IS NULL
+
           AND p.vendorName IS NOT NULL
           AND (p.importedCategoryName IS NOT NULL OR c.categoryName IS NOT NULL)
           AND (p.batchNo IS NOT NULL OR p.serialNumber IS NOT NULL OR p.imei IS NOT NULL)
@@ -326,6 +394,8 @@ export async function runPurchaseSheetSync() {
             OR (a2.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a2.completedAt > p.lastSheetSyncedAt))
             OR (b.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR b.completedAt > p.lastSheetSyncedAt))
             OR (cTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR cTask.completedAt > p.lastSheetSyncedAt))
+            OR (dTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR dTask.completedAt > p.lastSheetSyncedAt))
+            OR (eTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR eTask.completedAt > p.lastSheetSyncedAt))
           )
         ORDER BY p.id ASC
       `,

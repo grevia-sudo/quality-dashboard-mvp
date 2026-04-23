@@ -990,7 +990,107 @@ export async function getStationPageData(stationCode: StationCode) {
           };
         });
       })()
-    : rows;
+    : stationCode === "D"
+      ? await (async () => {
+          const productIds = rows.map((row) => row.productId);
+          if (productIds.length === 0) {
+            return rows.map((row) => ({
+              ...row,
+              inheritedBatterySummary: "正常",
+              inheritedBFaultSummary: "正常",
+              inheritedCFaultSummary: "正常",
+              inheritedCAppearanceSummary: "正常",
+              inheritedCCameraSummary: "正常",
+              inheritedCInspectionSummary: "正常",
+            }));
+          }
+
+          const [completedBRows, completedCRows] = await Promise.all([
+            db
+              .select({
+                productId: stationTasks.productId,
+                metadata: stationTasks.metadata,
+                completedAt: stationTasks.completedAt,
+              })
+              .from(stationTasks)
+              .where(and(
+                inArray(stationTasks.productId, productIds),
+                eq(stationTasks.stationCode, "B"),
+                eq(stationTasks.taskStatus, "completed"),
+              ))
+              .orderBy(desc(stationTasks.completedAt)),
+            db
+              .select({
+                productId: stationTasks.productId,
+                metadata: stationTasks.metadata,
+                completedAt: stationTasks.completedAt,
+              })
+              .from(stationTasks)
+              .where(and(
+                inArray(stationTasks.productId, productIds),
+                eq(stationTasks.stationCode, "C"),
+                eq(stationTasks.taskStatus, "completed"),
+              ))
+              .orderBy(desc(stationTasks.completedAt)),
+          ]);
+
+          const latestBMetaByProductId = new Map<number, Record<string, unknown>>();
+          for (const completedTask of completedBRows) {
+            if (latestBMetaByProductId.has(completedTask.productId)) {
+              continue;
+            }
+            latestBMetaByProductId.set(completedTask.productId, (completedTask.metadata ?? {}) as Record<string, unknown>);
+          }
+
+          const latestCMetaByProductId = new Map<number, Record<string, unknown>>();
+          for (const completedTask of completedCRows) {
+            if (latestCMetaByProductId.has(completedTask.productId)) {
+              continue;
+            }
+            latestCMetaByProductId.set(completedTask.productId, (completedTask.metadata ?? {}) as Record<string, unknown>);
+          }
+
+          return rows.map((row) => {
+            const taskMetadata = (row.taskMetadata ?? {}) as Record<string, unknown>;
+            const latestBMetadata = latestBMetaByProductId.get(row.productId) ?? {};
+            const latestCMetadata = latestCMetaByProductId.get(row.productId) ?? {};
+            const inheritedBatterySummary = typeof latestBMetadata.batterySummary === "string" && latestBMetadata.batterySummary.trim()
+              ? latestBMetadata.batterySummary.trim()
+              : [
+                  typeof latestBMetadata.batteryNote === "string" ? latestBMetadata.batteryNote.trim() : "",
+                  ...normalizeTextArray(latestBMetadata.batteryIssueLabels),
+                ].filter(Boolean).join(", ") || "正常";
+            const inheritedBFaultSummary = typeof latestBMetadata.faultSummary === "string" && latestBMetadata.faultSummary.trim()
+              ? latestBMetadata.faultSummary.trim()
+              : normalizeTextArray(latestBMetadata.faultLabels).join(", ") || "正常";
+            const inheritedCFaultSummary = typeof (taskMetadata.cFaultSummary ?? latestCMetadata.cFaultSummary) === "string"
+              && String(taskMetadata.cFaultSummary ?? latestCMetadata.cFaultSummary).trim()
+              ? String(taskMetadata.cFaultSummary ?? latestCMetadata.cFaultSummary).trim()
+              : normalizeTextArray(taskMetadata.faultLabels ?? latestCMetadata.faultLabels).join(", ") || "正常";
+            const inheritedCAppearanceSummary = typeof (taskMetadata.cAppearanceSummary ?? latestCMetadata.cAppearanceSummary) === "string"
+              && String(taskMetadata.cAppearanceSummary ?? latestCMetadata.cAppearanceSummary).trim()
+              ? String(taskMetadata.cAppearanceSummary ?? latestCMetadata.cAppearanceSummary).trim()
+              : normalizeTextArray(taskMetadata.appearanceLabels ?? latestCMetadata.appearanceLabels).join(", ") || "正常";
+            const inheritedCCameraSummary = typeof (taskMetadata.cCameraSummary ?? latestCMetadata.cCameraSummary) === "string"
+              && String(taskMetadata.cCameraSummary ?? latestCMetadata.cCameraSummary).trim()
+              ? String(taskMetadata.cCameraSummary ?? latestCMetadata.cCameraSummary).trim()
+              : normalizeTextArray(taskMetadata.cameraLabels ?? latestCMetadata.cameraLabels).join(", ") || "正常";
+            const inheritedCInspectionSummary = [inheritedCFaultSummary, inheritedCAppearanceSummary, inheritedCCameraSummary]
+              .filter((value) => value && value !== "正常")
+              .join(", ") || "正常";
+
+            return {
+              ...row,
+              inheritedBatterySummary,
+              inheritedBFaultSummary,
+              inheritedCFaultSummary,
+              inheritedCAppearanceSummary,
+              inheritedCCameraSummary,
+              inheritedCInspectionSummary,
+            };
+          });
+        })()
+      : rows;
 
   return {
     stationCode,
@@ -1418,7 +1518,7 @@ export async function completeStationTask(input: {
     status: "queued",
   });
 
-  if (input.stationCode === "A2" || input.stationCode === "B" || input.stationCode === "C") {
+  if (input.stationCode === "A2" || input.stationCode === "B" || input.stationCode === "C" || input.stationCode === "E") {
     await db.insert(sheetSyncJobs).values({
       jobType: "purchase_sheet_sync",
       targetSheetName: "採購單",
@@ -1481,6 +1581,12 @@ export async function submitSamplingResult(input: {
   sampledByUserId: number;
   passed: boolean;
   defectReason?: string;
+  applyInspectionChanges?: boolean;
+  batterySummary?: string;
+  bFaultSummary?: string;
+  cFaultSummary?: string;
+  cAppearanceSummary?: string;
+  cCameraSummary?: string;
 }) {
   const db = await getDb();
   if (!db) {
@@ -1507,6 +1613,13 @@ export async function submitSamplingResult(input: {
 
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const completedAt = new Date();
+  const normalizedBatterySummary = normalizeOptionalText(input.batterySummary) ?? "正常";
+  const normalizedBFaultSummary = normalizeOptionalText(input.bFaultSummary) ?? "正常";
+  const normalizedCFaultSummary = normalizeOptionalText(input.cFaultSummary) ?? "正常";
+  const normalizedCAppearanceSummary = normalizeOptionalText(input.cAppearanceSummary) ?? "正常";
+  const normalizedCCameraSummary = normalizeOptionalText(input.cCameraSummary) ?? "正常";
+  const applyInspectionChanges = Boolean(input.applyInspectionChanges);
 
   await db.insert(samplingResults).values({
     productId: input.productId,
@@ -1522,9 +1635,18 @@ export async function submitSamplingResult(input: {
     .update(stationTasks)
     .set({
       taskStatus: "completed",
-      completedAt: new Date(),
-      resultSummary: input.passed ? "抽樣通過" : "抽樣不通過，返工回 C",
-      updatedAt: new Date(),
+      completedAt,
+      resultSummary: input.passed ? "全檢通過，送往 E 站" : "全檢不通過，返工回 C",
+      metadata: {
+        defectReason: input.defectReason ?? null,
+        applyInspectionChanges,
+        batterySummary: normalizedBatterySummary,
+        bFaultSummary: normalizedBFaultSummary,
+        cFaultSummary: normalizedCFaultSummary,
+        cAppearanceSummary: normalizedCAppearanceSummary,
+        cCameraSummary: normalizedCCameraSummary,
+      },
+      updatedAt: completedAt,
     })
     .where(eq(stationTasks.id, input.taskId));
 
@@ -1538,7 +1660,15 @@ export async function submitSamplingResult(input: {
     categoryId: task.categoryId ?? null,
     subtypeCode: task.subtypeCode ?? null,
     isRework: !input.passed,
-    payload: { defectReason: input.defectReason ?? null },
+    payload: {
+      defectReason: input.defectReason ?? null,
+      applyInspectionChanges,
+      batterySummary: normalizedBatterySummary,
+      bFaultSummary: normalizedBFaultSummary,
+      cFaultSummary: normalizedCFaultSummary,
+      cAppearanceSummary: normalizedCAppearanceSummary,
+      cCameraSummary: normalizedCCameraSummary,
+    },
   });
 
   await db.insert(sheetSyncJobs).values({
@@ -1547,13 +1677,21 @@ export async function submitSamplingResult(input: {
     status: "queued",
   });
 
+  await db.insert(sheetSyncJobs).values({
+    jobType: "purchase_sheet_sync",
+    targetSheetName: "採購單",
+    status: "queued",
+  });
+
+  triggerPurchaseSheetSyncInBackground();
+
   if (input.passed) {
     await db
       .update(products)
       .set({
         currentStationCode: "E",
         currentStatus: "pending_e",
-        updatedAt: new Date(),
+        updatedAt: completedAt,
       })
       .where(eq(products.id, input.productId));
 
@@ -1563,7 +1701,19 @@ export async function submitSamplingResult(input: {
       taskStatus: "pending",
       dueDate: businessDateValue,
       resultSummary: "E 站待抹除",
-      metadata: { sourceStation: "D", sampled: true },
+      metadata: {
+        sourceStation: "D",
+        sampled: true,
+        dInspectionPassed: true,
+        dInspectionOperatorUserId: input.sampledByUserId,
+        dInspectionCompletedAt: completedAt,
+        dInspectionModified: applyInspectionChanges,
+        batterySummary: normalizedBatterySummary,
+        bFaultSummary: normalizedBFaultSummary,
+        cFaultSummary: normalizedCFaultSummary,
+        cAppearanceSummary: normalizedCAppearanceSummary,
+        cCameraSummary: normalizedCCameraSummary,
+      },
     });
   } else {
     await db
@@ -1571,7 +1721,7 @@ export async function submitSamplingResult(input: {
       .set({
         currentStationCode: "C",
         currentStatus: "pending_c",
-        updatedAt: new Date(),
+        updatedAt: completedAt,
       })
       .where(eq(products.id, input.productId));
 
@@ -1580,8 +1730,20 @@ export async function submitSamplingResult(input: {
       stationCode: "C",
       taskStatus: "returned",
       dueDate: businessDateValue,
-      resultSummary: "D 站抽樣失敗返工回 C",
-      metadata: { sourceStation: "D", reason: input.defectReason ?? "抽樣不通過" },
+      resultSummary: "D 站全檢失敗返工回 C",
+      metadata: {
+        sourceStation: "D",
+        reason: input.defectReason ?? "全檢不通過",
+        dInspectionPassed: false,
+        dInspectionOperatorUserId: input.sampledByUserId,
+        dInspectionCompletedAt: completedAt,
+        dInspectionModified: applyInspectionChanges,
+        batterySummary: normalizedBatterySummary,
+        bFaultSummary: normalizedBFaultSummary,
+        cFaultSummary: normalizedCFaultSummary,
+        cAppearanceSummary: normalizedCAppearanceSummary,
+        cCameraSummary: normalizedCCameraSummary,
+      },
     });
   }
 

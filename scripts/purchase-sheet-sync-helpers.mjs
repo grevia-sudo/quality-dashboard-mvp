@@ -1,6 +1,6 @@
 export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 export const SHEET_NAME = "採購單";
-export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態"];
+export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態", "D站是否修改檢查結果", "D站完成時間", "D站檢測者", "E站抹除完成時間", "E站測試人員"];
 
 export function stringifyCell(value) {
   if (value === null || value === undefined) {
@@ -44,12 +44,26 @@ export function formatSheetDateTime(value) {
 
 export function buildSheetRow(product) {
   const cAppliedPreviousStageChanges = String(product.cModifiedPreviousStage ?? "").trim().toUpperCase() === "Y";
-  const resolvedBatterySummary = cAppliedPreviousStageChanges
-    ? (product.cModifiedBatterySummary ?? product.bBatterySummary ?? "正常")
-    : (product.bBatterySummary ?? "正常");
-  const resolvedBFaultSummary = cAppliedPreviousStageChanges
-    ? (product.cModifiedBFaultSummary ?? product.bFaultSummary ?? "正常")
-    : (product.bFaultSummary ?? "正常");
+  const dAppliedInspectionChanges = String(product.dModifiedInspection ?? "").trim().toUpperCase() === "Y";
+  const resolvedBatterySummary = dAppliedInspectionChanges
+    ? (product.dBatterySummary ?? product.cModifiedBatterySummary ?? product.bBatterySummary ?? "正常")
+    : cAppliedPreviousStageChanges
+      ? (product.cModifiedBatterySummary ?? product.bBatterySummary ?? "正常")
+      : (product.bBatterySummary ?? "正常");
+  const resolvedBFaultSummary = dAppliedInspectionChanges
+    ? (product.dBFaultSummary ?? product.cModifiedBFaultSummary ?? product.bFaultSummary ?? "正常")
+    : cAppliedPreviousStageChanges
+      ? (product.cModifiedBFaultSummary ?? product.bFaultSummary ?? "正常")
+      : (product.bFaultSummary ?? "正常");
+  const resolvedCFaultSummary = dAppliedInspectionChanges
+    ? (product.dCFaultSummary ?? product.cFaultSummary ?? "正常")
+    : (product.cFaultSummary ?? "正常");
+  const resolvedCAppearanceSummary = dAppliedInspectionChanges
+    ? (product.dCAppearanceSummary ?? product.cAppearanceSummary ?? "正常")
+    : (product.cAppearanceSummary ?? "正常");
+  const resolvedCCameraSummary = dAppliedInspectionChanges
+    ? (product.dCCameraSummary ?? product.cCameraSummary ?? "正常")
+    : (product.cCameraSummary ?? "正常");
 
   return [
     stringifyCell(product.poNumber),
@@ -69,11 +83,16 @@ export function buildSheetRow(product) {
     stringifyCell(product.bOperatorName),
     formatSheetDateTime(product.cCompletedAt),
     stringifyCell(cAppliedPreviousStageChanges ? "Y" : "N"),
-    stringifyCell(product.cFaultSummary ?? "正常"),
-    stringifyCell(product.cAppearanceSummary ?? "正常"),
+    stringifyCell(resolvedCFaultSummary),
+    stringifyCell(resolvedCAppearanceSummary),
     stringifyCell(product.cOperatorName),
     formatSheetDateTime(product.cCompletedAt),
-    stringifyCell(product.cCameraSummary ?? "正常"),
+    stringifyCell(resolvedCCameraSummary),
+    stringifyCell(dAppliedInspectionChanges ? "Y" : "N"),
+    formatSheetDateTime(product.dCompletedAt),
+    stringifyCell(product.dOperatorName),
+    formatSheetDateTime(product.eCompletedAt),
+    stringifyCell(product.eOperatorName),
   ];
 }
 
@@ -81,7 +100,7 @@ export function mergeMissingCells(existingRow, generatedRow) {
   return generatedRow.map((value, index) => {
     const existingValue = stringifyCell(existingRow[index]);
 
-    if (index >= 7 && index <= 21) {
+    if (index >= 7 && index <= 26) {
       return value;
     }
 

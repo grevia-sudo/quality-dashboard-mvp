@@ -195,6 +195,12 @@ export const appRouter = router({
           productId: z.number(),
           passed: z.boolean(),
           defectReason: z.string().optional(),
+          applyInspectionChanges: z.boolean().optional(),
+          batterySummary: z.string().optional(),
+          bFaultSummary: z.string().optional(),
+          cFaultSummary: z.string().optional(),
+          cAppearanceSummary: z.string().optional(),
+          cCameraSummary: z.string().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -204,6 +210,12 @@ export const appRouter = router({
           sampledByUserId: ctx.user.id,
           passed: input.passed,
           defectReason: input.defectReason,
+          applyInspectionChanges: input.applyInspectionChanges,
+          batterySummary: input.batterySummary,
+          bFaultSummary: input.bFaultSummary,
+          cFaultSummary: input.cFaultSummary,
+          cAppearanceSummary: input.cAppearanceSummary,
+          cCameraSummary: input.cCameraSummary,
         });
       }),
   }),
