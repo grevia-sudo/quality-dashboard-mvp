@@ -28,6 +28,7 @@ type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
 type OptionSelections = {
   faultOptionIds: number[];
   appearanceOptionIds: number[];
+  cameraOptionIds: number[];
   bFaultOptionIds: number[];
   batteryNote: string;
   batteryIssueLabels: BatteryIssueLabel[];
@@ -39,6 +40,7 @@ type OptionSelections = {
 const defaultSelections = (): OptionSelections => ({
   faultOptionIds: [],
   appearanceOptionIds: [],
+  cameraOptionIds: [],
   bFaultOptionIds: [],
   batteryNote: "",
   batteryIssueLabels: [],
@@ -339,6 +341,7 @@ export default function StationPage() {
         next[task.taskId] = {
           faultOptionIds: [],
           appearanceOptionIds: [],
+          cameraOptionIds: [],
           bFaultOptionIds: carryoverTask.inheritedBFaultOptionIds ?? [],
           batteryNote: carryoverTask.inheritedBatteryNote ?? "",
           batteryIssueLabels: carryoverTask.inheritedBatteryIssueLabels ?? [],
@@ -394,7 +397,7 @@ export default function StationPage() {
 
   const pendingTotalCount = detailQuery.data?.tasks.length ?? 0;
 
-  const toggleSelection = (taskId: number, key: "faultOptionIds" | "appearanceOptionIds" | "bFaultOptionIds", optionId: number, checked: boolean) => {
+  const toggleSelection = (taskId: number, key: "faultOptionIds" | "appearanceOptionIds" | "cameraOptionIds" | "bFaultOptionIds", optionId: number, checked: boolean) => {
     setSelectedOptions((prev) => {
       const current = prev[taskId] ?? defaultSelections();
       const currentList = current[key];
@@ -481,6 +484,7 @@ export default function StationPage() {
       summary: stationCode === "B" ? "B 站軟體測試完成" : stationCode === "C" ? "C 站品檢完成" : `${detailQuery.data?.label} 完成`,
       faultOptionIds: selections.faultOptionIds,
       appearanceOptionIds: selections.appearanceOptionIds,
+      cameraOptionIds: selections.cameraOptionIds,
     };
 
     if (stationCode === "B") {
@@ -728,7 +732,7 @@ export default function StationPage() {
                 <p className="text-sm text-slate-500">B 站可先用商品批號快速定位待測商品，再補充電池檢測與故障狀態；完成軟體測試後會立即推進下一站，並在背景回寫 B 站完成、電池檢測與故障摘要。</p>
               ) : null}
               {stationCode === "C" ? (
-                <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態與必要的上一站修正標記。</p>
+                <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態、鏡頭狀態與必要的上一站修正標記。</p>
               ) : null}
             </div>
           </CardContent>
@@ -894,12 +898,27 @@ export default function StationPage() {
                       <div className="space-y-3 rounded-[24px] bg-[#f7e8ee] p-4">
                         <div>
                           <p className="text-sm font-bold text-slate-900">C 站機身外觀</p>
-                          <p className="mt-1 text-xs leading-6 text-slate-500">機身外觀會與螢幕狀態一起合併後回寫到 Google Sheet O 欄。</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet S 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
                         <div className="grid gap-3">
                           {(detailQuery.data?.appearanceOptions ?? []).filter((option) => option.active).map((option) => (
                             <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
                               <Checkbox checked={selections.appearanceOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "appearanceOptionIds", option.id, Boolean(checked))} />
+                              <span>{option.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 rounded-[24px] bg-[#eef7f3] p-4">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">C 站鏡頭狀態</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet T 欄；若未勾選任何項目則回寫「正常」。</p>
+                        </div>
+                        <div className="grid gap-3">
+                          {(detailQuery.data?.cameraOptions ?? []).filter((option) => option.active).map((option) => (
+                            <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                              <Checkbox checked={selections.cameraOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "cameraOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
                           ))}

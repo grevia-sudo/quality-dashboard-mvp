@@ -20,7 +20,7 @@ const navItems: DashboardNavItem[] = [
 
 const stationOptions = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 type OptionStationCode = "B" | "C";
-type OptionType = "fault" | "appearance";
+type OptionType = "fault" | "appearance" | "camera";
 
 type RuleDraft = {
   id: number;
@@ -237,6 +237,7 @@ export default function AdminPage() {
       bFault: optionDrafts.filter((option) => option.stationCode === "B" && option.optionType === "fault"),
       cFault: optionDrafts.filter((option) => option.stationCode === "C" && option.optionType === "fault"),
       cAppearance: optionDrafts.filter((option) => option.stationCode === "C" && option.optionType === "appearance"),
+      cCamera: optionDrafts.filter((option) => option.stationCode === "C" && option.optionType === "camera"),
     }),
     [optionDrafts],
   );
@@ -294,6 +295,7 @@ export default function AdminPage() {
               <p>B 站故障選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.bFault.length}</span></p>
               <p>C 站螢幕狀態選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cFault.length}</span></p>
               <p>C 站機身外觀選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cAppearance.length}</span></p>
+              <p>C 站鏡頭狀態選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cCamera.length}</span></p>
               <p>可用品名數：<span className="font-semibold text-slate-900">{query.data?.productNameOptions?.length ?? 0}</span></p>
             </CardContent>
           </Card>
@@ -445,6 +447,7 @@ export default function AdminPage() {
                 { key: "bFault", title: "B 站軟測故障狀態", stationCode: "B" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
                 { key: "cFault", title: "C 站螢幕狀態", stationCode: "C" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
                 { key: "cAppearance", title: "C 站機身外觀", stationCode: "C" as const, optionType: "appearance" as const, tone: "bg-[#f7e8ee]" },
+                { key: "cCamera", title: "C 站鏡頭狀態", stationCode: "C" as const, optionType: "camera" as const, tone: "bg-[#eef7f3]" },
               ].map((section) => {
                 const sectionItems = groupedOptionDrafts[section.key as keyof typeof groupedOptionDrafts];
 

@@ -1,0 +1,1 @@
+ALTER TABLE `defect_options` MODIFY COLUMN `defectOptionType` enum('fault','appearance','camera') NOT NULL;

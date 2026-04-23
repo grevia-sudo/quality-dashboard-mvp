@@ -38,7 +38,7 @@ export const stationEventTypeEnum = mysqlEnum("stationEventType", [
   "archived",
 ]);
 export const syncJobStatusEnum = mysqlEnum("syncJobStatus", ["queued", "processing", "success", "failed"]);
-export const defectOptionTypeEnum = mysqlEnum("defectOptionType", ["fault", "appearance"]);
+export const defectOptionTypeEnum = mysqlEnum("defectOptionType", ["fault", "appearance", "camera"]);
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),

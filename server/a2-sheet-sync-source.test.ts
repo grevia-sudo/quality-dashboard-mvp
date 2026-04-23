@@ -26,12 +26,14 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(syncHelperSource).toContain('"是否修改B站的狀態回覆"');
     expect(syncHelperSource).toContain('"螢幕狀態"');
     expect(syncHelperSource).toContain('"機身狀態"');
-    expect(syncHelperSource).toContain('if (index >= 7 && index <= 18) {');
+    expect(syncHelperSource).toContain('"鏡頭狀態"');
+    expect(syncHelperSource).toContain('if (index >= 7 && index <= 19) {');
   });
 
   it("tracks A2 and C completedAt as triggers for purchase sheet updates", () => {
     expect(syncScriptSource).toContain('a2.completedAt AS a2CompletedAt');
     expect(syncScriptSource).toContain('cTask.completedAt AS cCompletedAt');
+    expect(syncScriptSource).toContain('cMeta.cCameraSummary');
     expect(syncScriptSource).toContain(") a2 ON a2.productId = p.id");
     expect(syncScriptSource).toContain(") cTask ON cTask.productId = p.id");
     expect(syncScriptSource).toContain('OR (a2.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a2.completedAt > p.lastSheetSyncedAt))');

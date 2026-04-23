@@ -92,14 +92,16 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("B 站軟體測試完成");
     expect(stationPageSource).toContain("B 站故障狀態（C 站可修改）");
     expect(stationPageSource).toContain("這裡先帶入 B 站完成後的文字結果");
-    expect(stationPageSource).toContain("修改 B 站狀態");
+    expect(stationPageSource).toContain("修改故障狀態");
     expect(stationPageSource).toContain("isEditingBFaults");
     expect(stationPageSource).toContain("setBFaultEditing");
     expect(stationPageSource).toContain("C 站螢幕狀態");
     expect(stationPageSource).toContain("C 站機身外觀");
+    expect(stationPageSource).toContain("C 站鏡頭狀態");
     expect(stationPageSource).toContain("bFaultOptionIds");
     expect(stationPageSource).toContain("faultOptionIds");
     expect(stationPageSource).toContain("appearanceOptionIds");
+    expect(stationPageSource).toContain("cameraOptionIds");
     expect(stationPageSource).toContain("batteryIssueLabels");
     expect(stationPageSource).toContain("batteryNote");
     expect(stationPageSource).toContain("summarizeTextResult");
@@ -111,6 +113,7 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).toContain("B 站軟測故障狀態");
     expect(adminPageSource).toContain("C 站螢幕狀態");
     expect(adminPageSource).toContain("C 站機身外觀");
+    expect(adminPageSource).toContain("C 站鏡頭狀態");
     expect(adminPageSource).toContain("品名管理");
     expect(adminPageSource).toContain("trpc.admin.createProductNameOption.useMutation");
     expect(adminPageSource).toContain("trpc.admin.deleteProductNameOption.useMutation");

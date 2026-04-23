@@ -22,7 +22,7 @@ import { ENV } from "./_core/env";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 type StationCode = (typeof STATION_CODES)[number];
-type DefectOptionType = "fault" | "appearance";
+type DefectOptionType = "fault" | "appearance" | "camera";
 
 type StationStatusSummary = {
   stationCode: StationCode;
@@ -223,7 +223,7 @@ function statusForStation(code: StationCode) {
 }
 
 async function seedDefectOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
-  const desiredOptions: Array<{ stationCode: "B" | "C"; optionType: "fault" | "appearance"; label: string; sortOrder: number }> = [
+  const desiredOptions: Array<{ stationCode: "B" | "C"; optionType: "fault" | "appearance" | "camera"; label: string; sortOrder: number }> = [
     { stationCode: "B", optionType: "fault", label: "無法開機", sortOrder: 10 },
     { stationCode: "B", optionType: "fault", label: "觸控異常", sortOrder: 20 },
     { stationCode: "B", optionType: "fault", label: "電池健康異常", sortOrder: 30 },
@@ -231,6 +231,8 @@ async function seedDefectOptionsIfNeeded(db: NonNullable<Awaited<ReturnType<type
     { stationCode: "C", optionType: "fault", label: "刮傷", sortOrder: 20 },
     { stationCode: "C", optionType: "appearance", label: "破裂", sortOrder: 10 },
     { stationCode: "C", optionType: "appearance", label: "刮傷", sortOrder: 20 },
+    { stationCode: "C", optionType: "camera", label: "破裂", sortOrder: 10 },
+    { stationCode: "C", optionType: "camera", label: "刮傷", sortOrder: 20 },
   ];
 
   const existingOptions = await db.select().from(defectOptions);
@@ -879,7 +881,7 @@ function normalizeNumberArray(value: unknown): number[] {
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
-    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [], bFaultOptions: [] };
+    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [], cameraOptions: [], bFaultOptions: [] };
   }
 
   await ensureMvpSeedData();
@@ -916,9 +918,10 @@ export async function getStationPageData(stationCode: StationCode) {
     ))
     .orderBy(desc(stationTasks.isOverdue), asc(stationTasks.id));
 
-  const [faultOptions, appearanceOptions, bFaultOptions] = await Promise.all([
+  const [faultOptions, appearanceOptions, cameraOptions, bFaultOptions] = await Promise.all([
     stationCode === "B" || stationCode === "C" ? getDefectOptions(stationCode, "fault") : Promise.resolve([]),
     stationCode === "C" ? getDefectOptions(stationCode, "appearance") : Promise.resolve([]),
+    stationCode === "C" ? getDefectOptions(stationCode, "camera") : Promise.resolve([]),
     stationCode === "C" ? getDefectOptions("B", "fault") : Promise.resolve([]),
   ]);
 
@@ -995,6 +998,7 @@ export async function getStationPageData(stationCode: StationCode) {
     tasks: nextRows,
     faultOptions,
     appearanceOptions,
+    cameraOptions,
     bFaultOptions,
   };
 }
@@ -1286,6 +1290,7 @@ export async function completeStationTask(input: {
   summary?: string;
   faultOptionIds?: number[];
   appearanceOptionIds?: number[];
+  cameraOptionIds?: number[];
   bFaultOptionIds?: number[];
   batteryNote?: string;
   batteryIssueLabels?: Array<"電池膨脹" | "副廠電池" | "電池異常">;
@@ -1300,9 +1305,13 @@ export async function completeStationTask(input: {
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
   const completedAt = new Date();
-  const selectedOptionIds = Array.from(new Set([...(input.faultOptionIds ?? []), ...(input.appearanceOptionIds ?? [])]));
+  const currentStationOptionIds = Array.from(new Set([
+    ...(input.faultOptionIds ?? []),
+    ...(input.appearanceOptionIds ?? []),
+    ...(input.cameraOptionIds ?? []),
+  ]));
   const bFaultOptionIds = Array.from(new Set(input.bFaultOptionIds ?? []));
-  const queriedOptionIds = Array.from(new Set([...selectedOptionIds, ...bFaultOptionIds]));
+  const queriedOptionIds = Array.from(new Set([...currentStationOptionIds, ...bFaultOptionIds]));
   const selectedOptions = queriedOptionIds.length
     ? await db.select().from(defectOptions).where(inArray(defectOptions.id, queriedOptionIds))
     : [];
@@ -1310,6 +1319,7 @@ export async function completeStationTask(input: {
   const carriedBOptions = selectedOptions.filter((option) => bFaultOptionIds.includes(option.id));
   const faultLabels = currentStationOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
   const appearanceLabels = currentStationOptions.filter((option) => option.optionType === "appearance").map((option) => option.label);
+  const cameraLabels = currentStationOptions.filter((option) => option.optionType === "camera").map((option) => option.label);
   const bFaultLabels = carriedBOptions.filter((option) => option.optionType === "fault").map((option) => option.label);
   const batteryNote = input.batteryNote?.trim() || undefined;
   const batteryIssueLabels = Array.from(new Set(input.batteryIssueLabels ?? []));
@@ -1328,8 +1338,11 @@ export async function completeStationTask(input: {
   const cAppearanceSummary = input.stationCode === "C"
     ? appearanceLabels.join(", ") || "正常"
     : undefined;
+  const cCameraSummary = input.stationCode === "C"
+    ? cameraLabels.join(", ") || "正常"
+    : undefined;
   const cInspectionSummary = input.stationCode === "C"
-    ? [...faultLabels, ...appearanceLabels].filter(Boolean).join(", ") || "正常"
+    ? [...faultLabels, ...appearanceLabels, ...cameraLabels].filter(Boolean).join(", ") || "正常"
     : undefined;
   const applyBChanges = input.stationCode === "C" ? Boolean(input.applyBChanges) : false;
 
@@ -1343,9 +1356,11 @@ export async function completeStationTask(input: {
         summary: input.summary ?? "已完成站點作業",
         faultOptionIds: input.faultOptionIds ?? [],
         appearanceOptionIds: input.appearanceOptionIds ?? [],
+        cameraOptionIds: input.cameraOptionIds ?? [],
         bFaultOptionIds,
         faultLabels,
         appearanceLabels,
+        cameraLabels,
         bFaultLabels,
         batteryNote,
         batteryIssueLabels,
@@ -1353,6 +1368,7 @@ export async function completeStationTask(input: {
         faultSummary,
         cFaultSummary,
         cAppearanceSummary,
+        cCameraSummary,
         cInspectionSummary,
         applyBChanges,
         cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
@@ -1375,9 +1391,11 @@ export async function completeStationTask(input: {
         summary: input.summary ?? "已完成站點作業",
         faultOptionIds: input.faultOptionIds ?? [],
         appearanceOptionIds: input.appearanceOptionIds ?? [],
+        cameraOptionIds: input.cameraOptionIds ?? [],
         bFaultOptionIds,
         faultLabels,
         appearanceLabels,
+        cameraLabels,
         bFaultLabels,
         batteryNote,
         batteryIssueLabels,
@@ -1385,6 +1403,7 @@ export async function completeStationTask(input: {
         faultSummary,
         cFaultSummary,
         cAppearanceSummary,
+        cCameraSummary,
         cInspectionSummary,
         applyBChanges,
         cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,

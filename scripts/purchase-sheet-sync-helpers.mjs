@@ -1,6 +1,6 @@
 export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 export const SHEET_NAME = "採購單";
-export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態"];
+export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "鏡頭狀態"];
 
 export function stringifyCell(value) {
   if (value === null || value === undefined) {
@@ -71,6 +71,7 @@ export function buildSheetRow(product) {
     stringifyCell(cAppliedPreviousStageChanges ? "Y" : "N"),
     stringifyCell(product.cFaultSummary ?? "正常"),
     stringifyCell(product.cAppearanceSummary ?? "正常"),
+    stringifyCell(product.cCameraSummary ?? "正常"),
   ];
 }
 
@@ -78,7 +79,7 @@ export function mergeMissingCells(existingRow, generatedRow) {
   return generatedRow.map((value, index) => {
     const existingValue = stringifyCell(existingRow[index]);
 
-    if (index >= 7 && index <= 18) {
+    if (index >= 7 && index <= 19) {
       return value;
     }
 

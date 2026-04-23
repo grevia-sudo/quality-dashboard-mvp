@@ -119,13 +119,13 @@ async function callSheetsApi(accessToken, path, { method = "GET", query = {}, bo
 }
 
 async function getSheetValues(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:S`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:T`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`);
 }
 
 async function updateSheetRow(accessToken, rowNumber, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:S${rowNumber}`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:T${rowNumber}`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -139,7 +139,7 @@ async function updateSheetRow(accessToken, rowNumber, rowValues) {
 }
 
 async function updateSheetHeader(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:S1`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:T1`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -153,7 +153,7 @@ async function updateSheetHeader(accessToken) {
 }
 
 async function appendSheetRow(accessToken, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:S`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:T`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}:append`, {
     method: "POST",
@@ -204,7 +204,8 @@ export async function runPurchaseSheetSync() {
           cMeta.cModifiedBatterySummary,
           cMeta.cModifiedBFaultSummary,
           cMeta.cFaultSummary,
-          cMeta.cAppearanceSummary
+          cMeta.cAppearanceSummary,
+          cMeta.cCameraSummary
         FROM products p
         LEFT JOIN product_categories c ON c.id = p.categoryId
         LEFT JOIN (
@@ -288,7 +289,8 @@ export async function runPurchaseSheetSync() {
             JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cModifiedBatterySummary')) AS cModifiedBatterySummary,
             JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cModifiedBFaultSummary')) AS cModifiedBFaultSummary,
             JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cFaultSummary')) AS cFaultSummary,
-            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cAppearanceSummary')) AS cAppearanceSummary
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cAppearanceSummary')) AS cAppearanceSummary,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.cCameraSummary')) AS cCameraSummary
           FROM \`station_tasks\` st
           INNER JOIN (
             SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
