@@ -39,8 +39,26 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    const redirectUri = atob(state);
-    return redirectUri;
+    const decoded = Buffer.from(state, "base64").toString("utf8");
+
+    try {
+      const parsed = JSON.parse(decoded) as {
+        redirectUri?: unknown;
+        origin?: unknown;
+      };
+
+      if (typeof parsed.redirectUri === "string" && parsed.redirectUri.length > 0) {
+        return parsed.redirectUri;
+      }
+
+      if (typeof parsed.origin === "string" && parsed.origin.length > 0) {
+        return new URL("/api/oauth/callback", parsed.origin).toString();
+      }
+    } catch {
+      // Backward compatibility: older state payloads are plain base64-encoded redirectUri strings.
+    }
+
+    return decoded;
   }
 
   async getTokenByCode(

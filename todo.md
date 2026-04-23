@@ -242,3 +242,7 @@
 - [ ] 修正 E 站完成時間的 Google Sheet 時區或格式轉換問題，確認 Z 欄顯示為正確的現場時間
 - [ ] 統一修正 A1、A2、B、C、D、E 站完成時間來源，改為以應用端實際時間為準
 - [ ] 排查並校正各站 Google Sheet 完成時間欄位，避免資料庫時鐘快 4 小時造成寫入時間錯誤
+- [ ] 排查目前無法登入的問題，確認是 OAuth、Cookie、回呼網址或服務設定哪一段失敗
+- [ ] 修正登入流程，讓使用者可重新正常登入 quality-dashboard-mvp
+- [ ] 排查登入時出現 403 與 OAuth callback failed 的原因，確認是回呼網址、授權設定、Cookie 或站內流程哪一段失敗
+- [ ] 修正登入流程，讓 quality-dashboard-mvp 可正常完成 OAuth callback 並建立登入狀態
