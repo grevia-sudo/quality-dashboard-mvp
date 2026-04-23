@@ -119,13 +119,13 @@ async function callSheetsApi(accessToken, path, { method = "GET", query = {}, bo
 }
 
 async function getSheetValues(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:T`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:V`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`);
 }
 
 async function updateSheetRow(accessToken, rowNumber, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:T${rowNumber}`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:V${rowNumber}`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -139,7 +139,7 @@ async function updateSheetRow(accessToken, rowNumber, rowValues) {
 }
 
 async function updateSheetHeader(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:T1`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:V1`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -153,7 +153,7 @@ async function updateSheetHeader(accessToken) {
 }
 
 async function appendSheetRow(accessToken, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:T`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:V`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}:append`, {
     method: "POST",
@@ -198,6 +198,7 @@ export async function runPurchaseSheetSync() {
           b.completedAt AS bCompletedAt,
           bOperator.bOperatorName,
           cTask.completedAt AS cCompletedAt,
+          cOperator.cOperatorName,
           bMeta.bBatterySummary,
           bMeta.bFaultSummary,
           cMeta.cModifiedPreviousStage,
@@ -260,11 +261,23 @@ export async function runPurchaseSheetSync() {
           LEFT JOIN \`users\` u ON u.\`id\` = se.\`operatorUserId\`
         ) bOperator ON bOperator.\`productId\` = p.id
         LEFT JOIN (
-          SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
-          FROM \`station_tasks\`
-          WHERE \`stationCode\` = 'C' AND \`stationTaskStatus\` = 'completed'
-          GROUP BY \`productId\`
+          SELECT `productId`, MAX(`completedAt`) AS `completedAt`
+          FROM `station_tasks`
+          WHERE `stationCode` = 'C' AND `stationTaskStatus` = 'completed'
+          GROUP BY `productId`
         ) cTask ON cTask.productId = p.id
+        LEFT JOIN (
+          SELECT latestCEvent.`productId`, COALESCE(u.`name`, '') AS cOperatorName
+          FROM `station_events` se
+          INNER JOIN (
+            SELECT `productId`, MAX(`id`) AS `eventId`
+            FROM `station_events`
+            WHERE `stationCode` = 'C' AND `stationEventType` = 'complete'
+            GROUP BY `productId`
+          ) latestCEvent ON latestCEvent.`eventId` = se.`id`
+          LEFT JOIN `users` u ON u.`id` = se.`operatorUserId`
+        ) cOperator ON cOperator.`productId` = p.id
+
         LEFT JOIN (
           SELECT
             latestB.\`productId\`,
