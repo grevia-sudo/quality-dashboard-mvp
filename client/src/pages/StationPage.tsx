@@ -717,39 +717,99 @@ export default function StationPage() {
           </div>
         ) : null}
 
-        <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-bold">掃碼／條碼輸入</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative max-w-xl space-y-3">
-              <div className="relative">
-                <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                <Input
-                  ref={quickScanInputRef}
-                  value={keyword}
-                  onChange={(event) => setKeyword(event.target.value)}
-                  onKeyDown={handleStationScanInputKey}
-                  placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}
-                  className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
-                />
+        {stationCode !== "STOCK" ? (
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">掃碼／條碼輸入</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative max-w-xl space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <Input
+                    ref={quickScanInputRef}
+                    value={keyword}
+                    onChange={(event) => setKeyword(event.target.value)}
+                    onKeyDown={handleStationScanInputKey}
+                    placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}
+                    className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
+                  />
+                </div>
+                {stationCode === "A2" ? (
+                  <p className="text-sm text-slate-500">A2 已改為掃碼快速完工模式。刷入商品批號 QR 後會立即完成 A2、推進到下一站，並在背景回寫安裝完成時間。</p>
+                ) : null}
+                {stationCode === "B" ? (
+                  <p className="text-sm text-slate-500">B 站可先用商品批號快速定位待測商品，再補充電池檢測與故障狀態；完成軟體測試後會立即推進下一站，並在背景回寫 B 站完成、電池檢測與故障摘要。</p>
+                ) : null}
+                {stationCode === "C" ? (
+                  <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態、鏡頭狀態與必要的上一站修正標記。</p>
+                ) : null}
+                {stationCode === "E" ? (
+                  <p className="text-sm text-slate-500">E 站支援掃碼／條碼快速定位待抹除商品。確認完成抹除後按下完成並推進下一站，系統會自動回到待輸入狀態，並在背景回寫抹除完成時間與執行人員。</p>
+                ) : null}
               </div>
-              {stationCode === "A2" ? (
-                <p className="text-sm text-slate-500">A2 已改為掃碼快速完工模式。刷入商品批號 QR 後會立即完成 A2、推進到下一站，並在背景回寫安裝完成時間。</p>
-              ) : null}
-              {stationCode === "B" ? (
-                <p className="text-sm text-slate-500">B 站可先用商品批號快速定位待測商品，再補充電池檢測與故障狀態；完成軟體測試後會立即推進下一站，並在背景回寫 B 站完成、電池檢測與故障摘要。</p>
-              ) : null}
-              {stationCode === "C" ? (
-                <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態、鏡頭狀態與必要的上一站修正標記。</p>
-              ) : null}
-              {stationCode === "E" ? (
-                <p className="text-sm text-slate-500">E 站支援掃碼／條碼快速定位待抹除商品。確認完成抹除後按下完成並推進下一站，系統會自動回到待輸入狀態，並在背景回寫抹除完成時間與執行人員。</p>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">待入庫詳細清單</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm leading-7 text-slate-600">
+              待入庫頁僅保留明細查看，不提供額外按鈕操作；如需確認品項狀態，請直接查看下方詳細清單。
+            </CardContent>
+          </Card>
+        )}
 
+        {stationCode === "STOCK" ? (
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">待入庫表格清單</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                待入庫改為表格明細檢視，方便直接比對批號、序號、IMEI 與目前站點狀態；命中外部進退貨明細後，後續會自動從這份清單移除。
+              </div>
+              <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                <table className="min-w-full text-sm text-slate-700">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <th className="px-4 py-3">產品代碼</th>
+                      <th className="px-4 py-3">品名</th>
+                      <th className="px-4 py-3">品類</th>
+                      <th className="px-4 py-3">批號</th>
+                      <th className="px-4 py-3">序號</th>
+                      <th className="px-4 py-3">IMEI</th>
+                      <th className="px-4 py-3">狀態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTasks.map((task) => (
+                      <tr key={task.taskId} className="border-b border-slate-200/80 last:border-b-0">
+                        <td className="px-4 py-3 font-medium text-slate-900">{task.productCode}</td>
+                        <td className="px-4 py-3">{task.productName ?? "-"}</td>
+                        <td className="px-4 py-3">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</td>
+                        <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
+                        <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
+                        <td className="px-4 py-3">{task.imei ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="secondary" className={task.isOverdue ? "bg-[#f7e8ee] text-rose-700" : "bg-slate-100 text-slate-700"}>
+                            {task.isOverdue ? "逾期" : task.taskStatus}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filteredTasks.length === 0 ? (
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">目前待入庫沒有符合條件的商品。</div>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {stationCode !== "STOCK" ? (
         <div className="grid gap-4 xl:grid-cols-2">
           {filteredTasks.map((task) => {
             const selections = getTaskSelections(task.taskId);
@@ -961,6 +1021,7 @@ export default function StationPage() {
             </Card>
           ) : null}
         </div>
+        ) : null}
       </div>
     </DashboardLayout>
   );

@@ -73,6 +73,10 @@ export default function AdminPage() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
   const [deletePoNumber, setDeletePoNumber] = useState("PO-20260422-21");
+  const [newUsername, setNewUsername] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"user" | "admin" | "manager" | "engineer" | "supervisor">("user");
 
   useEffect(() => {
     if (!query.data) {
@@ -213,6 +217,20 @@ export default function AdminPage() {
     },
     onError: (error) => {
       toast.error(error.message || "刪除採購單失敗");
+    },
+  });
+
+  const createUserMutation = trpc.admin.createUser.useMutation({
+    onSuccess: async () => {
+      toast.success("新帳號已建立");
+      setNewUsername("");
+      setNewUserPassword("");
+      setNewUserName("");
+      setNewUserRole("user");
+      await utils.admin.setup.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "新增帳號失敗");
     },
   });
 
@@ -508,23 +526,70 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="text-base font-bold">帳號管理</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {(query.data?.users ?? []).map((user) => (
-                  <div key={user.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-3">
-                    <div>
-                      <p className="text-xs text-slate-400">名稱</p>
-                      <p className="mt-1 font-semibold text-slate-900">{user.name ?? "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400">Email</p>
-                      <p className="mt-1 font-semibold text-slate-900">{user.email ?? "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400">角色</p>
-                      <p className="mt-1 font-semibold text-slate-900">{user.role}</p>
-                    </div>
-                  </div>
-                ))}
+              <CardContent className="space-y-5">
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                  管理者可直接建立本地帳號密碼，供現場工程師、主管或管理者登入使用。
+                </div>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_220px_auto] xl:items-end">
+                  <label className="space-y-2 text-sm text-slate-600">
+                    <span>帳號</span>
+                    <Input value={newUsername} onChange={(event) => setNewUsername(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 rita.lin" />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-600">
+                    <span>密碼</span>
+                    <Input type="password" value={newUserPassword} onChange={(event) => setNewUserPassword(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="至少 6 碼" />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-600">
+                    <span>名稱</span>
+                    <Input value={newUserName} onChange={(event) => setNewUserName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 林小美" />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-600">
+                    <span>角色</span>
+                    <select value={newUserRole} onChange={(event) => setNewUserRole(event.target.value as typeof newUserRole)} className="h-10 rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none">
+                      <option value="user">user</option>
+                      <option value="engineer">engineer</option>
+                      <option value="supervisor">supervisor</option>
+                      <option value="manager">manager</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </label>
+                  <Button
+                    className="rounded-2xl"
+                    disabled={createUserMutation.isPending || !newUsername.trim() || newUserPassword.length < 6}
+                    onClick={() => createUserMutation.mutate({
+                      username: newUsername.trim(),
+                      password: newUserPassword,
+                      name: newUserName.trim() || undefined,
+                      role: newUserRole,
+                    })}
+                  >
+                    新增帳號
+                  </Button>
+                </div>
+                <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                  <table className="min-w-full text-sm text-slate-700">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                        <th className="px-4 py-3">帳號</th>
+                        <th className="px-4 py-3">名稱</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">角色</th>
+                        <th className="px-4 py-3">登入方式</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(query.data?.users ?? []).map((user) => (
+                        <tr key={user.id} className="border-b border-slate-200/80 last:border-b-0">
+                          <td className="px-4 py-3 font-medium text-slate-900">{user.username ?? "-"}</td>
+                          <td className="px-4 py-3">{user.name ?? "-"}</td>
+                          <td className="px-4 py-3">{user.email ?? "-"}</td>
+                          <td className="px-4 py-3">{user.role}</td>
+                          <td className="px-4 py-3">{user.loginMethod ?? "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

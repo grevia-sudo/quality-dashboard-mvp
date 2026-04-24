@@ -8,7 +8,7 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
   const syncHelperSource = readFileSync(resolve(process.cwd(), "scripts/purchase-sheet-sync-helpers.mjs"), "utf8");
 
   it("queues purchase sheet sync when A2 completes", () => {
-    expect(dbSource).toContain('if (input.stationCode === "A2" || input.stationCode === "B" || input.stationCode === "C") {');
+    expect(dbSource).toContain('if (input.stationCode === "A2" || input.stationCode === "B" || input.stationCode === "C" || input.stationCode === "E") {');
     expect(dbSource).toContain('jobType: "purchase_sheet_sync"');
     expect(dbSource).toContain('targetSheetName: "採購單"');
     expect(dbSource).toContain('currentStationCode: nextStation');
@@ -27,7 +27,7 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(syncHelperSource).toContain('"螢幕狀態"');
     expect(syncHelperSource).toContain('"機身狀態"');
     expect(syncHelperSource).toContain('"鏡頭狀態"');
-    expect(syncHelperSource).toContain('if (index >= 7 && index <= 19) {');
+    expect(syncHelperSource).toContain('if (index >= 7 && index <= 26) {');
   });
 
   it("tracks A2 and C completedAt as triggers for purchase sheet updates", () => {

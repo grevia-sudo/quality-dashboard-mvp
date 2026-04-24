@@ -388,6 +388,23 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         return deleteImportedPurchaseOrder(input.poNumber);
       }),
+    createUser: adminProcedure
+      .input(
+        z.object({
+          username: z.string().trim().min(1, "請輸入帳號"),
+          password: z.string().min(6, "密碼至少 6 碼"),
+          name: z.string().trim().optional(),
+          role: z.enum(["user", "admin", "manager", "engineer", "supervisor"]),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return sdk.createLocalPasswordUser({
+          username: input.username,
+          password: input.password,
+          name: input.name,
+          role: input.role,
+        });
+      }),
   }),
 });
 

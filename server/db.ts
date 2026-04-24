@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createSign } from "node:crypto";
 import { and, asc, count, desc, eq, gte, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2/promise";
@@ -36,6 +37,11 @@ type StationStatusSummary = {
 let _db: ReturnType<typeof createDatabaseClient> | null = null;
 let purchaseSheetSyncTriggeredAt = 0;
 let purchaseSheetSyncPromise: Promise<void> | null = null;
+let stockSheetReconcileTriggeredAt = 0;
+let stockSheetReconcilePromise: Promise<void> | null = null;
+const STOCK_MATCH_SPREADSHEET_ID = "1JgtjGPwL8MXQLFUKi5OSx3wubgpSX4n4MFcj-iHgEW0";
+const STOCK_MATCH_SHEET_ID = 806211245;
+const STOCK_MATCH_SHEET_NAME = "進貨明細";
 
 function createDatabaseClient(databaseUrl: string) {
   const parsed = new URL(databaseUrl);
@@ -103,6 +109,185 @@ function triggerPurchaseSheetSyncInBackground() {
   }
 
   void runPurchaseSheetSyncInProcess();
+}
+
+function normalizeBatchMatchValue(value: unknown) {
+  return typeof value === "string"
+    ? value.trim().replace(/^'+/, "").replace(/\s+/g, "").toUpperCase()
+    : "";
+}
+
+function getGoogleServiceAccountCredentials() {
+  const rawCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (!rawCredentials) {
+    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is missing");
+  }
+
+  return JSON.parse(rawCredentials) as {
+    client_email: string;
+    private_key: string;
+    token_uri?: string;
+  };
+}
+
+function base64UrlEncode(value: string) {
+  return Buffer.from(value)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+}
+
+async function getGoogleSheetsAccessToken() {
+  const credentials = getGoogleServiceAccountCredentials();
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const unsignedToken = `${base64UrlEncode(JSON.stringify({ alg: "RS256", typ: "JWT" }))}.${base64UrlEncode(JSON.stringify({
+    iss: credentials.client_email,
+    scope: "https://www.googleapis.com/auth/spreadsheets",
+    aud: credentials.token_uri ?? "https://oauth2.googleapis.com/token",
+    exp: nowInSeconds + 3600,
+    iat: nowInSeconds,
+  }))}`;
+
+  const signer = createSign("RSA-SHA256");
+  signer.update(unsignedToken);
+  signer.end();
+
+  const signature = signer
+    .sign(credentials.private_key, "base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  const response = await fetch(credentials.token_uri ?? "https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: `${unsignedToken}.${signature}`,
+    }),
+  });
+
+  const result = await response.json() as { access_token?: string; error?: string; error_description?: string };
+  if (!response.ok || !result.access_token) {
+    throw new Error(result.error_description || result.error || "Failed to get Google Sheets access token");
+  }
+
+  return result.access_token;
+}
+
+async function readStockMatchedBatchNumbersFromSheet() {
+  const accessToken = await getGoogleSheetsAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${STOCK_MATCH_SPREADSHEET_ID}/values/${encodeURIComponent(`${STOCK_MATCH_SHEET_NAME}!F:F`)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const result = await response.json() as {
+    values?: string[][];
+    error?: { message?: string };
+  };
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "Failed to read stock match sheet values");
+  }
+
+  const rawValues = result.values?.flat() ?? [];
+  return new Set(rawValues.map((value) => normalizeBatchMatchValue(value)).filter(Boolean));
+}
+
+async function reconcilePendingStockFromSheet(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
+  const now = Date.now();
+  if (stockSheetReconcilePromise) {
+    return stockSheetReconcilePromise;
+  }
+  if (now - stockSheetReconcileTriggeredAt < 60_000) {
+    return;
+  }
+
+  stockSheetReconcileTriggeredAt = now;
+  stockSheetReconcilePromise = (async () => {
+    try {
+      const matchedBatchNumbers = await readStockMatchedBatchNumbersFromSheet();
+      if (matchedBatchNumbers.size === 0) {
+        return;
+      }
+
+      const pendingStockRows = await db
+        .select({
+          taskId: stationTasks.id,
+          productId: products.id,
+          batchNo: products.batchNo,
+        })
+        .from(stationTasks)
+        .innerJoin(products, eq(stationTasks.productId, products.id))
+        .where(and(
+          eq(stationTasks.stationCode, "STOCK"),
+          inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"]),
+          eq(products.currentStationCode, "STOCK"),
+          eq(products.currentStatus, "pending_stock"),
+          isNull(products.archivedAt),
+        ));
+
+      const matchedRows = pendingStockRows.filter((row) => matchedBatchNumbers.has(normalizeBatchMatchValue(row.batchNo)));
+      if (matchedRows.length === 0) {
+        return;
+      }
+
+      const completedAt = new Date();
+      const businessDate = new Date(`${todayDateString()}T00:00:00`);
+
+      await db
+        .update(stationTasks)
+        .set({
+          taskStatus: "completed",
+          completedAt,
+          resultSummary: "外部進貨明細批號比對成功，自動移除待入庫",
+          metadata: {
+            autoRemovedBySheet: true,
+            matchedSpreadsheetId: STOCK_MATCH_SPREADSHEET_ID,
+            matchedSheetId: STOCK_MATCH_SHEET_ID,
+            matchedColumn: "F",
+          },
+          updatedAt: completedAt,
+        })
+        .where(inArray(stationTasks.id, matchedRows.map((row) => row.taskId)));
+
+      await db
+        .update(products)
+        .set({
+          currentStatus: "completed",
+          stockStatus: "stocked",
+          updatedAt: completedAt,
+        })
+        .where(inArray(products.id, matchedRows.map((row) => row.productId)));
+
+      await db.insert(stationEvents).values(matchedRows.map((row) => ({
+        productId: row.productId,
+        stationTaskId: row.taskId,
+        stationCode: "STOCK" as const,
+        eventType: "complete" as const,
+        operatorUserId: null,
+        businessDate,
+        categoryId: null,
+        subtypeCode: null,
+        payload: {
+          summary: "外部進貨明細批號比對成功，自動移除待入庫",
+          matchedSpreadsheetId: STOCK_MATCH_SPREADSHEET_ID,
+          matchedSheetId: STOCK_MATCH_SHEET_ID,
+          matchedColumn: "F",
+          batchNo: row.batchNo ?? null,
+        },
+      })));
+    } catch (error) {
+      console.error("[stock-sheet-reconcile] failed", error);
+    } finally {
+      stockSheetReconcilePromise = null;
+    }
+  })();
+
+  return stockSheetReconcilePromise;
 }
 
 function queueA1CompletionSideEffectsInBackground(input: {
@@ -919,6 +1104,10 @@ export async function getStationPageData(stationCode: StationCode) {
   await ensureMvpSeedData();
   if (stationCode === "A1") {
     await backfillMissingImportPoNumbers(db);
+  }
+
+  if (stationCode === "STOCK") {
+    await reconcilePendingStockFromSheet(db);
   }
 
   const rows = await db

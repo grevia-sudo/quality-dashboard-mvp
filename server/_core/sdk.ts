@@ -210,6 +210,38 @@ class SDKServer {
     });
   }
 
+  async createLocalPasswordUser(input: {
+    username: string;
+    password: string;
+    name?: string;
+    role: "user" | "admin" | "manager" | "engineer" | "supervisor";
+  }): Promise<User> {
+    await this.ensureLocalPasswordBootstrapUser();
+
+    const normalizedUsername = input.username.trim();
+    if (!normalizedUsername) {
+      throw new Error("Username is required");
+    }
+
+    const existingUser = await db.getUserByUsername(normalizedUsername);
+    if (existingUser) {
+      throw new Error("此帳號已存在");
+    }
+
+    const openId = `${LOCAL_AUTH_OPEN_ID_PREFIX}${normalizedUsername}`;
+    await db.upsertUser({
+      openId,
+      username: normalizedUsername,
+      passwordHash: this.createPasswordHash(input.password),
+      name: input.name?.trim() || normalizedUsername,
+      loginMethod: "password",
+      role: input.role,
+      lastSignedIn: new Date(),
+    });
+
+    return (await db.getUserByOpenId(openId)) as User;
+  }
+
   async authenticatePasswordUser(username: string, password: string): Promise<User> {
     await this.ensureLocalPasswordBootstrapUser();
 
