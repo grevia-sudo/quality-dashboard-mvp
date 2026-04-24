@@ -829,7 +829,7 @@ export default function StationPage() {
         ) : null}
 
         {stationCode !== "STOCK" && (stationCode !== "B" || hasKeyword) ? (
-        <div className={stationCode === "B" ? "max-w-xl space-y-4" : "grid gap-4 xl:grid-cols-2"}>
+        <div className={stationCode === "B" ? "w-full space-y-4" : "grid gap-4 xl:grid-cols-2"}>
           {filteredTasks.map((task) => {
             const selections = getTaskSelections(task.taskId);
             const carryoverTask = task as typeof task & {
@@ -858,7 +858,7 @@ export default function StationPage() {
             const bFaultSummary = summarizeTextResult(displayedBFaultLabels);
 
             return (
-              <Card key={task.taskId} className="rounded-[26px] border-0 bg-white shadow-sm">
+              <Card key={task.taskId} className={`rounded-[26px] border-0 bg-white shadow-sm ${stationCode === "B" ? "w-full" : ""}`}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-base font-bold text-slate-900">
                     <span>{task.productCode}</span>
