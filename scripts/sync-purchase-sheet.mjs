@@ -433,7 +433,7 @@ export async function runPurchaseSheetSync() {
 
       if (rowNumber) {
         const existingRow = normalizedValues[rowNumber - 1] ?? [];
-        const mergedRow = mergeMissingCells(existingRow, generatedRow);
+        const mergedRow = mergeMissingCells(existingRow, generatedRow, product);
 
         await updateSheetRow(accessToken, rowNumber, mergedRow);
         normalizedValues[rowNumber - 1] = mergedRow;

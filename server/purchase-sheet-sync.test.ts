@@ -3,6 +3,7 @@ import {
   buildSheetRow,
   createInitialSheetValues,
   findMatchingRowNumber,
+  getSheetRefreshIndexes,
   mergeMissingCells,
   PURCHASE_SHEET_HEADER,
 } from "../scripts/purchase-sheet-sync-helpers.mjs";
@@ -76,11 +77,22 @@ describe("purchase sheet sync helpers", () => {
     expect(findMatchingRowNumber(values, { imei: "", serialNumber: "", batchNo: "" })).toBeNull();
   });
 
-  it("fills only blank cells and preserves non-empty sheet values except H 到 T 欄由系統刷新", () => {
+  it("preserves downstream stage columns when only A1 has new changes", () => {
     const existingRow = ["PO-1", "綠途未來", "智慧型手機", "", "SN-1", "IMEI-1", "現場已填品名", "舊的 A1 時間", "舊的 A1 執行人", "舊的 A2 時間", "舊的 A2 執行人", "舊的 B 時間", "舊的電池資訊", "舊的故障資訊", "舊的 B 執行人", "舊的 C 時間", "舊的上一關修改標記", "舊的螢幕狀態", "舊的機身狀態", "舊的 C 站測試人員", "舊的 C 站完成時間", "舊的鏡頭狀態", "舊的 D 站修改標記", "舊的 D 站完成時間", "舊的 D 站檢測者", "舊的 E 站完成時間", "舊的 E 站測試人員"];
     const generatedRow = ["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13", "2026/04/22 18:30", "Yana", "2026/04/22 19:43", "Leo", "2026/04/22 20:08", "88, 電池異常", "正常", "Mia", "2026/04/22 21:15", "N", "正常", "正常", "Cindy", "2026/04/22 21:15", "正常", "N", "", "", "", ""];
+    const product = {
+      updatedAt: "2026-04-22T10:30:00.000Z",
+      lastSheetSyncedAt: "2026-04-22T10:00:00.000Z",
+      a1CompletedAt: "2026-04-22T10:20:00.000Z",
+      a2CompletedAt: "2026-04-22T09:50:00.000Z",
+      bCompletedAt: "2026-04-22T09:40:00.000Z",
+      cCompletedAt: "2026-04-22T09:30:00.000Z",
+      dCompletedAt: "2026-04-22T09:20:00.000Z",
+      eCompletedAt: "2026-04-22T09:10:00.000Z",
+    };
 
-    expect(mergeMissingCells(existingRow, generatedRow)).toEqual([
+    expect(Array.from(getSheetRefreshIndexes(product))).toEqual([7, 8]);
+    expect(mergeMissingCells(existingRow, generatedRow, product)).toEqual([
       "PO-1",
       "綠途未來",
       "智慧型手機",
@@ -90,24 +102,24 @@ describe("purchase sheet sync helpers", () => {
       "現場已填品名",
       "2026/04/22 18:30",
       "Yana",
-      "2026/04/22 19:43",
-      "Leo",
-      "2026/04/22 20:08",
-      "88, 電池異常",
-      "正常",
-      "Mia",
-      "2026/04/22 21:15",
-      "N",
-      "正常",
-      "正常",
-      "Cindy",
-      "2026/04/22 21:15",
-      "正常",
-      "N",
-      "",
-      "",
-      "",
-      "",
+      "舊的 A2 時間",
+      "舊的 A2 執行人",
+      "舊的 B 時間",
+      "舊的電池資訊",
+      "舊的故障資訊",
+      "舊的 B 執行人",
+      "舊的 C 時間",
+      "舊的上一關修改標記",
+      "舊的螢幕狀態",
+      "舊的機身狀態",
+      "舊的 C 站測試人員",
+      "舊的 C 站完成時間",
+      "舊的鏡頭狀態",
+      "舊的 D 站修改標記",
+      "舊的 D 站完成時間",
+      "舊的 D 站檢測者",
+      "舊的 E 站完成時間",
+      "舊的 E 站測試人員",
     ]);
   });
 

@@ -96,11 +96,75 @@ export function buildSheetRow(product) {
   ];
 }
 
-export function mergeMissingCells(existingRow, generatedRow) {
+function isSheetDateNewer(candidate, lastSyncedAt) {
+  if (!candidate || !lastSyncedAt) {
+    return false;
+  }
+
+  const candidateDate = candidate instanceof Date ? candidate : new Date(candidate);
+  if (Number.isNaN(candidateDate.getTime())) {
+    return false;
+  }
+
+  return candidateDate.getTime() > lastSyncedAt.getTime();
+}
+
+export function getSheetRefreshIndexes(product) {
+  const refreshIndexes = new Set();
+
+  if (!product) {
+    for (let index = 7; index <= 26; index += 1) {
+      refreshIndexes.add(index);
+    }
+    return refreshIndexes;
+  }
+
+  const lastSyncedAt = product.lastSheetSyncedAt ? new Date(product.lastSheetSyncedAt) : null;
+  if (!lastSyncedAt || Number.isNaN(lastSyncedAt.getTime())) {
+    for (let index = 7; index <= 26; index += 1) {
+      refreshIndexes.add(index);
+    }
+    return refreshIndexes;
+  }
+
+  const stageUpdated = {
+    a1: isSheetDateNewer(product.a1CompletedAt, lastSyncedAt) || isSheetDateNewer(product.updatedAt, lastSyncedAt),
+    a2: isSheetDateNewer(product.a2CompletedAt, lastSyncedAt),
+    b: isSheetDateNewer(product.bCompletedAt, lastSyncedAt),
+    c: isSheetDateNewer(product.cCompletedAt, lastSyncedAt),
+    d: isSheetDateNewer(product.dCompletedAt, lastSyncedAt),
+    e: isSheetDateNewer(product.eCompletedAt, lastSyncedAt),
+  };
+
+  if (stageUpdated.a1) {
+    [7, 8].forEach((index) => refreshIndexes.add(index));
+  }
+  if (stageUpdated.a2) {
+    [9, 10].forEach((index) => refreshIndexes.add(index));
+  }
+  if (stageUpdated.b) {
+    [11, 12, 13, 14].forEach((index) => refreshIndexes.add(index));
+  }
+  if (stageUpdated.c) {
+    [12, 13, 15, 16, 17, 18, 19, 20, 21].forEach((index) => refreshIndexes.add(index));
+  }
+  if (stageUpdated.d) {
+    [12, 13, 17, 18, 21, 22, 23, 24].forEach((index) => refreshIndexes.add(index));
+  }
+  if (stageUpdated.e) {
+    [25, 26].forEach((index) => refreshIndexes.add(index));
+  }
+
+  return refreshIndexes;
+}
+
+export function mergeMissingCells(existingRow, generatedRow, product) {
+  const refreshIndexes = getSheetRefreshIndexes(product);
+
   return generatedRow.map((value, index) => {
     const existingValue = stringifyCell(existingRow[index]);
 
-    if (index >= 7 && index <= 26) {
+    if (refreshIndexes.has(index)) {
       return value;
     }
 

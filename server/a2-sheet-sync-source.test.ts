@@ -15,7 +15,7 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(dbSource).toContain('currentStatus: statusForStation(nextStation)');
   });
 
-  it("includes A2/B/C sheet columns in row generation and merge rules", () => {
+  it("includes A2/B/C sheet columns in row generation and stage-aware merge rules", () => {
     expect(syncHelperSource).toContain('"安裝軟體時間"');
     expect(syncHelperSource).toContain('formatSheetDateTime(product.a2CompletedAt)');
     expect(syncHelperSource).toContain('"軟體測試時間"');
@@ -27,7 +27,10 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(syncHelperSource).toContain('"螢幕狀態"');
     expect(syncHelperSource).toContain('"機身狀態"');
     expect(syncHelperSource).toContain('"鏡頭狀態"');
-    expect(syncHelperSource).toContain('if (index >= 7 && index <= 26) {');
+    expect(syncHelperSource).toContain('export function getSheetRefreshIndexes(product)');
+    expect(syncHelperSource).toContain('if (stageUpdated.a1) {');
+    expect(syncHelperSource).toContain('if (stageUpdated.c) {');
+    expect(syncScriptSource).toContain('mergeMissingCells(existingRow, generatedRow, product)');
   });
 
   it("tracks A2 and C completedAt as triggers for purchase sheet updates", () => {
