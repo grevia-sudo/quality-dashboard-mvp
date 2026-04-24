@@ -178,6 +178,9 @@ function createUtcMysqlConnection(databaseUrl) {
     password: decodeURIComponent(parsed.password),
     database: decodeURIComponent(databaseName),
     timezone: "Z",
+    ssl: {
+      rejectUnauthorized: false,
+    },
   });
 }
 

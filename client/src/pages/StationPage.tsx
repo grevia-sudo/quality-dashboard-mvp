@@ -365,13 +365,31 @@ export default function StationPage() {
     });
   }, [detailQuery.data?.tasks]);
 
+  const hasKeyword = keyword.trim().length > 0;
+
   const filteredTasks = useMemo(() => {
     const tasks = detailQuery.data?.tasks ?? [];
+    const normalizedKeyword = keyword.trim().toLowerCase();
+
+    if (stationCode === "B") {
+      if (!normalizedKeyword) {
+        return [];
+      }
+
+      return tasks.filter((task) => (
+        [task.batchNo, task.productCode, task.serialNumber, task.imei]
+          .filter((candidate): candidate is string => Boolean(candidate?.trim()))
+          .some((candidate) => candidate.trim().toLowerCase() === normalizedKeyword)
+      ));
+    }
+
     return tasks.filter((task) => {
       const text = `${task.productCode} ${task.productName ?? ""} ${task.batchNo ?? ""} ${task.serialNumber ?? ""} ${task.imei ?? ""}`.toLowerCase();
-      return text.includes(keyword.toLowerCase());
+      return text.includes(normalizedKeyword);
     });
-  }, [detailQuery.data?.tasks, keyword]);
+  }, [detailQuery.data?.tasks, keyword, stationCode]);
+
+  const showStationEmptyState = stationCode !== "B" || hasKeyword;
 
   const filteredProductNameOptions = useMemo(() => {
     const normalizedKeyword = arrivalForm.productName.trim().toLowerCase();
@@ -863,7 +881,7 @@ export default function StationPage() {
                       <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
                         <div>
                           <p className="text-sm font-bold text-slate-900">{stationCode === "B" ? "B 站故障狀態" : "B 站故障狀態（C 站可修改）"}</p>
-                          <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "完成軟體測試後會同步回寫 Google Sheet 的 L / M / N / O 欄。" : "這裡先帶入 B 站完成後的文字結果；如需調整，再按修改按鈕進入編輯，完成時可選擇是否一併回寫 Google Sheet M / N / Q 欄。"}</p>
+                          <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "直接勾選本次軟測結果即可完成送出。" : "這裡先帶入 B 站完成後的文字結果；如需調整，再按修改按鈕進入編輯，完成時可選擇是否一併回寫 Google Sheet M / N / Q 欄。"}</p>
                         </div>
                         {stationCode === "C" && !selections.isEditingBFaults ? (
                           <div className="space-y-3">
@@ -897,56 +915,91 @@ export default function StationPage() {
                         )}
                       </div>
                       <div className="space-y-3 rounded-[24px] bg-[#f8fbff] p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-bold text-slate-900">電池檢測</p>
-                            <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "可輸入健康度或數字符號，並勾選電池異常標記，完成後會同步寫入 Google Sheet M 欄。" : "這裡先帶入 B 站的電池檢測文字結果；如需調整，再按修改按鈕編輯，完成時可選擇是否回寫 Google Sheet M / Q 欄。"}</p>
-                          </div>
-                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openBatteryEditor(task.taskId)}>
-                            修改電池檢測
-                          </Button>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">電池檢測</p>
                         </div>
-                        <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
-                          {batterySummary}
-                        </div>
-                        <Dialog open={batteryDialogTaskId === task.taskId} onOpenChange={(open) => setBatteryDialogTaskId(open ? task.taskId : null)}>
-                          <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-xl">
-                            <div className="space-y-6 p-6">
-                              <DialogHeader>
-                                <DialogTitle>電池檢測</DialogTitle>
-                                <DialogDescription>{stationCode === "B" ? "可手動輸入數字或符號，並勾選電池狀態；未填寫時會在 Google Sheet M 欄回寫為「正常」。" : "此區會先帶入 B 站已記錄的電池檢測文字結果。若你有調整，完成 C 站時可選擇是否同步回 Google Sheet M 欄，並在 Q 欄標記為已修改上一關狀態。"}</DialogDescription>
-                              </DialogHeader>
-                              <label className="space-y-2 text-sm text-slate-600">
-                                <span>檢測回覆</span>
-                                <Input
-                                  value={selections.batteryNote}
-                                  onChange={(event) => updateBatteryNote(task.taskId, event.target.value)}
-                                  className="h-12 rounded-2xl border-0 bg-slate-50"
-                                  placeholder="例如：88、85%、待更換"
-                                />
-                              </label>
-                              <div className="space-y-3">
-                                <p className="text-sm font-medium text-slate-700">異常標記</p>
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                  {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
-                                    <label key={optionLabel} className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                                      <Checkbox
-                                        checked={selections.batteryIssueLabels.includes(optionLabel)}
-                                        onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
-                                      />
-                                      <span>{optionLabel}</span>
-                                    </label>
-                                  ))}
-                                </div>
+                        {stationCode === "B" ? (
+                          <div className="space-y-4">
+                            <label className="space-y-2 text-sm text-slate-600">
+                              <span>檢測回覆</span>
+                              <Input
+                                value={selections.batteryNote}
+                                onChange={(event) => updateBatteryNote(task.taskId, event.target.value)}
+                                className="h-12 rounded-2xl border-0 bg-white shadow-sm"
+                                placeholder="例如：88、85%、待更換"
+                              />
+                            </label>
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium text-slate-700">異常標記</p>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
+                                  <label key={optionLabel} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                                    <Checkbox
+                                      checked={selections.batteryIssueLabels.includes(optionLabel)}
+                                      onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
+                                    />
+                                    <span>{optionLabel}</span>
+                                  </label>
+                                ))}
                               </div>
-                              <DialogFooter>
-                                <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBatteryDialogTaskId(null)}>
-                                  完成
-                                </Button>
-                              </DialogFooter>
                             </div>
-                          </DialogContent>
-                        </Dialog>
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                              {batterySummary}
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs leading-6 text-slate-500">這裡先帶入 B 站的電池檢測文字結果；如需調整，再按修改按鈕編輯，完成時可選擇是否回寫 Google Sheet M / Q 欄。</p>
+                              </div>
+                              <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openBatteryEditor(task.taskId)}>
+                                修改電池檢測
+                              </Button>
+                            </div>
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                              {batterySummary}
+                            </div>
+                            <Dialog open={batteryDialogTaskId === task.taskId} onOpenChange={(open) => setBatteryDialogTaskId(open ? task.taskId : null)}>
+                              <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-xl">
+                                <div className="space-y-6 p-6">
+                                  <DialogHeader>
+                                    <DialogTitle>電池檢測</DialogTitle>
+                                    <DialogDescription>此區會先帶入 B 站已記錄的電池檢測文字結果。若你有調整，完成 C 站時可選擇是否同步回 Google Sheet M 欄，並在 Q 欄標記為已修改上一關狀態。</DialogDescription>
+                                  </DialogHeader>
+                                  <label className="space-y-2 text-sm text-slate-600">
+                                    <span>檢測回覆</span>
+                                    <Input
+                                      value={selections.batteryNote}
+                                      onChange={(event) => updateBatteryNote(task.taskId, event.target.value)}
+                                      className="h-12 rounded-2xl border-0 bg-slate-50"
+                                      placeholder="例如：88、85%、待更換"
+                                    />
+                                  </label>
+                                  <div className="space-y-3">
+                                    <p className="text-sm font-medium text-slate-700">異常標記</p>
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                      {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
+                                        <label key={optionLabel} className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                                          <Checkbox
+                                            checked={selections.batteryIssueLabels.includes(optionLabel)}
+                                            onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
+                                          />
+                                          <span>{optionLabel}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setBatteryDialogTaskId(null)}>
+                                      完成
+                                    </Button>
+                                  </DialogFooter>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </>
+                        )}
                       </div>
                     </div>
                   ) : null}
@@ -1015,7 +1068,7 @@ export default function StationPage() {
               </Card>
             );
           })}
-          {filteredTasks.length === 0 ? (
+          {filteredTasks.length === 0 && showStationEmptyState ? (
             <Card className="rounded-[26px] border-0 bg-white shadow-sm xl:col-span-2">
               <CardContent className="p-8 text-sm leading-7 text-slate-600">目前此站沒有符合條件的待處理商品。你可以返回站點總覽，查看其他站點的未完成數量並切換支援，或前往匯入作業建立新的到貨資料。</CardContent>
             </Card>
