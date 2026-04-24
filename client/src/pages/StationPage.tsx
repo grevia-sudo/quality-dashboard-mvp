@@ -371,7 +371,7 @@ export default function StationPage() {
     const tasks = detailQuery.data?.tasks ?? [];
     const normalizedKeyword = keyword.trim().toLowerCase();
 
-    if (stationCode === "B") {
+    if (stationCode === "B" || stationCode === "C") {
       if (!normalizedKeyword) {
         return [];
       }
@@ -389,7 +389,7 @@ export default function StationPage() {
     });
   }, [detailQuery.data?.tasks, keyword, stationCode]);
 
-  const showStationEmptyState = stationCode !== "B" || hasKeyword;
+  const showStationEmptyState = (stationCode !== "B" && stationCode !== "C") || hasKeyword;
   const pendingTasks = detailQuery.data?.tasks ?? [];
 
   const filteredProductNameOptions = useMemo(() => {
@@ -828,8 +828,8 @@ export default function StationPage() {
           </Card>
         ) : null}
 
-        {stationCode !== "STOCK" && (stationCode !== "B" || hasKeyword) ? (
-        <div className={stationCode === "B" ? "w-full space-y-4" : "grid gap-4 xl:grid-cols-2"}>
+        {stationCode !== "STOCK" && ((stationCode !== "B" && stationCode !== "C") || hasKeyword) ? (
+        <div className={stationCode === "B" || stationCode === "C" ? "w-full space-y-4" : "grid gap-4 xl:grid-cols-2"}>
           {filteredTasks.map((task) => {
             const selections = getTaskSelections(task.taskId);
             const carryoverTask = task as typeof task & {
@@ -858,7 +858,7 @@ export default function StationPage() {
             const bFaultSummary = summarizeTextResult(displayedBFaultLabels);
 
             return (
-              <Card key={task.taskId} className={`rounded-[26px] border-0 bg-white shadow-sm ${stationCode === "B" ? "w-full" : ""}`}>
+              <Card key={task.taskId} className={`rounded-[26px] border-0 bg-white shadow-sm ${stationCode === "B" || stationCode === "C" ? "w-full" : ""}`}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-base font-bold text-slate-900">
                     <span>{task.productCode}</span>
@@ -1070,21 +1070,23 @@ export default function StationPage() {
             );
           })}
           {filteredTasks.length === 0 && showStationEmptyState ? (
-            <Card className={`rounded-[26px] border-0 bg-white shadow-sm ${stationCode === "B" ? "" : "xl:col-span-2"}`}>
+            <Card className={`rounded-[26px] border-0 bg-white shadow-sm ${stationCode === "B" || stationCode === "C" ? "" : "xl:col-span-2"}`}>
               <CardContent className="p-8 text-sm leading-7 text-slate-600">目前此站沒有符合條件的待處理商品。你可以返回站點總覽，查看其他站點的未完成數量並切換支援，或前往匯入作業建立新的到貨資料。</CardContent>
             </Card>
           ) : null}
         </div>
         ) : null}
 
-        {stationCode === "B" ? (
+        {stationCode === "B" || stationCode === "C" ? (
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base font-bold">未處理表格清單</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                B 站待處理商品改為表格明細檢視，方便直接查看產品代碼、批號、序號、IMEI 與目前狀態；搜尋到指定條碼時，上方會先顯示對應結果，下方仍保留完整未處理清單供你比對。
+                {stationCode === "B"
+                  ? "B 站待處理商品改為表格明細檢視，方便直接查看產品代碼、批號、序號、IMEI 與目前狀態；搜尋到指定條碼時，上方會先顯示對應結果，下方仍保留完整未處理清單供你比對。"
+                  : "C 站待處理商品也改為表格明細檢視，方便直接查看產品代碼、批號、序號、IMEI 與目前狀態；搜尋到指定條碼時，上方會先顯示對應結果，下方仍保留完整未處理清單供你比對。"}
               </div>
               <div className="overflow-x-auto rounded-[24px] bg-slate-50">
                 <table className="min-w-full text-sm text-slate-700">
@@ -1119,7 +1121,7 @@ export default function StationPage() {
                 </table>
               </div>
               {pendingTasks.length === 0 ? (
-                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">目前 B 站沒有待處理商品。</div>
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">目前 {stationCode} 站沒有待處理商品。</div>
               ) : null}
             </CardContent>
           </Card>
