@@ -561,7 +561,7 @@ export default function StationPage() {
   };
 
   const canReceiveA1 = Boolean(
-    arrivalForm.batchNo.trim() || arrivalForm.serialNumber.trim() || arrivalForm.imei.trim(),
+    arrivalForm.batchNo.trim() && arrivalForm.serialNumber.trim() && arrivalForm.productName.trim(),
   );
 
   if (detailQuery.isLoading) {
@@ -629,12 +629,12 @@ export default function StationPage() {
                   }}
                 >
                   <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                    A1 改為掃碼補齊模式。只要刷入商品批號、商品序號或 IMEI 任一欄位，系統就會優先比對既有匯入資料；若需要，也可同步指定品名。完成後系統會直接完成 A1 並留在本頁，方便現場立即掃描下一筆。
+                    A1 改為掃碼補齊模式。推進 A2 前需填寫商品批號、商品序號與品名；IMEI 改為非必填，若現場有資料仍可一併補齊。完成後系統會直接完成 A1 並留在本頁，方便現場立即掃描下一筆。
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <label className="space-y-2 text-sm text-slate-600">
-                      <span>商品批號</span>
+                      <span>商品批號（必填）</span>
                       <Input
                         ref={batchNoInputRef}
                         autoFocus
@@ -642,31 +642,31 @@ export default function StationPage() {
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))}
                         onKeyDown={handleA1ScanSubmitKey}
                         className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
-                        placeholder="掃描批號後可直接按 Enter"
+                        placeholder="必填，掃描批號後可直接按 Enter"
                       />
                     </label>
                     <label className="space-y-2 text-sm text-slate-600">
-                      <span>商品序號</span>
+                      <span>商品序號（必填）</span>
                       <Input
                         value={arrivalForm.serialNumber}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))}
                         onKeyDown={handleA1ScanSubmitKey}
                         className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
-                        placeholder="可補刷序號以補齊資料"
+                        placeholder="必填，請輸入或掃描商品序號"
                       />
                     </label>
                     <label className="space-y-2 text-sm text-slate-600">
-                      <span>IMEI</span>
+                      <span>IMEI（非必填）</span>
                       <Input
                         value={arrivalForm.imei}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))}
                         onKeyDown={handleA1ScanSubmitKey}
                         className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
-                        placeholder="可補刷 IMEI 以補齊資料"
+                        placeholder="選填，可補刷 IMEI 以補齊資料"
                       />
                     </label>
                     <label className="space-y-2 text-sm text-slate-600">
-                      <span>品名</span>
+                      <span>品名（必填）</span>
                       <div className="relative">
                         <Input
                           value={arrivalForm.productName}
@@ -685,8 +685,8 @@ export default function StationPage() {
                             }
                           }}
                           className="h-14 rounded-2xl border-0 bg-slate-50 pr-12 text-base"
-                          placeholder="輸入品名關鍵字搜尋（可選）"
-                          autoComplete="off"
+                          placeholder="必填，可輸入品名關鍵字或完整品名"
+                       autoComplete="off"
                         />
                         <Search className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
                         {productNamePickerOpen ? (
