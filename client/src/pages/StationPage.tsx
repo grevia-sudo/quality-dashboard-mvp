@@ -390,6 +390,7 @@ export default function StationPage() {
   }, [detailQuery.data?.tasks, keyword, stationCode]);
 
   const showStationEmptyState = stationCode !== "B" || hasKeyword;
+  const pendingTasks = detailQuery.data?.tasks ?? [];
 
   const filteredProductNameOptions = useMemo(() => {
     const normalizedKeyword = arrivalForm.productName.trim().toLowerCase();
@@ -827,8 +828,8 @@ export default function StationPage() {
           </Card>
         ) : null}
 
-        {stationCode !== "STOCK" ? (
-        <div className="grid gap-4 xl:grid-cols-2">
+        {stationCode !== "STOCK" && (stationCode !== "B" || hasKeyword) ? (
+        <div className={stationCode === "B" ? "max-w-xl space-y-4" : "grid gap-4 xl:grid-cols-2"}>
           {filteredTasks.map((task) => {
             const selections = getTaskSelections(task.taskId);
             const carryoverTask = task as typeof task & {
@@ -1069,11 +1070,59 @@ export default function StationPage() {
             );
           })}
           {filteredTasks.length === 0 && showStationEmptyState ? (
-            <Card className="rounded-[26px] border-0 bg-white shadow-sm xl:col-span-2">
+            <Card className={`rounded-[26px] border-0 bg-white shadow-sm ${stationCode === "B" ? "" : "xl:col-span-2"}`}>
               <CardContent className="p-8 text-sm leading-7 text-slate-600">目前此站沒有符合條件的待處理商品。你可以返回站點總覽，查看其他站點的未完成數量並切換支援，或前往匯入作業建立新的到貨資料。</CardContent>
             </Card>
           ) : null}
         </div>
+        ) : null}
+
+        {stationCode === "B" ? (
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">未處理表格清單</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                B 站待處理商品改為表格明細檢視，方便直接查看產品代碼、批號、序號、IMEI 與目前狀態；搜尋到指定條碼時，上方會先顯示對應結果，下方仍保留完整未處理清單供你比對。
+              </div>
+              <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                <table className="min-w-full text-sm text-slate-700">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <th className="px-4 py-3">產品代碼</th>
+                      <th className="px-4 py-3">品名</th>
+                      <th className="px-4 py-3">品類</th>
+                      <th className="px-4 py-3">批號</th>
+                      <th className="px-4 py-3">序號</th>
+                      <th className="px-4 py-3">IMEI</th>
+                      <th className="px-4 py-3">狀態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingTasks.map((task) => (
+                      <tr key={task.taskId} className="border-b border-slate-200/80 last:border-b-0">
+                        <td className="px-4 py-3 font-medium text-slate-900">{task.productCode}</td>
+                        <td className="px-4 py-3">{task.productName ?? "-"}</td>
+                        <td className="px-4 py-3">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</td>
+                        <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
+                        <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
+                        <td className="px-4 py-3">{task.imei ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="secondary" className={task.isOverdue ? "bg-[#f7e8ee] text-rose-700" : "bg-slate-100 text-slate-700"}>
+                            {task.isOverdue ? "逾期" : task.taskStatus}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {pendingTasks.length === 0 ? (
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">目前 B 站沒有待處理商品。</div>
+              ) : null}
+            </CardContent>
+          </Card>
         ) : null}
       </div>
     </DashboardLayout>
