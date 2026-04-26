@@ -18,18 +18,18 @@ describe("B/C station layout source coverage", () => {
     expect(stationPageSource).toContain('目前 {stationCode} 站沒有待處理商品。');
   });
 
-  it("applies the compact three-column option layout to the B station status areas", () => {
+  it("applies the latest flat compact option layout to the B station status areas", () => {
     expect(stationPageSource).toContain('className="space-y-4"');
-    expect(stationPageSource).toContain('grid gap-3 md:grid-cols-2 xl:grid-cols-3');
-    expect(stationPageSource).toContain('rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm');
+    expect(stationPageSource).toContain('flex flex-wrap gap-3');
+    expect(stationPageSource).toContain('min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]');
     expect(stationPageSource).toContain('B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (');
   });
 
-  it("renders the C station screen, appearance, and camera sections as compact stacked rows", () => {
+  it("renders the C station screen, appearance, and camera sections with the same flat compact rows", () => {
     expect(stationPageSource).toContain('C 站螢幕狀態');
     expect(stationPageSource).toContain('C 站機身外觀');
     expect(stationPageSource).toContain('C 站鏡頭狀態');
     expect(stationPageSource).toContain('space-y-4');
-    expect(stationPageSource).toContain('grid gap-3 md:grid-cols-2 xl:grid-cols-3');
+    expect(stationPageSource).toContain('flex flex-wrap gap-3');
   });
 });

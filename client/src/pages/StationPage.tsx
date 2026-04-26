@@ -897,9 +897,9 @@ export default function StationPage() {
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            <div className="flex flex-wrap gap-3">
                               {editableBFaultOptions.map((option) => (
-                                <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
+                                <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
                                   <Checkbox checked={(stationCode === "B" ? selections.faultOptionIds : selections.bFaultOptionIds).includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, stationCode === "B" ? "faultOptionIds" : "bFaultOptionIds", option.id, Boolean(checked))} />
                                   <span>{option.label}</span>
                                 </label>
@@ -932,9 +932,9 @@ export default function StationPage() {
                             </label>
                             <div className="space-y-3">
                               <p className="text-sm font-medium text-slate-700">異常標記</p>
-                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                              <div className="flex flex-wrap gap-3">
                                 {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
-                                  <label key={optionLabel} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
+                                  <label key={optionLabel} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
                                     <Checkbox
                                       checked={selections.batteryIssueLabels.includes(optionLabel)}
                                       onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
@@ -1012,9 +1012,9 @@ export default function StationPage() {
                           <p className="text-sm font-bold text-slate-900">C 站螢幕狀態</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet O 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
-                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        <div className="flex flex-wrap gap-3">
                           {(detailQuery.data?.faultOptions ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
+                            <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
                               <Checkbox checked={selections.faultOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "faultOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
@@ -1026,9 +1026,9 @@ export default function StationPage() {
                           <p className="text-sm font-bold text-slate-900">C 站機身外觀</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet S 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
-                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        <div className="flex flex-wrap gap-3">
                           {(detailQuery.data?.appearanceOptions ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
+                            <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
                               <Checkbox checked={selections.appearanceOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "appearanceOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
@@ -1040,9 +1040,9 @@ export default function StationPage() {
                           <p className="text-sm font-bold text-slate-900">C 站鏡頭狀態</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet T 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
-                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        <div className="flex flex-wrap gap-3">
                           {(detailQuery.data?.cameraOptions ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
+                            <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
                               <Checkbox checked={selections.cameraOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "cameraOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
