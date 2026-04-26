@@ -103,6 +103,7 @@ export default function StationPage() {
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
   const productCategoryOptions = productCategoryOptionsQuery.data ?? [];
+  const canEditCategory = stationCode === "A1" || stationCode === "C";
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -168,6 +169,10 @@ export default function StationPage() {
     brandName?: string | null;
     importedBrandName?: string | null;
   }) => {
+    if (!canEditCategory) {
+      return;
+    }
+
     setCategoryDialogTask({
       taskId: task.taskId,
       productId: task.productId,
@@ -851,7 +856,7 @@ export default function StationPage() {
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
                       <th className="px-4 py-3">狀態</th>
-                      <th className="px-4 py-3 text-right">操作</th>
+                      {canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}
                     </tr>
                   </thead>
                   <tbody>
@@ -868,11 +873,13 @@ export default function StationPage() {
                             {task.isOverdue ? "逾期" : task.taskStatus}
                           </Badge>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
-                            編輯
-                          </Button>
-                        </td>
+                        {canEditCategory ? (
+                          <td className="px-4 py-3 text-right">
+                            <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                              編輯
+                            </Button>
+                          </td>
+                        ) : null}
                       </tr>
                     ))}
                   </tbody>
@@ -933,15 +940,17 @@ export default function StationPage() {
                     <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">目前站點</p><p className="mt-1 font-semibold text-slate-900">{task.currentStationCode}</p></div>
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-400">套用品類設定</p>
-                      <p className="font-semibold text-slate-900">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p>
+                  {canEditCategory ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+                      <div className="space-y-1">
+                        <p className="text-xs text-slate-400">套用品類設定</p>
+                        <p className="font-semibold text-slate-900">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p>
+                      </div>
+                      <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                        編輯
+                      </Button>
                     </div>
-                    <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
-                      編輯
-                    </Button>
-                  </div>
+                  ) : null}
 
                   {stationCode === "B" || stationCode === "C" ? (
                     <div className="space-y-4">
@@ -1164,7 +1173,7 @@ export default function StationPage() {
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
                       <th className="px-4 py-3">狀態</th>
-                      <th className="px-4 py-3 text-right">操作</th>
+                      {canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}
                     </tr>
                   </thead>
                   <tbody>
@@ -1181,11 +1190,13 @@ export default function StationPage() {
                             {task.isOverdue ? "逾期" : task.taskStatus}
                           </Badge>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
-                            編輯
-                          </Button>
-                        </td>
+                        {canEditCategory ? (
+                          <td className="px-4 py-3 text-right">
+                            <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                              編輯
+                            </Button>
+                          </td>
+                        ) : null}
                       </tr>
                     ))}
                   </tbody>
@@ -1197,6 +1208,7 @@ export default function StationPage() {
             </CardContent>
           </Card>
         ) : null}
+        {canEditCategory ? (
         <Dialog open={Boolean(categoryDialogTask)} onOpenChange={(open) => {
           if (!open) {
             setCategoryDialogTask(null);
@@ -1256,6 +1268,7 @@ export default function StationPage() {
             </div>
           </DialogContent>
         </Dialog>
+        ) : null}
       </div>
     </DashboardLayout>
   );

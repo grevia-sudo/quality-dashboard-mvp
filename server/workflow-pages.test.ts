@@ -71,6 +71,9 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
     expect(stationPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
     expect(stationPageSource).toContain("trpc.station.assignCategory.useMutation");
+    expect(stationPageSource).toContain('const canEditCategory = stationCode === "A1" || stationCode === "C"');
+    expect(stationPageSource).toContain("if (!canEditCategory) {");
+    expect(stationPageSource).toContain('{canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}');
     expect(stationPageSource).toContain("編輯品類設定");
     expect(stationPageSource).toContain("openCategoryEditor(task)");
     expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
@@ -81,6 +84,7 @@ describe("warehouse workflow pages", () => {
 
   it("supports A2 scan-to-complete workflow on the station page", () => {
     expect(stationPageSource).toContain('stationCode === "A2"');
+    expect(stationPageSource).toContain('const canEditCategory = stationCode === "A1" || stationCode === "C"');
     expect(stationPageSource).toContain("submitA2ScanComplete");
     expect(stationPageSource).toContain("handleStationScanInputKey");
     expect(stationPageSource).toContain("掃描商品批號 QR 後可直接按 Enter 完成 A2");
@@ -120,6 +124,7 @@ describe("warehouse workflow pages", () => {
     expect(samplingPageSource).toContain("trpc.station.assignCategory.useMutation");
     expect(samplingPageSource).toContain("編輯品類設定");
     expect(samplingPageSource).toContain("openCategoryEditor(task)");
+    expect(samplingPageSource).toContain("setCategoryDialogTask(task);");
     expect(samplingPageSource).toContain("選擇品類設定");
   });
 
