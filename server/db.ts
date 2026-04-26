@@ -380,8 +380,17 @@ export async function getDb() {
   return _db;
 }
 
+function getOperationTimeContext(now = new Date()) {
+  const businessDate = now.toISOString().slice(0, 10);
+  return {
+    now,
+    businessDate,
+    businessDateValue: new Date(`${businessDate}T00:00:00`),
+  };
+}
+
 function todayDateString() {
-  return new Date().toISOString().slice(0, 10);
+  return getOperationTimeContext().businessDate;
 }
 
 function stationToLabel(code: StationCode) {
@@ -775,7 +784,7 @@ export async function completeA1ArrivalByScan(input: {
   const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, input.serialNumber);
   const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, input.imei);
   const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, input.productName);
-  const businessDateValue = new Date(`${todayDateString()}T00:00:00`);
+  const { businessDateValue, now: completedAt } = getOperationTimeContext();
   const pendingTaskId = matchedProduct.pendingTaskId ?? (await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
     source: "a1_scan_receive",
   }))?.id;
@@ -784,7 +793,6 @@ export async function completeA1ArrivalByScan(input: {
     return { success: false as const, message: "找不到可完成的 A1 任務" };
   }
 
-  const completedAt = new Date();
   const nextStation = nextStationFor("A1");
 
   await db
@@ -1477,8 +1485,7 @@ export async function importProducts(input: {
 
   const arrivalAt = parseArrivalAt(input.arrivalAt);
   const resolvedPoNumber = normalizeOptionalText(input.poNumber) ?? await generateAutoPoNumber(db, arrivalAt ?? new Date());
-  const businessDate = todayDateString();
-  const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const { businessDate, businessDateValue } = getOperationTimeContext();
   const importSeed = Date.now();
   const createdProducts: Array<{ id: number; productCode: string; productName: string | null }> = [];
   const normalizedRows = input.rows.map((row) => ({
@@ -1781,9 +1788,7 @@ export async function completeStationTask(input: {
     .limit(1);
   const effectiveCategoryId = input.categoryId ?? productRows[0]?.categoryId ?? null;
   const nextStation = await resolveNextStationByCategory(effectiveCategoryId, input.stationCode);
-  const businessDate = todayDateString();
-  const businessDateValue = new Date(`${businessDate}T00:00:00`);
-  const completedAt = new Date();
+  const { businessDateValue, now: completedAt } = getOperationTimeContext();
   const currentStationOptionIds = Array.from(new Set([
     ...(input.faultOptionIds ?? []),
     ...(input.appearanceOptionIds ?? []),
@@ -1997,9 +2002,7 @@ export async function submitSamplingResult(input: {
   const passNextStation = await resolveNextStationByCategory(effectiveCategoryId, "D");
   const failReturnStation = await resolveReworkStationByCategory(effectiveCategoryId, "D") ?? "C";
 
-  const businessDate = todayDateString();
-  const businessDateValue = new Date(`${businessDate}T00:00:00`);
-  const completedAt = new Date();
+  const { businessDateValue, now: completedAt } = getOperationTimeContext();
   const normalizedBatterySummary = normalizeOptionalText(input.batterySummary) ?? "正常";
   const normalizedBFaultSummary = normalizeOptionalText(input.bFaultSummary) ?? "正常";
   const normalizedCFaultSummary = normalizeOptionalText(input.cFaultSummary) ?? "正常";
@@ -2149,8 +2152,7 @@ export async function getEngineerKpiSummary(userId: number) {
   }
 
   await ensureMvpSeedData();
-  const businessDate = todayDateString();
-  const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const { businessDate, businessDateValue } = getOperationTimeContext();
   const monthPrefix = businessDate.slice(0, 7);
   const toDateKey = (value: Date) => value.toISOString().slice(0, 10);
 
@@ -2283,8 +2285,7 @@ export async function seedKpiForDemo(userId: number) {
     return;
   }
 
-  const businessDate = todayDateString();
-  const businessDateValue = new Date(`${businessDate}T00:00:00`);
+  const { businessDate, businessDateValue } = getOperationTimeContext();
   const categoryRows = await db.select().from(productCategories);
   const iphone = categoryRows.find((item) => item.subtypeCode === "iPhone");
   const android = categoryRows.find((item) => item.subtypeCode === "Android");
