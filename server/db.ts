@@ -2451,14 +2451,41 @@ export async function archiveExpiredData() {
   return { archivedCount: expiredProducts.length };
 }
 
-async function getAdminEngineerKpiProgress() {
+type AdminDateRangeInput = {
+  startDate?: string | null;
+  endDate?: string | null;
+};
+
+function getCurrentMonthStartDate(dateKey: string) {
+  return `${dateKey.slice(0, 7)}-01`;
+}
+
+function normalizeAdminDateRange(input?: AdminDateRangeInput) {
+  const todayKey = todayDateString();
+  const normalizedStart = (input?.startDate ?? "").trim() || getCurrentMonthStartDate(todayKey);
+  const normalizedEnd = (input?.endDate ?? "").trim() || todayKey;
+  const [startDate, endDate] = normalizedStart <= normalizedEnd
+    ? [normalizedStart, normalizedEnd]
+    : [normalizedEnd, normalizedStart];
+
+  return {
+    todayKey,
+    startDate,
+    endDate,
+  };
+}
+
+function isDateKeyWithinRange(dateKey: string, range: { startDate: string; endDate: string }) {
+  return dateKey >= range.startDate && dateKey <= range.endDate;
+}
+
+async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   const db = await getDb();
   if (!db) {
     return [];
   }
 
-  const todayKey = todayDateString();
-  const monthPrefix = todayKey.slice(0, 7);
+  const range = normalizeAdminDateRange(input);
   const userRows = await db
     .select({
       id: users.id,
@@ -2482,14 +2509,14 @@ async function getAdminEngineerKpiProgress() {
     })
     .from(engineerDailyProductivity);
 
-  const monthlyRows = productivityRows.filter((row) => row.businessDate.toISOString().slice(0, 7) === monthPrefix);
+  const rangedRows = productivityRows.filter((row) => isDateKeyWithinRange(row.businessDate.toISOString().slice(0, 10), range));
 
   return userRows
     .map((user) => {
-      const rows = monthlyRows.filter((row) => row.userId === user.id);
-      const todayRows = rows.filter((row) => row.businessDate.toISOString().slice(0, 10) === todayKey);
+      const rows = rangedRows.filter((row) => row.userId === user.id);
+      const todayRows = rows.filter((row) => row.businessDate.toISOString().slice(0, 10) === range.todayKey);
       const attendanceDays = rows.filter((row) => row.attendanceFlag).length;
-      const monthTotalPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
+      const rangeTotalPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
       const todayPoints = todayRows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
       const avgKpiAchievementRate = rows.length > 0
         ? rows.reduce((sum, row) => sum + Number(row.kpiAchievementRate), 0) / rows.length
@@ -2505,8 +2532,11 @@ async function getAdminEngineerKpiProgress() {
         role: user.role,
         attendanceDays,
         todayPoints,
-        monthTotalPoints,
-        monthAvgPoints: attendanceDays > 0 ? monthTotalPoints / attendanceDays : 0,
+        monthTotalPoints: rangeTotalPoints,
+        todayLabel: range.todayKey,
+        rangeStartDate: range.startDate,
+        rangeEndDate: range.endDate,
+        monthAvgPoints: attendanceDays > 0 ? rangeTotalPoints / attendanceDays : 0,
         avgKpiAchievementRate,
         rawAchievementRate,
         overAchievementRate,
@@ -2668,8 +2698,9 @@ export async function replaceCategoryStationFlow(input: { categoryId: number; st
   return getCategoryStationFlowConfigs();
 }
 
-export async function getAdminSetupData() {
+export async function getAdminSetupData(input?: AdminDateRangeInput) {
   const db = await getDb();
+  const normalizedRange = normalizeAdminDateRange(input);
   if (!db) {
     return {
       users: [],
@@ -2681,6 +2712,10 @@ export async function getAdminSetupData() {
       stationLeadTimes: [],
       categoryStockCycleTimes: [],
       categoryFlows: [],
+      kpiRange: {
+        startDate: normalizedRange.startDate,
+        endDate: normalizedRange.endDate,
+      },
     };
   }
 
@@ -2702,7 +2737,7 @@ export async function getAdminSetupData() {
     db.select().from(productivityTargetConfigs).orderBy(asc(productivityTargetConfigs.id)),
     db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
     db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
-    getAdminEngineerKpiProgress(),
+    getAdminEngineerKpiProgress(normalizedRange),
     getAdminStationLeadTimes(),
     getAdminCategoryStockCycleTimes(),
     getCategoryStationFlowConfigs(),
@@ -2719,6 +2754,10 @@ export async function getAdminSetupData() {
     stationLeadTimes,
     categoryStockCycleTimes,
     categoryFlows,
+    kpiRange: {
+      startDate: normalizedRange.startDate,
+      endDate: normalizedRange.endDate,
+    },
     syncSummary: {
       queuedJobs: queuedSyncJobs[0]?.count ?? 0,
       targetSheetName: "採購單",

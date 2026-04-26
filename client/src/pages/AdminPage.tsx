@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -61,6 +61,7 @@ type DefectOptionDraft = {
 };
 
 type CategoryFlowDrafts = Record<number, Array<(typeof stationOptions)[number]>>;
+type CategoryFlowCopyTargets = Record<number, string>;
 
 function createNewOptionDraft(stationCode: OptionStationCode, optionType: OptionType): DefectOptionDraft {
   return {
@@ -93,13 +94,21 @@ export default function AdminPage() {
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
-  const query = trpc.admin.setup.useQuery(undefined, { retry: false });
+  const [appliedKpiRange, setAppliedKpiRange] = useState<{ startDate?: string; endDate?: string }>({});
+  const query = trpc.admin.setup.useQuery({
+    startDate: appliedKpiRange.startDate || undefined,
+    endDate: appliedKpiRange.endDate || undefined,
+  }, { retry: false });
   const [ruleDrafts, setRuleDrafts] = useState<RuleDraft[]>([]);
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
   const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
   const [categoryFlowDrafts, setCategoryFlowDrafts] = useState<CategoryFlowDrafts>({});
+  const [categoryFlowCopyTargets, setCategoryFlowCopyTargets] = useState<CategoryFlowCopyTargets>({});
   const [categoryFlowCategorySearch, setCategoryFlowCategorySearch] = useState("");
   const [categoryFlowBrandSearch, setCategoryFlowBrandSearch] = useState("");
+  const [kpiFilterStartDate, setKpiFilterStartDate] = useState("");
+  const [kpiFilterEndDate, setKpiFilterEndDate] = useState("");
+  const lastLoadedKpiRangeRef = useRef<{ startDate: string; endDate: string } | null>(null);
   const [newProductName, setNewProductName] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
@@ -182,13 +191,33 @@ export default function AdminPage() {
     }, {} as CategoryFlowDrafts);
 
     setCategoryFlowDrafts(nextFlowDrafts);
-  }, [query.data]);
+    setCategoryFlowCopyTargets((prev) => {
+      const nextEntries = categories.map((category) => [category.id, prev[category.id] ?? ""] as const);
+      return Object.fromEntries(nextEntries) as CategoryFlowCopyTargets;
+    });
+
+    const nextRange = {
+      startDate: query.data.kpiRange?.startDate ?? "",
+      endDate: query.data.kpiRange?.endDate ?? "",
+    };
+    const lastLoadedRange = lastLoadedKpiRangeRef.current;
+    const shouldSyncDraftRange = !lastLoadedRange
+      || (kpiFilterStartDate === lastLoadedRange.startDate && kpiFilterEndDate === lastLoadedRange.endDate)
+      || (!kpiFilterStartDate && !kpiFilterEndDate);
+
+    if (shouldSyncDraftRange) {
+      setKpiFilterStartDate(nextRange.startDate);
+      setKpiFilterEndDate(nextRange.endDate);
+    }
+
+    lastLoadedKpiRangeRef.current = nextRange;
+  }, [query.data, kpiFilterEndDate, kpiFilterStartDate]);
 
   const saveAllSettingsMutation = trpc.admin.saveAllSettings.useMutation({
     onSuccess: async () => {
       await utils.admin.setup.invalidate();
       await utils.station.productCategoryOptions.invalidate();
-      toast.success("已一次儲存站點規則、產能設定、功能表設定與品類流程");
+      toast.success("全部儲存成功，已更新站點規則、產能設定、功能表設定與品類流程");
     },
     onError: (error) => {
       toast.error(error.message || "全部儲存失敗");
@@ -355,6 +384,51 @@ export default function AdminPage() {
   const categoryStockCycleTimes = query.data?.categoryStockCycleTimes ?? [];
   const configMutationPending = saveAllSettingsMutation.isPending;
   const topEngineer = kpiProgress[0];
+  const kpiRangeLabel = query.data?.kpiRange
+    ? `${query.data.kpiRange.startDate} ～ ${query.data.kpiRange.endDate}`
+    : "本月";
+
+  const handleApplyKpiFilter = () => {
+    setAppliedKpiRange({
+      startDate: kpiFilterStartDate || undefined,
+      endDate: kpiFilterEndDate || undefined,
+    });
+  };
+
+  const handleResetKpiFilter = () => {
+    setKpiFilterStartDate("");
+    setKpiFilterEndDate("");
+    setAppliedKpiRange({});
+  };
+
+  const handleCopyCategoryFlow = (sourceCategoryId: number) => {
+    const targetCategoryId = Number(categoryFlowCopyTargets[sourceCategoryId] || 0);
+    if (!targetCategoryId) {
+      toast.error("請先選擇要套用流程的目標品類");
+      return;
+    }
+
+    if (targetCategoryId === sourceCategoryId) {
+      toast.error("來源品類與目標品類不可相同");
+      return;
+    }
+
+    const sourceCategory = categories.find((item) => item.id === sourceCategoryId);
+    const targetCategory = categories.find((item) => item.id === targetCategoryId);
+    const sourceFlow = categoryFlowDrafts[sourceCategoryId] ?? [...stationOptions];
+
+    setCategoryFlowDrafts((prev) => ({
+      ...prev,
+      [targetCategoryId]: [...sourceFlow],
+    }));
+    setCategoryFlowCopyTargets((prev) => ({
+      ...prev,
+      [sourceCategoryId]: "",
+    }));
+
+    toast.success(`已將 ${sourceCategory?.categoryName ?? "來源品類"} × ${sourceCategory?.brandName ?? sourceCategory?.subtypeCode ?? "-"} 的流程複製到 ${targetCategory?.categoryName ?? "目標品類"} × ${targetCategory?.brandName ?? targetCategory?.subtypeCode ?? "-"}`);
+  };
+
   const handleSaveAllSettings = () => {
     const invalidTargets = targetDrafts.filter((target) => (target.active || target.dailyTargetQty > 0 || target.id) && target.dailyTargetQty < 1);
     if (invalidTargets.length > 0) {
@@ -483,22 +557,40 @@ export default function AdminPage() {
 
         <div className="grid gap-4 xl:grid-cols-3">
           <Card className="rounded-[28px] border-0 bg-white shadow-sm xl:col-span-3">
-            <CardHeader>
-              <CardTitle className="text-base font-bold">全員 KPI 進度</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              <CardHeader>
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                  <div>
+                    <CardTitle className="text-base font-bold">全員 KPI 進度</CardTitle>
+                    <p className="mt-2 text-sm text-slate-500">目前查看區間：{kpiRangeLabel}</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-[180px_180px_auto_auto]">
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>開始日期</span>
+                      <Input type="date" value={kpiFilterStartDate} onChange={(event) => setKpiFilterStartDate(event.target.value)} className="rounded-2xl border-0 bg-slate-50" />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>結束日期</span>
+                      <Input type="date" value={kpiFilterEndDate} onChange={(event) => setKpiFilterEndDate(event.target.value)} className="rounded-2xl border-0 bg-slate-50" />
+                    </label>
+                    <Button className="rounded-2xl self-end" disabled={query.isFetching} onClick={handleApplyKpiFilter}>套用 KPI 篩選</Button>
+                    <Button variant="outline" className="rounded-2xl self-end" disabled={query.isFetching} onClick={handleResetKpiFilter}>重設為當月</Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-[24px] bg-slate-50 p-4">
-                  <p className="text-xs text-slate-400">本月已追蹤工程師</p>
+                  <p className="text-xs text-slate-400">此區間已追蹤工程師</p>
                   <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length}</p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50 p-4">
-                  <p className="text-xs text-slate-400">本月最高平均達標率</p>
+                  <p className="text-xs text-slate-400">此區間最高平均達標率</p>
                   <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{topEngineer ? `${topEngineer.avgKpiAchievementRate.toFixed(1)}%` : "0.0%"}</p>
                   <p className="mt-1 text-sm text-slate-500">{topEngineer ? `${topEngineer.name}｜${topEngineer.monthTotalPoints.toFixed(3)} 點` : "尚無資料"}</p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50 p-4">
-                  <p className="text-xs text-slate-400">本月平均 KPI 分數</p>
+                  <p className="text-xs text-slate-400">此區間平均 KPI 分數</p>
                   <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length > 0 ? `${(kpiProgress.reduce((sum, item) => sum + item.finalKpiScore, 0) / kpiProgress.length).toFixed(1)}` : "0.0"}</p>
                   <p className="mt-1 text-sm text-slate-500">可用於比對目前整體工程師進度</p>
                 </div>
@@ -510,8 +602,8 @@ export default function AdminPage() {
                       <th className="px-4 py-3">工程師</th>
                       <th className="px-4 py-3">角色</th>
                       <th className="px-4 py-3">今日點數</th>
-                      <th className="px-4 py-3">本月總點數</th>
-                      <th className="px-4 py-3">日均點數</th>
+                      <th className="px-4 py-3">區間總點數</th>
+                      <th className="px-4 py-3">區間日均點數</th>
                       <th className="px-4 py-3">平均 KPI 達標率</th>
                       <th className="px-4 py-3">最新 KPI 分數</th>
                     </tr>
@@ -894,6 +986,10 @@ export default function AdminPage() {
                     <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
                     <Input value={categoryFlowBrandSearch} onChange={(event) => setCategoryFlowBrandSearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋品牌，例如 Apple" />
                   </div>
+                  <div className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="text-sm font-semibold text-slate-900">快速複製現有品類流程</p>
+                    <p className="mt-2 text-sm leading-7 text-slate-600">若新品類與既有品類流程接近，可先新增新品類，再使用下方每張卡片的「複製到目標品類」快速套用節點設定。</p>
+                  </div>
                   <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
                     你可以先用「商品類別」與「品牌」縮小範圍，再調整流程節點；所有修改會由上方的「儲存全部設定」一次提交。
                   </div>
@@ -919,6 +1015,22 @@ export default function AdminPage() {
                             >
                               <Trash2 className="mr-2 h-4 w-4" /> 刪除
                             </Button>
+                          </div>
+                          <div className="grid gap-3 md:grid-cols-[1fr_260px_auto] md:items-end">
+                            <div className="rounded-[20px] bg-white/70 p-4 text-sm text-slate-600 md:col-span-1">
+                              <p className="font-semibold text-slate-900">複製流程到目標品類</p>
+                              <p className="mt-2 leading-7">可將目前這個品類的節點設定直接複製到另一個已建立的品類／品牌組合，再由上方「儲存全部設定」一次提交。</p>
+                            </div>
+                            <label className="space-y-2 text-sm text-slate-600">
+                              <span>目標品類</span>
+                              <select value={categoryFlowCopyTargets[category.id] ?? ""} onChange={(event) => setCategoryFlowCopyTargets((prev) => ({ ...prev, [category.id]: event.target.value }))} className="h-10 w-full rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                                <option value="">選擇要套用的品類／品牌</option>
+                                {categories.filter((item) => item.id !== category.id).map((item) => (
+                                  <option key={`copy-target-${category.id}-${item.id}`} value={String(item.id)}>{item.categoryName} × {item.brandName ?? item.subtypeCode ?? "-"}</option>
+                                ))}
+                              </select>
+                            </label>
+                            <Button variant="outline" className="rounded-2xl" onClick={() => handleCopyCategoryFlow(category.id)}>複製到目標品類</Button>
                           </div>
                           <div className="space-y-3 rounded-[20px] bg-white/70 p-4">
                             <div>

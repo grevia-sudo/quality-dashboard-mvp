@@ -131,6 +131,15 @@ describe("warehouse workflow pages", () => {
   it("includes admin-only analytics and category flow management on the admin page", () => {
     expect(adminPageSource).toContain("管理後台僅限 admin 查看");
     expect(adminPageSource).toContain("全員 KPI 進度");
+    expect(adminPageSource).toContain("目前查看區間");
+    expect(adminPageSource).toContain("kpiFilterStartDate");
+    expect(adminPageSource).toContain("kpiFilterEndDate");
+    expect(adminPageSource).toContain("lastLoadedKpiRangeRef");
+    expect(adminPageSource).toContain("shouldSyncDraftRange");
+    expect(adminPageSource).toContain("handleApplyKpiFilter");
+    expect(adminPageSource).toContain("handleResetKpiFilter");
+    expect(adminPageSource).toContain("套用 KPI 篩選");
+    expect(adminPageSource).toContain("重設為當月");
     expect(adminPageSource).toContain("匯入到各節點平均天數");
     expect(adminPageSource).toContain("待入庫週期摘要");
     expect(adminPageSource).toContain("品類設定");
@@ -143,9 +152,17 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).toContain("搜尋品牌，例如 Apple");
     expect(adminPageSource).toContain("filteredFlowCategories");
     expect(adminPageSource).toContain("查無符合目前商品類別與品牌搜尋條件的品類設定");
+    expect(adminPageSource).toContain("快速複製現有品類流程");
+    expect(adminPageSource).toContain("categoryFlowCopyTargets");
+    expect(adminPageSource).toContain("handleCopyCategoryFlow");
+    expect(adminPageSource).toContain("[targetCategoryId]: [...sourceFlow]");
+    expect(adminPageSource).toContain("[sourceCategoryId]: \"\"");
+    expect(adminPageSource).toContain("複製流程到目標品類");
+    expect(adminPageSource).toContain("複製到目標品類");
     expect(adminPageSource).toContain("儲存全部設定");
     expect(adminPageSource).toContain("handleSaveAllSettings");
-    expect(adminPageSource).toContain("已一次儲存站點規則、產能設定、功能表設定與品類流程");
+    expect(adminPageSource).toContain("全部儲存成功，已更新站點規則、產能設定、功能表設定與品類流程");
+    expect(adminPageSource).toContain("categoryFlows: categories.map");
     expect(adminPageSource).not.toContain("儲存流程設定");
     expect(adminPageSource).not.toContain("儲存產能");
     expect(adminPageSource).not.toContain("儲存功能表項目");

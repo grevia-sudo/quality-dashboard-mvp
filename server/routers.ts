@@ -273,11 +273,21 @@ export const appRouter = router({
     }),
   }),
   admin: router({
-    setup: adminProcedure.query(async () => {
-      await ensureMvpSeedData();
-      await archiveExpiredData();
-      return getAdminSetupData();
-    }),
+    setup: adminProcedure
+      .input(
+        z.object({
+          startDate: optionalTextSchema.nullable().optional(),
+          endDate: optionalTextSchema.nullable().optional(),
+        }).optional(),
+      )
+      .query(async ({ input }) => {
+        await ensureMvpSeedData();
+        await archiveExpiredData();
+        return getAdminSetupData({
+          startDate: input?.startDate ?? undefined,
+          endDate: input?.endDate ?? undefined,
+        });
+      }),
     getDefectOptions: adminProcedure
       .input(
         z.object({
