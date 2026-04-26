@@ -3,17 +3,33 @@ import { readFileSync } from "node:fs";
 
 const stationPageSource = readFileSync(new URL("../client/src/pages/StationPage.tsx", import.meta.url), "utf8");
 
-describe("C station layout source coverage", () => {
-  it("keeps C station aligned with B station's wide search-result layout", () => {
+describe("B/C station layout source coverage", () => {
+  it("keeps B and C stations aligned with the same wide search-result layout", () => {
     expect(stationPageSource).toContain('if (stationCode === "B" || stationCode === "C") {');
     expect(stationPageSource).toContain('const showStationEmptyState = (stationCode !== "B" && stationCode !== "C") || hasKeyword;');
     expect(stationPageSource).toContain('stationCode === "B" || stationCode === "C" ? "w-full space-y-4" : "grid gap-4 xl:grid-cols-2"');
     expect(stationPageSource).toContain('stationCode === "B" || stationCode === "C" ? "w-full" : ""');
   });
 
-  it("renders the C station pending table below the search result area", () => {
+  it("keeps the B and C pending tables below the search result area", () => {
     expect(stationPageSource).toContain('stationCode === "B" || stationCode === "C" ? (');
+    expect(stationPageSource).toContain('B 站待處理商品改為表格明細檢視');
     expect(stationPageSource).toContain('C 站待處理商品也改為表格明細檢視');
     expect(stationPageSource).toContain('目前 {stationCode} 站沒有待處理商品。');
+  });
+
+  it("applies the compact three-column option layout to the B station status areas", () => {
+    expect(stationPageSource).toContain('className="space-y-4"');
+    expect(stationPageSource).toContain('grid gap-3 md:grid-cols-2 xl:grid-cols-3');
+    expect(stationPageSource).toContain('rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm');
+    expect(stationPageSource).toContain('B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (');
+  });
+
+  it("renders the C station screen, appearance, and camera sections as compact stacked rows", () => {
+    expect(stationPageSource).toContain('C 站螢幕狀態');
+    expect(stationPageSource).toContain('C 站機身外觀');
+    expect(stationPageSource).toContain('C 站鏡頭狀態');
+    expect(stationPageSource).toContain('space-y-4');
+    expect(stationPageSource).toContain('grid gap-3 md:grid-cols-2 xl:grid-cols-3');
   });
 });

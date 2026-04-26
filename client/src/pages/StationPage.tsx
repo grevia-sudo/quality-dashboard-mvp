@@ -878,8 +878,8 @@ export default function StationPage() {
                   </div>
 
                   {stationCode === "B" || stationCode === "C" ? (
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-                      <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
+                    <div className="space-y-4">
+                      <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4 md:p-5">
                         <div>
                           <p className="text-sm font-bold text-slate-900">{stationCode === "B" ? "B 站故障狀態" : "B 站故障狀態（C 站可修改）"}</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">{stationCode === "B" ? "直接勾選本次軟測結果即可完成送出。" : "這裡先帶入 B 站完成後的文字結果；如需調整，再按修改按鈕進入編輯，完成時可選擇是否一併回寫 Google Sheet M / N / Q 欄。"}</p>
@@ -897,9 +897,9 @@ export default function StationPage() {
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <div className="grid gap-3 md:grid-cols-2">
+                            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                               {editableBFaultOptions.map((option) => (
-                                <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                                <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
                                   <Checkbox checked={(stationCode === "B" ? selections.faultOptionIds : selections.bFaultOptionIds).includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, stationCode === "B" ? "faultOptionIds" : "bFaultOptionIds", option.id, Boolean(checked))} />
                                   <span>{option.label}</span>
                                 </label>
@@ -915,7 +915,7 @@ export default function StationPage() {
                           </div>
                         )}
                       </div>
-                      <div className="space-y-3 rounded-[24px] bg-[#f8fbff] p-4">
+                      <div className="space-y-3 rounded-[24px] bg-[#f8fbff] p-4 md:p-5">
                         <div>
                           <p className="text-sm font-bold text-slate-900">電池檢測</p>
                         </div>
@@ -932,9 +932,9 @@ export default function StationPage() {
                             </label>
                             <div className="space-y-3">
                               <p className="text-sm font-medium text-slate-700">異常標記</p>
-                              <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                 {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
-                                  <label key={optionLabel} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                                  <label key={optionLabel} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
                                     <Checkbox
                                       checked={selections.batteryIssueLabels.includes(optionLabel)}
                                       onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
@@ -981,7 +981,7 @@ export default function StationPage() {
                                     <p className="text-sm font-medium text-slate-700">異常標記</p>
                                     <div className="grid gap-3 sm:grid-cols-2">
                                       {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
-                                        <label key={optionLabel} className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                                        <label key={optionLabel} className="flex items-center gap-3 rounded-[20px] bg-slate-50 px-4 py-4 text-sm font-medium text-slate-700">
                                           <Checkbox
                                             checked={selections.batteryIssueLabels.includes(optionLabel)}
                                             onCheckedChange={(checked) => toggleBatteryIssueLabel(task.taskId, optionLabel, Boolean(checked))}
@@ -1006,44 +1006,43 @@ export default function StationPage() {
                   ) : null}
 
                   {stationCode === "C" ? (
-                    <div className="grid gap-4 lg:grid-cols-2">
-                      <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4">
+                    <div className="space-y-4">
+                      <div className="space-y-3 rounded-[24px] bg-[#eef2f7] p-4 md:p-5">
                         <div>
                           <p className="text-sm font-bold text-slate-900">C 站螢幕狀態</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet O 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
-                        <div className="grid gap-3">
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                           {(detailQuery.data?.faultOptions ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                            <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
                               <Checkbox checked={selections.faultOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "faultOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
                           ))}
                         </div>
                       </div>
-                      <div className="space-y-3 rounded-[24px] bg-[#f7e8ee] p-4">
+                      <div className="space-y-3 rounded-[24px] bg-[#f7e8ee] p-4 md:p-5">
                         <div>
                           <p className="text-sm font-bold text-slate-900">C 站機身外觀</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet S 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
-                        <div className="grid gap-3">
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                           {(detailQuery.data?.appearanceOptions ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                            <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
                               <Checkbox checked={selections.appearanceOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "appearanceOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>
                           ))}
                         </div>
                       </div>
-
-                      <div className="space-y-3 rounded-[24px] bg-[#eef7f3] p-4">
+                      <div className="space-y-3 rounded-[24px] bg-[#eef7f3] p-4 md:p-5">
                         <div>
                           <p className="text-sm font-bold text-slate-900">C 站鏡頭狀態</p>
                           <p className="mt-1 text-xs leading-6 text-slate-500">完成後會自動背景同步到 Google Sheet T 欄；若未勾選任何項目則回寫「正常」。</p>
                         </div>
-                        <div className="grid gap-3">
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                           {(detailQuery.data?.cameraOptions ?? []).filter((option) => option.active).map((option) => (
-                            <label key={option.id} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                            <label key={option.id} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-sm font-medium text-slate-700 shadow-sm">
                               <Checkbox checked={selections.cameraOptionIds.includes(option.id)} onCheckedChange={(checked) => toggleSelection(task.taskId, "cameraOptionIds", option.id, Boolean(checked))} />
                               <span>{option.label}</span>
                             </label>

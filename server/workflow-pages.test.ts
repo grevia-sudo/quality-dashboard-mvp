@@ -67,7 +67,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
     expect(stationPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
     expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
-    expect(stationPageSource).toContain("輸入品名關鍵字搜尋（可選）");
+    expect(stationPageSource).toContain("必填，可輸入品名關鍵字或完整品名");
     expect(stationPageSource).toContain("完成 A1 並準備下一筆");
     expect(stationPageSource).toContain("留在本頁");
   });
@@ -87,7 +87,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("電池膨脹");
     expect(stationPageSource).toContain("副廠電池");
     expect(stationPageSource).toContain("電池異常");
-    expect(stationPageSource).toContain("輸入數字或符號");
+    expect(stationPageSource).toContain("例如：88、85%、待更換");
     expect(stationPageSource).toContain("完成軟體測試並推進下一站");
     expect(stationPageSource).toContain("B 站軟體測試完成");
     expect(stationPageSource).toContain("B 站故障狀態（C 站可修改）");
