@@ -64,6 +64,27 @@ describe("purchase sheet sync helpers", () => {
     ).toEqual(["PO-2", "綠途未來", "平板", "BATCH-2", "SN-2", "IMEI-2", "iPad mini", "2026/04/22 09:05", "Amy", "2026/04/22 10:43", "Ben", "2026/04/22 11:15", "75, 電池異常", "觸控異常", "Cody", "2026/04/22 13:05", "Y", "破裂", "刮傷", "", "2026/04/22 13:05", "鏡頭模糊", "N", "", "", "", ""]);
   });
 
+  it("writes E stage completion time and operator into the tail sheet columns", () => {
+    expect(
+      buildSheetRow({
+        poNumber: "PO-E-1",
+        vendorName: "綠途未來",
+        importedCategoryName: "智慧型手機",
+        batchNo: "BATCH-E-1",
+        serialNumber: "SN-E-1",
+        imei: "IMEI-E-1",
+        productName: "iPhone 14",
+        eCompletedAt: "2026-04-23T17:12:24.000Z",
+        eOperatorName: "Yana",
+      }).slice(25, 27),
+    ).toEqual(["2026/04/24 01:12", "Yana"]);
+
+    expect(Array.from(getSheetRefreshIndexes({
+      lastSheetSyncedAt: "2026-04-23T17:00:00.000Z",
+      eCompletedAt: "2026-04-23T17:12:24.000Z",
+    }))).toEqual([25, 26]);
+  });
+
   it("matches existing rows by IMEI first, then serial number, then batch number", () => {
     const values = [
       PURCHASE_SHEET_HEADER,
