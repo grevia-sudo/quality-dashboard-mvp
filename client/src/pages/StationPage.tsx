@@ -12,12 +12,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
 
+const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
+
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
-  { label: "匯入作業", path: "/import", icon: PackagePlus },
-  { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
+  { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES },
+  { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck },
+  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
 ];
 
 const stationCodes = ["A1", "A2", "B", "C", "E", "STOCK"] as const;
@@ -89,11 +91,15 @@ export default function StationPage() {
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const quickScanInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
+  const canEditCategory = stationCode === "A1" || stationCode === "C";
+  const shouldLoadProductNameOptions = stationCode === "A1" && (productNamePickerOpen || Boolean(arrivalForm.productName.trim()));
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
     retry: false,
+    enabled: shouldLoadProductNameOptions,
   });
   const productCategoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, {
     retry: false,
+    enabled: canEditCategory && Boolean(categoryDialogTask),
   });
   const detailQuery = trpc.station.detail.useQuery(
     { stationCode },
@@ -103,7 +109,6 @@ export default function StationPage() {
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
   const productCategoryOptions = productCategoryOptionsQuery.data ?? [];
-  const canEditCategory = stationCode === "A1" || stationCode === "C";
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });

@@ -4,13 +4,23 @@ import { readFileSync } from "node:fs";
 const stationPageSource = readFileSync(new URL("../client/src/pages/StationPage.tsx", import.meta.url), "utf8");
 const samplingPageSource = readFileSync(new URL("../client/src/pages/SamplingPage.tsx", import.meta.url), "utf8");
 const importPageSource = readFileSync(new URL("../client/src/pages/ImportPage.tsx", import.meta.url), "utf8");
+const operationsPageSource = readFileSync(new URL("../client/src/pages/OperationsPage.tsx", import.meta.url), "utf8");
 const adminPageSource = readFileSync(new URL("../client/src/pages/AdminPage.tsx", import.meta.url), "utf8");
+const managementAccessSource = readFileSync(new URL("../client/src/lib/managementAccess.ts", import.meta.url), "utf8");
+const dbSource = readFileSync(new URL("../server/db.ts", import.meta.url), "utf8");
 
 describe("warehouse workflow pages", () => {
   it("exposes file upload import workflow and shared batch fields on the import page", () => {
     expect(importPageSource).toContain('title="匯入作業"');
     expect(importPageSource).toContain("trpc.station.importBatch.useMutation");
     expect(importPageSource).toContain("trpc.station.productNameOptions.useQuery");
+    expect(importPageSource).toContain('enabled: canAccessManagementOps && rows.length > 0');
+    expect(importPageSource).toContain('enabled: canAccessManagementOps');
+    expect(importPageSource).toContain('shouldEnableManagementQuery');
+    expect(importPageSource).toContain('shouldRedirectFromManagementOps');
+    expect(importPageSource).toContain('allowedRoles: [...MANAGEMENT_VIEWER_ROLES]');
+    expect(importPageSource).toContain('useAuth({ redirectOnUnauthenticated: true })');
+    expect(importPageSource).toContain('setLocation("/operations")');
     expect(importPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
     expect(importPageSource).toContain("CSV 檔案上傳");
     expect(importPageSource).toContain("選擇 CSV");
@@ -70,6 +80,10 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("trpc.station.receive.useMutation");
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
     expect(stationPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(stationPageSource).toContain('const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"]');
+    expect(stationPageSource).toContain('const shouldLoadProductNameOptions = stationCode === "A1" && (productNamePickerOpen || Boolean(arrivalForm.productName.trim()))');
+    expect(stationPageSource).toContain('enabled: shouldLoadProductNameOptions');
+    expect(stationPageSource).toContain('enabled: canEditCategory && Boolean(categoryDialogTask)');
     expect(stationPageSource).toContain("trpc.station.assignCategory.useMutation");
     expect(stationPageSource).toContain('const canEditCategory = stationCode === "A1" || stationCode === "C"');
     expect(stationPageSource).toContain("if (!canEditCategory) {");
@@ -121,11 +135,29 @@ describe("warehouse workflow pages", () => {
 
   it("includes category edit controls on the sampling page", () => {
     expect(samplingPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(samplingPageSource).toContain('shouldEnableManagementQuery');
+    expect(samplingPageSource).toContain('shouldRedirectFromManagementOps');
+    expect(samplingPageSource).toContain('enabled: canAccessManagementOps,');
+    expect(samplingPageSource).toContain('enabled: canAccessManagementOps && Boolean(categoryDialogTask)');
+    expect(samplingPageSource).toContain('useAuth({ redirectOnUnauthenticated: true })');
+    expect(samplingPageSource).toContain('setLocation("/operations")');
     expect(samplingPageSource).toContain("trpc.station.assignCategory.useMutation");
     expect(samplingPageSource).toContain("編輯品類設定");
     expect(samplingPageSource).toContain("openCategoryEditor(task)");
     expect(samplingPageSource).toContain("setCategoryDialogTask(task);");
     expect(samplingPageSource).toContain("選擇品類設定");
+  });
+
+  it("keeps management access rules and performance optimizations in shared modules", () => {
+    expect(managementAccessSource).toContain('export const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"] as const');
+    expect(managementAccessSource).toContain('export function shouldEnableManagementQuery');
+    expect(managementAccessSource).toContain('export function shouldRedirectFromManagementOps');
+    expect(operationsPageSource).toContain('staleTime: 60_000');
+    expect(operationsPageSource).toContain('gcTime: 5 * 60_000');
+    expect(dbSource).toContain('let lastEnsureMvpSeedDataAt = 0');
+    expect(dbSource).toContain('let lastArchiveExpiredDataAt = 0');
+    expect(dbSource).toContain('Date.now() - lastEnsureMvpSeedDataAt < 60_000');
+    expect(dbSource).toContain('Date.now() - lastArchiveExpiredDataAt < 60_000');
   });
 
   it("includes admin-only analytics and category flow management on the admin page", () => {
@@ -167,6 +199,8 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).not.toContain("儲存產能");
     expect(adminPageSource).not.toContain("儲存功能表項目");
     expect(adminPageSource).toContain("功能表設定");
+    expect(adminPageSource).toContain('const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"]');
+    expect(adminPageSource).toContain('allowedRoles: MANAGEMENT_VIEWER_ROLES');
     expect(adminPageSource).toContain("B 站軟測故障狀態");
     expect(adminPageSource).toContain("C 站螢幕狀態");
     expect(adminPageSource).toContain("C 站機身外觀");

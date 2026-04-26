@@ -228,8 +228,8 @@ describe("warehouse MVP router", () => {
     });
   });
 
-  it("allows protected users to batch import products with a shared PO number", async () => {
-    const caller = appRouter.createCaller(createContext("user"));
+  it("allows management roles to batch import products with a shared PO number", async () => {
+    const caller = appRouter.createCaller(createContext("manager"));
 
     await caller.station.importBatch({
       poNumber: "PO-20260421-01",
@@ -265,8 +265,8 @@ describe("warehouse MVP router", () => {
     });
   });
 
-  it("allows batch import without manually entering a PO number", async () => {
-    const caller = appRouter.createCaller(createContext("user"));
+  it("allows supervisors to batch import without manually entering a PO number", async () => {
+    const caller = appRouter.createCaller(createContext("supervisor"));
 
     await caller.station.importBatch({
       vendorName: "綠途未來",
@@ -301,8 +301,8 @@ describe("warehouse MVP router", () => {
     });
   });
 
-  it("submits sampling result with authenticated sampler id", async () => {
-    const caller = appRouter.createCaller(createContext("user"));
+  it("submits sampling result with authenticated management role id", async () => {
+    const caller = appRouter.createCaller(createContext("manager"));
 
     await caller.sampling.submit({
       taskId: 20,
@@ -322,6 +322,35 @@ describe("warehouse MVP router", () => {
       subtypeCode: "iPhone",
       defectReason: "外觀異常",
     });
+  });
+
+  it("forbids regular users from import and sampling routes reserved for management roles", async () => {
+    const caller = appRouter.createCaller(createContext("user"));
+
+    await expect(caller.station.importBatch({
+      vendorName: "綠途未來",
+      arrivalAt: "2026-04-21T10:00",
+      rows: [
+        {
+          batchNo: "BATCH-240421-09",
+          serialNumber: "SN-1099",
+          imei: "356000000000099",
+          productName: "iPhone 13",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+      ],
+    })).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    await expect(caller.sampling.queue()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.sampling.submit({
+      taskId: 20,
+      productId: 88,
+      passed: false,
+      categoryId: 3,
+      subtypeCode: "iPhone",
+      defectReason: "外觀異常",
+    })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
   it("allows admins to query configurable defect options", async () => {
@@ -565,8 +594,8 @@ describe("warehouse MVP router", () => {
     expect(getStationPageData).toHaveBeenCalledWith("B");
   });
 
-  it("loads sampling queue", async () => {
-    const caller = appRouter.createCaller(createContext("user"));
+  it("loads sampling queue for management roles", async () => {
+    const caller = appRouter.createCaller(createContext("manager"));
 
     await caller.sampling.queue();
 

@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,19 +9,28 @@ import { trpc } from "@/lib/trpc";
 import { Activity, ArrowRight, Boxes, ClipboardCheck, Gauge, PackagePlus, PackageSearch, ShieldCheck, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 
+const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
+
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
-  { label: "匯入作業", path: "/import", icon: PackagePlus },
-  { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
+  { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES },
+  { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck },
+  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
 ];
 
 export default function OperationsPage() {
+  const { user } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
-  const dashboardQuery = trpc.dashboard.home.useQuery(undefined, { retry: false });
+  const dashboardQuery = trpc.dashboard.home.useQuery(undefined, {
+    retry: false,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
   const stations = dashboardQuery.data?.stations ?? [];
   const kpi = dashboardQuery.data?.kpi;
+  const canAccessManagementOps = Boolean(user && MANAGEMENT_VIEWER_ROLES.includes(user.role));
+  const visibleStations = stations.filter((station) => station.stationCode !== "D" || canAccessManagementOps);
 
   if (dashboardQuery.isLoading) {
     return (
@@ -50,12 +60,16 @@ export default function OperationsPage() {
                 每張站點卡片即時顯示未完成數量、今日新增與逾期件數。工程師完成一段作業後可直接返回總覽切換站點；若有新到貨資料，也能先進入匯入作業建立 A1 待處理任務。
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button className="rounded-2xl" onClick={() => setLocation("/import")}>
-                  <PackagePlus className="mr-2 h-4 w-4" /> 前往匯入作業
-                </Button>
-                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/admin")}>
-                  管理設定
-                </Button>
+                {canAccessManagementOps ? (
+                  <Button className="rounded-2xl" onClick={() => setLocation("/import")}>
+                    <PackagePlus className="mr-2 h-4 w-4" /> 前往匯入作業
+                  </Button>
+                ) : null}
+                {user?.role === "admin" ? (
+                  <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/admin")}>
+                    管理設定
+                  </Button>
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -86,7 +100,7 @@ export default function OperationsPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {stations.map((station) => (
+          {visibleStations.map((station) => (
             <Card key={station.stationCode} className="rounded-[26px] border-0 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between text-base font-bold text-slate-900">

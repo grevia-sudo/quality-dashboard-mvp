@@ -23,6 +23,7 @@ export type DashboardNavItem = {
   label: string;
   path: string;
   icon: LucideIcon;
+  allowedRoles?: string[];
 };
 
 export default function DashboardLayout({
@@ -37,7 +38,9 @@ export default function DashboardLayout({
   const { user, loading, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const isMobile = useIsMobile();
-  const visibleNavItems = user ? navItems.filter((item) => item.path !== "/admin" || user.role === "admin") : navItems;
+  const visibleNavItems = user
+    ? navItems.filter((item) => !item.allowedRoles || item.allowedRoles.includes(user.role))
+    : navItems;
 
   if (loading) {
     return <DashboardLayoutSkeleton />;

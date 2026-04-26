@@ -895,7 +895,15 @@ export async function getUserByUsername(username: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+let lastEnsureMvpSeedDataAt = 0;
+let lastArchiveExpiredDataAt = 0;
+
 export async function ensureMvpSeedData() {
+  if (Date.now() - lastEnsureMvpSeedDataAt < 60_000) {
+    return;
+  }
+
+  lastEnsureMvpSeedDataAt = Date.now();
   const db = await getDb();
   if (!db) return;
 
@@ -2412,6 +2420,11 @@ export async function seedKpiForDemo(userId: number) {
 }
 
 export async function archiveExpiredData() {
+  if (Date.now() - lastArchiveExpiredDataAt < 60_000) {
+    return { archivedCount: 0 };
+  }
+
+  lastArchiveExpiredDataAt = Date.now();
   const db = await getDb();
   if (!db) {
     return { archivedCount: 0 };

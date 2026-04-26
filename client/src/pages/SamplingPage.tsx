@@ -1,4 +1,6 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLayout";
+import { shouldEnableManagementQuery, shouldRedirectFromManagementOps, MANAGEMENT_VIEWER_ROLES } from "@/lib/managementAccess";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,14 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { Boxes, ClipboardCheck, Gauge, ShieldCheck } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
-  { label: "D 站全檢", path: "/sampling", icon: ClipboardCheck },
+  { label: "D 站全檢", path: "/sampling", icon: ClipboardCheck, allowedRoles: [...MANAGEMENT_VIEWER_ROLES] },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck },
+  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
 ];
 
 type SamplingTask = {
@@ -67,19 +69,34 @@ function createInitialDraft(task: SamplingTask): InspectionDraft {
 }
 
 export default function SamplingPage() {
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
-  const query = trpc.sampling.queue.useQuery();
-  const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, {
-    retry: false,
-  });
+  const canAccessManagementOps = shouldEnableManagementQuery({ loading, role: user?.role });
   const [searchTerm, setSearchTerm] = useState("");
   const [reasons, setReasons] = useState<Record<number, string>>({});
   const [drafts, setDrafts] = useState<Record<number, InspectionDraft>>({});
   const [categoryDialogTask, setCategoryDialogTask] = useState<SamplingTask | null>(null);
   const [categoryDraftValue, setCategoryDraftValue] = useState("");
+  const query = trpc.sampling.queue.useQuery(undefined, {
+    enabled: canAccessManagementOps,
+  });
+  const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, {
+    retry: false,
+    enabled: canAccessManagementOps && Boolean(categoryDialogTask),
+  });
   const tasks = ((query.data?.tasks ?? []) as SamplingTask[]);
   const categoryOptions = categoryOptionsQuery.data ?? [];
+
+  useEffect(() => {
+    if (shouldRedirectFromManagementOps({ loading, role: user?.role })) {
+      setLocation("/operations");
+    }
+  }, [canAccessManagementOps, loading, setLocation, user]);
+
+  if (!loading && user && !canAccessManagementOps) {
+    return null;
+  }
 
   const assignCategoryMutation = trpc.station.assignCategory.useMutation({
     onSuccess: async () => {

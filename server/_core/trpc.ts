@@ -27,6 +27,25 @@ const requireUser = t.middleware(async opts => {
 
 export const protectedProcedure = t.procedure.use(requireUser);
 
+const MANAGEMENT_VIEWER_ROLES = ["admin", "manager", "supervisor"] as const;
+
+export const managementProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    const { ctx, next } = opts;
+
+    if (!ctx.user || !MANAGEMENT_VIEWER_ROLES.includes(ctx.user.role as (typeof MANAGEMENT_VIEWER_ROLES)[number])) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "僅限主管、管理者或 admin 使用" });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }),
+);
+
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;

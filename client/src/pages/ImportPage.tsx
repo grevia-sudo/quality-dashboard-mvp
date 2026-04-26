@@ -1,12 +1,14 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { shouldEnableManagementQuery, shouldRedirectFromManagementOps, MANAGEMENT_VIEWER_ROLES } from "@/lib/managementAccess";
 import { shouldRetryTransientQuery } from "@/lib/query-retry";
 import { trpc } from "@/lib/trpc";
 import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import {
@@ -18,10 +20,10 @@ import {
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
-  { label: "匯入作業", path: "/import", icon: PackagePlus },
-  { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck },
+  { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: [...MANAGEMENT_VIEWER_ROLES] },
+  { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: [...MANAGEMENT_VIEWER_ROLES] },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck },
+  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
 ];
 
 const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_756ddafb.csv";
@@ -45,20 +47,24 @@ function hasAnyRowValue(row: ImportDraftRow) {
 }
 
 export default function ImportPage() {
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
+  const canAccessManagementOps = shouldEnableManagementQuery({ loading, role: user?.role });
+  const [poNumber, setPoNumber] = useState("");
+  const [vendorName, setVendorName] = useState("");
+  const [arrivalAt, setArrivalAt] = useState("");
+  const [rows, setRows] = useState<ImportDraftRow[]>([]);
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
     retry: shouldRetryTransientQuery,
+    enabled: canAccessManagementOps && rows.length > 0,
   });
   const pendingA1Query = trpc.station.detail.useQuery(
     { stationCode: "A1" },
     {
       retry: shouldRetryTransientQuery,
+      enabled: canAccessManagementOps,
     },
   );
-  const [poNumber, setPoNumber] = useState("");
-  const [vendorName, setVendorName] = useState("");
-  const [arrivalAt, setArrivalAt] = useState("");
-  const [rows, setRows] = useState<ImportDraftRow[]>([]);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [expandedSummaryKeys, setExpandedSummaryKeys] = useState<Record<string, boolean>>({});
   const [showAllRows, setShowAllRows] = useState(false);
@@ -128,6 +134,16 @@ export default function ImportPage() {
   const visibleRows = useMemo(() => (showAllRows ? rows : rows.slice(0, LARGE_IMPORT_PREVIEW_LIMIT)), [rows, showAllRows]);
   const hiddenRowCount = Math.max(rows.length - visibleRows.length, 0);
   const canImport = !importValidationMessage;
+
+  useEffect(() => {
+    if (shouldRedirectFromManagementOps({ loading, role: user?.role })) {
+      setLocation("/operations");
+    }
+  }, [canAccessManagementOps, loading, setLocation, user]);
+
+  if (!loading && user && !canAccessManagementOps) {
+    return null;
+  }
 
   const updateRow = (index: number, patch: Partial<ImportDraftRow>) => {
     setRows((prev) => prev.map((row, currentIndex) => (currentIndex === index ? { ...row, ...patch } : row)));

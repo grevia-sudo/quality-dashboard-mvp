@@ -3,7 +3,7 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, managementProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   archiveExpiredData,
   assignProductCategoryToProduct,
@@ -205,7 +205,7 @@ export const appRouter = router({
           productName: input.productName,
         });
       }),
-    importBatch: protectedProcedure
+    importBatch: managementProcedure
       .input(
         z.object({
           poNumber: optionalTextSchema,
@@ -225,11 +225,11 @@ export const appRouter = router({
       }),
   }),
   sampling: router({
-    queue: protectedProcedure.query(async () => {
+    queue: managementProcedure.query(async () => {
       await ensureMvpSeedData();
       return getSamplingQueue();
     }),
-    submit: protectedProcedure
+    submit: managementProcedure
       .input(
         z.object({
           taskId: z.number(),
