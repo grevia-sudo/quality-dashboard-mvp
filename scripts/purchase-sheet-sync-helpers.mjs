@@ -140,19 +140,19 @@ export function getSheetRefreshIndexes(product) {
     [7, 8].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.a2) {
-    [9, 10].forEach((index) => refreshIndexes.add(index));
+    [7, 8, 9, 10].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.b) {
-    [11, 12, 13, 14].forEach((index) => refreshIndexes.add(index));
+    [7, 8, 9, 10, 11, 12, 13, 14].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.c) {
-    [12, 13, 15, 16, 17, 18, 19, 20, 21].forEach((index) => refreshIndexes.add(index));
+    [7, 8, 9, 10, 11, 14, 12, 13, 15, 16, 17, 18, 19, 20, 21].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.d) {
-    [12, 13, 17, 18, 21, 22, 23, 24].forEach((index) => refreshIndexes.add(index));
+    [7, 8, 9, 10, 11, 14, 15, 19, 20, 12, 13, 17, 18, 21, 22, 23, 24].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.e) {
-    [25, 26].forEach((index) => refreshIndexes.add(index));
+    [7, 8, 9, 10, 11, 14, 15, 19, 20, 23, 24, 25, 26].forEach((index) => refreshIndexes.add(index));
   }
 
   return refreshIndexes;

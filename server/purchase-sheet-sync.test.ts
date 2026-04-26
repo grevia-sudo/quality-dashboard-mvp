@@ -82,7 +82,17 @@ describe("purchase sheet sync helpers", () => {
     expect(Array.from(getSheetRefreshIndexes({
       lastSheetSyncedAt: "2026-04-23T17:00:00.000Z",
       eCompletedAt: "2026-04-23T17:12:24.000Z",
-    }))).toEqual([25, 26]);
+    }))).toEqual([7, 8, 9, 10, 11, 14, 15, 19, 20, 23, 24, 25, 26]);
+  });
+
+  it("re-refreshes prior stage time columns when a later stage finishes", () => {
+    expect(Array.from(getSheetRefreshIndexes({
+      lastSheetSyncedAt: "2026-04-24T00:00:00.000Z",
+      a1CompletedAt: "2026-04-22T15:19:42.000Z",
+      a2CompletedAt: "2026-04-23T15:52:51.000Z",
+      bCompletedAt: "2026-04-24T09:39:59.000Z",
+      cCompletedAt: "2026-04-26T06:26:32.000Z",
+    }))).toEqual([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]);
   });
 
   it("matches existing rows by IMEI first, then serial number, then batch number", () => {
