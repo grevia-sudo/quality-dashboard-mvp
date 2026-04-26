@@ -2554,10 +2554,11 @@ export async function updateStationRule(input: {
 }
 
 export async function updateProductivityTarget(input: {
-  id: number;
-  stationCode: StationCode;
+  id?: number;
+  stationCode: Exclude<StationCode, "STOCK">;
+  categoryId: number;
+  subtypeCode: string;
   dailyTargetQty: number;
-  baseUnitPoints: string;
   active: boolean;
 }) {
   const db = await getDb();
@@ -2565,16 +2566,70 @@ export async function updateProductivityTarget(input: {
     throw new Error("Database is not available");
   }
 
-  await db
-    .update(productivityTargetConfigs)
-    .set({
-      stationCode: input.stationCode,
-      dailyTargetQty: input.dailyTargetQty,
-      baseUnitPoints: input.baseUnitPoints,
-      active: input.active,
-    })
-    .where(eq(productivityTargetConfigs.id, input.id));
+  const normalizedDailyTargetQty = Math.max(1, Math.trunc(input.dailyTargetQty));
+  const normalizedSubtypeCode = normalizeOptionalText(input.subtypeCode);
+  const baseUnitPoints = (1 / normalizedDailyTargetQty).toFixed(6);
+  const effectiveFrom = new Date(`${todayDateString()}T00:00:00`);
 
-  const rows = await db.select().from(productivityTargetConfigs).where(eq(productivityTargetConfigs.id, input.id)).limit(1);
+  const categoryRows = await db
+    .select({
+      id: productCategories.id,
+      brandName: productCategories.brandName,
+      subtypeCode: productCategories.subtypeCode,
+    })
+    .from(productCategories)
+    .where(eq(productCategories.id, input.categoryId))
+    .limit(1);
+
+  const category = categoryRows[0];
+  if (!category) {
+    throw new Error("指定品類不存在");
+  }
+
+  const resolvedSubtypeCode = normalizedSubtypeCode ?? category.brandName ?? category.subtypeCode;
+
+  const existingTargetId = input.id
+    ?? (
+      await db
+        .select({ id: productivityTargetConfigs.id })
+        .from(productivityTargetConfigs)
+        .where(and(eq(productivityTargetConfigs.stationCode, input.stationCode), eq(productivityTargetConfigs.categoryId, input.categoryId)))
+        .orderBy(desc(productivityTargetConfigs.id))
+        .limit(1)
+    )[0]?.id;
+
+  if (existingTargetId) {
+    await db
+      .update(productivityTargetConfigs)
+      .set({
+        stationCode: input.stationCode,
+        categoryId: input.categoryId,
+        subtypeCode: resolvedSubtypeCode,
+        dailyTargetQty: normalizedDailyTargetQty,
+        baseUnitPoints,
+        active: input.active,
+      })
+      .where(eq(productivityTargetConfigs.id, existingTargetId));
+
+    const rows = await db.select().from(productivityTargetConfigs).where(eq(productivityTargetConfigs.id, existingTargetId)).limit(1);
+    return rows[0] ?? null;
+  }
+
+  await db.insert(productivityTargetConfigs).values({
+    stationCode: input.stationCode,
+    categoryId: input.categoryId,
+    subtypeCode: resolvedSubtypeCode,
+    dailyTargetQty: normalizedDailyTargetQty,
+    baseUnitPoints,
+    effectiveFrom,
+    active: input.active,
+  });
+
+  const rows = await db
+    .select()
+    .from(productivityTargetConfigs)
+    .where(and(eq(productivityTargetConfigs.stationCode, input.stationCode), eq(productivityTargetConfigs.categoryId, input.categoryId)))
+    .orderBy(desc(productivityTargetConfigs.id))
+    .limit(1);
   return rows[0] ?? null;
 }

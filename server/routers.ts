@@ -291,10 +291,11 @@ export const appRouter = router({
     updateProductivityTarget: adminProcedure
       .input(
         z.object({
-          id: z.number(),
-          stationCode: stationCodeSchema,
+          id: z.number().optional(),
+          stationCode: stationCodeSchema.exclude(["STOCK"]),
+          categoryId: z.number().int().positive(),
+          subtypeCode: z.string().trim().min(1),
           dailyTargetQty: z.number().int().min(1),
-          baseUnitPoints: z.string().min(1),
           active: z.boolean(),
         }),
       )
@@ -302,8 +303,9 @@ export const appRouter = router({
         return updateProductivityTarget({
           id: input.id,
           stationCode: input.stationCode,
+          categoryId: input.categoryId,
+          subtypeCode: input.subtypeCode,
           dailyTargetQty: input.dailyTargetQty,
-          baseUnitPoints: input.baseUnitPoints,
           active: input.active,
         });
       }),

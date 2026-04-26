@@ -32,11 +32,19 @@ type RuleDraft = {
   notes: string;
 };
 
+const capacityStationOptions = ["A1", "A2", "B", "C", "D", "E"] as const;
+type CapacityStationCode = (typeof capacityStationOptions)[number];
+
 type TargetDraft = {
-  id: number;
-  stationCode: "A1" | "A2" | "B" | "C" | "D" | "E" | "STOCK";
+  localKey: string;
+  id?: number;
+  stationCode: CapacityStationCode;
+  categoryId: number;
+  categoryName: string;
+  brandName: string;
   subtypeCode: string;
   dailyTargetQty: number;
+  hourlyTargetQty: string;
   baseUnitPoints: string;
   active: boolean;
 };
@@ -60,6 +68,22 @@ function createNewOptionDraft(stationCode: OptionStationCode, optionType: Option
     active: true,
     sortOrder: 0,
   };
+}
+
+function formatHourlyTargetQty(dailyTargetQty: number) {
+  if (dailyTargetQty <= 0) {
+    return "-";
+  }
+
+  return (dailyTargetQty / 8).toFixed(dailyTargetQty % 8 === 0 ? 0 : 1);
+}
+
+function formatBaseUnitPoints(dailyTargetQty: number) {
+  if (dailyTargetQty <= 0) {
+    return "-";
+  }
+
+  return (1 / dailyTargetQty).toFixed(6);
 }
 
 export default function AdminPage() {
@@ -95,14 +119,37 @@ export default function AdminPage() {
       })),
     );
 
+    const categories = query.data.categories ?? [];
+    const targetMap = new Map<string, (typeof query.data.targets)[number]>();
+
+    (query.data.targets ?? []).forEach((target) => {
+      if (!target.categoryId || !capacityStationOptions.includes(target.stationCode as CapacityStationCode)) {
+        return;
+      }
+
+      targetMap.set(`${target.stationCode}-${target.categoryId}`, target);
+    });
+
     setTargetDrafts(
-      (query.data.targets ?? []).map((target) => ({
-        id: target.id,
-        stationCode: target.stationCode,
-        subtypeCode: target.subtypeCode,
-        dailyTargetQty: Number(target.dailyTargetQty),
-        baseUnitPoints: String(target.baseUnitPoints ?? "0"),
-        active: Boolean(target.active),
+      capacityStationOptions.flatMap((stationCode) => categories.map((category) => {
+        const existing = targetMap.get(`${stationCode}-${category.id}`);
+        const dailyTargetQty = Number(existing?.dailyTargetQty ?? 0);
+        const brandName = category.brandName ?? category.subtypeCode ?? "-";
+        const subtypeCode = brandName === "-" ? category.categoryName : brandName;
+
+        return {
+          localKey: `${stationCode}-${category.id}`,
+          id: existing?.id,
+          stationCode,
+          categoryId: category.id,
+          categoryName: category.categoryName,
+          brandName,
+          subtypeCode,
+          dailyTargetQty,
+          hourlyTargetQty: formatHourlyTargetQty(dailyTargetQty),
+          baseUnitPoints: formatBaseUnitPoints(dailyTargetQty),
+          active: existing ? Boolean(existing.active) : dailyTargetQty > 0,
+        } satisfies TargetDraft;
       })),
     );
 
@@ -131,11 +178,11 @@ export default function AdminPage() {
 
   const targetMutation = trpc.admin.updateProductivityTarget.useMutation({
     onSuccess: async () => {
-      toast.success("標準產能已更新");
+      toast.success("產能設定已更新");
       await utils.admin.setup.invalidate();
     },
     onError: (error) => {
-      toast.error(error.message || "標準產能更新失敗");
+      toast.error(error.message || "產能設定更新失敗");
     },
   });
 
@@ -238,8 +285,21 @@ export default function AdminPage() {
     setRuleDrafts((prev) => prev.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
   };
 
-  const updateTargetDraft = (id: number, patch: Partial<TargetDraft>) => {
-    setTargetDrafts((prev) => prev.map((target) => (target.id === id ? { ...target, ...patch } : target)));
+  const updateTargetDraft = (localKey: string, patch: Partial<TargetDraft>) => {
+    setTargetDrafts((prev) => prev.map((target) => {
+      if (target.localKey !== localKey) {
+        return target;
+      }
+
+      const nextDraft = { ...target, ...patch };
+      const normalizedDailyTargetQty = Math.max(0, Number(nextDraft.dailyTargetQty || 0));
+      return {
+        ...nextDraft,
+        dailyTargetQty: normalizedDailyTargetQty,
+        hourlyTargetQty: formatHourlyTargetQty(normalizedDailyTargetQty),
+        baseUnitPoints: formatBaseUnitPoints(normalizedDailyTargetQty),
+      };
+    }));
   };
 
   const updateOptionDraft = (localKey: string, patch: Partial<DefectOptionDraft>) => {
@@ -268,7 +328,7 @@ export default function AdminPage() {
             <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
             <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、匯入節奏與 B/C 功能表</h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              這裡除了既有站點規則與標準產能外，也補上匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。
+              這裡除了既有站點規則外，也可依 A1～E 各站點設定每個品類的每日產能，供後續換算每小時產能與工程師點數；同時保留匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。
             </p>
             <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>站點總覽</Button>
@@ -322,7 +382,7 @@ export default function AdminPage() {
         <Tabs defaultValue="rules" className="space-y-4">
           <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-5">
             <TabsTrigger value="rules" className="rounded-2xl">站點規則</TabsTrigger>
-            <TabsTrigger value="targets" className="rounded-2xl">標準產能</TabsTrigger>
+            <TabsTrigger value="targets" className="rounded-2xl">產能設定</TabsTrigger>
             <TabsTrigger value="menus" className="rounded-2xl">功能表設定</TabsTrigger>
             <TabsTrigger value="users" className="rounded-2xl">帳號管理</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-2xl">品類設定</TabsTrigger>
@@ -403,58 +463,82 @@ export default function AdminPage() {
           <TabsContent value="targets">
             <Card className="rounded-[28px] border-0 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="text-base font-bold">標準產能設定</CardTitle>
+                <CardTitle className="text-base font-bold">產能設定</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {targetDrafts.map((target) => (
-                  <div key={target.id} className="space-y-4 rounded-[24px] bg-slate-50 p-5">
-                    <div className="flex items-center justify-between gap-3">
+              <CardContent className="space-y-5">
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-sm leading-7 text-slate-600">可依 A1、A2、B、C、D、E 各站點，為每個品類／品牌組合輸入每日產能。系統會同步換算每小時產能與單件點數，供後續工程師點數與 KPI 邏輯使用。</p>
+                </div>
+                {(query.data?.categories ?? []).length > 0 ? capacityStationOptions.map((stationCode) => {
+                  const stationTargets = targetDrafts.filter((target) => target.stationCode === stationCode);
+
+                  return (
+                    <div key={stationCode} className="space-y-3 rounded-[24px] bg-slate-50 p-5">
                       <div>
-                        <p className="text-lg font-bold text-slate-900">{target.stationCode} × {target.subtypeCode}</p>
-                        <p className="text-xs text-slate-500">依站點與子分類設定標準產能與單位點數</p>
+                        <p className="text-lg font-bold text-slate-900">{stationCode} 站每日產能</p>
+                        <p className="text-xs text-slate-500">例如可設定「A1 × 智慧手機 × Apple = 350」，系統會同步換算為每小時產能與點數。</p>
                       </div>
-                      <label className="flex items-center gap-2 text-sm text-slate-600">
-                        <input type="checkbox" checked={target.active} onChange={(event) => updateTargetDraft(target.id, { active: event.target.checked })} />
-                        啟用
-                      </label>
+                      <div className="overflow-x-auto rounded-[24px] bg-white">
+                        <table className="min-w-full text-sm text-slate-700">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                              <th className="px-4 py-3">商品類別</th>
+                              <th className="px-4 py-3">品牌</th>
+                              <th className="px-4 py-3">每日產能</th>
+                              <th className="px-4 py-3">每小時產能</th>
+                              <th className="px-4 py-3">單件點數</th>
+                              <th className="px-4 py-3">啟用</th>
+                              <th className="px-4 py-3 text-right">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {stationTargets.map((target) => (
+                              <tr key={target.localKey} className="border-b border-slate-200/80 last:border-b-0">
+                                <td className="px-4 py-3 font-medium text-slate-900">{target.categoryName}</td>
+                                <td className="px-4 py-3">{target.brandName}</td>
+                                <td className="px-4 py-3">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    value={target.dailyTargetQty}
+                                    onChange={(event) => updateTargetDraft(target.localKey, { dailyTargetQty: Number(event.target.value || 0) })}
+                                    className="h-10 min-w-[120px] rounded-2xl border-0 bg-slate-50"
+                                  />
+                                </td>
+                                <td className="px-4 py-3">{target.hourlyTargetQty}</td>
+                                <td className="px-4 py-3 font-mono text-xs">{target.baseUnitPoints}</td>
+                                <td className="px-4 py-3">
+                                  <label className="flex items-center gap-2 text-sm text-slate-600">
+                                    <input type="checkbox" checked={target.active} onChange={(event) => updateTargetDraft(target.localKey, { active: event.target.checked })} />
+                                    啟用
+                                  </label>
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <Button
+                                    className="rounded-2xl"
+                                    disabled={targetMutation.isPending || target.dailyTargetQty < 1}
+                                    onClick={() =>
+                                      targetMutation.mutate({
+                                        id: target.id,
+                                        stationCode: target.stationCode,
+                                        categoryId: target.categoryId,
+                                        subtypeCode: target.subtypeCode,
+                                        dailyTargetQty: Math.max(1, target.dailyTargetQty),
+                                        active: target.active,
+                                      })
+                                    }
+                                  >
+                                    儲存產能
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <label className="space-y-2 text-sm text-slate-600">
-                        <span>站點</span>
-                        <select value={target.stationCode} onChange={(event) => updateTargetDraft(target.id, { stationCode: event.target.value as TargetDraft["stationCode"] })} className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
-                          {stationOptions.map((code) => (
-                            <option key={code} value={code}>{code === "STOCK" ? "待入庫" : code}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="space-y-2 text-sm text-slate-600">
-                        <span>每日目標件數</span>
-                        <Input type="number" value={target.dailyTargetQty} onChange={(event) => updateTargetDraft(target.id, { dailyTargetQty: Number(event.target.value || 0) })} className="rounded-2xl border-0 bg-white" />
-                      </label>
-                      <label className="space-y-2 text-sm text-slate-600">
-                        <span>單位點數</span>
-                        <Input value={target.baseUnitPoints} onChange={(event) => updateTargetDraft(target.id, { baseUnitPoints: event.target.value })} className="rounded-2xl border-0 bg-white" />
-                      </label>
-                    </div>
-                    <div className="flex justify-end">
-                      <Button
-                        className="rounded-2xl"
-                        disabled={targetMutation.isPending}
-                        onClick={() =>
-                          targetMutation.mutate({
-                            id: target.id,
-                            stationCode: target.stationCode,
-                            dailyTargetQty: Math.max(1, target.dailyTargetQty),
-                            baseUnitPoints: target.baseUnitPoints,
-                            active: target.active,
-                          })
-                        }
-                      >
-                        儲存標準產能
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                }) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先到「品類設定」新增商品類別與品牌組合，再回來輸入各站每日產能。</div>}
               </CardContent>
             </Card>
           </TabsContent>

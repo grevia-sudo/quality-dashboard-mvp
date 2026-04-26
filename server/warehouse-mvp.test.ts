@@ -377,16 +377,18 @@ describe("warehouse MVP router", () => {
     await caller.admin.updateProductivityTarget({
       id: 2,
       stationCode: "B",
+      categoryId: 8,
+      subtypeCode: "Apple",
       dailyTargetQty: 150,
-      baseUnitPoints: "0.006667",
       active: true,
     });
 
     expect(updateProductivityTarget).toHaveBeenCalledWith({
       id: 2,
       stationCode: "B",
+      categoryId: 8,
+      subtypeCode: "Apple",
       dailyTargetQty: 150,
-      baseUnitPoints: "0.006667",
       active: true,
     });
   });
