@@ -1004,12 +1004,59 @@ export async function getProductCategoryOptions() {
     return [];
   }
 
-  await ensureMvpSeedData();
   return db
     .select()
     .from(productCategories)
     .where(eq(productCategories.active, true))
     .orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.subtypeCode), asc(productCategories.id));
+}
+
+export async function assignProductCategoryToProduct(input: { productId: number; categoryId: number | null }) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  if (input.categoryId) {
+    const categoryRows = await db
+      .select({
+        id: productCategories.id,
+      })
+      .from(productCategories)
+      .where(eq(productCategories.id, input.categoryId))
+      .limit(1);
+
+    const category = categoryRows[0];
+    if (!category) {
+      throw new Error("指定的品類設定不存在");
+    }
+  }
+
+  await db
+    .update(products)
+    .set({
+      categoryId: input.categoryId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(products.id, input.productId));
+
+  const rows = await db
+    .select({
+      productId: products.id,
+      categoryId: products.categoryId,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+      subtypeCode: productCategories.subtypeCode,
+      currentStationCode: products.currentStationCode,
+    })
+    .from(products)
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .where(eq(products.id, input.productId))
+    .limit(1);
+
+  return rows[0] ?? null;
 }
 
 async function backfillMissingImportPoNumbers(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
@@ -1124,6 +1171,7 @@ export async function getStationPageData(stationCode: StationCode) {
       productName: products.productName,
       importedCategoryName: products.importedCategoryName,
       importedBrandName: products.importedBrandName,
+      categoryId: products.categoryId,
       currentStationCode: products.currentStationCode,
       subtypeCode: productCategories.subtypeCode,
       categoryName: productCategories.categoryName,
@@ -1829,6 +1877,8 @@ export async function submitSamplingResult(input: {
   productId: number;
   sampledByUserId: number;
   passed: boolean;
+  categoryId?: number | null;
+  subtypeCode?: string | null;
   defectReason?: string;
   applyInspectionChanges?: boolean;
   batterySummary?: string;
@@ -1859,6 +1909,9 @@ export async function submitSamplingResult(input: {
   if (!task) {
     return { success: false as const, message: "Task not found" };
   }
+
+  const effectiveCategoryId = input.categoryId ?? task.categoryId ?? null;
+  const effectiveSubtypeCode = input.subtypeCode ?? task.subtypeCode ?? null;
 
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
@@ -1906,8 +1959,8 @@ export async function submitSamplingResult(input: {
     eventType: input.passed ? "sampling_pass" : "sampling_fail",
     operatorUserId: input.sampledByUserId,
     businessDate: businessDateValue,
-    categoryId: task.categoryId ?? null,
-    subtypeCode: task.subtypeCode ?? null,
+    categoryId: effectiveCategoryId,
+    subtypeCode: effectiveSubtypeCode,
     isRework: !input.passed,
     payload: {
       defectReason: input.defectReason ?? null,

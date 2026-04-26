@@ -6,6 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   archiveExpiredData,
+  assignProductCategoryToProduct,
   clearProductCategoryOptions,
   completeA1ArrivalByScan,
   completeStationTask,
@@ -128,6 +129,19 @@ export const appRouter = router({
       await ensureMvpSeedData();
       return getProductCategoryOptions();
     }),
+    assignCategory: protectedProcedure
+      .input(
+        z.object({
+          productId: z.number().int().positive(),
+          categoryId: z.number().int().positive().nullable(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return assignProductCategoryToProduct({
+          productId: input.productId,
+          categoryId: input.categoryId,
+        });
+      }),
     complete: protectedProcedure
       .input(
         z.object({
@@ -220,14 +234,17 @@ export const appRouter = router({
           taskId: z.number(),
           productId: z.number(),
           passed: z.boolean(),
-          defectReason: z.string().optional(),
+          categoryId: z.number().int().positive().nullable().optional(),
+          subtypeCode: optionalTextSchema.nullable().optional(),
+          defectReason: optionalTextSchema,
           applyInspectionChanges: z.boolean().optional(),
-          batterySummary: z.string().optional(),
-          bFaultSummary: z.string().optional(),
-          cFaultSummary: z.string().optional(),
-          cAppearanceSummary: z.string().optional(),
-          cCameraSummary: z.string().optional(),
+          batterySummary: optionalTextSchema,
+          bFaultSummary: optionalTextSchema,
+          cFaultSummary: optionalTextSchema,
+          cAppearanceSummary: optionalTextSchema,
+          cCameraSummary: optionalTextSchema,
         }),
+
       )
       .mutation(async ({ ctx, input }) => {
         return submitSamplingResult({
@@ -235,6 +252,8 @@ export const appRouter = router({
           productId: input.productId,
           sampledByUserId: ctx.user.id,
           passed: input.passed,
+          categoryId: input.categoryId ?? null,
+          subtypeCode: input.subtypeCode ?? null,
           defectReason: input.defectReason,
           applyInspectionChanges: input.applyInspectionChanges,
           batterySummary: input.batterySummary,

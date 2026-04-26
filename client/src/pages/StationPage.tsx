@@ -78,10 +78,21 @@ export default function StationPage() {
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
   const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);
   const [batteryDialogTaskId, setBatteryDialogTaskId] = useState<number | null>(null);
+  const [categoryDialogTask, setCategoryDialogTask] = useState<{
+    taskId: number;
+    productId: number;
+    productCode: string;
+    categoryId: number | null;
+    categoryLabel: string;
+  } | null>(null);
+  const [categoryDraftValue, setCategoryDraftValue] = useState("");
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const quickScanInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
   const productNameOptionsQuery = trpc.station.productNameOptions.useQuery(undefined, {
+    retry: false,
+  });
+  const productCategoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, {
     retry: false,
   });
   const detailQuery = trpc.station.detail.useQuery(
@@ -91,6 +102,7 @@ export default function StationPage() {
     },
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
+  const productCategoryOptions = productCategoryOptionsQuery.data ?? [];
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -143,6 +155,29 @@ export default function StationPage() {
       quickScanInputRef.current?.focus();
       quickScanInputRef.current?.select();
     });
+  };
+
+  const openCategoryEditor = (task: {
+    taskId: number;
+    productId: number;
+    productCode: string;
+    categoryId?: number | null;
+    categoryName?: string | null;
+    importedCategoryName?: string | null;
+    subtypeCode?: string | null;
+    brandName?: string | null;
+    importedBrandName?: string | null;
+  }) => {
+    setCategoryDialogTask({
+      taskId: task.taskId,
+      productId: task.productId,
+      productCode: task.productCode,
+      categoryId: task.categoryId ?? null,
+      categoryLabel: [task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類", task.brandName ?? task.importedBrandName ?? ""]
+        .filter(Boolean)
+        .join(" × "),
+    });
+    setCategoryDraftValue(task.categoryId ? String(task.categoryId) : "");
   };
 
   const playA2SuccessTone = () => {
@@ -227,7 +262,7 @@ export default function StationPage() {
       taskId: matchedTask.taskId,
       stationCode: "A2",
       productId: matchedTask.productId,
-      categoryId: undefined,
+      categoryId: matchedTask.categoryId ?? null,
       subtypeCode: matchedTask.subtypeCode ?? null,
       summary: `${detailQuery.data?.label ?? "A2 安裝"} 掃碼完成`,
     });
@@ -241,6 +276,19 @@ export default function StationPage() {
     event.preventDefault();
     submitA2ScanComplete();
   };
+
+  const assignCategoryMutation = trpc.station.assignCategory.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已更新 ${result?.currentStationCode === "STOCK" ? "待入庫" : (result?.currentStationCode ?? stationCode)} 的品類設定`);
+      setCategoryDialogTask(null);
+      setCategoryDraftValue("");
+      await invalidateStationData();
+      await utils.sampling.queue.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "更新品類設定失敗");
+    },
+  });
 
   const completeMutation = trpc.station.complete.useMutation({
     onSuccess: (_result, variables) => {
@@ -510,7 +558,7 @@ export default function StationPage() {
       taskId: task.taskId,
       stationCode,
       productId: task.productId,
-      categoryId: undefined,
+      categoryId: task.categoryId ?? null,
       subtypeCode: task.subtypeCode ?? null,
       summary: stationCode === "B" ? "B 站軟體測試完成" : stationCode === "C" ? "C 站品檢完成" : `${detailQuery.data?.label} 完成`,
       faultOptionIds: selections.faultOptionIds,
@@ -803,6 +851,7 @@ export default function StationPage() {
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
                       <th className="px-4 py-3">狀態</th>
+                      <th className="px-4 py-3 text-right">操作</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -818,6 +867,11 @@ export default function StationPage() {
                           <Badge variant="secondary" className={task.isOverdue ? "bg-[#f7e8ee] text-rose-700" : "bg-slate-100 text-slate-700"}>
                             {task.isOverdue ? "逾期" : task.taskStatus}
                           </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                            編輯
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -878,6 +932,15 @@ export default function StationPage() {
                     <div><p className="text-xs text-slate-400">序號</p><p className="mt-1 font-semibold text-slate-900">{task.serialNumber ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">目前站點</p><p className="mt-1 font-semibold text-slate-900">{task.currentStationCode}</p></div>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-400">套用品類設定</p>
+                      <p className="font-semibold text-slate-900">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p>
+                    </div>
+                    <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                      編輯
+                    </Button>
                   </div>
 
                   {stationCode === "B" || stationCode === "C" ? (
@@ -1101,6 +1164,7 @@ export default function StationPage() {
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
                       <th className="px-4 py-3">狀態</th>
+                      <th className="px-4 py-3 text-right">操作</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1117,6 +1181,11 @@ export default function StationPage() {
                             {task.isOverdue ? "逾期" : task.taskStatus}
                           </Badge>
                         </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                            編輯
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1128,6 +1197,65 @@ export default function StationPage() {
             </CardContent>
           </Card>
         ) : null}
+        <Dialog open={Boolean(categoryDialogTask)} onOpenChange={(open) => {
+          if (!open) {
+            setCategoryDialogTask(null);
+            setCategoryDraftValue("");
+          }
+        }}>
+          <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-xl">
+            <div className="space-y-6 p-6">
+              <DialogHeader>
+                <DialogTitle>編輯品類設定</DialogTitle>
+                <DialogDescription>
+                  為 {categoryDialogTask?.productCode ?? "此商品"} 手動指定管理後台的品類設定。更新後，本站與後續站點會沿用新的品類／品牌對應。
+                </DialogDescription>
+              </DialogHeader>
+              <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                目前設定：<span className="font-semibold text-slate-900">{categoryDialogTask?.categoryLabel || "未分類"}</span>
+              </div>
+              <label className="space-y-2 text-sm text-slate-600">
+                <span>選擇品類設定</span>
+                <select
+                  value={categoryDraftValue}
+                  onChange={(event) => setCategoryDraftValue(event.target.value)}
+                  className="h-12 w-full rounded-2xl border-0 bg-slate-50 px-4 text-slate-900"
+                >
+                  <option value="">清除指定，改回未分類</option>
+                  {productCategoryOptions.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {[category.categoryName, category.brandName ?? category.subtypeCode ?? ""].filter(Boolean).join(" × ")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <DialogFooter>
+                <Button type="button" variant="outline" className="rounded-2xl" onClick={() => {
+                  setCategoryDialogTask(null);
+                  setCategoryDraftValue("");
+                }}>
+                  取消
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-2xl"
+                  disabled={!categoryDialogTask || assignCategoryMutation.isPending}
+                  onClick={() => {
+                    if (!categoryDialogTask) {
+                      return;
+                    }
+                    assignCategoryMutation.mutate({
+                      productId: categoryDialogTask.productId,
+                      categoryId: categoryDraftValue ? Number(categoryDraftValue) : null,
+                    });
+                  }}
+                >
+                  {assignCategoryMutation.isPending ? "更新中..." : "儲存設定"}
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { productArchives, products, stationTasks } from "../drizzle/schema";
-import { createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
+import { assignProductCategoryToProduct, completeA1ArrivalByScan, createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
 
 const createdPoNumbers = new Set<string>();
 
@@ -190,6 +190,125 @@ describe("import PO summary integration", () => {
 
     expect(matchedTask?.brandName ?? matchedTask?.importedBrandName).toBe("Apple");
     expect(unmatchedTask?.brandName ?? unmatchedTask?.importedBrandName).toBe("NoSuchBrand");
+  }, 10000);
+
+  it("preserves imported category and brand values when manually assigning or clearing category settings", async () => {
+    const uniqueSuffix = `${Date.now()}`;
+    const matchedCategory = await createProductCategoryOption({ categoryName: "智慧手機", brandName: "Apple" });
+    const rows = [
+      {
+        batchNo: `MANUAL-KEEP-${uniqueSuffix}-01`,
+        serialNumber: `MANUAL-KEEP-SN-${uniqueSuffix}-01`,
+        imei: `96${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
+        productName: "Manual Preserve Device",
+        categoryName: "原始手機",
+        brandName: "OriginalBrand",
+      },
+    ];
+
+    const importResult = await importProducts({
+      vendorName: "手動指定保留驗證",
+      rows,
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const importedProduct = (await db
+      .select({
+        id: products.id,
+        categoryId: products.categoryId,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)))
+      .limit(1))[0];
+
+    expect(importedProduct?.importedCategoryName).toBe("原始手機");
+    expect(importedProduct?.importedBrandName).toBe("OriginalBrand");
+
+    await assignProductCategoryToProduct({
+      productId: importedProduct?.id ?? 0,
+      categoryId: matchedCategory?.id ?? null,
+    });
+
+    await assignProductCategoryToProduct({
+      productId: importedProduct?.id ?? 0,
+      categoryId: null,
+    });
+
+    const reassignedProduct = (await db
+      .select({
+        categoryId: products.categoryId,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+      })
+      .from(products)
+      .where(eq(products.id, importedProduct?.id ?? 0))
+      .limit(1))[0];
+
+    expect(reassignedProduct?.categoryId).toBeNull();
+    expect(reassignedProduct?.importedCategoryName).toBe("原始手機");
+    expect(reassignedProduct?.importedBrandName).toBe("OriginalBrand");
+  }, 10000);
+
+  it("uses manually assigned category settings after A1 moves product to A2", async () => {
+    const uniqueSuffix = `${Date.now()}`;
+    const matchedCategory = await createProductCategoryOption({ categoryName: "智慧手機", brandName: "Apple" });
+    const rows = [
+      {
+        batchNo: `MANUAL-NEXT-${uniqueSuffix}-01`,
+        serialNumber: `MANUAL-NEXT-SN-${uniqueSuffix}-01`,
+        imei: `95${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
+        productName: "Manual Next Station Device",
+        categoryName: "原始手機",
+        brandName: "OriginalBrand",
+      },
+    ];
+
+    const importResult = await importProducts({
+      vendorName: "手動指定跨站驗證",
+      rows,
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const importedProduct = (await db
+      .select({
+        id: products.id,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)))
+      .limit(1))[0];
+
+    await assignProductCategoryToProduct({
+      productId: importedProduct?.id ?? 0,
+      categoryId: matchedCategory?.id ?? null,
+    });
+
+    await completeA1ArrivalByScan({
+      operatorUserId: 1,
+      batchNo: rows[0]?.batchNo,
+      serialNumber: rows[0]?.serialNumber,
+      imei: rows[0]?.imei,
+      productName: rows[0]?.productName,
+    });
+
+    const a2StationData = await getStationPageData("A2");
+    const movedTask = a2StationData.tasks.find((task) => task.poNumber === importResult.poNumber && task.batchNo === rows[0]?.batchNo);
+
+    expect(movedTask?.categoryName).toBe("智慧手機");
+    expect(movedTask?.brandName).toBe("Apple");
+    expect(movedTask?.importedCategoryName).toBe("原始手機");
+    expect(movedTask?.importedBrandName).toBe("OriginalBrand");
   }, 10000);
 
   it("imports a large batch with consistent row count under a single PO", async () => {

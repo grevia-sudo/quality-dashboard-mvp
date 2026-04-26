@@ -2,6 +2,7 @@ import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLa
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
@@ -21,6 +22,11 @@ type SamplingTask = {
   productId: number;
   productCode: string;
   productName?: string | null;
+  categoryId?: number | null;
+  categoryName?: string | null;
+  brandName?: string | null;
+  importedCategoryName?: string | null;
+  importedBrandName?: string | null;
   subtypeCode?: string | null;
   batchNo?: string | null;
   serialNumber?: string | null;
@@ -64,10 +70,27 @@ export default function SamplingPage() {
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const query = trpc.sampling.queue.useQuery();
+  const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, {
+    retry: false,
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [reasons, setReasons] = useState<Record<number, string>>({});
   const [drafts, setDrafts] = useState<Record<number, InspectionDraft>>({});
+  const [categoryDialogTask, setCategoryDialogTask] = useState<SamplingTask | null>(null);
+  const [categoryDraftValue, setCategoryDraftValue] = useState("");
   const tasks = ((query.data?.tasks ?? []) as SamplingTask[]);
+  const categoryOptions = categoryOptionsQuery.data ?? [];
+
+  const assignCategoryMutation = trpc.station.assignCategory.useMutation({
+    onSuccess: async () => {
+      await utils.sampling.queue.invalidate();
+      await utils.station.detail.invalidate({ stationCode: "D" });
+      await utils.station.list.invalidate();
+      await utils.dashboard.home.invalidate();
+      setCategoryDialogTask(null);
+      setCategoryDraftValue("");
+    },
+  });
 
   const mutation = trpc.sampling.submit.useMutation({
     onSuccess: async () => {
@@ -122,6 +145,11 @@ export default function SamplingPage() {
         });
   };
 
+  const openCategoryEditor = (task: SamplingTask) => {
+    setCategoryDialogTask(task);
+    setCategoryDraftValue(task.categoryId ? String(task.categoryId) : "");
+  };
+
   const submitInspection = (task: SamplingTask, passed: boolean) => {
     const draft = getDraft(task);
     const initial = createInitialDraft(task);
@@ -132,12 +160,15 @@ export default function SamplingPage() {
       || normalizeResultText(draft.cAppearanceSummary) !== initial.cAppearanceSummary
       || normalizeResultText(draft.cCameraSummary) !== initial.cCameraSummary
     );
+    const normalizedReason = (reasons[task.taskId]?.trim() || "全檢不通過");
 
     mutation.mutate({
       taskId: task.taskId,
       productId: task.productId,
       passed,
-      defectReason: passed ? undefined : (reasons[task.taskId]?.trim() || "全檢不通過"),
+      categoryId: task.categoryId ?? null,
+      subtypeCode: task.subtypeCode ?? null,
+      defectReason: passed ? undefined : normalizedReason,
       applyInspectionChanges,
       batterySummary: normalizeResultText(draft.batterySummary),
       bFaultSummary: normalizeResultText(draft.bFaultSummary),
@@ -190,8 +221,15 @@ export default function SamplingPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                    <p><span className="font-semibold text-slate-900">商品：</span>{task.productName ?? "-"}</p>
-                    <p><span className="font-semibold text-slate-900">品類：</span>{task.subtypeCode ?? "-"}</p>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p><span className="font-semibold text-slate-900">商品：</span>{task.productName ?? "-"}</p>
+                        <p><span className="font-semibold text-slate-900">品類：</span>{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p>
+                      </div>
+                      <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
+                        編輯
+                      </Button>
+                    </div>
                     <p><span className="font-semibold text-slate-900">商品批號：</span>{task.batchNo ?? "-"}</p>
                     <p><span className="font-semibold text-slate-900">商品序號：</span>{task.serialNumber ?? "-"}</p>
                     <p><span className="font-semibold text-slate-900">IMEI：</span>{task.imei ?? "-"}</p>
@@ -355,6 +393,58 @@ export default function SamplingPage() {
         <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>
           返回站點總覽
         </Button>
+        <Dialog open={Boolean(categoryDialogTask)} onOpenChange={(open) => {
+          if (!open) {
+            setCategoryDialogTask(null);
+            setCategoryDraftValue("");
+          }
+        }}>
+          <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-xl">
+            <div className="space-y-6 p-6">
+              <DialogHeader>
+                <DialogTitle>編輯品類設定</DialogTitle>
+                <DialogDescription>為 D 站商品手動指定管理後台既有的品類設定，更新後會供後續站點與產能邏輯沿用。</DialogDescription>
+              </DialogHeader>
+              <label className="space-y-2 text-sm text-slate-600">
+                <span>選擇品類設定</span>
+                <select
+                  value={categoryDraftValue}
+                  onChange={(event) => setCategoryDraftValue(event.target.value)}
+                  className="h-12 w-full rounded-2xl border-0 bg-slate-50 px-4 text-slate-900"
+                >
+                  <option value="">清除指定，改回未分類</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {[category.categoryName, category.brandName ?? category.subtypeCode ?? ""].filter(Boolean).join(" × ")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <DialogFooter>
+                <Button type="button" variant="outline" className="rounded-2xl" onClick={() => {
+                  setCategoryDialogTask(null);
+                  setCategoryDraftValue("");
+                }}>
+                  取消
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-2xl"
+                  disabled={!categoryDialogTask || assignCategoryMutation.isPending}
+                  onClick={() => {
+                    if (!categoryDialogTask) return;
+                    assignCategoryMutation.mutate({
+                      productId: categoryDialogTask.productId,
+                      categoryId: categoryDraftValue ? Number(categoryDraftValue) : null,
+                    });
+                  }}
+                >
+                  {assignCategoryMutation.isPending ? "更新中..." : "儲存設定"}
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

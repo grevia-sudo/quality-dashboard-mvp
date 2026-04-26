@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 const stationPageSource = readFileSync(new URL("../client/src/pages/StationPage.tsx", import.meta.url), "utf8");
+const samplingPageSource = readFileSync(new URL("../client/src/pages/SamplingPage.tsx", import.meta.url), "utf8");
 const importPageSource = readFileSync(new URL("../client/src/pages/ImportPage.tsx", import.meta.url), "utf8");
 const adminPageSource = readFileSync(new URL("../client/src/pages/AdminPage.tsx", import.meta.url), "utf8");
 
@@ -68,7 +69,10 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("IMEI");
     expect(stationPageSource).toContain("trpc.station.receive.useMutation");
     expect(stationPageSource).toContain("trpc.station.productNameOptions.useQuery");
-    expect(stationPageSource).not.toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(stationPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(stationPageSource).toContain("trpc.station.assignCategory.useMutation");
+    expect(stationPageSource).toContain("編輯品類設定");
+    expect(stationPageSource).toContain("openCategoryEditor(task)");
     expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
     expect(stationPageSource).toContain("必填，可輸入品名關鍵字或完整品名");
     expect(stationPageSource).toContain("完成 A1 並準備下一筆");
@@ -109,6 +113,14 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("batteryNote");
     expect(stationPageSource).toContain("summarizeTextResult");
     expect(stationPageSource).toContain("是否修改電池／非螢幕功能狀態");
+  });
+
+  it("includes category edit controls on the sampling page", () => {
+    expect(samplingPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
+    expect(samplingPageSource).toContain("trpc.station.assignCategory.useMutation");
+    expect(samplingPageSource).toContain("編輯品類設定");
+    expect(samplingPageSource).toContain("openCategoryEditor(task)");
+    expect(samplingPageSource).toContain("選擇品類設定");
   });
 
   it("includes product name and defect option maintenance sections in the admin page", () => {

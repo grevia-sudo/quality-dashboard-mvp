@@ -5,6 +5,7 @@ import { appRouter } from "./routers";
 const dbMocks = vi.hoisted(() => ({
   ensureMvpSeedData: vi.fn(async () => undefined),
   archiveExpiredData: vi.fn(async () => ({ archivedCount: 0 })),
+  assignProductCategoryToProduct: vi.fn(async (input: unknown) => ({ success: true as const, ...(typeof input === "object" && input ? input : {}) })),
   seedKpiForDemo: vi.fn(async () => undefined),
   getStationOverviewData: vi.fn(async () => [
     { stationCode: "A1", label: "A1 點到貨", pendingCount: 3, todayNewCount: 1, overdueCount: 0 },
@@ -45,6 +46,7 @@ const dbMocks = vi.hoisted(() => ({
 const {
   ensureMvpSeedData,
   archiveExpiredData,
+  assignProductCategoryToProduct,
   seedKpiForDemo,
   getStationOverviewData,
   getEngineerKpiSummary,
@@ -115,6 +117,20 @@ describe("warehouse MVP router", () => {
     const result = await caller.dashboard.home();
 
     expect(result.roleLanding).toBe("dashboard");
+  });
+
+  it("delegates station category assignment with authenticated product selection", async () => {
+    const caller = appRouter.createCaller(createContext("user"));
+
+    await caller.station.assignCategory({
+      productId: 99,
+      categoryId: 3,
+    });
+
+    expect(assignProductCategoryToProduct).toHaveBeenCalledWith({
+      productId: 99,
+      categoryId: 3,
+    });
   });
 
   it("delegates station completion with defect selections and authenticated operator id", async () => {
@@ -243,6 +259,8 @@ describe("warehouse MVP router", () => {
       taskId: 20,
       productId: 88,
       passed: false,
+      categoryId: 3,
+      subtypeCode: "iPhone",
       defectReason: "外觀異常",
     });
 
@@ -251,6 +269,8 @@ describe("warehouse MVP router", () => {
       productId: 88,
       sampledByUserId: 7,
       passed: false,
+      categoryId: 3,
+      subtypeCode: "iPhone",
       defectReason: "外觀異常",
     });
   });
