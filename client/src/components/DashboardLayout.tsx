@@ -37,6 +37,7 @@ export default function DashboardLayout({
   const { user, loading, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const isMobile = useIsMobile();
+  const visibleNavItems = user ? navItems.filter((item) => item.path !== "/admin" || user.role === "admin") : navItems;
 
   if (loading) {
     return <DashboardLayoutSkeleton />;
@@ -75,7 +76,7 @@ export default function DashboardLayout({
 
         <SidebarContent className="px-2 py-4">
           <SidebarMenu>
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = location === item.path;
               return (
                 <SidebarMenuItem key={item.path}>

@@ -35,8 +35,9 @@ const dbMocks = vi.hoisted(() => ({
   importProducts: vi.fn(async (input: unknown) => ({ success: true as const, importedCount: 1, products: [], ...((typeof input === "object" && input) ? input : {}) })),
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
-  getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [], targets: [], defectOptions: [], productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }], syncSummary: { queuedJobs: 0, targetSheetName: "採購單" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
+  getAdminSetupData: vi.fn(async () => ({ users: [], rules: [], categories: [{ id: 3, categoryName: "智慧手機", brandName: "Apple", subtypeCode: "Apple", active: true }], targets: [], defectOptions: [], categoryFlows: [{ categoryId: 3, stationCode: "A1", stepOrder: 1 }, { categoryId: 3, stationCode: "C", stepOrder: 2 }, { categoryId: 3, stationCode: "D", stepOrder: 3 }, { categoryId: 3, stationCode: "E", stepOrder: 4 }, { categoryId: 3, stationCode: "STOCK", stepOrder: 5 }], engineerProgress: [{ userId: 7, name: "Demo User", role: "user", totalPoints: 12.5, achievementRate: 83.3, completedCount: 18 }], stationLeadTimes: [{ stationCode: "C", avgDaysFromImport: 1.5, sampleCount: 12 }], categoryCycleTimes: [{ categoryId: 3, categoryName: "智慧手機", brandName: "Apple", avgDaysToStock: 3.2, sampleCount: 10 }], productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10 }], syncSummary: { queuedJobs: 0, targetSheetName: "採購單" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
   upsertDefectOption: vi.fn(async (input: unknown) => ({ success: true as const, input })),
+  replaceCategoryStationFlow: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   createProductNameOption: vi.fn(async (input: unknown) => ({ id: 99, active: true, sortOrder: 60, ...(typeof input === "object" && input ? input : {}) })),
   deleteProductNameOption: vi.fn(async (id: number) => ({ success: true as const, id })),
   updateStationRule: vi.fn(async (input: unknown) => ({ success: true as const, input })),
@@ -61,6 +62,7 @@ const {
   submitSamplingResult,
   getAdminSetupData,
   upsertDefectOption,
+  replaceCategoryStationFlow,
   createProductNameOption,
   deleteProductNameOption,
   updateStationRule,
@@ -117,6 +119,33 @@ describe("warehouse MVP router", () => {
     const result = await caller.dashboard.home();
 
     expect(result.roleLanding).toBe("dashboard");
+  });
+
+  it("allows only admins to fetch admin setup data and exposes analytics fields", async () => {
+    const adminCaller = appRouter.createCaller(createContext("admin"));
+    const adminResult = await adminCaller.admin.setup();
+
+    expect(adminResult.categoryFlows[0]?.stationCode).toBe("A1");
+    expect(adminResult.engineerProgress[0]?.totalPoints).toBe(12.5);
+    expect(adminResult.stationLeadTimes[0]?.stationCode).toBe("C");
+    expect(adminResult.categoryCycleTimes[0]?.brandName).toBe("Apple");
+
+    const userCaller = appRouter.createCaller(createContext("user"));
+    await expect(userCaller.admin.setup()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("delegates category station flow replacement to the admin data layer", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    await caller.admin.replaceCategoryStationFlow({
+      categoryId: 3,
+      stationCodes: ["A1", "C", "D", "E", "STOCK"],
+    });
+
+    expect(replaceCategoryStationFlow).toHaveBeenCalledWith({
+      categoryId: 3,
+      stationCodes: ["A1", "C", "D", "E", "STOCK"],
+    });
   });
 
   it("delegates station category assignment with authenticated product selection", async () => {

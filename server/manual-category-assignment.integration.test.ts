@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { productArchives, productCategories, products, stationEvents, stationTasks } from "../drizzle/schema";
-import { assignProductCategoryToProduct, createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts, submitSamplingResult } from "./db";
+import { assignProductCategoryToProduct, completeStationTask, createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts, replaceCategoryStationFlow, submitSamplingResult } from "./db";
 
 const createdPoNumbers = new Set<string>();
 
@@ -54,6 +54,66 @@ describe("manual category assignment integration", () => {
   afterAll(async () => {
     await archiveCreatedRows();
   });
+
+  it("applies saved category station flows to determine the next station", async () => {
+    const uniqueSuffix = `${Date.now()}-flow`;
+    const watchCategory = await createProductCategoryOption({ categoryName: "智慧手錶", brandName: "Apple" });
+    await replaceCategoryStationFlow({
+      categoryId: watchCategory?.id ?? 0,
+      stationCodes: ["A1", "C", "D", "E", "STOCK"],
+    });
+
+    const importResult = await importProducts({
+      vendorName: "品類流程整合驗證",
+      rows: [
+        {
+          batchNo: `FLOW-${uniqueSuffix}`,
+          serialNumber: `FLOW-SN-${uniqueSuffix}`,
+          imei: `95${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+          productName: "Watch Flow Device",
+          categoryName: "智慧手錶",
+          brandName: "Apple",
+        },
+      ],
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const a1Task = await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(eq(products.poNumber, importResult.poNumber), eq(stationTasks.stationCode, "A1"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1);
+
+    await completeStationTask({
+      taskId: a1Task[0]?.taskId ?? 0,
+      stationCode: "A1",
+      operatorUserId: 1,
+      productId: a1Task[0]?.productId ?? 0,
+      categoryId: a1Task[0]?.categoryId ?? null,
+      subtypeCode: a1Task[0]?.subtypeCode ?? null,
+      summary: "依品類流程從 A1 推進",
+    });
+
+    const cStationData = await getStationPageData("C");
+    const a2StationData = await getStationPageData("A2");
+    const bStationData = await getStationPageData("B");
+
+    expect(cStationData.tasks.some((task) => task.batchNo === `FLOW-${uniqueSuffix}`)).toBe(true);
+    expect(a2StationData.tasks.some((task) => task.batchNo === `FLOW-${uniqueSuffix}`)).toBe(false);
+    expect(bStationData.tasks.some((task) => task.batchNo === `FLOW-${uniqueSuffix}`)).toBe(false);
+  }, 20000);
 
   it("carries manually assigned category settings from D to E and back to C", async () => {
     const uniqueSuffix = `${Date.now()}`;

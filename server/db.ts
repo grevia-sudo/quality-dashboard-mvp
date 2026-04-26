@@ -4,6 +4,7 @@ import { and, asc, count, desc, eq, gte, inArray, isNull, like, lte, notInArray,
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2/promise";
 import {
+  categoryStationFlows,
   defectOptions,
   engineerDailyProductivity,
   InsertUser,
@@ -395,6 +396,8 @@ function stationToLabel(code: StationCode) {
   }[code];
 }
 
+const DEFAULT_CATEGORY_FLOW: StationCode[] = ["A1", "A2", "B", "C", "D", "E", "STOCK"];
+
 function nextStationFor(code: StationCode): StationCode | null {
   const mapping: Record<StationCode, StationCode | null> = {
     A1: "A2",
@@ -407,6 +410,70 @@ function nextStationFor(code: StationCode): StationCode | null {
   };
 
   return mapping[code];
+}
+
+async function getCategoryFlowCodes(categoryId?: number | null) {
+  const db = await getDb();
+  if (!db || !categoryId) {
+    return DEFAULT_CATEGORY_FLOW;
+  }
+
+  const flowRows = await db
+    .select({
+      stationCode: categoryStationFlows.stationCode,
+      stepOrder: categoryStationFlows.stepOrder,
+    })
+    .from(categoryStationFlows)
+    .where(and(eq(categoryStationFlows.categoryId, categoryId), eq(categoryStationFlows.active, true)))
+    .orderBy(asc(categoryStationFlows.stepOrder), asc(categoryStationFlows.id));
+
+  return flowRows.length > 0 ? flowRows.map((row) => row.stationCode as StationCode) : DEFAULT_CATEGORY_FLOW;
+}
+
+async function resolveNextStationByCategory(categoryId: number | null | undefined, currentStationCode: StationCode) {
+  const flowCodes = await getCategoryFlowCodes(categoryId);
+  const currentIndex = flowCodes.indexOf(currentStationCode);
+  if (currentIndex === -1) {
+    return nextStationFor(currentStationCode);
+  }
+
+  return flowCodes[currentIndex + 1] ?? null;
+}
+
+async function resolveReworkStationByCategory(categoryId: number | null | undefined, currentStationCode: StationCode) {
+  const flowCodes = await getCategoryFlowCodes(categoryId);
+  const currentIndex = flowCodes.indexOf(currentStationCode);
+  if (currentIndex <= 0) {
+    return currentStationCode === "D" ? "C" : null;
+  }
+
+  return flowCodes[currentIndex - 1] ?? null;
+}
+
+async function ensureDefaultCategoryStationFlows(db: NonNullable<Awaited<ReturnType<typeof getDb>>>, categoryIds: number[]) {
+  if (categoryIds.length === 0) {
+    return;
+  }
+
+  const existingRows = await db
+    .select({
+      categoryId: categoryStationFlows.categoryId,
+      stationCode: categoryStationFlows.stationCode,
+    })
+    .from(categoryStationFlows)
+    .where(inArray(categoryStationFlows.categoryId, categoryIds));
+
+  const existingKeys = new Set(existingRows.map((row) => `${row.categoryId}-${row.stationCode}`));
+  const values = categoryIds.flatMap((categoryId) => DEFAULT_CATEGORY_FLOW.map((stationCode, index) => ({
+    categoryId,
+    stationCode,
+    stepOrder: index + 1,
+    active: true,
+  }))).filter((row) => !existingKeys.has(`${row.categoryId}-${row.stationCode}`));
+
+  if (values.length > 0) {
+    await db.insert(categoryStationFlows).values(values);
+  }
 }
 
 function statusForStation(code: StationCode) {
@@ -844,6 +911,7 @@ export async function ensureMvpSeedData() {
   const todayDate = new Date(`${today}T00:00:00`);
 
   const categories = await db.select().from(productCategories).orderBy(asc(productCategories.id));
+  await ensureDefaultCategoryStationFlows(db, categories.map((item) => item.id));
   const iphone = categories.find((item) => item.subtypeCode === "iPhone");
   const android = categories.find((item) => item.subtypeCode === "Android");
 
@@ -1698,7 +1766,13 @@ export async function completeStationTask(input: {
     return { success: false as const, message: "Database unavailable" };
   }
 
-  const nextStation = nextStationFor(input.stationCode);
+  const productRows = await db
+    .select({ categoryId: products.categoryId })
+    .from(products)
+    .where(eq(products.id, input.productId))
+    .limit(1);
+  const effectiveCategoryId = input.categoryId ?? productRows[0]?.categoryId ?? null;
+  const nextStation = await resolveNextStationByCategory(effectiveCategoryId, input.stationCode);
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
   const completedAt = new Date();
@@ -1782,7 +1856,7 @@ export async function completeStationTask(input: {
     eventType: "complete",
     operatorUserId: input.operatorUserId,
     businessDate: businessDateValue,
-    categoryId: input.categoryId ?? null,
+    categoryId: effectiveCategoryId,
     subtypeCode: input.subtypeCode ?? null,
       payload: {
         summary: input.summary ?? "已完成站點作業",
@@ -1912,6 +1986,8 @@ export async function submitSamplingResult(input: {
 
   const effectiveCategoryId = input.categoryId ?? task.categoryId ?? null;
   const effectiveSubtypeCode = input.subtypeCode ?? task.subtypeCode ?? null;
+  const passNextStation = await resolveNextStationByCategory(effectiveCategoryId, "D");
+  const failReturnStation = await resolveReworkStationByCategory(effectiveCategoryId, "D") ?? "C";
 
   const businessDate = todayDateString();
   const businessDateValue = new Date(`${businessDate}T00:00:00`);
@@ -1938,7 +2014,7 @@ export async function submitSamplingResult(input: {
     .set({
       taskStatus: "completed",
       completedAt,
-      resultSummary: input.passed ? "全檢通過，送往 E 站" : "全檢不通過，返工回 C",
+      resultSummary: input.passed ? `全檢通過，送往 ${stationToLabel(passNextStation ?? "STOCK")}` : `全檢不通過，返工回 ${stationToLabel(failReturnStation)}`,
       metadata: {
         defectReason: input.defectReason ?? null,
         applyInspectionChanges,
@@ -1988,51 +2064,53 @@ export async function submitSamplingResult(input: {
   triggerPurchaseSheetSyncInBackground();
 
   if (input.passed) {
-    await db
-      .update(products)
-      .set({
-        currentStationCode: "E",
-        currentStatus: "pending_e",
-        updatedAt: completedAt,
-      })
-      .where(eq(products.id, input.productId));
+    if (passNextStation) {
+      await db
+        .update(products)
+        .set({
+          currentStationCode: passNextStation,
+          currentStatus: statusForStation(passNextStation),
+          updatedAt: completedAt,
+        })
+        .where(eq(products.id, input.productId));
 
-    await db.insert(stationTasks).values({
-      productId: input.productId,
-      stationCode: "E",
-      taskStatus: "pending",
-      dueDate: businessDateValue,
-      resultSummary: "E 站待抹除",
-      metadata: {
-        sourceStation: "D",
-        sampled: true,
-        dInspectionPassed: true,
-        dInspectionOperatorUserId: input.sampledByUserId,
-        dInspectionCompletedAt: completedAt,
-        dInspectionModified: applyInspectionChanges,
-        batterySummary: normalizedBatterySummary,
-        bFaultSummary: normalizedBFaultSummary,
-        cFaultSummary: normalizedCFaultSummary,
-        cAppearanceSummary: normalizedCAppearanceSummary,
-        cCameraSummary: normalizedCCameraSummary,
-      },
-    });
+      await db.insert(stationTasks).values({
+        productId: input.productId,
+        stationCode: passNextStation,
+        taskStatus: "pending",
+        dueDate: businessDateValue,
+        resultSummary: `${stationToLabel(passNextStation)} 待處理`,
+        metadata: {
+          sourceStation: "D",
+          sampled: true,
+          dInspectionPassed: true,
+          dInspectionOperatorUserId: input.sampledByUserId,
+          dInspectionCompletedAt: completedAt,
+          dInspectionModified: applyInspectionChanges,
+          batterySummary: normalizedBatterySummary,
+          bFaultSummary: normalizedBFaultSummary,
+          cFaultSummary: normalizedCFaultSummary,
+          cAppearanceSummary: normalizedCAppearanceSummary,
+          cCameraSummary: normalizedCCameraSummary,
+        },
+      });
+    }
   } else {
     await db
       .update(products)
       .set({
-        currentStationCode: "C",
-        currentStatus: "pending_c",
+        currentStationCode: failReturnStation,
+        currentStatus: statusForStation(failReturnStation),
         updatedAt: completedAt,
       })
       .where(eq(products.id, input.productId));
 
     await db.insert(stationTasks).values({
       productId: input.productId,
-      stationCode: "C",
+      stationCode: failReturnStation,
       taskStatus: "returned",
       dueDate: businessDateValue,
-      resultSummary: "D 站全檢失敗返工回 C",
+      resultSummary: `D 站全檢失敗返工回 ${stationToLabel(failReturnStation)}`,
       metadata: {
         sourceStation: "D",
         reason: input.defectReason ?? "全檢不通過",
@@ -2373,10 +2451,237 @@ export async function archiveExpiredData() {
   return { archivedCount: expiredProducts.length };
 }
 
+async function getAdminEngineerKpiProgress() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  const todayKey = todayDateString();
+  const monthPrefix = todayKey.slice(0, 7);
+  const userRows = await db
+    .select({
+      id: users.id,
+      username: users.username,
+      name: users.name,
+      role: users.role,
+    })
+    .from(users)
+    .where(notInArray(users.role, ["admin"]));
+
+  const productivityRows = await db
+    .select({
+      userId: engineerDailyProductivity.userId,
+      businessDate: engineerDailyProductivity.businessDate,
+      totalPoints: engineerDailyProductivity.totalPoints,
+      kpiAchievementRate: engineerDailyProductivity.kpiAchievementRate,
+      rawAchievementRate: engineerDailyProductivity.rawAchievementRate,
+      overAchievementRate: engineerDailyProductivity.overAchievementRate,
+      finalKpiScore: engineerDailyProductivity.finalKpiScore,
+      attendanceFlag: engineerDailyProductivity.attendanceFlag,
+    })
+    .from(engineerDailyProductivity);
+
+  const monthlyRows = productivityRows.filter((row) => row.businessDate.toISOString().slice(0, 7) === monthPrefix);
+
+  return userRows
+    .map((user) => {
+      const rows = monthlyRows.filter((row) => row.userId === user.id);
+      const todayRows = rows.filter((row) => row.businessDate.toISOString().slice(0, 10) === todayKey);
+      const attendanceDays = rows.filter((row) => row.attendanceFlag).length;
+      const monthTotalPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
+      const todayPoints = todayRows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
+      const avgKpiAchievementRate = rows.length > 0
+        ? rows.reduce((sum, row) => sum + Number(row.kpiAchievementRate), 0) / rows.length
+        : 0;
+      const finalKpiScore = rows.length > 0 ? Number(rows[rows.length - 1]?.finalKpiScore ?? 0) : 0;
+      const rawAchievementRate = todayRows.length > 0 ? Number(todayRows[todayRows.length - 1]?.rawAchievementRate ?? 0) : 0;
+      const overAchievementRate = todayRows.length > 0 ? Number(todayRows[todayRows.length - 1]?.overAchievementRate ?? 0) : 0;
+
+      return {
+        userId: user.id,
+        username: user.username ?? "-",
+        name: user.name ?? user.username ?? `User-${user.id}`,
+        role: user.role,
+        attendanceDays,
+        todayPoints,
+        monthTotalPoints,
+        monthAvgPoints: attendanceDays > 0 ? monthTotalPoints / attendanceDays : 0,
+        avgKpiAchievementRate,
+        rawAchievementRate,
+        overAchievementRate,
+        finalKpiScore,
+      };
+    })
+    .sort((left, right) => right.monthTotalPoints - left.monthTotalPoints || right.finalKpiScore - left.finalKpiScore);
+}
+
+async function getAdminStationLeadTimes() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  const rows = await db
+    .select({
+      stationCode: stationTasks.stationCode,
+      taskCreatedAt: stationTasks.createdAt,
+      taskCompletedAt: stationTasks.completedAt,
+      arrivalAt: products.arrivalAt,
+      importedAt: products.createdAt,
+    })
+    .from(stationTasks)
+    .innerJoin(products, eq(stationTasks.productId, products.id))
+    .where(isNull(products.archivedAt));
+
+  const grouped = new Map<StationCode, { totalDays: number; shortestDays: number; longestDays: number; sampleCount: number }>();
+
+  rows.forEach((row) => {
+    const startAt = row.arrivalAt ?? row.importedAt;
+    const endAt = row.taskCompletedAt ?? row.taskCreatedAt;
+    const diffDays = Math.max(0, (endAt.getTime() - startAt.getTime()) / 86_400_000);
+    const current = grouped.get(row.stationCode as StationCode) ?? {
+      totalDays: 0,
+      shortestDays: diffDays,
+      longestDays: diffDays,
+      sampleCount: 0,
+    };
+
+    current.totalDays += diffDays;
+    current.shortestDays = Math.min(current.shortestDays, diffDays);
+    current.longestDays = Math.max(current.longestDays, diffDays);
+    current.sampleCount += 1;
+    grouped.set(row.stationCode as StationCode, current);
+  });
+
+  return STATION_CODES.map((stationCode) => {
+    const summary = grouped.get(stationCode) ?? { totalDays: 0, shortestDays: 0, longestDays: 0, sampleCount: 0 };
+    return {
+      stationCode,
+      label: stationCode === "STOCK" ? "待入庫" : stationCode,
+      sampleCount: summary.sampleCount,
+      avgDaysFromImport: summary.sampleCount > 0 ? summary.totalDays / summary.sampleCount : 0,
+      shortestDays: summary.shortestDays,
+      longestDays: summary.longestDays,
+    };
+  });
+}
+
+async function getAdminCategoryStockCycleTimes() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  const rows = await db
+    .select({
+      stockCreatedAt: stationTasks.createdAt,
+      stockCompletedAt: stationTasks.completedAt,
+      arrivalAt: products.arrivalAt,
+      importedAt: products.createdAt,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+    })
+    .from(stationTasks)
+    .innerJoin(products, eq(stationTasks.productId, products.id))
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .where(and(eq(stationTasks.stationCode, "STOCK"), isNull(products.archivedAt)));
+
+  const grouped = new Map<string, { categoryName: string; brandName: string; totalDays: number; shortestDays: number; longestDays: number; sampleCount: number }>();
+
+  rows.forEach((row) => {
+    const categoryName = row.categoryName ?? row.importedCategoryName ?? "未分類";
+    const brandName = row.brandName ?? row.importedBrandName ?? "未指定品牌";
+    const startAt = row.arrivalAt ?? row.importedAt;
+    const endAt = row.stockCompletedAt ?? row.stockCreatedAt;
+    const diffDays = Math.max(0, (endAt.getTime() - startAt.getTime()) / 86_400_000);
+    const key = `${categoryName}::${brandName}`;
+    const current = grouped.get(key) ?? {
+      categoryName,
+      brandName,
+      totalDays: 0,
+      shortestDays: diffDays,
+      longestDays: diffDays,
+      sampleCount: 0,
+    };
+
+    current.totalDays += diffDays;
+    current.shortestDays = Math.min(current.shortestDays, diffDays);
+    current.longestDays = Math.max(current.longestDays, diffDays);
+    current.sampleCount += 1;
+    grouped.set(key, current);
+  });
+
+  return Array.from(grouped.values())
+    .map((item) => ({
+      categoryName: item.categoryName,
+      brandName: item.brandName,
+      sampleCount: item.sampleCount,
+      avgDaysToStock: item.sampleCount > 0 ? item.totalDays / item.sampleCount : 0,
+      shortestDays: item.shortestDays,
+      longestDays: item.longestDays,
+    }))
+    .sort((left, right) => right.avgDaysToStock - left.avgDaysToStock || right.sampleCount - left.sampleCount);
+}
+
+export async function getCategoryStationFlowConfigs() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  return db
+    .select()
+    .from(categoryStationFlows)
+    .orderBy(asc(categoryStationFlows.categoryId), asc(categoryStationFlows.stepOrder), asc(categoryStationFlows.id));
+}
+
+export async function replaceCategoryStationFlow(input: { categoryId: number; stationCodes: StationCode[] }) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const uniqueCodes = Array.from(new Set(input.stationCodes)).filter((code) => code !== undefined) as StationCode[];
+  if (uniqueCodes.length === 0) {
+    throw new Error("至少要保留一個流程節點");
+  }
+
+  if (uniqueCodes[0] !== "A1") {
+    throw new Error("品類流程必須從 A1 開始");
+  }
+
+  if (uniqueCodes[uniqueCodes.length - 1] !== "STOCK") {
+    throw new Error("品類流程必須以待入庫結束");
+  }
+
+  await db.delete(categoryStationFlows).where(eq(categoryStationFlows.categoryId, input.categoryId));
+  await db.insert(categoryStationFlows).values(uniqueCodes.map((stationCode, index) => ({
+    categoryId: input.categoryId,
+    stationCode,
+    stepOrder: index + 1,
+    active: true,
+  })));
+
+  return getCategoryStationFlowConfigs();
+}
+
 export async function getAdminSetupData() {
   const db = await getDb();
   if (!db) {
-    return { users: [], rules: [], categories: [], targets: [], productNameOptions: [] };
+    return {
+      users: [],
+      rules: [],
+      categories: [],
+      targets: [],
+      productNameOptions: [],
+      kpiProgress: [],
+      stationLeadTimes: [],
+      categoryStockCycleTimes: [],
+      categoryFlows: [],
+    };
   }
 
   await ensureMvpSeedData();
@@ -2390,13 +2695,30 @@ export async function getAdminSetupData() {
     .from(products)
     .where(and(isNull(products.archivedAt), sql`${products.createdAt} < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 6 MONTH)`));
 
+  const [userRows, ruleRows, categoryRows, targetRows, defectOptionRows, productNameRows, kpiProgress, stationLeadTimes, categoryStockCycleTimes, categoryFlows] = await Promise.all([
+    db.select().from(users).orderBy(asc(users.id)),
+    db.select().from(stationRules).orderBy(asc(stationRules.id)),
+    db.select().from(productCategories).orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.id)),
+    db.select().from(productivityTargetConfigs).orderBy(asc(productivityTargetConfigs.id)),
+    db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
+    db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
+    getAdminEngineerKpiProgress(),
+    getAdminStationLeadTimes(),
+    getAdminCategoryStockCycleTimes(),
+    getCategoryStationFlowConfigs(),
+  ]);
+
   return {
-    users: await db.select().from(users).orderBy(asc(users.id)),
-    rules: await db.select().from(stationRules).orderBy(asc(stationRules.id)),
-    categories: await db.select().from(productCategories).orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.id)),
-    targets: await db.select().from(productivityTargetConfigs).orderBy(asc(productivityTargetConfigs.id)),
-    defectOptions: await db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
-    productNameOptions: await db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
+    users: userRows,
+    rules: ruleRows,
+    categories: categoryRows,
+    targets: targetRows,
+    defectOptions: defectOptionRows,
+    productNameOptions: productNameRows,
+    kpiProgress,
+    stationLeadTimes,
+    categoryStockCycleTimes,
+    categoryFlows,
     syncSummary: {
       queuedJobs: queuedSyncJobs[0]?.count ?? 0,
       targetSheetName: "採購單",
@@ -2535,6 +2857,11 @@ export async function createProductCategoryOption(input: { categoryName: string;
     .where(and(eq(productCategories.categoryName, normalizedCategoryName), eq(productCategories.brandName, normalizedBrandName)))
     .orderBy(desc(productCategories.id))
     .limit(1);
+
+  if (rows[0]) {
+    await ensureDefaultCategoryStationFlows(db, [rows[0].id]);
+  }
+
   return rows[0] ?? null;
 }
 
@@ -2548,6 +2875,7 @@ export async function deleteProductCategoryOption(id: number) {
   await db.update(stationEvents).set({ categoryId: null, subtypeCode: null }).where(eq(stationEvents.categoryId, id));
   await db.delete(productivityScoreDetails).where(eq(productivityScoreDetails.categoryId, id));
   await db.delete(productivityTargetConfigs).where(eq(productivityTargetConfigs.categoryId, id));
+  await db.delete(categoryStationFlows).where(eq(categoryStationFlows.categoryId, id));
   await db.delete(productCategories).where(eq(productCategories.id, id));
   return { success: true as const };
 }
@@ -2568,6 +2896,7 @@ export async function clearProductCategoryOptions() {
   await db.update(stationEvents).set({ categoryId: null, subtypeCode: null }).where(inArray(stationEvents.categoryId, ids));
   await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.categoryId, ids));
   await db.delete(productivityTargetConfigs).where(inArray(productivityTargetConfigs.categoryId, ids));
+  await db.delete(categoryStationFlows).where(inArray(categoryStationFlows.categoryId, ids));
   await db.delete(productCategories).where(inArray(productCategories.id, ids));
   return { success: true as const, clearedCount: ids.length };
 }

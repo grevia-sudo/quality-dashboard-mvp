@@ -30,6 +30,7 @@ import {
   updateProductivityTarget,
   updateStationRule,
   upsertDefectOption,
+  replaceCategoryStationFlow,
 } from "./db";
 
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
@@ -401,6 +402,19 @@ export const appRouter = router({
     clearProductCategoryOptions: adminProcedure.mutation(async () => {
       return clearProductCategoryOptions();
     }),
+    replaceCategoryStationFlow: adminProcedure
+      .input(
+        z.object({
+          categoryId: z.number().int().positive(),
+          stationCodes: z.array(stationCodeSchema).min(1),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return replaceCategoryStationFlow({
+          categoryId: input.categoryId,
+          stationCodes: input.stationCodes,
+        });
+      }),
     deleteImportedPurchaseOrder: adminProcedure
       .input(
         z.object({

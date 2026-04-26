@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,8 @@ type DefectOptionDraft = {
   sortOrder: number;
 };
 
+type CategoryFlowDrafts = Record<number, Array<(typeof stationOptions)[number]>>;
+
 function createNewOptionDraft(stationCode: OptionStationCode, optionType: OptionType): DefectOptionDraft {
   return {
     localKey: `${stationCode}-${optionType}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -87,12 +90,14 @@ function formatBaseUnitPoints(dailyTargetQty: number) {
 }
 
 export default function AdminPage() {
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const query = trpc.admin.setup.useQuery(undefined, { retry: false });
   const [ruleDrafts, setRuleDrafts] = useState<RuleDraft[]>([]);
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
   const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
+  const [categoryFlowDrafts, setCategoryFlowDrafts] = useState<CategoryFlowDrafts>({});
   const [newProductName, setNewProductName] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
@@ -164,6 +169,17 @@ export default function AdminPage() {
         sortOrder: Number(option.sortOrder ?? 0),
       })),
     );
+
+    const nextFlowDrafts = categories.reduce((accumulator, category) => {
+      const flowCodes = (query.data.categoryFlows ?? [])
+        .filter((item) => item.categoryId === category.id)
+        .sort((left, right) => Number(left.stepOrder) - Number(right.stepOrder))
+        .map((item) => item.stationCode as (typeof stationOptions)[number]);
+      accumulator[category.id] = flowCodes.length > 0 ? flowCodes : [...stationOptions];
+      return accumulator;
+    }, {} as CategoryFlowDrafts);
+
+    setCategoryFlowDrafts(nextFlowDrafts);
   }, [query.data]);
 
   const ruleMutation = trpc.admin.updateStationRule.useMutation({
@@ -256,16 +272,26 @@ export default function AdminPage() {
 
   const deletePoMutation = trpc.admin.deleteImportedPurchaseOrder.useMutation({
     onSuccess: async (result) => {
-      toast.success(`已刪除 ${result.poNumber}`);
+      toast.success(`已刪除採購單 ${result.poNumber}，共清除 ${result.deletedProducts} 筆商品與 ${result.deletedTasks} 筆站點任務`);
+      setDeletePoNumber("");
       await utils.admin.setup.invalidate();
-      await utils.station.detail.invalidate({ stationCode: "A1" });
       await utils.station.list.invalidate();
-      await utils.dashboard.home.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "刪除採購單失敗");
     },
   });
+
+  const replaceCategoryFlowMutation = trpc.admin.replaceCategoryStationFlow.useMutation({
+    onSuccess: async () => {
+      toast.success("品類流程已更新");
+      await utils.admin.setup.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品類流程更新失敗");
+    },
+  });
+
 
   const createUserMutation = trpc.admin.createUser.useMutation({
     onSuccess: async () => {
@@ -319,6 +345,54 @@ export default function AdminPage() {
     }),
     [optionDrafts],
   );
+
+  const toggleCategoryFlowStation = (categoryId: number, stationCode: (typeof stationOptions)[number]) => {
+    if (stationCode === "A1" || stationCode === "STOCK") {
+      return;
+    }
+
+    setCategoryFlowDrafts((prev) => {
+      const current = prev[categoryId] ?? [...stationOptions];
+      const exists = current.includes(stationCode);
+      const next = exists
+        ? current.filter((code) => code !== stationCode)
+        : [...current, stationCode];
+
+      return {
+        ...prev,
+        [categoryId]: stationOptions.filter((code) => code === "A1" || code === "STOCK" || next.includes(code)),
+      };
+    });
+  };
+
+  const kpiProgress = query.data?.kpiProgress ?? [];
+  const stationLeadTimes = query.data?.stationLeadTimes ?? [];
+  const categoryStockCycleTimes = query.data?.categoryStockCycleTimes ?? [];
+  const topEngineer = kpiProgress[0];
+  const slowestStation = [...stationLeadTimes].sort((left, right) => right.avgDaysFromImport - left.avgDaysFromImport)[0];
+  const slowestCategoryToStock = categoryStockCycleTimes[0];
+
+  if (loading) {
+    return <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}><div className="rounded-[28px] bg-white p-8 text-sm text-slate-500 shadow-sm">正在載入管理權限…</div></DashboardLayout>;
+  }
+
+  if (user?.role !== "admin") {
+    return (
+      <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
+        <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+          <CardContent className="space-y-3 p-8">
+            <Badge className="bg-[#f7e8ee] text-rose-700">僅限管理者</Badge>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">管理後台僅限 admin 查看</h1>
+            <p className="text-sm leading-7 text-slate-600">你目前沒有查看管理後台的權限。若需要調整站點規則、產能、品類流程或管理統計，請使用管理者帳號登入。</p>
+            <div className="flex gap-3">
+              <Button className="rounded-2xl" onClick={() => setLocation("/operations")}>返回站點總覽</Button>
+              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/kpi")}>查看工程師 KPI</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
@@ -375,6 +449,119 @@ export default function AdminPage() {
               <p>C 站機身外觀選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cAppearance.length}</span></p>
               <p>C 站鏡頭狀態選項：<span className="font-semibold text-slate-900">{groupedOptionDrafts.cCamera.length}</span></p>
               <p>可用品名數：<span className="font-semibold text-slate-900">{query.data?.productNameOptions?.length ?? 0}</span></p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm xl:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">全員 KPI 進度</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-xs text-slate-400">本月已追蹤工程師</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length}</p>
+                </div>
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-xs text-slate-400">本月最高平均達標率</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{topEngineer ? `${topEngineer.avgKpiAchievementRate.toFixed(1)}%` : "0.0%"}</p>
+                  <p className="mt-1 text-sm text-slate-500">{topEngineer ? `${topEngineer.name}｜${topEngineer.monthTotalPoints.toFixed(3)} 點` : "尚無資料"}</p>
+                </div>
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-xs text-slate-400">本月平均 KPI 分數</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length > 0 ? `${(kpiProgress.reduce((sum, item) => sum + item.finalKpiScore, 0) / kpiProgress.length).toFixed(1)}` : "0.0"}</p>
+                  <p className="mt-1 text-sm text-slate-500">可用於比對目前整體工程師進度</p>
+                </div>
+              </div>
+              <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                <table className="min-w-full text-sm text-slate-700">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <th className="px-4 py-3">工程師</th>
+                      <th className="px-4 py-3">角色</th>
+                      <th className="px-4 py-3">今日點數</th>
+                      <th className="px-4 py-3">本月總點數</th>
+                      <th className="px-4 py-3">日均點數</th>
+                      <th className="px-4 py-3">平均 KPI 達標率</th>
+                      <th className="px-4 py-3">最新 KPI 分數</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {kpiProgress.length > 0 ? kpiProgress.map((item) => (
+                      <tr key={item.userId} className="border-b border-slate-200/80 last:border-b-0">
+                        <td className="px-4 py-3 font-medium text-slate-900">{item.name}<div className="text-xs text-slate-400">{item.username}</div></td>
+                        <td className="px-4 py-3">{item.role}</td>
+                        <td className="px-4 py-3">{item.todayPoints.toFixed(3)}</td>
+                        <td className="px-4 py-3">{item.monthTotalPoints.toFixed(3)}</td>
+                        <td className="px-4 py-3">{item.monthAvgPoints.toFixed(3)}</td>
+                        <td className="px-4 py-3">{item.avgKpiAchievementRate.toFixed(1)}%</td>
+                        <td className="px-4 py-3">{item.finalKpiScore.toFixed(1)}</td>
+                      </tr>
+                    )) : <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">目前尚無工程師 KPI 資料</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm xl:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">匯入到各節點平均天數</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
+                系統會以商品匯入時間對比各站任務建立／完成時間，讓管理者快速看出哪個節點目前最耗時。
+              </div>
+              <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                <table className="min-w-full text-sm text-slate-700">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <th className="px-4 py-3">節點</th>
+                      <th className="px-4 py-3">樣本數</th>
+                      <th className="px-4 py-3">平均天數</th>
+                      <th className="px-4 py-3">最短</th>
+                      <th className="px-4 py-3">最長</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stationLeadTimes.map((item) => (
+                      <tr key={item.stationCode} className="border-b border-slate-200/80 last:border-b-0">
+                        <td className="px-4 py-3 font-medium text-slate-900">{item.label}</td>
+                        <td className="px-4 py-3">{item.sampleCount}</td>
+                        <td className="px-4 py-3">{item.avgDaysFromImport.toFixed(2)} 天</td>
+                        <td className="px-4 py-3">{item.shortestDays.toFixed(2)} 天</td>
+                        <td className="px-4 py-3">{item.longestDays.toFixed(2)} 天</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">待入庫週期摘要</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-slate-600">
+              <div className="rounded-[24px] bg-slate-50 p-4">
+                <p>最慢品類：<span className="font-semibold text-slate-900">{slowestCategoryToStock ? `${slowestCategoryToStock.categoryName} × ${slowestCategoryToStock.brandName}` : "尚無資料"}</span></p>
+                <p className="mt-2">平均週期：<span className="font-semibold text-slate-900">{slowestCategoryToStock ? `${slowestCategoryToStock.avgDaysToStock.toFixed(2)} 天` : "0.00 天"}</span></p>
+                <p className="mt-2">最慢站點：<span className="font-semibold text-slate-900">{slowestStation ? `${slowestStation.label}（${slowestStation.avgDaysFromImport.toFixed(2)} 天）` : "尚無資料"}</span></p>
+              </div>
+              <div className="space-y-3">
+                {categoryStockCycleTimes.slice(0, 6).map((item) => (
+                  <div key={`${item.categoryName}-${item.brandName}`} className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="font-semibold text-slate-900">{item.categoryName} × {item.brandName}</p>
+                    <p className="mt-2">平均到待入庫：{item.avgDaysToStock.toFixed(2)} 天</p>
+                    <p>最短／最長：{item.shortestDays.toFixed(2)} / {item.longestDays.toFixed(2)} 天</p>
+                    <p>樣本數：{item.sampleCount}</p>
+                  </div>
+                ))}
+                {categoryStockCycleTimes.length === 0 ? <div className="rounded-[24px] bg-slate-50 p-4 text-slate-500">目前尚無品類進入待入庫的週期資料</div> : null}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -719,26 +906,65 @@ export default function AdminPage() {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {(query.data?.categories ?? []).length > 0 ? (query.data?.categories ?? []).map((category) => (
-                      <div key={category.id} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto] md:items-center">
-                        <div>
-                          <p className="text-xs text-slate-400">商品類別</p>
-                          <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+                    {(query.data?.categories ?? []).length > 0 ? (query.data?.categories ?? []).map((category) => {
+                      const selectedStations = categoryFlowDrafts[category.id] ?? [...stationOptions];
+                      return (
+                        <div key={category.id} className="space-y-4 rounded-[24px] bg-slate-50 p-4">
+                          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-center">
+                            <div>
+                              <p className="text-xs text-slate-400">商品類別</p>
+                              <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-400">品牌</p>
+                              <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? category.subtypeCode ?? "-"}</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              className="rounded-2xl"
+                              disabled={deleteCategoryMutation.isPending}
+                              onClick={() => deleteCategoryMutation.mutate({ id: category.id })}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> 刪除
+                            </Button>
+                          </div>
+                          <div className="space-y-3 rounded-[20px] bg-white/70 p-4">
+                            <div>
+                              <p className="text-xs text-slate-400">此品類需要經過的節點</p>
+                              <p className="mt-1 text-sm text-slate-600">固定從 A1 開始、以待入庫結束；中間節點可依品類勾選，例如智慧手錶可略過 A2、B。</p>
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-4">
+                              {stationOptions.map((stationCode) => {
+                                const checked = selectedStations.includes(stationCode);
+                                const locked = stationCode === "A1" || stationCode === "STOCK";
+                                return (
+                                  <label key={`${category.id}-${stationCode}`} className={`flex items-center gap-3 rounded-2xl border px-3 py-2 text-sm ${checked ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"}`}>
+                                    <input
+                                      type="checkbox"
+                                      className="h-4 w-4"
+                                      checked={checked}
+                                      disabled={locked}
+                                      onChange={() => toggleCategoryFlowStation(category.id, stationCode)}
+                                    />
+                                    <span>{stationCode === "STOCK" ? "待入庫" : stationCode}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <p className="text-xs text-slate-500">目前流程：{selectedStations.map((stationCode) => stationCode === "STOCK" ? "待入庫" : stationCode).join(" → ")}</p>
+                              <Button
+                                className="rounded-2xl"
+                                disabled={replaceCategoryFlowMutation.isPending}
+                                onClick={() => replaceCategoryFlowMutation.mutate({ categoryId: category.id, stationCodes: selectedStations })}
+                              >
+                                儲存流程設定
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-slate-400">品牌</p>
-                          <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? category.subtypeCode ?? "-"}</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="rounded-2xl"
-                          disabled={deleteCategoryMutation.isPending}
-                          onClick={() => deleteCategoryMutation.mutate({ id: category.id })}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> 刪除
-                        </Button>
-                      </div>
-                    )) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先新增商品類別與品牌組合。</div>}
+                      );
+                    }) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先新增商品類別與品牌組合。</div>}
                   </div>
                 </CardContent>
               </Card>

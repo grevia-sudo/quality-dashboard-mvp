@@ -128,7 +128,16 @@ describe("warehouse workflow pages", () => {
     expect(samplingPageSource).toContain("選擇品類設定");
   });
 
-  it("includes product name and defect option maintenance sections in the admin page", () => {
+  it("includes admin-only analytics and category flow management on the admin page", () => {
+    expect(adminPageSource).toContain("管理後台僅限 admin 查看");
+    expect(adminPageSource).toContain("全員 KPI 進度");
+    expect(adminPageSource).toContain("匯入到各節點平均天數");
+    expect(adminPageSource).toContain("待入庫週期摘要");
+    expect(adminPageSource).toContain("品類設定");
+    expect(adminPageSource).toContain("此品類需要經過的節點");
+    expect(adminPageSource).toContain("toggleCategoryFlowStation");
+    expect(adminPageSource).toContain("trpc.admin.replaceCategoryStationFlow.useMutation");
+    expect(adminPageSource).toContain("品類流程已更新");
     expect(adminPageSource).toContain("功能表設定");
     expect(adminPageSource).toContain("B 站軟測故障狀態");
     expect(adminPageSource).toContain("C 站螢幕狀態");

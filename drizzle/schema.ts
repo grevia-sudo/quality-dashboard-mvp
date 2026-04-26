@@ -76,6 +76,19 @@ export const stationRules = mysqlTable("station_rules", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const categoryStationFlows = mysqlTable("category_station_flows", {
+  id: int("id").autoincrement().primaryKey(),
+  categoryId: int("categoryId").notNull().references(() => productCategories.id),
+  stationCode: stationCodeEnum.notNull(),
+  stepOrder: int("stepOrder").notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  categoryStepIdx: index("category_station_flows_category_step_idx").on(table.categoryId, table.stepOrder),
+  categoryStationIdx: index("category_station_flows_category_station_idx").on(table.categoryId, table.stationCode),
+}));
+
 export const defectOptions = mysqlTable("defect_options", {
   id: int("id").autoincrement().primaryKey(),
   stationCode: stationCodeEnum.notNull(),
