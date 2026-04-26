@@ -415,6 +415,83 @@ export const appRouter = router({
           stationCodes: input.stationCodes,
         });
       }),
+    saveAllSettings: adminProcedure
+      .input(
+        z.object({
+          rules: z.array(
+            z.object({
+              id: z.number(),
+              routeKey: z.string().min(1),
+              nextStationCode: stationCodeSchema.nullable(),
+              allowReworkToCode: stationCodeSchema.nullable(),
+              active: z.boolean(),
+              notes: z.string().nullable().optional(),
+            }),
+          ),
+          targets: z.array(
+            z.object({
+              id: z.number().optional(),
+              stationCode: stationCodeSchema.exclude(["STOCK"]),
+              categoryId: z.number().int().positive(),
+              subtypeCode: z.string().trim().min(1),
+              dailyTargetQty: z.number().int().min(1),
+              active: z.boolean(),
+            }),
+          ),
+          defectOptions: z.array(
+            z.object({
+              id: z.number().optional(),
+              stationCode: defectOptionStationSchema,
+              optionType: defectOptionTypeSchema,
+              label: z.string().min(1),
+              active: z.boolean(),
+              sortOrder: z.number().int().min(0),
+            }),
+          ),
+          categoryFlows: z.array(
+            z.object({
+              categoryId: z.number().int().positive(),
+              stationCodes: z.array(stationCodeSchema).min(1),
+            }),
+          ),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        await Promise.all(input.rules.map((rule) => updateStationRule({
+          id: rule.id,
+          routeKey: rule.routeKey,
+          nextStationCode: rule.nextStationCode,
+          allowReworkToCode: rule.allowReworkToCode,
+          active: rule.active,
+          notes: rule.notes ?? null,
+        })));
+
+        await Promise.all(input.targets.map((target) => updateProductivityTarget({
+          id: target.id,
+          stationCode: target.stationCode,
+          categoryId: target.categoryId,
+          subtypeCode: target.subtypeCode,
+          dailyTargetQty: target.dailyTargetQty,
+          active: target.active,
+        })));
+
+        await Promise.all(input.defectOptions.map((option) => upsertDefectOption(option)));
+
+        await Promise.all(input.categoryFlows.map((flow) => replaceCategoryStationFlow({
+          categoryId: flow.categoryId,
+          stationCodes: flow.stationCodes,
+        })));
+
+        return {
+          success: true as const,
+          savedCounts: {
+            rules: input.rules.length,
+            targets: input.targets.length,
+            defectOptions: input.defectOptions.length,
+            categoryFlows: input.categoryFlows.length,
+          },
+        };
+      }),
     deleteImportedPurchaseOrder: adminProcedure
       .input(
         z.object({

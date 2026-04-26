@@ -98,6 +98,8 @@ export default function AdminPage() {
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
   const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
   const [categoryFlowDrafts, setCategoryFlowDrafts] = useState<CategoryFlowDrafts>({});
+  const [categoryFlowCategorySearch, setCategoryFlowCategorySearch] = useState("");
+  const [categoryFlowBrandSearch, setCategoryFlowBrandSearch] = useState("");
   const [newProductName, setNewProductName] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
@@ -182,33 +184,14 @@ export default function AdminPage() {
     setCategoryFlowDrafts(nextFlowDrafts);
   }, [query.data]);
 
-  const ruleMutation = trpc.admin.updateStationRule.useMutation({
+  const saveAllSettingsMutation = trpc.admin.saveAllSettings.useMutation({
     onSuccess: async () => {
-      toast.success("站點規則已更新");
       await utils.admin.setup.invalidate();
+      await utils.station.productCategoryOptions.invalidate();
+      toast.success("已一次儲存站點規則、產能設定、功能表設定與品類流程");
     },
     onError: (error) => {
-      toast.error(error.message || "站點規則更新失敗");
-    },
-  });
-
-  const targetMutation = trpc.admin.updateProductivityTarget.useMutation({
-    onSuccess: async () => {
-      toast.success("產能設定已更新");
-      await utils.admin.setup.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "產能設定更新失敗");
-    },
-  });
-
-  const optionMutation = trpc.admin.upsertDefectOption.useMutation({
-    onSuccess: async () => {
-      toast.success("功能表項目已更新");
-      await utils.admin.setup.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "功能表項目更新失敗");
+      toast.error(error.message || "全部儲存失敗");
     },
   });
 
@@ -282,17 +265,6 @@ export default function AdminPage() {
     },
   });
 
-  const replaceCategoryFlowMutation = trpc.admin.replaceCategoryStationFlow.useMutation({
-    onSuccess: async () => {
-      toast.success("品類流程已更新");
-      await utils.admin.setup.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "品類流程更新失敗");
-    },
-  });
-
-
   const createUserMutation = trpc.admin.createUser.useMutation({
     onSuccess: async () => {
       toast.success("新帳號已建立");
@@ -346,6 +318,19 @@ export default function AdminPage() {
     [optionDrafts],
   );
 
+  const categories = query.data?.categories ?? [];
+  const normalizedCategorySearch = categoryFlowCategorySearch.trim().toLowerCase();
+  const normalizedBrandSearch = categoryFlowBrandSearch.trim().toLowerCase();
+  const filteredFlowCategories = useMemo(
+    () => categories.filter((category) => {
+      const matchesCategory = !normalizedCategorySearch || category.categoryName.toLowerCase().includes(normalizedCategorySearch);
+      const brandLabel = (category.brandName ?? category.subtypeCode ?? "").toLowerCase();
+      const matchesBrand = !normalizedBrandSearch || brandLabel.includes(normalizedBrandSearch);
+      return matchesCategory && matchesBrand;
+    }),
+    [categories, normalizedCategorySearch, normalizedBrandSearch],
+  );
+
   const toggleCategoryFlowStation = (categoryId: number, stationCode: (typeof stationOptions)[number]) => {
     if (stationCode === "A1" || stationCode === "STOCK") {
       return;
@@ -368,7 +353,50 @@ export default function AdminPage() {
   const kpiProgress = query.data?.kpiProgress ?? [];
   const stationLeadTimes = query.data?.stationLeadTimes ?? [];
   const categoryStockCycleTimes = query.data?.categoryStockCycleTimes ?? [];
+  const configMutationPending = saveAllSettingsMutation.isPending;
   const topEngineer = kpiProgress[0];
+  const handleSaveAllSettings = () => {
+    const invalidTargets = targetDrafts.filter((target) => (target.active || target.dailyTargetQty > 0 || target.id) && target.dailyTargetQty < 1);
+    if (invalidTargets.length > 0) {
+      toast.error("產能設定中有啟用或既有項目每日產能小於 1，請先修正後再全部儲存");
+      return;
+    }
+
+    saveAllSettingsMutation.mutate({
+      rules: ruleDrafts.map((rule) => ({
+        id: rule.id,
+        routeKey: rule.routeKey,
+        nextStationCode: rule.nextStationCode ? (rule.nextStationCode as typeof stationOptions[number]) : null,
+        allowReworkToCode: rule.allowReworkToCode ? (rule.allowReworkToCode as typeof stationOptions[number]) : null,
+        active: rule.active,
+        notes: rule.notes || null,
+      })),
+      targets: targetDrafts
+        .filter((target) => target.dailyTargetQty > 0 || target.active || target.id)
+        .map((target) => ({
+          id: target.id,
+          stationCode: target.stationCode,
+          categoryId: target.categoryId,
+          subtypeCode: target.subtypeCode,
+          dailyTargetQty: Math.max(1, target.dailyTargetQty),
+          active: target.active,
+        })),
+      defectOptions: optionDrafts
+        .filter((option) => option.label.trim())
+        .map((option) => ({
+          id: option.id,
+          stationCode: option.stationCode,
+          optionType: option.optionType,
+          label: option.label.trim(),
+          active: option.active,
+          sortOrder: option.sortOrder,
+        })),
+      categoryFlows: categories.map((category) => ({
+        categoryId: category.id,
+        stationCodes: categoryFlowDrafts[category.id] ?? [...stationOptions],
+      })),
+    });
+  };
   const slowestStation = [...stationLeadTimes].sort((left, right) => right.avgDaysFromImport - left.avgDaysFromImport)[0];
   const slowestCategoryToStock = categoryStockCycleTimes[0];
 
@@ -566,6 +594,18 @@ export default function AdminPage() {
           </Card>
         </div>
 
+        <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-900">統一全部儲存</p>
+              <p className="text-sm leading-7 text-slate-600">站點規則、產能設定、功能表設定與品類流程設定都會由同一個按鈕一次提交，不需要再分區逐一儲存。</p>
+            </div>
+            <Button className="rounded-2xl" disabled={configMutationPending || query.isLoading} onClick={handleSaveAllSettings}>
+              儲存全部設定
+            </Button>
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="rules" className="space-y-4">
           <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-5">
             <TabsTrigger value="rules" className="rounded-2xl">站點規則</TabsTrigger>
@@ -623,24 +663,6 @@ export default function AdminPage() {
                       </label>
                     </div>
 
-                    <div className="flex justify-end">
-                      <Button
-                        className="rounded-2xl"
-                        disabled={ruleMutation.isPending}
-                        onClick={() =>
-                          ruleMutation.mutate({
-                            id: rule.id,
-                            routeKey: rule.routeKey,
-                            nextStationCode: rule.nextStationCode ? (rule.nextStationCode as typeof stationOptions[number]) : null,
-                            allowReworkToCode: rule.allowReworkToCode ? (rule.allowReworkToCode as typeof stationOptions[number]) : null,
-                            active: rule.active,
-                            notes: rule.notes || null,
-                          })
-                        }
-                      >
-                        儲存站點規則
-                      </Button>
-                    </div>
                   </div>
                 ))}
               </CardContent>
@@ -675,7 +697,6 @@ export default function AdminPage() {
                               <th className="px-4 py-3">每小時產能</th>
                               <th className="px-4 py-3">單件點數</th>
                               <th className="px-4 py-3">啟用</th>
-                              <th className="px-4 py-3 text-right">操作</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -699,24 +720,6 @@ export default function AdminPage() {
                                     <input type="checkbox" checked={target.active} onChange={(event) => updateTargetDraft(target.localKey, { active: event.target.checked })} />
                                     啟用
                                   </label>
-                                </td>
-                                <td className="px-4 py-3 text-right">
-                                  <Button
-                                    className="rounded-2xl"
-                                    disabled={targetMutation.isPending || target.dailyTargetQty < 1}
-                                    onClick={() =>
-                                      targetMutation.mutate({
-                                        id: target.id,
-                                        stationCode: target.stationCode,
-                                        categoryId: target.categoryId,
-                                        subtypeCode: target.subtypeCode,
-                                        dailyTargetQty: Math.max(1, target.dailyTargetQty),
-                                        active: target.active,
-                                      })
-                                    }
-                                  >
-                                    儲存產能
-                                  </Button>
                                 </td>
                               </tr>
                             ))}
@@ -761,24 +764,6 @@ export default function AdminPage() {
                               <input type="checkbox" checked={option.active} onChange={(event) => updateOptionDraft(option.localKey, { active: event.target.checked })} />
                               啟用
                             </label>
-                          </div>
-                          <div className="flex justify-end">
-                            <Button
-                              className="rounded-2xl"
-                              disabled={optionMutation.isPending || !option.label.trim()}
-                              onClick={() =>
-                                optionMutation.mutate({
-                                  id: option.id,
-                                  stationCode: option.stationCode,
-                                  optionType: option.optionType,
-                                  label: option.label.trim(),
-                                  active: option.active,
-                                  sortOrder: option.sortOrder,
-                                })
-                              }
-                            >
-                              儲存功能表項目
-                            </Button>
                           </div>
                         </div>
                       ))}
@@ -905,8 +890,15 @@ export default function AdminPage() {
                       清空所有品類設定
                     </Button>
                   </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
+                    <Input value={categoryFlowBrandSearch} onChange={(event) => setCategoryFlowBrandSearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋品牌，例如 Apple" />
+                  </div>
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
+                    你可以先用「商品類別」與「品牌」縮小範圍，再調整流程節點；所有修改會由上方的「儲存全部設定」一次提交。
+                  </div>
                   <div className="space-y-3">
-                    {(query.data?.categories ?? []).length > 0 ? (query.data?.categories ?? []).map((category) => {
+                    {categories.length > 0 ? filteredFlowCategories.map((category) => {
                       const selectedStations = categoryFlowDrafts[category.id] ?? [...stationOptions];
                       return (
                         <div key={category.id} className="space-y-4 rounded-[24px] bg-slate-50 p-4">
@@ -953,18 +945,13 @@ export default function AdminPage() {
                             </div>
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <p className="text-xs text-slate-500">目前流程：{selectedStations.map((stationCode) => stationCode === "STOCK" ? "待入庫" : stationCode).join(" → ")}</p>
-                              <Button
-                                className="rounded-2xl"
-                                disabled={replaceCategoryFlowMutation.isPending}
-                                onClick={() => replaceCategoryFlowMutation.mutate({ categoryId: category.id, stationCodes: selectedStations })}
-                              >
-                                儲存流程設定
-                              </Button>
+                              <Badge className="bg-slate-100 text-slate-700">納入全部儲存</Badge>
                             </div>
                           </div>
                         </div>
                       );
                     }) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先新增商品類別與品牌組合。</div>}
+                    {categories.length > 0 && filteredFlowCategories.length === 0 ? <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-500">查無符合目前商品類別與品牌搜尋條件的品類設定。</div> : null}
                   </div>
                 </CardContent>
               </Card>

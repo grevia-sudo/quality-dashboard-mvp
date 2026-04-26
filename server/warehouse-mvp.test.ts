@@ -448,6 +448,85 @@ describe("warehouse MVP router", () => {
     });
   });
 
+  it("allows admins to save all admin settings through one mutation", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    const result = await caller.admin.saveAllSettings({
+      rules: [
+        {
+          id: 1,
+          routeKey: "default",
+          nextStationCode: "A2",
+          allowReworkToCode: "C",
+          active: true,
+          notes: "A1 完成後進入 A2",
+        },
+      ],
+      targets: [
+        {
+          id: 2,
+          stationCode: "B",
+          categoryId: 8,
+          subtypeCode: "Apple",
+          dailyTargetQty: 150,
+          active: true,
+        },
+      ],
+      defectOptions: [
+        {
+          stationCode: "C",
+          optionType: "appearance",
+          label: "邊框刮傷",
+          active: true,
+          sortOrder: 30,
+        },
+      ],
+      categoryFlows: [
+        {
+          categoryId: 3,
+          stationCodes: ["A1", "C", "D", "E", "STOCK"],
+        },
+      ],
+    });
+
+    expect(updateStationRule).toHaveBeenCalledWith({
+      id: 1,
+      routeKey: "default",
+      nextStationCode: "A2",
+      allowReworkToCode: "C",
+      active: true,
+      notes: "A1 完成後進入 A2",
+    });
+    expect(updateProductivityTarget).toHaveBeenCalledWith({
+      id: 2,
+      stationCode: "B",
+      categoryId: 8,
+      subtypeCode: "Apple",
+      dailyTargetQty: 150,
+      active: true,
+    });
+    expect(upsertDefectOption).toHaveBeenCalledWith({
+      stationCode: "C",
+      optionType: "appearance",
+      label: "邊框刮傷",
+      active: true,
+      sortOrder: 30,
+    });
+    expect(replaceCategoryStationFlow).toHaveBeenCalledWith({
+      categoryId: 3,
+      stationCodes: ["A1", "C", "D", "E", "STOCK"],
+    });
+    expect(result).toEqual({
+      success: true,
+      savedCounts: {
+        rules: 1,
+        targets: 1,
+        defectOptions: 1,
+        categoryFlows: 1,
+      },
+    });
+  });
+
   it("loads admin setup with archive and seed checks", async () => {
     const caller = appRouter.createCaller(createContext("admin"));
 
