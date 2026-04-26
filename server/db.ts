@@ -7,6 +7,7 @@ import {
   categoryStationFlows,
   defectOptions,
   engineerDailyProductivity,
+  importBatchBackups,
   InsertUser,
   productArchives,
   productCategories,
@@ -2952,6 +2953,303 @@ export async function clearProductCategoryOptions() {
   await db.delete(categoryStationFlows).where(inArray(categoryStationFlows.categoryId, ids));
   await db.delete(productCategories).where(inArray(productCategories.id, ids));
   return { success: true as const, clearedCount: ids.length };
+}
+
+export async function getImportBatchBackups() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  return db
+    .select({
+      id: importBatchBackups.id,
+      poNumber: importBatchBackups.poNumber,
+      vendorName: importBatchBackups.vendorName,
+      backupLabel: importBatchBackups.backupLabel,
+      productCount: importBatchBackups.productCount,
+      createdAt: importBatchBackups.createdAt,
+      restoredAt: importBatchBackups.restoredAt,
+      createdByUserId: importBatchBackups.createdByUserId,
+      restoredByUserId: importBatchBackups.restoredByUserId,
+    })
+    .from(importBatchBackups)
+    .orderBy(desc(importBatchBackups.id))
+    .limit(12);
+}
+
+type ImportBackupSnapshot = {
+  poNumber: string;
+  vendorName: string;
+  arrivalAt: string | null;
+  rows: Array<{
+    batchNo?: string | null;
+    serialNumber?: string | null;
+    imei?: string | null;
+    productName?: string | null;
+    categoryName: string;
+    brandName: string;
+  }>;
+};
+
+export async function createImportBatchBackup(input: {
+  poNumber: string;
+  createdByUserId: number;
+  backupLabel?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const normalizedPoNumber = normalizeOptionalText(input.poNumber);
+  if (!normalizedPoNumber) {
+    throw new Error("PO 單號為必填欄位");
+  }
+
+  const productRows = await db
+    .select({
+      id: products.id,
+      poNumber: products.poNumber,
+      vendorName: products.vendorName,
+      arrivalAt: products.arrivalAt,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      productName: products.productName,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+    })
+    .from(products)
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .where(and(eq(products.poNumber, normalizedPoNumber), isNull(products.archivedAt)));
+
+  if (productRows.length === 0) {
+    throw new Error("找不到可備份的採購單資料");
+  }
+
+  const progressedProducts = productRows.filter((row) => row.currentStationCode !== "A1" || row.currentStatus !== "pending_a1");
+  if (progressedProducts.length > 0) {
+    throw new Error("目前僅支援備份尚未開始流轉的匯入批次，請先確認該 PO 的商品仍停留在 A1 待處理");
+  }
+
+  const snapshot: ImportBackupSnapshot = {
+    poNumber: normalizedPoNumber,
+    vendorName: productRows[0]?.vendorName ?? "",
+    arrivalAt: productRows[0]?.arrivalAt ? new Date(productRows[0].arrivalAt).toISOString() : null,
+    rows: productRows.map((row) => ({
+      batchNo: row.batchNo,
+      serialNumber: row.serialNumber,
+      imei: row.imei,
+      productName: row.productName,
+      categoryName: row.importedCategoryName ?? row.categoryName ?? "未分類",
+      brandName: row.importedBrandName ?? row.brandName ?? "未指定品牌",
+    })),
+  };
+
+  await db.insert(importBatchBackups).values({
+    poNumber: normalizedPoNumber,
+    vendorName: snapshot.vendorName,
+    backupLabel: normalizeOptionalText(input.backupLabel) ?? `${normalizedPoNumber} 匯入備份`,
+    productCount: snapshot.rows.length,
+    createdByUserId: input.createdByUserId,
+    snapshot,
+  });
+
+  const rows = await db
+    .select()
+    .from(importBatchBackups)
+    .where(eq(importBatchBackups.poNumber, normalizedPoNumber))
+    .orderBy(desc(importBatchBackups.id))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+export async function restoreImportBatchBackup(input: {
+  backupId: number;
+  restoredByUserId: number;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const backup = (await db
+    .select()
+    .from(importBatchBackups)
+    .where(eq(importBatchBackups.id, input.backupId))
+    .limit(1))[0];
+
+  if (!backup) {
+    throw new Error("找不到指定備份");
+  }
+
+  const snapshot = backup.snapshot as ImportBackupSnapshot;
+  if (!snapshot?.poNumber || !Array.isArray(snapshot.rows) || snapshot.rows.length === 0) {
+    throw new Error("備份內容不完整，無法還原");
+  }
+
+  const existing = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(products)
+    .where(and(eq(products.poNumber, snapshot.poNumber), isNull(products.archivedAt)));
+  if ((existing[0]?.count ?? 0) > 0) {
+    throw new Error("目前資料庫已存在相同 PO 單號資料，請先刪除或更換備份再還原");
+  }
+
+  const restoreResult = await importProducts({
+    poNumber: snapshot.poNumber,
+    vendorName: snapshot.vendorName,
+    arrivalAt: snapshot.arrivalAt ?? undefined,
+    importedByUserId: input.restoredByUserId,
+    rows: snapshot.rows,
+  });
+
+  await db
+    .update(importBatchBackups)
+    .set({
+      restoredAt: new Date(),
+      restoredByUserId: input.restoredByUserId,
+    })
+    .where(eq(importBatchBackups.id, input.backupId));
+
+  return {
+    success: true as const,
+    backupId: backup.id,
+    poNumber: snapshot.poNumber,
+    restoredCount: restoreResult.importedCount,
+  };
+}
+
+export async function getProductTraceByIdentity(keyword: string) {
+  const db = await getDb();
+  const normalizedKeyword = normalizeOptionalText(keyword);
+  if (!db || !normalizedKeyword) {
+    return [];
+  }
+
+  const productRows = await db
+    .select({
+      id: products.id,
+      productCode: products.productCode,
+      poNumber: products.poNumber,
+      vendorName: products.vendorName,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      productName: products.productName,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      createdAt: products.createdAt,
+      updatedAt: products.updatedAt,
+      archivedAt: products.archivedAt,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+    })
+    .from(products)
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .where(and(
+      isNull(products.archivedAt),
+      or(
+        eq(products.batchNo, normalizedKeyword),
+        eq(products.serialNumber, normalizedKeyword),
+        eq(products.imei, normalizedKeyword),
+      ),
+    ))
+    .orderBy(desc(products.updatedAt))
+    .limit(20);
+
+  if (productRows.length === 0) {
+    return [];
+  }
+
+  const productIds = productRows.map((row) => row.id);
+  const [taskRows, eventRows] = await Promise.all([
+    db
+      .select({
+        id: stationTasks.id,
+        productId: stationTasks.productId,
+        stationCode: stationTasks.stationCode,
+        taskStatus: stationTasks.taskStatus,
+        startedAt: stationTasks.startedAt,
+        completedAt: stationTasks.completedAt,
+        dueDate: stationTasks.dueDate,
+        resultSummary: stationTasks.resultSummary,
+        metadata: stationTasks.metadata,
+        createdAt: stationTasks.createdAt,
+        updatedAt: stationTasks.updatedAt,
+      })
+      .from(stationTasks)
+      .where(inArray(stationTasks.productId, productIds))
+      .orderBy(asc(stationTasks.productId), asc(stationTasks.id)),
+    db
+      .select({
+        id: stationEvents.id,
+        productId: stationEvents.productId,
+        stationTaskId: stationEvents.stationTaskId,
+        stationCode: stationEvents.stationCode,
+        eventType: stationEvents.eventType,
+        businessDate: stationEvents.businessDate,
+        createdAt: stationEvents.createdAt,
+        payload: stationEvents.payload,
+        operatorName: users.name,
+        operatorUsername: users.username,
+      })
+      .from(stationEvents)
+      .leftJoin(users, eq(stationEvents.operatorUserId, users.id))
+      .where(inArray(stationEvents.productId, productIds))
+      .orderBy(asc(stationEvents.productId), asc(stationEvents.id)),
+  ]);
+
+  const taskMap = taskRows.reduce((accumulator, task) => {
+    const current = accumulator.get(task.productId) ?? [];
+    current.push(task);
+    accumulator.set(task.productId, current);
+    return accumulator;
+  }, new Map<number, typeof taskRows>());
+
+  const eventMap = eventRows.reduce((accumulator, event) => {
+    const current = accumulator.get(event.productId) ?? [];
+    current.push({
+      id: event.id,
+      stationTaskId: event.stationTaskId,
+      stationCode: event.stationCode,
+      eventType: event.eventType,
+      businessDate: event.businessDate,
+      createdAt: event.createdAt,
+      operatorName: event.operatorName ?? event.operatorUsername ?? null,
+      summary: typeof (event.payload as Record<string, unknown> | null)?.summary === "string"
+        ? String((event.payload as Record<string, unknown>).summary)
+        : null,
+      payload: event.payload,
+    });
+    accumulator.set(event.productId, current);
+    return accumulator;
+  }, new Map<number, Array<{
+    id: number;
+    stationTaskId: number | null;
+    stationCode: StationCode;
+    eventType: string;
+      businessDate: string | Date;
+
+    createdAt: Date;
+    operatorName: string | null;
+    summary: string | null;
+    payload: unknown;
+  }>>());
+
+  return productRows.map((product) => ({
+    ...product,
+    timeline: taskMap.get(product.id) ?? [],
+    events: eventMap.get(product.id) ?? [],
+  }));
 }
 
 export async function deleteImportedPurchaseOrder(poNumber: string) {

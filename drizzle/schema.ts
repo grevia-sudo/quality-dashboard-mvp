@@ -252,6 +252,19 @@ export const sheetSyncJobs = mysqlTable("sheet_sync_jobs", {
   errorMessage: text("errorMessage"),
 });
 
+export const importBatchBackups = mysqlTable("import_batch_backups", {
+  id: int("id").autoincrement().primaryKey(),
+  poNumber: varchar("poNumber", { length: 120 }).notNull(),
+  vendorName: varchar("vendorName", { length: 160 }),
+  backupLabel: varchar("backupLabel", { length: 200 }),
+  productCount: int("productCount").default(0).notNull(),
+  createdByUserId: int("createdByUserId").references(() => users.id),
+  restoredAt: timestamp("restoredAt"),
+  restoredByUserId: int("restoredByUserId").references(() => users.id),
+  snapshot: json("snapshot").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export const productArchives = mysqlTable("product_archives", {
   id: int("id").autoincrement().primaryKey(),
   originalProductId: int("originalProductId").notNull(),
@@ -267,3 +280,4 @@ export type StationTask = typeof stationTasks.$inferSelect;
 export type StationEvent = typeof stationEvents.$inferSelect;
 export type ProductivityTargetConfig = typeof productivityTargetConfigs.$inferSelect;
 export type EngineerDailyProductivity = typeof engineerDailyProductivity.$inferSelect;
+export type ImportBatchBackup = typeof importBatchBackups.$inferSelect;

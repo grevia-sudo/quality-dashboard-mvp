@@ -206,6 +206,18 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).toContain("C 站機身外觀");
     expect(adminPageSource).toContain("C 站鏡頭狀態");
     expect(adminPageSource).toContain("品名管理");
+    expect(adminPageSource).toContain("匯入批次備份／還原");
+    expect(adminPageSource).toContain("trpc.admin.importBackups.useQuery");
+    expect(adminPageSource).toContain("trpc.admin.createImportBackup.useMutation");
+    expect(adminPageSource).toContain("trpc.admin.restoreImportBackup.useMutation");
+    expect(adminPageSource).toContain("輸入要備份的 PO 單號");
+    expect(adminPageSource).toContain("從此備份還原");
+    expect(adminPageSource).toContain("商品批號／序號追蹤");
+    expect(adminPageSource).toContain("trpc.admin.productTrace.useQuery");
+    expect(adminPageSource).toContain("handleProductTraceSearch");
+    expect(adminPageSource).toContain("輸入商品批號、商品序號或 IMEI");
+    expect(adminPageSource).toContain("任務時間軸");
+    expect(adminPageSource).toContain("事件紀錄");
     expect(adminPageSource).toContain("trpc.admin.createProductNameOption.useMutation");
     expect(adminPageSource).toContain("trpc.admin.deleteProductNameOption.useMutation");
   });

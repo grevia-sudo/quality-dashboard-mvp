@@ -78,6 +78,13 @@
       "when": 1777208921099,
       "tag": "0010_acoustic_mac_gargan",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1777217675129,
+      "tag": "0011_mighty_paladin",
+      "breakpoints": true
     }
   ]
 }

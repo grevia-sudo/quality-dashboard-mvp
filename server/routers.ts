@@ -12,11 +12,14 @@ import {
   completeStationTask,
   createProductCategoryOption,
   createProductNameOption,
+  createImportBatchBackup,
   deleteImportedPurchaseOrder,
   deleteProductCategoryOption,
   deleteProductNameOption,
   ensureMvpSeedData,
   getAdminSetupData,
+  getImportBatchBackups,
+  getProductTraceByIdentity,
   getDefectOptions,
   getEngineerKpiSummary,
   getProductCategoryOptions,
@@ -31,6 +34,7 @@ import {
   updateStationRule,
   upsertDefectOption,
   replaceCategoryStationFlow,
+  restoreImportBatchBackup,
 } from "./db";
 
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
@@ -501,6 +505,38 @@ export const appRouter = router({
             categoryFlows: input.categoryFlows.length,
           },
         };
+      }),
+    importBackups: adminProcedure.query(async () => {
+      return getImportBatchBackups();
+    }),
+    createImportBackup: adminProcedure
+      .input(z.object({
+        poNumber: z.string().trim().min(1),
+        backupLabel: optionalTextSchema.nullable().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return createImportBatchBackup({
+          poNumber: input.poNumber,
+          createdByUserId: ctx.user.id,
+          backupLabel: input.backupLabel ?? undefined,
+        });
+      }),
+    restoreImportBackup: adminProcedure
+      .input(z.object({
+        backupId: z.number().int().positive(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return restoreImportBatchBackup({
+          backupId: input.backupId,
+          restoredByUserId: ctx.user.id,
+        });
+      }),
+    productTrace: adminProcedure
+      .input(z.object({
+        keyword: z.string().trim().min(1, "請輸入商品批號或序號"),
+      }))
+      .query(async ({ input }) => {
+        return getProductTraceByIdentity(input.keyword);
       }),
     deleteImportedPurchaseOrder: adminProcedure
       .input(

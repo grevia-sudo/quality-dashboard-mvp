@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Gauge, PackagePlus, ShieldCheck, Trash2 } from "lucide-react";
+import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, Search, ShieldCheck, Trash2 } from "lucide-react";
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 
@@ -114,11 +114,22 @@ export default function AdminPage() {
   const [newProductName, setNewProductName] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
+  const [backupPoNumber, setBackupPoNumber] = useState("");
+  const [backupLabel, setBackupLabel] = useState("");
   const [deletePoNumber, setDeletePoNumber] = useState("PO-20260422-21");
+  const [productTraceKeyword, setProductTraceKeyword] = useState("");
+  const [submittedProductTraceKeyword, setSubmittedProductTraceKeyword] = useState("");
   const [newUsername, setNewUsername] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserName, setNewUserName] = useState("");
   const [newUserRole, setNewUserRole] = useState<"user" | "admin" | "manager" | "engineer" | "supervisor">("user");
+  const importBackupQuery = trpc.admin.importBackups.useQuery(undefined, { retry: false });
+  const productTraceQuery = trpc.admin.productTrace.useQuery({
+    keyword: submittedProductTraceKeyword,
+  }, {
+    enabled: submittedProductTraceKeyword.trim().length > 0,
+    retry: false,
+  });
 
   useEffect(() => {
     if (!query.data) {
@@ -284,6 +295,30 @@ export default function AdminPage() {
     },
   });
 
+  const createImportBackupMutation = trpc.admin.createImportBackup.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已建立備份 ${result?.backupLabel ?? result?.poNumber ?? "匯入批次"}`);
+      setBackupPoNumber("");
+      setBackupLabel("");
+      await importBackupQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "建立備份失敗");
+    },
+  });
+
+  const restoreImportBackupMutation = trpc.admin.restoreImportBackup.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已從備份還原 ${result.poNumber}，共恢復 ${result.restoredCount} 筆商品`);
+      await importBackupQuery.refetch();
+      await utils.admin.setup.invalidate();
+      await utils.station.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "還原備份失敗");
+    },
+  });
+
   const deletePoMutation = trpc.admin.deleteImportedPurchaseOrder.useMutation({
     onSuccess: async (result) => {
       toast.success(`已刪除採購單 ${result.poNumber}，共清除 ${result.deletedProducts} 筆商品與 ${result.deletedTasks} 筆站點任務`);
@@ -337,6 +372,15 @@ export default function AdminPage() {
 
   const appendOptionDraft = (stationCode: OptionStationCode, optionType: OptionType) => {
     setOptionDrafts((prev) => [...prev, createNewOptionDraft(stationCode, optionType)]);
+  };
+
+  const handleProductTraceSearch = () => {
+    const nextKeyword = productTraceKeyword.trim();
+    if (!nextKeyword) {
+      toast.error("請先輸入商品批號或序號");
+      return;
+    }
+    setSubmittedProductTraceKeyword(nextKeyword);
   };
 
   const groupedOptionDrafts = useMemo(
@@ -983,6 +1027,100 @@ export default function AdminPage() {
                     >
                       清空所有品類設定
                     </Button>
+                  </div>
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    <div className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-2xl bg-white p-3 text-slate-700 shadow-sm"><Database className="h-5 w-5" /></div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">匯入批次備份／還原</p>
+                          <p className="mt-1 text-sm leading-7 text-slate-600">先為指定採購單建立備份，再刪除重傳；若重新上傳失敗，可直接從備份還原同一批匯入資料。</p>
+                        </div>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                        <Input value={backupPoNumber} onChange={(event) => setBackupPoNumber(event.target.value)} className="rounded-2xl border-0 bg-white" placeholder="輸入要備份的 PO 單號" />
+                        <Input value={backupLabel} onChange={(event) => setBackupLabel(event.target.value)} className="rounded-2xl border-0 bg-white" placeholder="備份標籤（選填）" />
+                        <Button
+                          className="rounded-2xl"
+                          disabled={createImportBackupMutation.isPending || !backupPoNumber.trim()}
+                          onClick={() => createImportBackupMutation.mutate({ poNumber: backupPoNumber.trim(), backupLabel: backupLabel.trim() || undefined })}
+                        >
+                          建立備份
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {(importBackupQuery.data ?? []).length > 0 ? (importBackupQuery.data ?? []).map((backup) => (
+                          <div key={backup.id} className="flex flex-col gap-3 rounded-[20px] bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+                            <div>
+                              <p className="font-semibold text-slate-900">{backup.backupLabel ?? backup.poNumber}</p>
+                              <p className="mt-1 text-xs text-slate-500">PO：{backup.poNumber}・{backup.vendorName ?? "未指定廠商"}・{backup.productCount} 筆商品</p>
+                              <p className="mt-1 text-xs text-slate-500">建立時間：{backup.createdAt ? new Date(backup.createdAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・最近還原：{backup.restoredAt ? new Date(backup.restoredAt).toLocaleString("zh-TW", { hour12: false }) : "尚未還原"}</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              className="rounded-2xl"
+                              disabled={restoreImportBackupMutation.isPending}
+                              onClick={() => restoreImportBackupMutation.mutate({ backupId: backup.id })}
+                            >
+                              從此備份還原
+                            </Button>
+                          </div>
+                        )) : <div className="rounded-[20px] bg-white p-4 text-sm text-slate-500">目前尚未建立任何匯入備份。</div>}
+                      </div>
+                    </div>
+                    <div className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-2xl bg-white p-3 text-slate-700 shadow-sm"><Search className="h-5 w-5" /></div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">商品批號／序號追蹤</p>
+                          <p className="mt-1 text-sm leading-7 text-slate-600">可直接查詢單筆商品在各站點的任務狀態、完成時間與事件紀錄，方便追蹤卡關或回報現場。</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Input value={productTraceKeyword} onChange={(event) => setProductTraceKeyword(event.target.value)} className="rounded-2xl border-0 bg-white" placeholder="輸入商品批號、商品序號或 IMEI" />
+                        <Button className="rounded-2xl" disabled={productTraceQuery.isFetching} onClick={handleProductTraceSearch}>查詢商品</Button>
+                      </div>
+                      <div className="space-y-3">
+                        {submittedProductTraceKeyword && !productTraceQuery.isFetching && (productTraceQuery.data ?? []).length === 0 ? <div className="rounded-[20px] bg-white p-4 text-sm text-slate-500">查無符合「{submittedProductTraceKeyword}」的商品。</div> : null}
+                        {(productTraceQuery.data ?? []).map((product) => (
+                          <div key={product.id} className="space-y-4 rounded-[20px] bg-white p-4 shadow-sm">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div>
+                                <p className="font-semibold text-slate-900">{product.productName ?? product.batchNo ?? product.serialNumber ?? `商品 #${product.id}`}</p>
+                                <p className="mt-1 text-xs text-slate-500">PO：{product.poNumber ?? "-"}・批號：{product.batchNo ?? "-"}・序號：{product.serialNumber ?? "-"}・目前狀態：{product.currentStatus}</p>
+                              </div>
+                              <Badge className="bg-slate-100 text-slate-700">目前站點 {product.currentStationCode ?? "-"}</Badge>
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="rounded-[18px] bg-slate-50 p-3">
+                                <p className="text-xs text-slate-400">任務時間軸</p>
+                                <div className="mt-3 space-y-2">
+                                  {product.timeline.map((task) => (
+                                    <div key={task.id} className="rounded-2xl bg-white px-3 py-2 text-sm text-slate-600">
+                                      <p className="font-medium text-slate-900">{task.stationCode}・{task.taskStatus}</p>
+                                      <p className="mt-1 text-xs text-slate-500">完成：{task.completedAt ? new Date(task.completedAt).toLocaleString("zh-TW", { hour12: false }) : "尚未完成"}</p>
+                                      <p className="mt-1 text-xs text-slate-500">摘要：{task.resultSummary ?? "-"}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="rounded-[18px] bg-slate-50 p-3">
+                                <p className="text-xs text-slate-400">事件紀錄</p>
+                                <div className="mt-3 space-y-2">
+                                  {product.events.map((event) => (
+                                    <div key={event.id} className="rounded-2xl bg-white px-3 py-2 text-sm text-slate-600">
+                                      <p className="font-medium text-slate-900">{event.stationCode}・{event.eventType}</p>
+                                      <p className="mt-1 text-xs text-slate-500">時間：{event.createdAt ? new Date(event.createdAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・執行人：{event.operatorName ?? "-"}</p>
+                                      <p className="mt-1 text-xs text-slate-500">摘要：{event.summary ?? "-"}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
