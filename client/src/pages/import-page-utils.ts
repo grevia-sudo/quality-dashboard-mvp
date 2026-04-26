@@ -1,5 +1,6 @@
 export type ImportDraftRow = {
   categoryName: string;
+  brandName: string;
   batchNo: string;
   serialNumber: string;
   imei: string;
@@ -35,6 +36,8 @@ export type PendingTaskLike = {
   poNumber?: string | null;
   categoryName?: string | null;
   importedCategoryName?: string | null;
+  importedBrandName?: string | null;
+  brandName?: string | null;
 };
 
 export type PendingPoSummaryRow = {
@@ -50,14 +53,16 @@ export type PendingPoSummaryRow = {
     serialNumber: string | null;
     imei: string | null;
     categoryName: string | null;
+    brandName: string | null;
   }>;
 };
 
-type CsvHeaderKey = "vendorName" | "categoryName" | "batchNo" | "serialNumber" | "imei" | "productName";
+type CsvHeaderKey = "vendorName" | "categoryName" | "brandName" | "batchNo" | "serialNumber" | "imei" | "productName";
 
 const HEADER_ALIASES: Record<CsvHeaderKey, string[]> = {
   vendorName: ["廠商", "供應商", "vendor", "vendorname", "supplier"],
   categoryName: ["商品分類", "分類", "category", "productcategory", "商品類別", "類別"],
+  brandName: ["品牌", "brand", "brandname"],
   batchNo: ["商品批號", "批號", "batchno", "batch", "lotno"],
   serialNumber: ["商品序號", "序號", "serialnumber", "serialno", "sn"],
   imei: ["imei"],
@@ -155,9 +160,10 @@ function getCell(cells: string[], headerMap: Map<CsvHeaderKey, number>, key: Csv
   return cells[index] ?? "";
 }
 
-function toDraftRow(categoryName: string, batchNo: string, serialNumber: string, imei: string, productName: string) {
+function toDraftRow(categoryName: string, brandName: string, batchNo: string, serialNumber: string, imei: string, productName: string) {
   return {
     categoryName: normalizeImportedCell(categoryName),
+    brandName: normalizeImportedCell(brandName),
     batchNo: normalizeImportedCell(batchNo),
     serialNumber: normalizeImportedCell(serialNumber),
     imei: normalizeImportedCell(imei),
@@ -193,6 +199,7 @@ export function parseImportedCsvContent(input: string): ParsedImportCsv {
 
         return toDraftRow(
           getCell(cells, headerMap, "categoryName"),
+          getCell(cells, headerMap, "brandName"),
           getCell(cells, headerMap, "batchNo"),
           getCell(cells, headerMap, "serialNumber"),
           getCell(cells, headerMap, "imei"),
@@ -200,10 +207,10 @@ export function parseImportedCsvContent(input: string): ParsedImportCsv {
         );
       }
 
-      const [categoryName = "", batchNo = "", serialNumber = "", imei = "", productName = ""] = cells;
-      return toDraftRow(categoryName, batchNo, serialNumber, imei, productName);
+      const [categoryName = "", brandName = "", batchNo = "", serialNumber = "", imei = "", productName = ""] = cells;
+      return toDraftRow(categoryName, brandName, batchNo, serialNumber, imei, productName);
     })
-    .filter((row) => row.categoryName || row.batchNo || row.serialNumber || row.imei || row.productName);
+    .filter((row) => row.categoryName || row.brandName || row.batchNo || row.serialNumber || row.imei || row.productName);
 
   const vendorList = Array.from(detectedVendorNames.values());
   return {
@@ -234,26 +241,28 @@ export function buildPendingPoSummary(tasks: PendingTaskLike[]) {
   for (const task of tasks) {
     const poNumber = task.poNumber?.trim() || "系統補號中";
     const categoryName = task.categoryName?.trim() || task.importedCategoryName?.trim() || "未分類";
+    const brandName = task.brandName?.trim() || task.importedBrandName?.trim() || "未指定品牌";
     const current = summaryMap.get(poNumber) ?? {
       key: poNumber,
       poNumber,
-      categoryLabel: categoryName,
+      categoryLabel: `${categoryName} × ${brandName}`,
       totalQuantity: 0,
       details: [],
       categoryLabels: [],
     };
 
     current.totalQuantity += 1;
-    current.categoryLabels.push(categoryName);
-    current.details.push({
+      current.categoryLabels.push(`${categoryName} × ${brandName}`);
+      current.details.push({
       productId: task.productId,
       productCode: task.productCode,
       productName: task.productName ?? null,
       batchNo: task.batchNo ?? null,
       serialNumber: task.serialNumber ?? null,
-      imei: task.imei ?? null,
-      categoryName: task.categoryName ?? task.importedCategoryName ?? null,
-    });
+        imei: task.imei ?? null,
+        categoryName: task.categoryName ?? task.importedCategoryName ?? null,
+        brandName: task.brandName ?? task.importedBrandName ?? null,
+      });
     summaryMap.set(poNumber, current);
   }
 

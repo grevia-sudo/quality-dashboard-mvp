@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { productArchives, products, stationTasks } from "../drizzle/schema";
-import { ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
+import { createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
 
 const createdPoNumbers = new Set<string>();
 
@@ -79,6 +79,7 @@ describe("import PO summary integration", () => {
         imei: `35${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
         categoryName: "智慧手機",
+        brandName: "Apple",
       },
       {
         batchNo: `AUTO-PO-${uniqueSuffix}-02`,
@@ -86,6 +87,7 @@ describe("import PO summary integration", () => {
         imei: `35${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
         categoryName: "智慧手機",
+        brandName: "Apple",
       },
       {
         batchNo: `AUTO-PO-${uniqueSuffix}-03`,
@@ -93,6 +95,7 @@ describe("import PO summary integration", () => {
         imei: `35${`${Number(uniqueSuffix) + 3}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
         categoryName: "平板",
+        brandName: "Apple",
       },
     ];
 
@@ -130,6 +133,65 @@ describe("import PO summary integration", () => {
     expect(new Set(importedTasks.map((task) => task.importedCategoryName ?? task.categoryName))).toEqual(new Set(["智慧手機", "平板"]));
   }, 10000);
 
+  it("maps categoryId by category+brand and preserves importedBrandName when unmatched", async () => {
+    const uniqueSuffix = `${Date.now()}`;
+    const matchedCategory = await createProductCategoryOption({ categoryName: "智慧手機", brandName: "Apple" });
+    const rows = [
+      {
+        batchNo: `BRAND-MATCH-${uniqueSuffix}-01`,
+        serialNumber: `BRAND-MATCH-SN-${uniqueSuffix}-01`,
+        imei: `97${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
+        productName: "Matched Brand Device",
+        categoryName: "智慧手機",
+        brandName: "Apple",
+      },
+      {
+        batchNo: `BRAND-MISS-${uniqueSuffix}-02`,
+        serialNumber: `BRAND-MISS-SN-${uniqueSuffix}-02`,
+        imei: `97${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
+        productName: "Unmatched Brand Device",
+        categoryName: "智慧手機",
+        brandName: "NoSuchBrand",
+      },
+    ];
+
+    const importResult = await importProducts({
+      vendorName: "品牌對應驗證廠商",
+      rows,
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const importedProducts = await db
+      .select({
+        batchNo: products.batchNo,
+        categoryId: products.categoryId,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)));
+
+    expect(importedProducts).toHaveLength(2);
+    const matchedProduct = importedProducts.find((item) => item.batchNo === rows[0]?.batchNo);
+    const unmatchedProduct = importedProducts.find((item) => item.batchNo === rows[1]?.batchNo);
+    expect(matchedProduct?.categoryId).toBe(matchedCategory?.id ?? null);
+    expect(matchedProduct?.importedBrandName).toBe("Apple");
+    expect(unmatchedProduct?.categoryId).toBeNull();
+    expect(unmatchedProduct?.importedBrandName).toBe("NoSuchBrand");
+
+    const a1StationData = await getStationPageData("A1");
+    const matchedTask = a1StationData.tasks.find((task) => task.poNumber === importResult.poNumber && task.batchNo === rows[0]?.batchNo);
+    const unmatchedTask = a1StationData.tasks.find((task) => task.poNumber === importResult.poNumber && task.batchNo === rows[1]?.batchNo);
+
+    expect(matchedTask?.brandName ?? matchedTask?.importedBrandName).toBe("Apple");
+    expect(unmatchedTask?.brandName ?? unmatchedTask?.importedBrandName).toBe("NoSuchBrand");
+  }, 10000);
+
   it("imports a large batch with consistent row count under a single PO", async () => {
     const uniqueSuffix = `${Date.now()}`;
     const rows = Array.from({ length: 120 }, (_, index) => {
@@ -140,6 +202,7 @@ describe("import PO summary integration", () => {
         imei: `86${`${Number(uniqueSuffix) + sequence}`.padStart(13, "0").slice(-13)}`,
         productName: `Large Import Device ${String(sequence).padStart(3, "0")}`,
         categoryName: sequence % 2 === 0 ? "智慧手機" : "平板",
+        brandName: sequence % 2 === 0 ? "Apple" : "Samsung",
       };
     });
 

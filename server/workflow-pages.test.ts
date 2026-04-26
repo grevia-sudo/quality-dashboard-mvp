@@ -15,8 +15,8 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("選擇 CSV");
     expect(importPageSource).toContain("下載範例");
     expect(importPageSource).toContain("/manus-storage/import-products-example_756ddafb.csv");
-    expect(importPageSource).toContain("廠商、商品分類、商品批號、商品序號、IMEI、品名");
-    expect(importPageSource).toContain("系統會讀取檔案中的廠商與商品分類原文");
+    expect(importPageSource).toContain("廠商、商品分類、品牌、商品批號、商品序號、IMEI、品名");
+    expect(importPageSource).toContain("系統會讀取檔案中的廠商、商品分類與品牌原文");
     expect(importPageSource).not.toContain("category,batchNo,serialNumber,imei,productName");
     expect(importPageSource).toContain("廠商（必填）");
     expect(importPageSource).toContain("到貨時間（同批共用）");
@@ -26,7 +26,7 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("      retry: shouldRetryTransientQuery,");
     expect(importPageSource).toContain("已匯入未完成點貨的採購單");
     expect(importPageSource).toContain("採購單號");
-    expect(importPageSource).toContain("商品類別");
+    expect(importPageSource).toContain("商品類別 × 品牌");
     expect(importPageSource).toContain("總數量");
     expect(importPageSource).toContain("toggleSummaryRow");
     expect(importPageSource).toContain("ChevronDown");
@@ -39,7 +39,7 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("toast.error(importValidationMessage)");
     expect(importPageSource).toContain("toast.warning(`已載入");
     expect(importPageSource).toContain("商品分類（必填）");
-    expect(importPageSource).not.toContain("請選擇品牌");
+    expect(importPageSource).toContain("品牌（必填）");
     expect(importPageSource).toContain("parseImportedCsvContent");
     expect(importPageSource).toContain("handleFileUpload");
     expect(importPageSource).toContain("目前已載入");
@@ -55,9 +55,12 @@ describe("warehouse workflow pages", () => {
   it("provides A1 scan-to-complete fields and pending category summary on the station page", () => {
     expect(stationPageSource).toContain('stationCode === "A1"');
     expect(stationPageSource).toContain("目前待點貨商品分類與數量");
+    expect(stationPageSource).toContain("商品分類 × 品牌");
     expect(stationPageSource).toContain("待點貨總數");
     expect(stationPageSource).toContain("待點貨數量");
     expect(stationPageSource).toContain("pendingCategorySummary");
+    expect(stationPageSource).toContain("待入庫表格清單");
+    expect(stationPageSource).toContain("task.brandName ?? task.importedBrandName ?? \"\"");
     expect(stationPageSource).toContain("A1 點到貨新增／補齊");
     expect(stationPageSource).not.toContain("廠商（必填）");
     expect(stationPageSource).toContain("商品批號");

@@ -177,6 +177,7 @@ describe("warehouse MVP router", () => {
           imei: "356000000000001",
           productName: "iPhone 13",
           categoryName: "智慧手機",
+          brandName: "Apple",
         },
       ],
     });
@@ -193,6 +194,7 @@ describe("warehouse MVP router", () => {
           imei: "356000000000001",
           productName: "iPhone 13",
           categoryName: "智慧手機",
+          brandName: "Apple",
         },
       ],
     });
@@ -211,6 +213,7 @@ describe("warehouse MVP router", () => {
           imei: "356000000000002",
           productName: "iPhone 13",
           categoryName: "智慧手機",
+          brandName: "Apple",
         },
       ],
     });
@@ -227,6 +230,7 @@ describe("warehouse MVP router", () => {
           imei: "356000000000002",
           productName: "iPhone 13",
           categoryName: "智慧手機",
+          brandName: "Apple",
         },
       ],
     });
@@ -306,6 +310,7 @@ describe("warehouse MVP router", () => {
           imei: "356000000000002",
           productName: "Galaxy S22",
           categoryName: "智慧手機",
+          brandName: "Samsung",
         },
       ],
     });
@@ -322,6 +327,7 @@ describe("warehouse MVP router", () => {
           imei: "356000000000002",
           productName: "Galaxy S22",
           categoryName: "智慧手機",
+          brandName: "Samsung",
         },
       ],
     });

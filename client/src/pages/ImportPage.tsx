@@ -29,6 +29,7 @@ const LARGE_IMPORT_PREVIEW_LIMIT = 30;
 
 const createEmptyRow = (): ImportDraftRow => ({
   categoryName: "",
+  brandName: "",
   batchNo: "",
   serialNumber: "",
   imei: "",
@@ -36,11 +37,11 @@ const createEmptyRow = (): ImportDraftRow => ({
 });
 
 function isRowImportable(row: ImportDraftRow) {
-  return Boolean(row.categoryName.trim() && (row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim()));
+  return Boolean(row.categoryName.trim() && row.brandName.trim() && (row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim()));
 }
 
 function hasAnyRowValue(row: ImportDraftRow) {
-  return Boolean(row.categoryName.trim() || row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim() || row.productName.trim());
+  return Boolean(row.categoryName.trim() || row.brandName.trim() || row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim() || row.productName.trim());
 }
 
 export default function ImportPage() {
@@ -92,12 +93,13 @@ export default function ImportPage() {
     () => rows
       .map((row) => ({
         categoryName: row.categoryName.trim(),
+        brandName: row.brandName.trim(),
         batchNo: row.batchNo.trim() || undefined,
         serialNumber: row.serialNumber.trim() || undefined,
         imei: row.imei.trim() || undefined,
         productName: row.productName.trim() || undefined,
       }))
-      .filter((row) => Boolean(row.categoryName && (row.batchNo || row.serialNumber || row.imei))),
+      .filter((row) => Boolean(row.categoryName && row.brandName && (row.batchNo || row.serialNumber || row.imei))),
     [rows],
   );
 
@@ -112,11 +114,11 @@ export default function ImportPage() {
     }
 
     if (preparedRows.length === 0) {
-      return "目前沒有可匯入的資料，請確認每列都已填寫商品分類，且商品批號／商品序號／IMEI 至少填寫一項";
+      return "目前沒有可匯入的資料，請確認每列都已填寫商品分類、品牌，且商品批號／商品序號／IMEI 至少填寫一項";
     }
 
     if (preparedRows.length < filledRows.length) {
-      return `仍有 ${filledRows.length - preparedRows.length} 筆資料尚未補齊必要欄位，請先完成商品分類或識別欄位`;
+        return `仍有 ${filledRows.length - preparedRows.length} 筆資料尚未補齊必要欄位，請先完成商品分類、品牌或識別欄位`;
     }
 
     return null;
@@ -155,7 +157,7 @@ export default function ImportPage() {
       const parsed = parseImportedCsvContent(content);
       setShowAllRows(false);
       if (parsed.rows.length === 0) {
-        toast.error("檔案內容為空，或欄位格式不符合 廠商、商品分類、商品批號、商品序號、IMEI、品名");
+        toast.error("檔案內容為空，或欄位格式不符合 廠商、商品分類、品牌、商品批號、商品序號、IMEI、品名");
         setRows([]);
         return;
       }
@@ -170,7 +172,7 @@ export default function ImportPage() {
       const importableCount = parsed.rows.filter(isRowImportable).length;
       const skippedCount = parsed.rows.length - importableCount;
       if (skippedCount > 0) {
-        toast.warning(`已載入 ${parsed.rows.length} 筆 CSV；其中 ${skippedCount} 筆尚未補齊商品分類或識別欄位，暫時不會送出`);
+        toast.warning(`已載入 ${parsed.rows.length} 筆 CSV；其中 ${skippedCount} 筆尚未補齊商品分類、品牌或識別欄位，暫時不會送出`);
       } else {
         toast.success(parsed.sharedVendorName ? `已載入 ${parsed.rows.length} 筆 CSV 資料，並自動帶入廠商：${parsed.sharedVendorName}` : `已載入 ${parsed.rows.length} 筆 CSV 資料`);
       }
@@ -202,7 +204,7 @@ export default function ImportPage() {
             <Badge className="bg-white/80 text-slate-700">CSV 原始資料匯入</Badge>
             <h1 className="text-3xl font-black tracking-tight text-slate-900">上傳 CSV 後，直接把原始商品分類文字寫入系統</h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              本頁僅保留 CSV 上傳與開始匯入的最小流程。匯入欄位為廠商、商品分類、商品批號、商品序號、IMEI、品名；其中廠商與商品分類必填，商品批號／商品序號／IMEI 至少需填一項，品名可留空。
+              本頁僅保留 CSV 上傳與開始匯入的最小流程。匯入欄位為廠商、商品分類、品牌、商品批號、商品序號、IMEI、品名；其中廠商、商品分類與品牌必填，商品批號／商品序號／IMEI 至少需填一項，品名可留空。
             </p>
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>返回站點總覽</Button>
@@ -223,7 +225,7 @@ export default function ImportPage() {
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-slate-900">請先上傳 CSV 或 TSV 檔案</p>
-                  <p className="text-sm leading-6 text-slate-600">系統會讀取檔案中的廠商與商品分類原文，不再依賴品牌或後台品類設定。</p>
+                  <p className="text-sm leading-6 text-slate-600">系統會讀取檔案中的廠商、商品分類與品牌原文，並嘗試對應管理後台的品類設定，讓品牌可一路帶到待入庫與各站點。</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Button type="button" variant="outline" className="rounded-2xl" onClick={() => window.open(IMPORT_EXAMPLE_CSV_URL, "_blank")}>下載範例</Button>
@@ -257,14 +259,15 @@ export default function ImportPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-semibold text-slate-900">已載入資料預覽</h2>
-                    <p className="text-sm text-slate-600">可直接檢查或微調商品分類、商品批號、商品序號、IMEI 與品名。</p>
+                    <p className="text-sm text-slate-600">可直接檢查或微調商品分類、品牌、商品批號、商品序號、IMEI 與品名。</p>
                   </div>
                   <Badge className="w-fit bg-slate-900 text-white">共 {rows.length} 筆</Badge>
                 </div>
 
                 {visibleRows.map((row, index) => (
-                  <div key={`row-${index}`} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-5">
+                  <div key={`row-${index}`} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-6">
                     <Input value={row.categoryName} onChange={(event) => updateRow(index, { categoryName: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品分類（必填）" />
+                    <Input value={row.brandName} onChange={(event) => updateRow(index, { brandName: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="品牌（必填）" />
                     <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品批號（可留空）" />
                     <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品序號（可留空）" />
                     <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="IMEI（可留空）" />
@@ -328,9 +331,9 @@ export default function ImportPage() {
             </div>
 
             <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white">
-              <div className="hidden grid-cols-[1.2fr_1fr_100px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid">
+              <div className="hidden grid-cols-[1.2fr_1.2fr_100px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid">
                 <div>採購單號</div>
-                <div>商品類別</div>
+                <div>商品類別 × 品牌</div>
                 <div className="text-right">總數量</div>
               </div>
 
@@ -342,7 +345,7 @@ export default function ImportPage() {
                       <div key={item.key} className="bg-white">
                         <button
                           type="button"
-                          className="grid w-full gap-3 px-4 py-4 text-left transition hover:bg-slate-50 md:grid-cols-[1.2fr_1fr_100px] md:items-center"
+                          className="grid w-full gap-3 px-4 py-4 text-left transition hover:bg-slate-50 md:grid-cols-[1.2fr_1.2fr_100px] md:items-center"
                           onClick={() => toggleSummaryRow(item.key)}
                         >
                           <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
@@ -355,21 +358,23 @@ export default function ImportPage() {
 
                         {isExpanded ? (
                           <div className="border-t border-slate-100 bg-slate-50 px-4 py-4">
-                            <div className="grid gap-3 text-xs font-semibold tracking-wide text-slate-500 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
+                            <div className="grid gap-3 text-xs font-semibold tracking-wide text-slate-500 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr]">
                               <div>品項 / 品名</div>
                               <div>商品類別</div>
+                              <div>品牌</div>
                               <div>商品批號</div>
                               <div>商品序號</div>
                               <div>IMEI</div>
                             </div>
                             <div className="mt-3 space-y-2">
                               {item.details.map((detail) => (
-                                <div key={detail.productId} className="grid gap-3 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
+                                <div key={detail.productId} className="grid gap-3 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr]">
                                   <div>
                                     <p className="font-semibold text-slate-900">{detail.productName || detail.productCode}</p>
                                     <p className="mt-1 text-xs text-slate-500">產品代碼：{detail.productCode}</p>
                                   </div>
                                   <div>{detail.categoryName || "—"}</div>
+                                  <div>{detail.brandName || "—"}</div>
                                   <div>{detail.batchNo || "—"}</div>
                                   <div>{detail.serialNumber || "—"}</div>
                                   <div>{detail.imei || "—"}</div>

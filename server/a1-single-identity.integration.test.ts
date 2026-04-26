@@ -94,6 +94,7 @@ async function importSingleIdentityRow(input: {
     serialNumber?: string;
     imei?: string;
     categoryName: string;
+    brandName: string;
     productName: string;
   };
 }) {
@@ -148,6 +149,7 @@ describe("A1 single-identity scan integration", () => {
       row: {
         imei,
         categoryName: "智慧手機",
+        brandName: "Apple",
         productName: "IMEI Only Device",
       },
     });
@@ -226,6 +228,7 @@ describe("A1 single-identity scan integration", () => {
       row: {
         serialNumber,
         categoryName: "智慧手機",
+        brandName: "Apple",
         productName: "",
       },
     });
@@ -271,6 +274,7 @@ describe("A1 single-identity scan integration", () => {
       row: {
         serialNumber,
         categoryName: "智慧手機",
+        brandName: "Apple",
         productName: "Serial Only Device",
       },
     });
@@ -330,6 +334,7 @@ describe("A1 single-identity scan integration", () => {
       row: {
         batchNo,
         categoryName: "平板",
+        brandName: "Samsung",
         productName: "Batch Only Device",
       },
     });
@@ -389,6 +394,7 @@ describe("A1 single-identity scan integration", () => {
       row: {
         serialNumber,
         categoryName: "智慧手機",
+        brandName: "Apple",
         productName: "Ghost Guard Device",
       },
     });

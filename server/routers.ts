@@ -42,6 +42,7 @@ const importRowSchema = z.object({
   imei: optionalTextSchema,
   productName: optionalTextSchema,
   categoryName: z.string().trim().min(1),
+  brandName: z.string().trim().min(1),
 }).superRefine((value, ctx) => {
   if (!value.batchNo && !value.serialNumber && !value.imei) {
     ctx.addIssue({

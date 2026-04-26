@@ -1123,6 +1123,7 @@ export async function getStationPageData(stationCode: StationCode) {
       imei: products.imei,
       productName: products.productName,
       importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
       currentStationCode: products.currentStationCode,
       subtypeCode: productCategories.subtypeCode,
       categoryName: productCategories.categoryName,
@@ -1335,6 +1336,7 @@ export async function importProducts(input: {
     imei?: string | null;
     productName?: string | null;
     categoryName?: string | null;
+    brandName?: string | null;
   }>;
 }) {
   const db = await getDb();
@@ -1357,6 +1359,7 @@ export async function importProducts(input: {
   const createdProducts: Array<{ id: number; productCode: string; productName: string | null }> = [];
   const normalizedRows = input.rows.map((row) => ({
     categoryName: normalizeOptionalText(row.categoryName),
+    brandName: normalizeOptionalText(row.brandName),
     batchNo: normalizeOptionalText(row.batchNo),
     serialNumber: normalizeOptionalText(row.serialNumber),
     imei: normalizeOptionalText(row.imei),
@@ -1367,6 +1370,9 @@ export async function importProducts(input: {
     const row = normalizedRows[index]!;
     if (!row.categoryName) {
       throw new Error(`第 ${index + 1} 列缺少商品分類`);
+    }
+    if (!row.brandName) {
+      throw new Error(`第 ${index + 1} 列缺少品牌`);
     }
     if (!hasImportIdentity(row)) {
       throw new Error(`第 ${index + 1} 列至少要填寫商品批號、商品序號、IMEI 其中一項`);
@@ -1394,6 +1400,21 @@ export async function importProducts(input: {
           ),
         )
     : [];
+
+  const categoryOptions = await db
+    .select({
+      id: productCategories.id,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+      subtypeCode: productCategories.subtypeCode,
+    })
+    .from(productCategories)
+    .where(eq(productCategories.active, true));
+
+  const categoryByKey = new Map(categoryOptions.map((category) => [
+    `${category.categoryName.trim()}__${(category.brandName ?? category.subtypeCode ?? "").trim()}`,
+    category,
+  ]));
 
   const matchedByImei = new Map<string, (typeof matchedProducts)[number]>();
   const matchedBySerialNumber = new Map<string, (typeof matchedProducts)[number]>();
@@ -1451,7 +1472,8 @@ export async function importProducts(input: {
         productName: string | null;
         arrivalAt: Date | null;
         importedCategoryName: string;
-        categoryId: null;
+        importedBrandName: string;
+        categoryId: number | null;
         currentStationCode: "A1";
         currentStatus: "pending_a1";
         inspectionSummary: string;
@@ -1462,6 +1484,8 @@ export async function importProducts(input: {
   for (let index = 0; index < normalizedRows.length; index += 1) {
     const row = normalizedRows[index]!;
     const categoryName = row.categoryName as string;
+    const brandName = row.brandName as string;
+    const matchedCategory = categoryByKey.get(`${categoryName}__${brandName}`) ?? null;
     const matchedProduct = (row.imei ? matchedByImei.get(row.imei) : undefined)
       ?? (row.serialNumber ? matchedBySerialNumber.get(row.serialNumber) : undefined)
       ?? (row.batchNo ? matchedByBatchNo.get(row.batchNo) : undefined)
@@ -1472,7 +1496,9 @@ export async function importProducts(input: {
       const nextSerialNumber = matchedProduct.serialNumber ?? row.serialNumber;
       const nextImei = matchedProduct.imei ?? row.imei;
       const nextProductName = matchedProduct.productName ?? row.productName;
-      const nextImportedCategoryName = matchedProduct.importedCategoryName ?? categoryName;
+      const nextImportedCategoryName = categoryName;
+      const nextImportedBrandName = brandName;
+      const nextCategoryId = matchedCategory?.id ?? null;
       const nextPoNumber = matchedProduct.poNumber ?? resolvedPoNumber;
       const nextVendorName = matchedProduct.vendorName ?? vendorName;
       const nextArrivalAt = matchedProduct.arrivalAt ?? arrivalAt;
@@ -1488,7 +1514,8 @@ export async function importProducts(input: {
           productName: nextProductName,
           arrivalAt: nextArrivalAt,
           importedCategoryName: nextImportedCategoryName,
-          categoryId: null,
+          importedBrandName: nextImportedBrandName,
+          categoryId: nextCategoryId,
           currentStationCode: "A1",
           currentStatus: "pending_a1",
           inspectionSummary: nextPoNumber ? `PO:${nextPoNumber}` : matchedProduct.inspectionSummary,
@@ -1533,7 +1560,8 @@ export async function importProducts(input: {
         productName: row.productName,
         arrivalAt,
         importedCategoryName: categoryName,
-        categoryId: null,
+        importedBrandName: brandName,
+        categoryId: matchedCategory?.id ?? null,
         currentStationCode: "A1",
         currentStatus: "pending_a1",
         inspectionSummary: `PO:${resolvedPoNumber}`,

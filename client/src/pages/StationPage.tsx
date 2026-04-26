@@ -407,7 +407,10 @@ export default function StationPage() {
     const summaryMap = new Map<string, { label: string; count: number }>();
 
     for (const task of detailQuery.data?.tasks ?? []) {
-      const label = task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類";
+      const label = [
+        task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "未分類",
+        task.brandName ?? task.importedBrandName ?? "",
+      ].filter(Boolean).join(" × ");
       const current = summaryMap.get(label);
       summaryMap.set(label, {
         label,
@@ -604,8 +607,8 @@ export default function StationPage() {
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     {pendingCategorySummary.map((item) => (
                       <div key={item.label} className="rounded-[24px] bg-[#eef2f7] p-4 shadow-sm">
-                        <p className="text-xs font-medium tracking-wide text-slate-500">商品分類</p>
-                        <p className="mt-2 text-base font-bold text-slate-900">{item.label}</p>
+                        <p className="text-xs font-medium tracking-wide text-slate-500">商品分類 × 品牌</p>
+                        <p className="mt-2 text-base font-bold text-slate-900">{item.label || "未分類"}</p>
                         <p className="mt-3 text-sm text-slate-600">待點貨數量 <span className="font-bold text-slate-900">{item.count}</span></p>
                       </div>
                     ))}
@@ -807,7 +810,7 @@ export default function StationPage() {
                       <tr key={task.taskId} className="border-b border-slate-200/80 last:border-b-0">
                         <td className="px-4 py-3 font-medium text-slate-900">{task.productCode}</td>
                         <td className="px-4 py-3">{task.productName ?? "-"}</td>
-                        <td className="px-4 py-3">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</td>
+                        <td className="px-4 py-3">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</td>
                         <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
                         <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
                         <td className="px-4 py-3">{task.imei ?? "-"}</td>
@@ -870,7 +873,7 @@ export default function StationPage() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-2">
                     <div><p className="text-xs text-slate-400">商品名稱</p><p className="mt-1 font-semibold text-slate-900">{task.productName ?? "-"}</p></div>
-                    <div><p className="text-xs text-slate-400">品類</p><p className="mt-1 font-semibold text-slate-900">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</p></div>
+                    <div><p className="text-xs text-slate-400">品類 / 品牌</p><p className="mt-1 font-semibold text-slate-900">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p></div>
                     <div><p className="text-xs text-slate-400">批號</p><p className="mt-1 font-semibold text-slate-900">{task.batchNo ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">序號</p><p className="mt-1 font-semibold text-slate-900">{task.serialNumber ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? "-"}</p></div>
@@ -1105,7 +1108,7 @@ export default function StationPage() {
                       <tr key={task.taskId} className="border-b border-slate-200/80 last:border-b-0">
                         <td className="px-4 py-3 font-medium text-slate-900">{task.productCode}</td>
                         <td className="px-4 py-3">{task.productName ?? "-"}</td>
-                        <td className="px-4 py-3">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</td>
+                        <td className="px-4 py-3">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</td>
                         <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
                         <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
                         <td className="px-4 py-3">{task.imei ?? "-"}</td>
