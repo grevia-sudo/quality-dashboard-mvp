@@ -99,7 +99,24 @@ describe("admin backup and product trace integration", () => {
     expect((backup?.snapshot as { rows?: unknown[] })?.rows).toHaveLength(2);
 
     const backupList = await getImportBatchBackups();
-    expect(backupList.some((item) => item.poNumber === importResult.poNumber)).toBe(true);
+    const backupSummary = backupList.find((item) => item.poNumber === importResult.poNumber);
+    expect(backupSummary).toBeTruthy();
+    expect(backupSummary?.previewCount).toBe(2);
+    expect(backupSummary?.previewOverflowCount).toBe(0);
+    expect(backupSummary?.previewRows).toHaveLength(2);
+    expect(backupSummary?.previewRows[0]).toMatchObject({
+      batchNo: `BACKUP-BATCH-${uniqueSuffix}-01`,
+      serialNumber: `BACKUP-SN-${uniqueSuffix}-01`,
+      categoryName: "智慧手機",
+      brandName: "Apple",
+    });
+    expect(backupSummary?.diffSummary).toMatchObject({
+      currentLiveCount: 2,
+      matchedCount: 2,
+      missingFromCurrentCount: 0,
+      extraInCurrentCount: 0,
+      progressedCount: 0,
+    });
 
     const deleted = await deleteImportedPurchaseOrder(importResult.poNumber);
     expect(deleted.deletedProducts).toBe(2);
@@ -147,6 +164,107 @@ describe("admin backup and product trace integration", () => {
       backupId: backup?.id ?? 0,
       restoredByUserId: actorUserId,
     })).rejects.toThrow("目前資料庫已存在相同 PO 單號資料");
+  }, 15000);
+
+  it("calculates backup diff summary when current rows diverge from the saved snapshot", async () => {
+    const actorUserId = await getActorUserId();
+    const uniqueSuffix = `${Date.now()}`;
+    const poNumber = `PO-BACKUP-DIFF-${uniqueSuffix}`;
+    const imported = await importProducts({
+      poNumber,
+      vendorName: "差異驗證廠商",
+      rows: [
+        {
+          batchNo: `DIFF-BATCH-${uniqueSuffix}-01`,
+          serialNumber: `DIFF-SN-${uniqueSuffix}-01`,
+          imei: `89${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
+          productName: "Diff Device 01",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+        {
+          batchNo: `DIFF-BATCH-${uniqueSuffix}-02`,
+          serialNumber: `DIFF-SN-${uniqueSuffix}-02`,
+          imei: `89${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
+          productName: "Diff Device 02",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+        {
+          batchNo: `DIFF-BATCH-${uniqueSuffix}-03`,
+          serialNumber: `DIFF-SN-${uniqueSuffix}-03`,
+          imei: `89${`${Number(uniqueSuffix) + 3}`.padStart(13, "0").slice(-13)}`,
+          productName: "Diff Device 03",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+        {
+          batchNo: `DIFF-BATCH-${uniqueSuffix}-04`,
+          serialNumber: `DIFF-SN-${uniqueSuffix}-04`,
+          imei: `89${`${Number(uniqueSuffix) + 4}`.padStart(13, "0").slice(-13)}`,
+          productName: "Diff Device 04",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+        {
+          batchNo: `DIFF-BATCH-${uniqueSuffix}-05`,
+          serialNumber: `DIFF-SN-${uniqueSuffix}-05`,
+          imei: `89${`${Number(uniqueSuffix) + 5}`.padStart(13, "0").slice(-13)}`,
+          productName: "Diff Device 05",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+        {
+          batchNo: `DIFF-BATCH-${uniqueSuffix}-06`,
+          serialNumber: `DIFF-SN-${uniqueSuffix}-06`,
+          imei: `89${`${Number(uniqueSuffix) + 6}`.padStart(13, "0").slice(-13)}`,
+          productName: "Diff Device 06",
+          categoryName: "智慧手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+    createdPoNumbers.add(imported.poNumber);
+
+    await createImportBatchBackup({
+      poNumber: imported.poNumber,
+      createdByUserId: actorUserId,
+      backupLabel: "差異快照",
+    });
+
+    await completeA1ArrivalByScan({
+      operatorUserId: actorUserId,
+      batchNo: `DIFF-BATCH-${uniqueSuffix}-01`,
+      serialNumber: `DIFF-SN-${uniqueSuffix}-01`,
+      productName: "Diff Device 01",
+    });
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    await db
+      .update(products)
+      .set({
+        batchNo: `DIFF-BATCH-${uniqueSuffix}-EXTRA`,
+        serialNumber: `DIFF-SN-${uniqueSuffix}-EXTRA`,
+        imei: `89${`${Number(uniqueSuffix) + 9}`.padStart(13, "0").slice(-13)}`,
+      })
+      .where(and(eq(products.poNumber, imported.poNumber), eq(products.batchNo, `DIFF-BATCH-${uniqueSuffix}-06`)));
+
+    const backupList = await getImportBatchBackups();
+    const backupSummary = backupList.find((item) => item.poNumber === imported.poNumber);
+    expect(backupSummary?.previewCount).toBe(6);
+    expect(backupSummary?.previewRows).toHaveLength(5);
+    expect(backupSummary?.previewOverflowCount).toBe(1);
+    expect(backupSummary?.diffSummary).toMatchObject({
+      currentLiveCount: 6,
+      matchedCount: 5,
+      missingFromCurrentCount: 1,
+      extraInCurrentCount: 1,
+      progressedCount: 1,
+    });
   }, 15000);
 
   it("handles backup edge cases for missing PO, progressed batches, and missing backup ids", async () => {

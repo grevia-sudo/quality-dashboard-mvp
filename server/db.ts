@@ -119,6 +119,14 @@ function normalizeBatchMatchValue(value: unknown) {
     : "";
 }
 
+function buildImportRowIdentity(row: { batchNo?: unknown; serialNumber?: unknown; imei?: unknown }) {
+  const batchNo = normalizeBatchMatchValue(row.batchNo);
+  const serialNumber = normalizeBatchMatchValue(row.serialNumber);
+  const imei = normalizeBatchMatchValue(row.imei);
+
+  return [batchNo, serialNumber, imei].filter(Boolean).join("|");
+}
+
 function getGoogleServiceAccountCredentials() {
   const rawCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!rawCredentials) {
@@ -2961,7 +2969,7 @@ export async function getImportBatchBackups() {
     return [];
   }
 
-  return db
+  const backupRows = await db
     .select({
       id: importBatchBackups.id,
       poNumber: importBatchBackups.poNumber,
@@ -2972,10 +2980,65 @@ export async function getImportBatchBackups() {
       restoredAt: importBatchBackups.restoredAt,
       createdByUserId: importBatchBackups.createdByUserId,
       restoredByUserId: importBatchBackups.restoredByUserId,
+      snapshot: importBatchBackups.snapshot,
     })
     .from(importBatchBackups)
     .orderBy(desc(importBatchBackups.id))
     .limit(12);
+
+  const poNumbers = Array.from(new Set(backupRows.map((row) => row.poNumber).filter(Boolean)));
+  const currentRows = poNumbers.length > 0
+    ? await db
+      .select({
+        poNumber: products.poNumber,
+        batchNo: products.batchNo,
+        serialNumber: products.serialNumber,
+        imei: products.imei,
+        currentStationCode: products.currentStationCode,
+        currentStatus: products.currentStatus,
+      })
+      .from(products)
+      .where(and(inArray(products.poNumber, poNumbers), isNull(products.archivedAt)))
+    : [];
+
+  const currentRowMap = currentRows.reduce((accumulator, row) => {
+    const current = accumulator.get(row.poNumber ?? "") ?? [];
+    current.push(row);
+    accumulator.set(row.poNumber ?? "", current);
+    return accumulator;
+  }, new Map<string, typeof currentRows>());
+
+  return backupRows.map((row) => {
+    const snapshot = row.snapshot as ImportBackupSnapshot;
+    const snapshotRows = Array.isArray(snapshot?.rows) ? snapshot.rows : [];
+    const liveRows = currentRowMap.get(row.poNumber) ?? [];
+    const snapshotKeys = new Set(snapshotRows.map((item) => buildImportRowIdentity(item)).filter(Boolean));
+    const liveKeys = new Set(liveRows.map((item) => buildImportRowIdentity(item)).filter(Boolean));
+    const matchedCount = Array.from(snapshotKeys).filter((identity) => liveKeys.has(identity)).length;
+    const progressedCount = liveRows.filter((item) => item.currentStationCode !== "A1" || item.currentStatus !== "pending_a1").length;
+
+    return {
+      id: row.id,
+      poNumber: row.poNumber,
+      vendorName: row.vendorName,
+      backupLabel: row.backupLabel,
+      productCount: row.productCount,
+      createdAt: row.createdAt,
+      restoredAt: row.restoredAt,
+      createdByUserId: row.createdByUserId,
+      restoredByUserId: row.restoredByUserId,
+      previewCount: snapshotRows.length,
+      previewOverflowCount: Math.max(snapshotRows.length - 5, 0),
+      previewRows: snapshotRows.slice(0, 5),
+      diffSummary: {
+        currentLiveCount: liveRows.length,
+        matchedCount,
+        missingFromCurrentCount: Math.max(snapshotKeys.size - matchedCount, 0),
+        extraInCurrentCount: Math.max(liveKeys.size - matchedCount, 0),
+        progressedCount,
+      },
+    };
+  });
 }
 
 type ImportBackupSnapshot = {
