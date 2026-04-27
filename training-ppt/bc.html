@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 38px; }
+    .topline { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 24px; display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: end; }
+    .header h1 { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+    .header p { font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+
+    /* Main layout tightened to reduce overall height */
+    .main { padding-top: 18px; display: grid; grid-template-columns: 1fr 120px 1fr; gap: 18px; align-items: start; }
+    .station { min-height: 320px; background: rgba(255,255,255,0.84); }
+    .station-inner { padding: 12px 16px 0 16px; }
+    .station-tag { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; }
+    .station h2 { padding-top: 8px; font-size: 30px; line-height: 1.2; font-weight: 900; }
+    .station .summary { padding-top: 10px; font-size: 18px; line-height: 1.68; color: #475569; }
+    .section-line { margin-top: 10px; height: 2px; background: #D9E3F0; }
+    .item-table { padding-top: 10px; display: grid; grid-template-columns: 128px 1fr; row-gap: 10px; column-gap: 16px; }
+    .label { font-size: 16px; color: #64748B; font-weight: 700; }
+    .value { font-size: 18px; color: #334155; line-height: 1.6; }
+    .b-theme { border-top: 8px solid #7CA3D9; }
+    .b-theme .station-tag { color: #7CA3D9; }
+    .c-theme { border-top: 8px solid #E8B4C8; }
+    .c-theme .station-tag { color: #C66E8B; }
+    .center-flow { min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .arrow-circle { width: 88px; height: 88px; background: #EEF4FB; display: flex; align-items: center; justify-content: center; font-size: 38px; color: #517DB9; }
+    .flow-title { padding-top: 14px; font-size: 22px; font-weight: 900; text-align: center; line-height: 1.35; }
+    .flow-text { padding-top: 10px; font-size: 17px; line-height: 1.7; color: #64748B; text-align: center; max-width: 220px; }
+    .bottom { padding-top: 12px; display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 18px; }
+    .bottom-panel { min-height: 110px; background: rgba(255,255,255,0.82); border-top: 6px solid #D9E3F0; }
+    .bottom-inner { padding: 12px 16px 0 16px; }
+    .bottom-panel h3 { font-size: 22px; font-weight: 900; }
+    .bottom-panel p { padding-top: 8px; font-size: 17px; line-height: 1.7; color: #475569; }
+    .two-col-points { padding-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .point { background: #F8FAFC; min-height: 64px; }
+    .point-inner { padding: 8px 12px 0 12px; }
+    .point strong { font-size: 17px; color: #0F172A; }
+    .point span { display: block; padding-top: 6px; font-size: 15px; line-height: 1.55; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topline"></div>
+      <div class="header">
+        <h1>B / C 站操作重點</h1>
+        <p>兩站不是各做各的，由 B 建立初版判讀，C 承接並補齊。</p>
+      </div>
+
+      <div class="main">
+        <section class="station b-theme">
+          <div class="station-inner">
+            <div class="station-tag">Station B</div>
+            <h2>B 站：先做功能與電池判讀</h2>
+            <p class="summary">B 站建立可承接的初版判讀，著重快速與明確。</p>
+            <div class="section-line"></div>
+            <div class="item-table">
+              <div class="label">主要目的</div>
+              <div class="value">完成電池與非螢幕功能的初版記錄。</div>
+              <div class="label">記錄內容</div>
+              <div class="value">電池檢測、故障狀態摘要。</div>
+              <div class="label">操作重點</div>
+              <div class="value">搜尋並快速判讀，避免含糊敘述。</div>
+              <div class="label">畫面目的</div>
+              <div class="value">維持搜尋/結果/未處理的閱讀節奏一致。</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="center-flow">
+          <div class="arrow-circle"><i class="fa-solid fa-arrow-right"></i></div>
+          <div class="flow-title">結果承接<br/>而非重做一次</div>
+          <div class="flow-text">B 建立基礎判讀，C 站直接承接並補檢。</div>
+        </section>
+
+        <section class="station c-theme">
+          <div class="station-inner">
+            <div class="station-tag">Station C</div>
+            <h2>C 站：補齊外觀與鏡頭層級資訊</h2>
+            <p class="summary">C 站在前站結果上補齊螢幕、機身與鏡頭判讀。</p>
+            <div class="section-line"></div>
+            <div class="item-table">
+              <div class="label">主要目的</div>
+              <div class="value">承接 B 資料並完成外觀與鏡頭判讀。</div>
+              <div class="label">記錄內容</div>
+              <div class="value">螢幕、機身、鏡頭狀態與必要修正。</div>
+              <div class="label">操作重點</div>
+              <div class="value">先讀懂前站結果，再補齊或修正。</div>
+              <div class="label">畫面目的</div>
+              <div class="value">保持與 B 站一致的閱讀風格，方便切站。</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottom">
+        <section class="bottom-panel">
+          <div class="bottom-inner">
+            <h3>教育訓練要讓學員記住的事</h3>
+            <p>B 站為第一版判讀，C 站承接並補齊，重點在前後一致。</p>
+          </div>
+        </section>
+        <section class="bottom-panel" style="border-top-color:#E8B4C8;">
+          <div class="bottom-inner">
+            <h3>畫面設計原則</h3>
+            <div class="two-col-points">
+              <div class="point">
+                <div class="point-inner">
+                  <strong>版型一致</strong>
+                  <span>搜尋區、結果區、未處理區的節奏保持一致。</span>
+                </div>
+              </div>
+              <div class="point">
+                <div class="point-inner">
+                  <strong>欄位直白</strong>
+                  <span>欄位直接對應檢查項目，減少模糊與重複。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

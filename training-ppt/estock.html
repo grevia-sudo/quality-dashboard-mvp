@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 38px; }
+    .topbar { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+    .header p { width: 430px; font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+    .main { padding-top: 18px; display: grid; grid-template-columns: 300px 500px 340px; gap: 16px; }
+    .panel { background: rgba(255,255,255,0.88); min-height: 300px; }
+    .inner { padding: 16px 16px 0 16px; }
+    .eyebrow { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: #7CA3D9; }
+    .title-sm { padding-top: 10px; font-size: 27px; line-height: 1.25; font-weight: 800; }
+    .text { padding-top: 10px; font-size: 18px; line-height: 1.7; color: #475569; }
+    .info-strip { margin-top: 12px; border-top: 5px solid #D9E3F0; background: #F8FBFF; min-height: 110px; }
+    .info-in { padding: 12px 12px 0 12px; }
+    .info-line { padding-top: 8px; font-size: 17px; line-height: 1.5; color: #334155; }
+    .flow-panel { background: rgba(255,255,255,0.9); min-height: 300px; }
+    .flow-head { display: grid; grid-template-columns: 1fr 1fr 1fr; background: #EAF1FB; }
+    .flow-head div { padding: 12px 8px; border-right: 1px solid #D6E1EF; font-size: 15px; color: #35536F; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    .flow-head div:last-child { border-right: none; }
+    .flow-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; min-height: 160px; }
+    .step { border-right: 1px solid #E2E8F0; }
+    .step:last-child { border-right: none; }
+    .step-in { padding: 12px 10px 0 10px; }
+    .step h3 { font-size: 23px; line-height: 1.3; font-weight: 800; }
+    .step p { padding-top: 8px; font-size: 17px; line-height: 1.6; color: #475569; }
+    .marker { margin-top: 12px; height: 10px; background: #DCE8F6; }
+    .marker.alt { background: #F4D9E3; }
+    .marker.dark { background: #7CA3D9; }
+    .mid-note { padding: 12px 12px 0 12px; font-size: 18px; line-height: 1.6; color: #475569; }
+    .stock-panel { background: rgba(255,255,255,0.88); min-height: 300px; border-top: 6px solid #E8B4C8; }
+    .stock-grid { padding-top: 10px; display: grid; grid-template-columns: 110px 1fr; row-gap: 10px; column-gap: 12px; }
+    .label { font-size: 16px; color: #64748B; font-weight: 700; }
+    .value { font-size: 17px; color: #334155; line-height: 1.5; }
+    .footer { padding-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .footbox { min-height: 90px; background: rgba(255,255,255,0.82); border-top: 5px solid #D9E3F0; }
+    .foot-in { padding: 12px 14px 0 14px; }
+    .footbox h3 { font-size: 21px; font-weight: 900; }
+    .footbox p { padding-top: 8px; font-size: 16px; line-height: 1.6; color: #475569; }
+    .em { color: #0F172A; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <h1>E 站與待入庫</h1>
+        <p>E 站是收尾與回寫節點；待入庫則是核對與交接清單，強調準確與節奏。</p>
+      </div>
+
+      <div class="main">
+        <section class="panel">
+          <div class="inner">
+            <div class="eyebrow">E Station Role</div>
+            <div class="title-sm">收尾處理，不再重新判讀</div>
+            <div class="text">E 站任務是完成抹除與最終收尾，重點為穩定、快速與可連續處理。</div>
+            <div class="info-strip">
+              <div class="info-in">
+                <div class="eyebrow" style="color:#64748B;">操作重點</div>
+                <div class="info-line"><span class="em">輸入方式：</span>支援掃碼或條碼</div>
+                <div class="info-line"><span class="em">完成後：</span>按完成並推進下一站</div>
+                <div class="info-line"><span class="em">回到起點：</span>畫面回到待輸入狀態以便下一台處理</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="flow-panel">
+          <div class="flow-head">
+            <div>Step 1｜掃碼進件</div>
+            <div>Step 2｜完成收尾</div>
+            <div>Step 3｜回到待輸入</div>
+          </div>
+          <div class="flow-grid">
+            <div class="step">
+              <div class="step-in">
+                <h3>快速定位案件</h3>
+                <p>掃碼找到設備，避免在 E 站手動搜尋，維持收尾連續性。</p>
+                <div class="marker"></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-in">
+                <h3>完成抹除與推進</h3>
+                <p>確認抹除後直接完成並推進，避免案件滯留。</p>
+                <div class="marker alt"></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-in">
+                <h3>準備處理下一台</h3>
+                <p>畫面自動回到待輸入，讓操作不間斷。</p>
+                <div class="marker dark"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mid-note">教學口訣：<span class="em">掃碼、完成、清空、下一筆。</span></div>
+        </section>
+
+        <section class="stock-panel">
+          <div class="inner">
+            <div class="eyebrow" style="color:#C66E8B;">Stock Purpose</div>
+            <div class="title-sm">待入庫是清單，不是另一個操作站</div>
+            <div class="text">只保留清單以供核對，不需額外操作按鈕，方便交接與盤點。</div>
+            <div class="stock-grid">
+              <div class="label">用途</div><div class="value">核對是否可交接或入庫</div>
+              <div class="label">內容</div><div class="value">批號、序號、IMEI 等識別資訊</div>
+              <div class="label">優勢</div><div class="value">清楚明細，減少口頭確認</div>
+              <div class="label">原則</div><div class="value">不增加操作，專注清單比對</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <section class="footbox">
+          <div class="foot-in">
+            <h3>現場操作原則</h3>
+            <p>E 站強調收尾節奏；待入庫強調清單清楚，兩者服務交接效率。</p>
+          </div>
+        </section>
+        <section class="footbox" style="border-top-color:#E8B4C8;">
+          <div class="foot-in">
+            <h3>訓練時要提醒</h3>
+            <p>若畫面未回到待輸入或清單不足，現場會依賴口頭確認，破壞流程一致性。</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

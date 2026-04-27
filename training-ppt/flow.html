@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 40px; }
+    .topline { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 24px; display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 24px; align-items: end; }
+    .header h1 { font-size: 34px; font-weight: 900; line-height: 1.2; }
+    .header p { font-size: 18px; color: #64748B; line-height: 1.7; text-align: right; }
+    .flow-band { padding-top: 34px; }
+    .flow-shell { background: rgba(255,255,255,0.84); border-top: 6px solid #D9E3F0; min-height: 196px; }
+    .flow-inner { padding: 24px 24px 0 24px; }
+    .flow-label { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: #7CA3D9; font-weight: 700; }
+    /* reduced top padding in row to save vertical space */
+    .flow-row { padding-top: 18px; display: grid; grid-template-columns: 120px 28px 120px 28px 120px 28px 120px 28px 120px 28px 120px 28px 140px; align-items: center; justify-content: space-between; }
+    .step { height: 84px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #FFFFFF; border-top: 5px solid #7CA3D9; }
+    .step.alt { border-top-color: #E8B4C8; background: #FCF7F9; }
+    .step.final { border-top-color: #0F172A; background: #EEF4FB; }
+    .step-code { font-size: 16px; letter-spacing: 0.1em; color: #64748B; font-weight: 700; }
+    .step-name { padding-top: 8px; font-size: 24px; font-weight: 900; color: #0F172A; }
+    .arrow { text-align: center; font-size: 28px; color: #94A3B8; font-weight: 700; }
+    .explain-grid { padding-top: 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    /* lowered min-height to reduce overall vertical footprint */
+    .panel { min-height: 210px; background: rgba(255,255,255,0.88); }
+    .panel.blue { border-top: 6px solid #7CA3D9; }
+    .panel.pink { border-top: 6px solid #E8B4C8; }
+    /* trimmed inner padding */
+    .panel-inner { padding: 14px 16px 0 14px; }
+    .panel h2 { font-size: 24px; font-weight: 800; line-height: 1.35; }
+    .panel p { padding-top: 10px; font-size: 18px; color: #475569; line-height: 1.75; }
+    .mini-table { padding-top: 10px; display: grid; grid-template-columns: 138px 1fr; row-gap: 8px; column-gap: 14px; }
+    .mini-head { font-size: 16px; font-weight: 800; color: #0F172A; }
+    .mini-cell { font-size: 16px; color: #475569; line-height: 1.55; }
+    .footer { padding-top: 8px; font-size: 17px; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topline"></div>
+      <div class="header">
+        <h1>全流程總覽</h1>
+        <p>先建立一條共同理解的主流程，再補充「不同品類可以走不同站點組合」，教育訓練才不會在第一天就把人教亂。</p>
+      </div>
+
+      <section class="flow-band">
+        <div class="flow-shell">
+          <div class="flow-inner">
+            <div class="flow-label">Standard Route</div>
+            <div class="flow-row">
+              <div class="step"><div class="step-code">A1</div><div class="step-name">點到貨</div></div>
+              <div class="arrow">→</div>
+              <div class="step alt"><div class="step-code">A2</div><div class="step-name">安裝</div></div>
+              <div class="arrow">→</div>
+              <div class="step"><div class="step-code">B</div><div class="step-name">軟測</div></div>
+              <div class="arrow">→</div>
+              <div class="step alt"><div class="step-code">C</div><div class="step-name">品檢</div></div>
+              <div class="arrow">→</div>
+              <div class="step"><div class="step-code">D</div><div class="step-name">全檢</div></div>
+              <div class="arrow">→</div>
+              <div class="step alt"><div class="step-code">E</div><div class="step-name">抹除</div></div>
+              <div class="arrow">→</div>
+              <div class="step final"><div class="step-code">STOCK</div><div class="step-name">待入庫</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="explain-grid">
+        <div class="panel blue">
+          <div class="panel-inner">
+            <h2>先教標準流程，讓現場知道每一站在做什麼</h2>
+            <p>教育訓練時，可先把 A1 到待入庫當成主幹流程。這有助於工程師理解：資料從哪裡進來、在哪裡補齊、哪一站負責檢測、哪一站做最終放行，以及最後如何進入待入庫清單。</p>
+            <div class="mini-table">
+              <div class="mini-head">前段</div><div class="mini-cell">A1 / A2：補齊到貨資料並完成前置處理</div>
+              <div class="mini-head">中段</div><div class="mini-cell">B / C / D：逐站檢測、承接前站資訊、完成複核決策</div>
+              <div class="mini-head">後段</div><div class="mini-cell">E / 待入庫：完成收尾並進入交接或倉儲核對</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel pink">
+          <div class="panel-inner">
+            <h2>再補一個關鍵觀念：不是所有品類都走同一條路</h2>
+            <p>管理後台可依「商品類別 × 品牌」設定不同站點流程。因此某些品類可能略過 A2 或 B，也可能直接從特定站點進入下一階段。這代表 SOP 與訓練話術都要保留彈性，不能假設所有商品都一定走完整七站。</p>
+            <div class="mini-table">
+              <div class="mini-head">管理者工作</div><div class="mini-cell">設定每個品類需要經過的站點與順序</div>
+              <div class="mini-head">主管工作</div><div class="mini-cell">依當前品類流程安排支援人力與交接節奏</div>
+              <div class="mini-head">工程師工作</div><div class="mini-cell">依頁面顯示的下一站操作，不自行猜測流程</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">教學口訣：先講主幹、再講例外；先讓大家會走流程，再讓管理者學會調流程。</div>
+    </div>
+  </div>
+</body>
+</html>

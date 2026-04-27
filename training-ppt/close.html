@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 40px; }
+    .topbar { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 24px; display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 20px; align-items: end; }
+    .header h1 { font-size: 36px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.2; }
+    .header p { font-size: 18px; line-height: 1.65; color: #64748B; text-align: right; }
+    .main { padding-top: 34px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    .panel { min-height: 330px; background: rgba(255,255,255,0.88); }
+    .panel.blue { border-top: 8px solid #7CA3D9; }
+    .panel.pink { border-top: 8px solid #E8B4C8; }
+    .panel.dark { border-top: 8px solid #0F172A; background: #EEF4FB; }
+    .panel-inner { padding: 22px 20px 0 20px; }
+    .eyebrow { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: #64748B; }
+    .panel h2 { padding-top: 12px; font-size: 28px; line-height: 1.25; font-weight: 800; }
+    .panel p { padding-top: 14px; font-size: 18px; line-height: 1.7; color: #475569; }
+    .checklist { padding-top: 18px; display: grid; grid-template-columns: 98px 1fr; row-gap: 12px; column-gap: 14px; }
+    .label { font-size: 16px; font-weight: 800; color: #0F172A; }
+    .value { font-size: 16px; line-height: 1.6; color: #475569; }
+    .footer { padding-top: 26px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+    .footer-left { min-height: 140px; background: rgba(255,255,255,0.84); border-top: 6px solid #D9E3F0; }
+    .footer-right { min-height: 140px; background: rgba(255,255,255,0.84); border-top: 6px solid #E8B4C8; }
+    .foot-inner { padding: 18px 20px 0 20px; }
+    .foot-inner h3 { font-size: 22px; font-weight: 900; }
+    .foot-inner p { padding-top: 10px; font-size: 17px; line-height: 1.65; color: #475569; }
+    .em { font-weight: 800; color: #0F172A; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <h1>上線前確認事項</h1>
+        <p>教育訓練的最後一步，不是再教更多功能，而是確保角色、流程與高風險操作責任都已經講清楚、分清楚、對齊清楚。</p>
+      </div>
+
+      <div class="main">
+        <section class="panel blue">
+          <div class="panel-inner">
+            <div class="eyebrow">Check 01</div>
+            <h2>帳號角色是否正確</h2>
+            <p>若角色未配置完成，使用者在實際上線時可能根本看不到該有的頁面，教育訓練內容就無法落地。</p>
+            <div class="checklist">
+              <div class="label">確認點</div><div class="value">user、supervisor、manager、admin 是否分配正確</div>
+              <div class="label">風險</div><div class="value">看不到匯入頁、D 站全檢或管理後台</div>
+              <div class="label">建議</div><div class="value">訓練前先抽查幾組真實帳號登入畫面</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel pink">
+          <div class="panel-inner">
+            <div class="eyebrow">Check 02</div>
+            <h2>品類流程是否已配置</h2>
+            <p>系統支援不同商品類別 × 品牌走不同站點，因此上線前要先確認流程規則是否已經依實際作業配置完成。</p>
+            <div class="checklist">
+              <div class="label">確認點</div><div class="value">各品類是否已設定站點順序與必要節點</div>
+              <div class="label">風險</div><div class="value">商品被送錯站、主管誤判交接節奏</div>
+              <div class="label">建議</div><div class="value">用代表性品類走一次模擬流程確認設定</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel dark">
+          <div class="panel-inner">
+            <div class="eyebrow">Check 03</div>
+            <h2>高風險操作責任人是否明確</h2>
+            <p>備份、還原、刪除指定 PO 與流程調整屬於高風險管理操作。若責任人不清楚，上線後最容易在壓力下做出錯誤決策。</p>
+            <div class="checklist">
+              <div class="label">確認點</div><div class="value">誰可以做備份、還原、刪 PO 與修改流程</div>
+              <div class="label">風險</div><div class="value">資料污染、誤刪、責任不明確</div>
+              <div class="label">建議</div><div class="value">把管理操作責任與升級通報流程寫入 SOP</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <section class="footer-left">
+          <div class="foot-inner">
+            <h3>教育訓練收束語</h3>
+            <p>這套系統的核心價值，不只是把流程做成數位化，而是讓 <span class="em">工程師、主管與管理者看到的是同一套流程語言</span>，並能在同一套規則下進行交接、判讀與修復。</p>
+          </div>
+        </section>
+        <section class="footer-right">
+          <div class="foot-inner">
+            <h3>建議下一步</h3>
+            <p>完成這份簡報後，建議再補一份 <span class="em">現場快速 SOP 單頁版</span> 與 <span class="em">Google Sheet 欄位對照表</span>，方便主管與新進人員在真實作業中快速查閱。</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

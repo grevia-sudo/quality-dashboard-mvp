@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 38px; }
+    .topbar { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+    .header p { width: 430px; font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+    .main { padding-top: 24px; display: grid; grid-template-columns: 320px 840px; gap: 20px; }
+    .side { min-height: 404px; background: rgba(255,255,255,0.88); border-top: 8px solid #7CA3D9; }
+    .side-inner { padding: 18px 18px 0 18px; }
+    .eyebrow { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: #7CA3D9; }
+    .side h2 { padding-top: 10px; font-size: 28px; line-height: 1.25; font-weight: 800; }
+    .side p { padding-top: 12px; font-size: 18px; line-height: 1.68; color: #475569; }
+    .notice { margin-top: 18px; background: #EEF4FB; min-height: 122px; border-top: 5px solid #D9E3F0; }
+    .notice-inner { padding: 14px 14px 0 14px; }
+    .notice strong { font-size: 18px; color: #0F172A; }
+    .notice span { display: block; padding-top: 8px; font-size: 16px; line-height: 1.55; color: #475569; }
+    .matrix { min-height: 404px; background: rgba(255,255,255,0.9); }
+    .matrix-head { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; }
+    .matrix-title { font-size: 26px; font-weight: 800; }
+    .matrix-sub { font-size: 16px; color: #64748B; }
+    .matrix-grid { padding-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .module { min-height: 118px; background: #FFFFFF; border-top: 5px solid #D9E3F0; }
+    .module.pink { border-top-color: #E8B4C8; background: #FCF7F9; }
+    .module.blue { border-top-color: #7CA3D9; background: #F8FBFF; }
+    .module-inner { padding: 12px 14px 0 14px; }
+    .module h3 { font-size: 20px; line-height: 1.3; font-weight: 800; }
+    .module p { padding-top: 8px; font-size: 15px; line-height: 1.55; color: #475569; }
+    .bottom { padding-top: 18px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
+    .tools { min-height: 180px; background: rgba(255,255,255,0.88); border-top: 8px solid #E8B4C8; }
+    .tools-inner { padding: 16px 18px 0 18px; }
+    .tools h2 { font-size: 25px; font-weight: 800; }
+    .tool-grid { padding-top: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .tool { min-height: 98px; background: #FFFFFF; border-top: 4px solid #F1D6E0; }
+    .tool-inner { padding: 10px 12px 0 12px; }
+    .tool strong { font-size: 17px; color: #0F172A; }
+    .tool span { display: block; padding-top: 6px; font-size: 15px; line-height: 1.5; color: #475569; }
+    .reminder { min-height: 180px; background: rgba(255,255,255,0.88); border-top: 8px solid #7CA3D9; }
+    .reminder-inner { padding: 16px 18px 0 18px; }
+    .reminder h2 { font-size: 25px; font-weight: 800; }
+    .reminder p { padding-top: 10px; font-size: 17px; line-height: 1.65; color: #475569; }
+    .ruleline { margin-top: 14px; height: 2px; background: #D9E3F0; }
+    .footnote { padding-top: 10px; font-size: 16px; line-height: 1.6; color: #64748B; }
+    .em { color: #0F172A; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <h1>管理後台與資料工具</h1>
+        <p>管理後台不是日常站點頁，而是流程設定、資料修復與權限管理的中樞；操作前要先理解影響範圍。</p>
+      </div>
+
+      <div class="main">
+        <section class="side">
+          <div class="side-inner">
+            <div class="eyebrow">Admin Console</div>
+            <h2>設定中樞，不是每個人都能進</h2>
+            <p>管理後台僅限 admin 使用，主要負責流程規則、產能配置、功能選項、帳號與資料修復等高影響設定。訓練時要先讓管理者知道：這裡改的不是單一畫面，而是整個流程行為。</p>
+            <div class="notice">
+              <div class="notice-inner">
+                <strong>操作原則</strong>
+                <span>大多數設定採單一 <span class="em">全部儲存</span> 行為，不是每個區塊各自存檔。做變更前，要先確認這次修改會影響哪些站點與品類。</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="matrix">
+          <div style="padding: 0 0 0 0;">
+            <div class="matrix-head">
+              <div class="matrix-title">六大分頁</div>
+              <div class="matrix-sub">流程設定 × 品類管理 × 資料修復</div>
+            </div>
+            <div class="matrix-grid">
+              <div class="module blue">
+                <div class="module-inner">
+                  <h3>站點規則</h3>
+                  <p>設定下一站、返工站與路由啟用狀態，決定商品如何在流程中流動。</p>
+                </div>
+              </div>
+              <div class="module blue">
+                <div class="module-inner">
+                  <h3>產能設定</h3>
+                  <p>依站點與品類設定每日產能，作為 KPI 與工作點數判讀的基礎。</p>
+                </div>
+              </div>
+              <div class="module blue">
+                <div class="module-inner">
+                  <h3>功能表設定</h3>
+                  <p>維護 B / C 站的故障、外觀與鏡頭等選項，影響現場實際表單內容。</p>
+                </div>
+              </div>
+              <div class="module pink">
+                <div class="module-inner">
+                  <h3>資料工具</h3>
+                  <p>處理誤匯入、備份還原、商品追蹤等修復工作，是風險最高的分頁之一。</p>
+                </div>
+              </div>
+              <div class="module blue">
+                <div class="module-inner">
+                  <h3>帳號管理</h3>
+                  <p>建立帳號並分配角色，決定誰能看見匯入、D 站與管理後台頁面。</p>
+                </div>
+              </div>
+              <div class="module blue">
+                <div class="module-inner">
+                  <h3>品類設定</h3>
+                  <p>維護商品類別 × 品牌組合，並設定每個品類需要經過哪些站點。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottom">
+        <section class="tools">
+          <div class="tools-inner">
+            <h2>資料工具的三個核心用途</h2>
+            <div class="tool-grid">
+              <div class="tool">
+                <div class="tool-inner">
+                  <strong>匯入批次備份／還原</strong>
+                  <span>先備份，再處理誤匯入、重傳或資料污染，降低修復風險。</span>
+                </div>
+              </div>
+              <div class="tool">
+                <div class="tool-inner">
+                  <strong>刪除指定 PO</strong>
+                  <span>用於清除錯誤匯入或重複匯入資料，不是日常清理工具。</span>
+                </div>
+              </div>
+              <div class="tool">
+                <div class="tool-inner">
+                  <strong>商品批號／序號追蹤</strong>
+                  <span>查單筆商品各站任務、事件與耗時異常，快速找到卡關站點。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="reminder">
+          <div class="reminder-inner">
+            <h2>訓練時一定要提醒</h2>
+            <p>管理後台的操作會直接改變流程規則與資料結果，因此不建議邊教學邊正式修改。若要示範高風險功能，最好先說明用途、影響範圍與回復方式。</p>
+            <div class="ruleline"></div>
+            <div class="footnote">教學口訣：<span class="em">先理解影響，再進行修改；先做備份，再做修復。</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

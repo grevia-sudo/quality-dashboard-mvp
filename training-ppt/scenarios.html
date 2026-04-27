@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 38px; }
+    .topbar { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+    .header p { width: 430px; font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+    .grid { padding-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .case { min-height: 248px; background: rgba(255,255,255,0.9); }
+    .case.blue { border-top: 8px solid #7CA3D9; }
+    .case.pink { border-top: 8px solid #E8B4C8; }
+    .inner { padding: 18px 20px 0 20px; }
+    .tag { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: #64748B; }
+    .case h2 { padding-top: 10px; font-size: 26px; line-height: 1.25; font-weight: 900; }
+    .lead { padding-top: 10px; font-size: 17px; line-height: 1.65; color: #475569; }
+    .table { padding-top: 14px; display: grid; grid-template-columns: 92px 1fr; column-gap: 12px; row-gap: 10px; }
+    .label { font-size: 15px; font-weight: 800; color: #64748B; }
+    .value { font-size: 16px; line-height: 1.58; color: #334155; }
+    .footer { padding-top: 16px; border-top: 2px solid #D9E3F0; font-size: 17px; line-height: 1.6; color: #475569; }
+    .em { font-weight: 800; color: #0F172A; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <h1>常見作業情境</h1>
+        <p>教育訓練時不要只教頁面操作，還要教學員遇到問題時，第一步應該先進哪個模組、做哪個判斷。</p>
+      </div>
+
+      <section class="grid">
+        <div class="case blue">
+          <div class="inner">
+            <div class="tag">Scenario 1</div>
+            <h2>新到貨一批商品</h2>
+            <div class="lead">這是最常見的標準流程情境，重點是先建立乾淨資料，再讓現場逐站推進。</div>
+            <div class="table">
+              <div class="label">先做</div><div class="value">由具權限者進入匯入作業，上傳 CSV 並確認共同欄位。</div>
+              <div class="label">接著</div><div class="value">由 A1 開始補齊到貨資訊，再進入 A2 與後續檢測流程。</div>
+              <div class="label">提醒</div><div class="value">先到站點總覽看待辦分布，再安排支援人力，不要直接跳站。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="case pink">
+          <div class="inner">
+            <div class="tag">Scenario 2</div>
+            <h2>單筆商品卡在流程中</h2>
+            <div class="lead">當現場只知道「這台還沒動」，最有效率的作法不是逐站詢問，而是先做單筆追蹤。</div>
+            <div class="table">
+              <div class="label">先做</div><div class="value">到管理後台的商品批號／序號追蹤，輸入批號、序號或 IMEI。</div>
+              <div class="label">查看</div><div class="value">確認各站任務狀態、事件紀錄、完成時間與耗時異常高亮。</div>
+              <div class="label">提醒</div><div class="value">若顯示特定站點停太久，直接通知對應站點，不要靠口頭猜測。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="case pink">
+          <div class="inner">
+            <div class="tag">Scenario 3</div>
+            <h2>PO 匯錯或重複匯入</h2>
+            <div class="lead">這屬於高風險修復情境，訓練時要反覆強調先備份、再刪除或還原的順序。</div>
+            <div class="table">
+              <div class="label">先做</div><div class="value">先在資料工具建立該 PO 備份，確認樣本列與差異摘要。</div>
+              <div class="label">接著</div><div class="value">視情況刪除指定採購單，或直接還原到安全版本後再重新匯入。</div>
+              <div class="label">提醒</div><div class="value">刪除指定 PO 不是日常清理工具，應由管理者依流程執行。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="case blue">
+          <div class="inner">
+            <div class="tag">Scenario 4</div>
+            <h2>D 站複核與前站不一致</h2>
+            <div class="lead">遇到 D 站判斷與 B / C 站紀錄不同時，不能只口頭說明，要在系統裡留下可追溯結果。</div>
+            <div class="table">
+              <div class="label">先做</div><div class="value">直接在 D 站結果卡中展開修改區，更新不一致的文字結果。</div>
+              <div class="label">決策</div><div class="value">若確認無誤就放行到 E 站；若仍有問題就填寫原因並返工回 C 站。</div>
+              <div class="label">提醒</div><div class="value">返工一定要帶原因，否則前站只會收到退件，卻不知道要修哪裡。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">教學口訣：<span class="em">遇到情境先找模組，遇到異常先看追蹤，遇到修復先做備份。</span> 讓學員知道去哪里處理，比背下每個按鈕位置更重要。</div>
+    </div>
+  </div>
+</body>
+</html>

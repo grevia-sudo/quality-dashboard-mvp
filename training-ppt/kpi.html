@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 38px; }
+    .topbar { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+    .header p { width: 430px; font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+    .main { padding-top: 26px; display: grid; grid-template-columns: 380px 780px; gap: 20px; }
+    .left-panel { min-height: 490px; background: rgba(255,255,255,0.88); border-top: 8px solid #7CA3D9; }
+    .left-inner { padding: 22px 22px 0 22px; }
+    .eyebrow { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: #7CA3D9; }
+    .left-panel h2 { padding-top: 12px; font-size: 28px; line-height: 1.25; font-weight: 800; }
+    .left-panel p { padding-top: 14px; font-size: 18px; line-height: 1.68; color: #475569; }
+    .metric-grid { padding-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .metric { min-height: 118px; background: #F8FAFC; border-top: 5px solid #D9E3F0; }
+    .metric.alt { background: #FCF7F9; border-top-color: #E8B4C8; }
+    .metric .minner { padding: 14px 14px 0 14px; }
+    .metric-label { font-size: 15px; color: #64748B; line-height: 1.4; }
+    .metric-value { padding-top: 10px; font-size: 30px; font-weight: 900; color: #0F172A; }
+    .metric-note { padding-top: 6px; font-size: 15px; line-height: 1.45; color: #64748B; }
+    .right-panel { min-height: 490px; display: grid; grid-template-rows: 280px 190px; gap: 20px; }
+    .dimensions { background: rgba(255,255,255,0.9); border-top: 8px solid #D9E3F0; }
+    .dim-inner { padding: 20px 20px 0 20px; }
+    .dim-title { font-size: 26px; font-weight: 800; }
+    .dim-grid { padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dim-item { min-height: 90px; background: #FFFFFF; border-top: 4px solid #E2E8F0; }
+    .dim-item.blue { border-top-color: #7CA3D9; }
+    .dim-item.pink { border-top-color: #E8B4C8; }
+    .dim-item .dinner { padding: 12px 14px 0 14px; }
+    .dim-item strong { font-size: 18px; color: #0F172A; }
+    .dim-item span { display: block; padding-top: 8px; font-size: 16px; line-height: 1.55; color: #475569; }
+    .fairness { background: rgba(255,255,255,0.9); border-top: 8px solid #E8B4C8; }
+    .fair-inner { padding: 18px 20px 0 20px; }
+    .fairness h3 { font-size: 24px; font-weight: 800; }
+    .fairness p { padding-top: 10px; font-size: 17px; line-height: 1.65; color: #475569; }
+    .compare { padding-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .compare-box { min-height: 88px; }
+    .compare-box.bad { background: #F8FAFC; }
+    .compare-box.good { background: #EEF4FB; }
+    .compare-inner { padding: 12px 14px 0 14px; }
+    .compare-label { font-size: 15px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.08em; }
+    .compare-text { padding-top: 8px; font-size: 16px; line-height: 1.5; color: #334155; }
+    .footer { padding-top: 16px; font-size: 17px; line-height: 1.6; color: #475569; border-top: 2px solid #D9E3F0; }
+    .em { font-weight: 800; color: #0F172A; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <h1>KPI 與公平性邏輯</h1>
+        <p>KPI 頁面不是只讓人比較誰做得多，而是把產能、品質、時效與出勤公平性放進同一套判讀框架。</p>
+      </div>
+
+      <div class="main">
+        <section class="left-panel">
+          <div class="left-inner">
+            <div class="eyebrow">Engineer KPI</div>
+            <h2>個人頁面先看四個核心數字</h2>
+            <p>教育訓練時可先帶學員認識 KPI 頁最常看的四個主指標，再補充它們背後的管理含義，避免只盯著總件數看排名。</p>
+            <div class="metric-grid">
+              <div class="metric">
+                <div class="minner">
+                  <div class="metric-label">當日總點數</div>
+                  <div class="metric-value">Points</div>
+                  <div class="metric-note">反映當天實際完成的工作量</div>
+                </div>
+              </div>
+              <div class="metric alt">
+                <div class="minner">
+                  <div class="metric-label">原始達成率</div>
+                  <div class="metric-value">Rate</div>
+                  <div class="metric-note">先看與基準目標的距離</div>
+                </div>
+              </div>
+              <div class="metric alt">
+                <div class="minner">
+                  <div class="metric-label">KPI 達標率</div>
+                  <div class="metric-value">KPI</div>
+                  <div class="metric-note">綜合規則後的核心判讀值</div>
+                </div>
+              </div>
+              <div class="metric">
+                <div class="minner">
+                  <div class="metric-label">超標率</div>
+                  <div class="metric-value">Over</div>
+                  <div class="metric-note">看是否穩定超過基準線</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="right-panel">
+          <div class="dimensions">
+            <div class="dim-inner">
+              <div class="dim-title">四大 KPI 面向</div>
+              <div class="dim-grid">
+                <div class="dim-item blue">
+                  <div class="dinner">
+                    <strong>產能達成</strong>
+                    <span>以點數制衡量工作量，不直接用單純件數代替實際貢獻。</span>
+                  </div>
+                </div>
+                <div class="dim-item pink">
+                  <div class="dinner">
+                    <strong>品質表現</strong>
+                    <span>抽檢不良率與返工率會影響判讀，避免只追求速度。</span>
+                  </div>
+                </div>
+                <div class="dim-item pink">
+                  <div class="dinner">
+                    <strong>時效表現</strong>
+                    <span>觀察逾期件數與平均處理時數，找出節點拖延問題。</span>
+                  </div>
+                </div>
+                <div class="dim-item blue">
+                  <div class="dinner">
+                    <strong>出勤公平性</strong>
+                    <span>月報不用總件數硬比，改看日均點數，降低出勤差異造成的誤判。</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fairness">
+            <div class="fair-inner">
+              <h3>月報公平性的核心規則</h3>
+              <p>真正要讓現場接受 KPI，關鍵不是做更複雜的計算，而是讓大家知道：系統不會只因為某人上班天數多，就直接把他排在前面。</p>
+              <div class="compare">
+                <div class="compare-box bad">
+                  <div class="compare-inner">
+                    <div class="compare-label">不建議</div>
+                    <div class="compare-text">直接比較月總件數或月總點數，容易忽略出勤天數差異。</div>
+                  </div>
+                </div>
+                <div class="compare-box good">
+                  <div class="compare-inner">
+                    <div class="compare-label">系統採用</div>
+                    <div class="compare-text">用 <span class="em">月日均點數</span> 搭配品質與時效一起判讀，讓月報更公平。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">教學口訣：<span class="em">KPI 不是只看做多少，而是看做得快不快、穩不穩、公不公平。</span></div>
+    </div>
+  </div>
+</body>
+</html>

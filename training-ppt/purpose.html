@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 40px; }
+    .topline { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 26px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; }
+    .header p { font-size: 18px; color: #64748B; max-width: 500px; line-height: 1.6; text-align: right; }
+    .grid { padding-top: 34px; display: grid; grid-template-columns: 0.95fr 1.1fr 0.95fr; gap: 22px; }
+    .panel { min-height: 500px; background: rgba(255,255,255,0.82); border-top: 6px solid #D9E3F0; }
+    .panel .inner { padding: 28px 26px 0 26px; }
+    .tag { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #7CA3D9; }
+    .panel h2 { padding-top: 14px; font-size: 28px; line-height: 1.25; font-weight: 800; }
+    .panel p { padding-top: 16px; font-size: 19px; line-height: 1.75; color: #475569; }
+    .stat { margin-top: 26px; background: #EEF4FB; min-height: 108px; }
+    .stat .sinner { padding: 20px 22px 0 22px; }
+    .stat-label { font-size: 16px; color: #64748B; }
+    .stat-value { padding-top: 8px; font-size: 30px; font-weight: 900; color: #0F172A; }
+    .mid-highlight { margin-top: 22px; background: linear-gradient(180deg, #EEF4FB 0%, #FFFFFF 100%); min-height: 188px; }
+    .mid-highlight .inner2 { padding: 24px 24px 0 24px; }
+    .mid-highlight h3 { font-size: 22px; font-weight: 800; }
+    .mid-highlight p { padding-top: 12px; font-size: 18px; color: #475569; line-height: 1.7; }
+    .footerline { padding-top: 18px; font-size: 17px; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topline"></div>
+      <div class="header">
+        <h1>這套系統解決什麼問題</h1>
+        <p>核心不是做更多畫面，而是把跨站作業、資料修復與管理判讀放進同一套流程語言。</p>
+      </div>
+      <div class="grid">
+        <section class="panel">
+          <div class="inner">
+            <div class="tag">現場痛點</div>
+            <h2>資料分散、交接斷點多</h2>
+            <p>若仍依賴人工對表、口頭交接與零散記錄，商品在站與站之間很容易出現狀態不一致、找不到前站結果，或不知道到底卡在哪一關。</p>
+            <div class="stat">
+              <div class="sinner">
+                <div class="stat-label">現場最常見問題</div>
+                <div class="stat-value">重複輸入<br/>與跨站追問</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="panel" style="border-top-color:#7CA3D9;">
+          <div class="inner">
+            <div class="tag">系統做法</div>
+            <h2>把匯入、檢測、全檢與待入庫串成一條可追蹤流程</h2>
+            <p>系統從匯入作業開始建立待處理資料，再由 A1、A2、B、C、D、E 逐站推進。每一站都可承接前站資訊，並在需要時修改或返工，不必回到紙本或外部表單重查。</p>
+            <div class="mid-highlight">
+              <div class="inner2">
+                <h3>使用者真正得到的價值</h3>
+                <p>工程師知道下一步要做什麼，主管知道哪一站最擁擠，管理者知道流程規則有沒有設對，異常資料也能被追蹤與修復。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="panel" style="border-top-color:#E8B4C8;">
+          <div class="inner">
+            <div class="tag">管理價值</div>
+            <h2>同時兼顧效率、品質與可控性</h2>
+            <p>這套系統不是只追求件數，而是把逾期、返工、耗時異常、KPI 達標率與資料安全都納入同一套管理視角，讓現場與後台看到的是同一份真相。</p>
+            <div class="footerline">教育訓練的第一步，是先讓所有人理解：這套系統的目的是減少混亂，而不是增加流程負擔。</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

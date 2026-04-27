@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .frame { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 44px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 34px; }
+    .left-panel { min-height: 632px; display: flex; flex-direction: column; justify-content: space-between; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: #FFFFFF; color: #475569; font-size: 18px; letter-spacing: 0.08em; }
+    .title { margin-top: 26px; font-size: 66px; line-height: 1.08; font-weight: 900; letter-spacing: -0.03em; max-width: 720px; }
+    .subtitle { margin-top: 22px; font-size: 28px; line-height: 1.5; color: #475569; max-width: 700px; }
+    .meta { display: flex; gap: 14px; margin-top: 32px; flex-wrap: wrap; }
+    .meta-item { padding: 12px 18px; border-radius: 18px; background: #FFFFFF; font-size: 18px; color: #334155; }
+    .bottom-note { border-top: 2px solid #D9E3F0; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .bottom-note p { font-size: 18px; color: #64748B; }
+    .right-panel { min-height: 632px; background: linear-gradient(180deg, #FFFFFF 0%, #FAFCFF 100%); border-radius: 34px; position: relative; overflow: hidden; }
+    .accent-top { width: 100%; height: 14px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .card-body { padding: 34px 34px 0 34px; }
+    .section-tag { color: #7CA3D9; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .card-title { margin-top: 14px; font-size: 34px; line-height: 1.25; font-weight: 800; }
+    .pill-grid { margin-top: 28px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .pill { border-radius: 18px; padding: 16px 14px; background: #F8FAFC; font-size: 18px; color: #334155; text-align: center; }
+    .highlight-box { margin-top: 24px; border-radius: 26px; background: #EEF4FB; padding: 24px; }
+    .highlight-box h3 { font-size: 22px; font-weight: 800; }
+    .highlight-box p { margin-top: 12px; font-size: 18px; line-height: 1.7; color: #475569; }
+    .circle-a, .circle-b { position: absolute; border-radius: 999px; }
+    .circle-a { width: 190px; height: 190px; right: -40px; bottom: -40px; background: rgba(124,163,217,0.20); }
+    .circle-b { width: 130px; height: 130px; right: 80px; bottom: 80px; background: rgba(232,180,200,0.28); }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="frame">
+      <section class="left-panel">
+        <div>
+          <div class="eyebrow"><i class="fa-solid fa-gears"></i><span>回收品檢系統｜教育訓練</span></div>
+          <h1 class="title">回收品檢系統 MVP<br/>教育訓練簡報</h1>
+          <p class="subtitle">聚焦角色權限、站點流程、全檢邏輯、管理後台與現場常見作業情境，作為內部上線與交接使用。</p>
+          <div class="meta">
+            <div class="meta-item">適用對象：工程師／主管／管理者</div>
+            <div class="meta-item">版本日期：2026-04-27</div>
+          </div>
+        </div>
+        <div class="bottom-note">
+          <p>以流程清楚、閱讀寬鬆、可直接教學為目標</p>
+          <p>Manus AI</p>
+        </div>
+      </section>
+      <section class="right-panel">
+        <div class="accent-top"></div>
+        <div class="card-body">
+          <div class="section-tag">Training Focus</div>
+          <h2 class="card-title">從匯入到待入庫，建立一致的現場作業語言</h2>
+          <div class="pill-grid">
+            <div class="pill">角色與入口</div>
+            <div class="pill">A1–E 站流程</div>
+            <div class="pill">D 站全檢</div>
+            <div class="pill">KPI 與公平性</div>
+            <div class="pill">管理後台</div>
+            <div class="pill">資料修復工具</div>
+          </div>
+          <div class="highlight-box">
+            <h3>本次簡報用途</h3>
+            <p>可用於新進人員訓練、跨站交接說明、主管班前教育與管理者後台操作教學。</p>
+          </div>
+        </div>
+        <div class="circle-a"></div>
+        <div class="circle-b"></div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

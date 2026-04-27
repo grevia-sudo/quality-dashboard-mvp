@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 42px; }
+    .headline { display:flex; justify-content:space-between; align-items:flex-end; border-top: 10px solid #7CA3D9; }
+    .headline h1 { padding-top: 24px; font-size: 34px; font-weight: 900; }
+    .headline p { padding-top: 24px; font-size: 18px; color:#64748B; max-width: 500px; line-height: 1.6; text-align:right; }
+    .layout { padding-top: 18px; display:grid; grid-template-columns: 0.76fr 1.24fr; gap: 20px; align-items:start; }
+    .side { background: rgba(255,255,255,0.86); min-height: 0; }
+    .side-inner { padding: 18px 16px 0 16px; }
+    .eyebrow { font-size: 15px; letter-spacing: .12em; text-transform: uppercase; color:#7CA3D9; font-weight:700; }
+    .side h2 { padding-top: 12px; font-size: 28px; line-height: 1.3; font-weight: 800; }
+    .side p { padding-top: 12px; font-size: 19px; line-height: 1.6; color:#475569; }
+    .note { margin-top: 18px; background:#FCEFF4; min-height: 0; }
+    .note .in { padding: 14px 16px 0 16px; }
+    .note strong { font-size: 21px; color:#0F172A; }
+    .note p { padding-top: 8px; font-size: 18px; line-height: 1.6; color:#475569; }
+    /* Roles rendered as compact cards to reduce vertical length */
+    .roles-grid { display:block; }
+    .roles-header { display:grid; grid-template-columns: 120px 250px 250px 1fr; gap:12px; background: rgba(255,255,255,0.88); padding: 12px 10px; border-bottom:2px solid #D9E3F0; font-weight:800; color:#475569; font-size:16px; }
+    .cards { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px; }
+    .card { background: rgba(255,255,255,0.88); padding: 12px; border-bottom:1px solid #E2E8F0; }
+    .card .role { font-size:20px; font-weight:800; color:#0F172A; }
+    .card p { font-size:17px; line-height:1.6; color:#334155; margin-top:8px; }
+    .card .meta { font-size:17px; line-height:1.6; color:#334155; margin-top:6px; }
+    .tag-admin { color:#C05B7D; font-weight:800; }
+    .tag-mgmt { color:#517DB9; font-weight:800; }
+    .footer { margin-top:12px; font-size:17px; color:#64748B; }
+  </style>
+</head>
+<body>
+<div class="slide-container">
+  <div class="wrap">
+    <div class="headline">
+      <h1>角色與權限要先講清楚</h1>
+      <p>若角色沒配對，使用者就看不到對應頁面，因此教育訓練前要先確認帳號設定是否正確。</p>
+    </div>
+    <div class="layout">
+      <section class="side">
+        <div class="side-inner">
+          <div class="eyebrow">Access Logic</div>
+          <h2>權限的目的是分工，不是限制作業效率</h2>
+          <p>一般站點與 KPI 查詢屬於日常作業區；匯入作業與 D 站全檢屬於管理型支援區；管理後台則是高風險設定區，只保留給 admin 使用。</p>
+          <div class="note">
+            <div class="in">
+              <strong>現場最常見問題</strong>
+              <p>「我為什麼看不到匯入頁或管理後台？」答案通常不是系統壞掉，而是帳號角色尚未正確配置。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section>
+        <div class="roles-grid">
+          <div class="roles-header">
+            <div>角色</div>
+            <div>主要工作</div>
+            <div>可用模組</div>
+            <div>訓練重點</div>
+          </div>
+          <div class="cards">
+            <div class="card">
+              <div class="role">user</div>
+              <div class="meta">一般站點作業與個人工程師 KPI</div>
+              <div class="meta">站點總覽、一般站點、個人 KPI</div>
+              <p>熟悉站點流程、掃碼節奏與交接規則</p>
+            </div>
+            <div class="card">
+              <div class="role tag-mgmt">supervisor</div>
+              <div class="meta">現場支援與跨站協調</div>
+              <div class="meta">一般站點、匯入作業、D 站全檢、KPI</div>
+              <p>除站內操作外，還要學會匯入與全檢判斷</p>
+            </div>
+            <div class="card">
+              <div class="role tag-mgmt">manager</div>
+              <div class="meta">流程管理與跨站支援</div>
+              <div class="meta">一般站點、匯入作業、D 站全檢、KPI</div>
+              <p>重點在站點負載判讀、流程安排與異常應變</p>
+            </div>
+            <div class="card">
+              <div class="role tag-admin">admin</div>
+              <div class="meta">系統配置、資料修復、帳號管理</div>
+              <div class="meta">全部模組，含管理後台六大分頁</div>
+              <p>需理解流程規則、產能設定、資料工具與風險操作</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer">訓練實務建議：先確認角色，再開始教操作；否則使用者在自己的畫面上可能根本看不到你正在講的頁面。</div>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -916,6 +916,10 @@ let lastEnsureMvpSeedDataAt = 0;
 let lastArchiveExpiredDataAt = 0;
 
 export async function ensureMvpSeedData() {
+  if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+    return;
+  }
+
   if (Date.now() - lastEnsureMvpSeedDataAt < 60_000) {
     return;
   }

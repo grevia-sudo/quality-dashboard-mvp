@@ -1,0 +1,156 @@
+{
+  "project_info": {
+    "title": "回收品檢系統 MVP 教育訓練",
+    "created": 1777278648.0773306,
+    "last_updated": 1777279147.9519966,
+    "total_slides": 12
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "purpose",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "roles",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "flow",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "import_a1a2",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "bc",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "dstation",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "estock",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "kpi",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "admin",
+      "state": "edited",
+      "pageNum": 10
+    },
+    {
+      "id": "scenarios",
+      "state": "edited",
+      "pageNum": 11
+    },
+    {
+      "id": "close",
+      "state": "edited",
+      "pageNum": 12
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "回收品檢系統 MVP 教育訓練",
+      "summary": "封面頁，呈現簡報主題、副標與適用對象。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "purpose",
+      "title": "系統目的與價值",
+      "summary": "說明這套系統要解決的現場痛點與管理價值。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "roles",
+      "title": "角色與權限",
+      "summary": "整理 user、supervisor、manager、admin 的可用功能與差異。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "flow",
+      "title": "全流程總覽",
+      "summary": "說明 A1 到待入庫的主要站點與依品類調整流程的概念。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "import_a1a2",
+      "title": "匯入、A1 與 A2 操作",
+      "summary": "介紹匯入規則與 A1/A2 的快速作業方式。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "bc",
+      "title": "B / C 站操作重點",
+      "summary": "說明 B、C 站的檢測內容與前站結果承接關係。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "dstation",
+      "title": "D 站全檢重點",
+      "summary": "說明 D 站全檢、修改、放行與返工決策。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "estock",
+      "title": "E 站與待入庫",
+      "summary": "說明 E 站收尾流程與待入庫清單用途。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "kpi",
+      "title": "KPI 與公平性邏輯",
+      "summary": "說明個人 KPI、四大面向與月報日均點數規則。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "admin",
+      "title": "管理後台與資料工具",
+      "summary": "整理後台六大分頁與資料修復工具。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "scenarios",
+      "title": "常見作業情境",
+      "summary": "用四個實際情境說明現場應如何操作系統。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "close",
+      "title": "上線前確認事項",
+      "summary": "收束教育訓練重點並提出上線前檢核清單。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    }
+  ]
+}

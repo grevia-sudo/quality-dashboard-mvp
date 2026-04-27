@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 40px; }
+    .topline { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; }
+    .header p { max-width: 520px; font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+    .main { padding-top: 28px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; }
+    .flow-area { min-height: 470px; background: rgba(255,255,255,0.84); }
+    .flow-inner { padding: 22px 22px 0 22px; }
+    .flow-title { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: #7CA3D9; font-weight: 700; }
+    .flow-band { padding-top: 18px; display: grid; grid-template-columns: 1fr 56px 1fr 56px 1fr; align-items: stretch; }
+    .stage { min-height: 300px; }
+    .stage-top { height: 8px; }
+    .stage-body { min-height: 292px; padding: 18px 18px 0 18px; }
+    .stage-kicker { font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: #64748B; }
+    .stage h2 { padding-top: 10px; font-size: 28px; line-height: 1.2; font-weight: 800; }
+    .stage p { padding-top: 14px; font-size: 18px; line-height: 1.7; color: #475569; }
+    .stage-note { padding-top: 16px; font-size: 17px; line-height: 1.6; color: #334155; font-weight: 700; }
+    .arrow { display: flex; align-items: center; justify-content: center; font-size: 34px; color: #94A3B8; font-weight: 800; }
+    .import .stage-top { background: #DCE9F8; }
+    .a1 .stage-top { background: #F8E2EA; }
+    .a2 .stage-top { background: #E6EEF8; }
+    .side { min-height: 470px; display: grid; grid-template-rows: 1fr 1fr; gap: 18px; }
+    .module { background: rgba(255,255,255,0.88); }
+    .module-inner { padding: 22px 22px 0 22px; }
+    .module h3 { font-size: 24px; font-weight: 800; }
+    .module p { padding-top: 12px; font-size: 18px; line-height: 1.65; color: #475569; }
+    .rule-table { padding-top: 16px; width: 100%; border-collapse: collapse; }
+    .rule-table td { padding: 10px 0; border-top: 1px solid #E2E8F0; font-size: 16px; line-height: 1.45; vertical-align: top; color: #334155; }
+    .rule-table td:first-child { width: 108px; color: #64748B; font-weight: 700; }
+    .bottom-note { padding-top: 18px; font-size: 17px; line-height: 1.6; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topline"></div>
+      <div class="header">
+        <h1>匯入、A1 與 A2 操作</h1>
+        <p>這三個節點的目標是先建立乾淨資料，再讓現場能以掃碼節奏快速把商品推進到下一站。</p>
+      </div>
+      <div class="main">
+        <section class="flow-area">
+          <div class="flow-inner">
+            <div class="flow-title">Operation Rhythm</div>
+            <div class="flow-band">
+              <div class="stage import">
+                <div class="stage-top"></div>
+                <div class="stage-body">
+                  <div class="stage-kicker">Step 1</div>
+                  <h2>匯入作業</h2>
+                  <p>先用 CSV 建立採購單與待處理資料。每列必填商品分類與品牌，商品批號、商品序號、IMEI 至少要有一項可識別資料。</p>
+                  <div class="stage-note">PO 可自動生成，品名可先留空。</div>
+                </div>
+              </div>
+              <div class="arrow">→</div>
+              <div class="stage a1">
+                <div class="stage-top"></div>
+                <div class="stage-body">
+                  <div class="stage-kicker">Step 2</div>
+                  <h2>A1 點到貨</h2>
+                  <p>現場用掃碼補齊缺漏欄位。系統會優先比對已匯入資料，把批號、序號、品名等資訊補齊後，再往下一站推進。</p>
+                  <div class="stage-note">A1 完成條件：批號、序號、品名。</div>
+                </div>
+              </div>
+              <div class="arrow">→</div>
+              <div class="stage a2">
+                <div class="stage-top"></div>
+                <div class="stage-body">
+                  <div class="stage-kicker">Step 3</div>
+                  <h2>A2 安裝</h2>
+                  <p>進入 A2 後改為快速掃碼完工模式，目標是縮短停留時間，讓批量商品能穩定而連續地往後站流動。</p>
+                  <div class="stage-note">完成後直接推進下一站。</div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-note">訓練時要特別強調：匯入是建立資料基底，A1 是補齊資料，A2 是追求速度，三者目的不同，操作節奏也不同。</div>
+          </div>
+        </section>
+        <aside class="side">
+          <section class="module">
+            <div class="module-inner">
+              <h3>匯入規則</h3>
+              <p>不要等所有欄位都完整才開始匯入，系統設計本來就允許先建立身份，再由後續站點補齊。</p>
+              <table class="rule-table">
+                <tr><td>必填</td><td>商品分類、品牌、廠商</td></tr>
+                <tr><td>三選一</td><td>商品批號／商品序號／IMEI 至少一項</td></tr>
+                <tr><td>可留空</td><td>PO 單號可自動生成，品名可稍後補</td></tr>
+              </table>
+            </div>
+          </section>
+          <section class="module">
+            <div class="module-inner">
+              <h3>A1 / A2 現場提醒</h3>
+              <p>A1 的核心是把缺資料補正，不是做更多判斷；A2 的核心是穩定快速完成，不要在此節點停留太久。</p>
+              <table class="rule-table">
+                <tr><td>A1 必要</td><td>批號、序號、品名</td></tr>
+                <tr><td>IMEI</td><td>非必填，不應成為卡關原因</td></tr>
+                <tr><td>A2 目標</td><td>掃碼後快速完工，保持連續節奏</td></tr>
+              </table>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

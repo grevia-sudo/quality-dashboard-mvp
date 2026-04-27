@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F5F7FA; color: #0F172A; }
+    .wrap { width: 1180px; min-height: 720px; margin: 0 auto; padding-top: 38px; }
+    .topbar { height: 10px; background: linear-gradient(90deg, #7CA3D9 0%, #E8B4C8 100%); }
+    .header { padding-top: 22px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header h1 { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+    .header p { width: 450px; font-size: 18px; line-height: 1.6; color: #64748B; text-align: right; }
+    .main { padding-top: 20px; display: grid; grid-template-columns: 270px 540px 330px; gap: 20px; }
+    .block { background: rgba(255,255,255,0.88); min-height: 430px; }
+    .inner { padding: 12px 16px 0 16px; }
+    .eyebrow { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 800; color: #7CA3D9; }
+    .title-sm { padding-top: 12px; font-size: 26px; line-height: 1.25; font-weight: 800; }
+    .text { padding-top: 12px; font-size: 18px; line-height: 1.7; color: #475569; }
+    .source-box { margin-top: 16px; border-top: 4px solid #D9E3F0; min-height: 130px; background: #F8FBFF; }
+    .source-inner { padding: 12px 12px 0 12px; }
+    .source-item { padding-top: 8px; font-size: 18px; line-height: 1.55; color: #334155; }
+    .flow-head { display: grid; grid-template-columns: 1fr 1fr 1fr; background: #EAF1FB; }
+    .flow-head div { padding: 10px 10px; font-size: 15px; font-weight: 800; color: #33506E; text-transform: uppercase; letter-spacing: 0.08em; border-right: 1px solid #D6E1EF; }
+    .flow-head div:last-child { border-right: none; }
+    .flow-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; min-height: 360px; }
+    .step { border-right: 1px solid #E2E8F0; }
+    .step:last-child { border-right: none; }
+    .step .sin { padding: 12px 12px 0 12px; }
+    .step h3 { font-size: 24px; line-height: 1.3; font-weight: 800; color: #0F172A; }
+    .step p { padding-top: 10px; font-size: 17px; line-height: 1.7; color: #475569; }
+    .marker { margin-top: 14px; height: 10px; width: 100%; background: #DCE8F6; }
+    .marker.pink { background: #F4D9E3; }
+    .marker.dark { background: #7CA3D9; }
+    .outcome-wrap { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; }
+    .outcome { min-height: 200px; background: rgba(255,255,255,0.9); }
+    .outcome.blue { border-top: 6px solid #7CA3D9; }
+    .outcome.pink { border-top: 6px solid #E8B4C8; }
+    .outcome .oin { padding: 12px 16px 0 16px; }
+    .outcome h3 { font-size: 24px; font-weight: 800; }
+    .outcome p { padding-top: 10px; font-size: 17px; line-height: 1.7; color: #475569; }
+    .tagline { padding-top: 12px; font-size: 17px; color: #64748B; }
+    .footer { padding-top: 10px; font-size: 17px; line-height: 1.6; color: #475569; border-top: 2px solid #D9E3F0; }
+    .em { color: #0F172A; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <h1>D 站全檢重點</h1>
+        <p>D 站不是抽樣查看，而是承接 B / C 結果後，做最後一次複核、修改與分流判斷的決策站。</p>
+      </div>
+
+      <div class="main">
+        <section class="block">
+          <div class="inner">
+            <div class="eyebrow">D Station Role</div>
+            <div class="title-sm">全檢、比對、定案</div>
+            <div class="text">教育訓練要先讓學員理解：D 站的任務不是重新做一次全部檢測，而是用最短時間確認前站資訊是否足以放行。</div>
+            <div class="source-box">
+              <div class="source-inner">
+                <div class="eyebrow" style="color:#64748B;">輸入來源</div>
+                <div class="source-item"><span class="em">B 站：</span>功能與電池相關結果</div>
+                <div class="source-item"><span class="em">C 站：</span>螢幕、機身、鏡頭與外觀摘要</div>
+                <div class="source-item"><span class="em">搜尋：</span>可用批號、序號或產品識別快速定位案件</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="block">
+          <div class="flow-head">
+            <div>Step 1｜帶入結果</div>
+            <div>Step 2｜必要修改</div>
+            <div>Step 3｜做出決策</div>
+          </div>
+          <div class="flow-grid">
+            <div class="step">
+              <div class="sin">
+                <h3>先看前站摘要</h3>
+                <p>案件進入 D 站時，畫面先帶入 B 與 C 的文字結果，讓全檢人員直接在單一畫面比對，不需要回前站翻找資料。</p>
+                <div class="marker"></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="sin">
+                <h3>有差異就修正</h3>
+                <p>若實際觀察與前站紀錄不一致，D 站可以直接展開修改區，更新結果摘要，避免錯誤資訊一路帶到後站與外部表單。</p>
+                <div class="marker pink"></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="sin">
+                <h3>放行或返工</h3>
+                <p>當結果確認無誤，就放行到 E 站；若仍有異常，需填寫原因並返工回 C 站，讓後續處理方向保持一致。</p>
+                <div class="marker dark"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="outcome-wrap">
+          <div class="outcome blue">
+            <div class="oin">
+              <h3>放行到 E 站</h3>
+              <p>適用於結果一致、判定明確的案件。D 站確認後即可推進下一站，讓 E 站直接進入收尾處理，不再重複判讀。</p>
+              <div class="tagline">重點：確認後快速放行，避免案件在 D 站停留過久。</div>
+            </div>
+          </div>
+          <div class="outcome pink">
+            <div class="oin">
+              <h3>返工回 C 站</h3>
+              <p>適用於檢查結果不一致、描述不完整或仍有疑義的案件。返工時要留下明確原因，讓前站知道要補什麼，不是只把案件退回去。</p>
+              <div class="tagline">重點：返工要帶原因，否則只會增加來回溝通成本。</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">操作原則：<span class="em">先承接、再判讀、最後分流。</span> D 站的價值在於把前站結果整理成可以被信任的最終判斷，而不是讓流程多一層重工。</div>
+    </div>
+  </div>
+</body>
+</html>
