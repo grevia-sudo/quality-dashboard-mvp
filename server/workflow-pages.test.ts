@@ -146,6 +146,16 @@ describe("warehouse workflow pages", () => {
     expect(samplingPageSource).toContain("openCategoryEditor(task)");
     expect(samplingPageSource).toContain("setCategoryDialogTask(task);");
     expect(samplingPageSource).toContain("選擇品類設定");
+    expect(samplingPageSource).toContain("PackagePlus");
+    expect(samplingPageSource).toContain("Undo2");
+    expect(samplingPageSource).toContain("Search");
+    expect(samplingPageSource).toContain("搜尋商品批號或商品序號");
+    expect(samplingPageSource).toContain("relative max-w-xl space-y-3");
+    expect(samplingPageSource).toContain("grid gap-3 md:grid-cols-2 xl:grid-cols-3");
+    expect(samplingPageSource).toContain("編輯品類設定");
+    expect(samplingPageSource).toContain("justify-end gap-3");
+    expect(samplingPageSource).toContain("匯入作業");
+    expect(samplingPageSource).toContain("返回站點總覽");
   });
 
   it("keeps management access rules and performance optimizations in shared modules", () => {

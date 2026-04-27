@@ -91,3 +91,4 @@
 - [x] 在管理後台明確說明「刪除指定採購單」的用途、風險與適用情境，避免操作誤解
 - [x] 為匯入備份清單新增可執行測試，直接驗證 importBackups 會回傳 previewCount、previewRows、previewOverflowCount 與 diffSummary 等比較欄位
 - [x] 為商品追蹤耗時統計與異常高亮新增可執行測試，驗證 duration、overdue、long-running 與 anomaly 標示在代表性案例與邊界情境下正確運作
+- [x] D 站全檢頁面版型調整，對齊 B 站閱讀體驗（放寬資訊區塊、拉開卡片間距、優化欄位排列與操作按鈕位置）
