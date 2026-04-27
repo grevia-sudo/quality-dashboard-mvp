@@ -2289,6 +2289,10 @@ export async function getEngineerKpiSummary(userId: number) {
 }
 
 export async function seedKpiForDemo(userId: number) {
+  if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+    return;
+  }
+
   const db = await getDb();
   if (!db) return;
 
