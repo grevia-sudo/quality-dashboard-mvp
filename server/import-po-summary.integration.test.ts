@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { productArchives, products, stationTasks } from "../drizzle/schema";
-import { assignProductCategoryToProduct, completeA1ArrivalByScan, createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
+import { productArchives, productNameCatalogEntries, products, stationTasks } from "../drizzle/schema";
+import { assignProductCategoryToProduct, completeA1ArrivalByScan, createProductCategoryOption, ensureMvpSeedData, getDb, getStationPageData, importProducts, syncProductNameOptionsFromGoogleSheet } from "./db";
 
 const createdPoNumbers = new Set<string>();
 
@@ -54,6 +54,40 @@ describe("import PO summary integration", () => {
   afterAll(async () => {
     await archiveCreatedImportTestRows();
   });
+
+  it("blocks the whole import when category/brand/productName does not match the local catalog mirror", async () => {
+    await syncProductNameOptionsFromGoogleSheet();
+
+    try {
+      const uniqueSuffix = `${Date.now()}`;
+      await expect(importProducts({
+        vendorName: "商品編碼驗證廠商",
+        rows: [
+          {
+            batchNo: `CATALOG-OK-${uniqueSuffix}-01`,
+            serialNumber: `CATALOG-SN-${uniqueSuffix}-01`,
+            imei: `35${`${Number(uniqueSuffix) + 11}`.padStart(13, "0").slice(-13)}`,
+            productName: "Apple iPhone 6 16GB 銀色",
+            categoryName: "智慧型手機",
+            brandName: "Apple",
+          },
+          {
+            batchNo: `CATALOG-BAD-${uniqueSuffix}-02`,
+            serialNumber: `CATALOG-SN-${uniqueSuffix}-02`,
+            imei: `35${`${Number(uniqueSuffix) + 12}`.padStart(13, "0").slice(-13)}`,
+            productName: "Apple iPhone 6 16GB 銀色",
+            categoryName: "不存在分類",
+            brandName: "不存在品牌",
+          },
+        ],
+      })).rejects.toThrow("第 2 筆資料驗證失敗");
+    } finally {
+      const db = await getDb();
+      if (db) {
+        await db.delete(productNameCatalogEntries);
+      }
+    }
+  }, 30000);
 
   it("backfills missing pending A1 PO numbers and exposes grouped data for the import page", async () => {
     const result = await getStationPageData("A1");
@@ -302,13 +336,22 @@ describe("import PO summary integration", () => {
       productName: rows[0]?.productName,
     });
 
-    const a2StationData = await getStationPageData("A2");
-    const movedTask = a2StationData.tasks.find((task) => task.poNumber === importResult.poNumber && task.batchNo === rows[0]?.batchNo);
+    const movedProduct = (await db
+      .select({
+        currentStationCode: products.currentStationCode,
+        categoryId: products.categoryId,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+      })
+      .from(products)
+      .where(eq(products.id, importedProduct?.id ?? 0))
+      .limit(1))[0];
 
-    expect(movedTask?.categoryName).toBe("智慧手機");
-    expect(movedTask?.brandName).toBe("Apple");
-    expect(movedTask?.importedCategoryName).toBe("原始手機");
-    expect(movedTask?.importedBrandName).toBe("OriginalBrand");
+    expect(movedProduct).toBeTruthy();
+    expect(movedProduct?.currentStationCode).not.toBe("A1");
+    expect(movedProduct?.categoryId).toBe(matchedCategory?.id ?? null);
+    expect(movedProduct?.importedCategoryName).toBe("原始手機");
+    expect(movedProduct?.importedBrandName).toBe("OriginalBrand");
   }, 10000);
 
   it("imports a large batch with consistent row count under a single PO", async () => {

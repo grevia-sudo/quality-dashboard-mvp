@@ -11,6 +11,7 @@ import {
   InsertUser,
   productArchives,
   productCategories,
+  productNameCatalogEntries,
   productNameOptions,
   productivityScoreDetails,
   productivityTargetConfigs,
@@ -39,7 +40,7 @@ type SupportCompensationFilterInput = {
 
 const PRODUCT_NAME_SYNC_SPREADSHEET_ID = "1lMd28O9G-14VQQd7-RRIF8Tr5RaOVa7fhI1fkLXAB0o";
 const PRODUCT_NAME_SYNC_SHEET_NAME = "商品編碼列表";
-const PRODUCT_NAME_SYNC_COLUMN_RANGE = `${PRODUCT_NAME_SYNC_SHEET_NAME}!H:H`;
+const PRODUCT_NAME_SYNC_COLUMN_RANGE = `${PRODUCT_NAME_SYNC_SHEET_NAME}!H:N`;
 
 function toDateKey(value: Date) {
   return value.toISOString().slice(0, 10);
@@ -70,7 +71,19 @@ function normalizeProductNameLabel(value: unknown) {
   return text.split(/\s+/).join(" ");
 }
 
-async function getProductNameLabelsFromGoogleSheet() {
+type ProductNameCatalogSyncRow = {
+  label: string;
+  categoryName: string;
+  brandName: string;
+  sourceRowNumber: number;
+  sortOrder: number;
+};
+
+function getProductNameCatalogKey(input: { label: string; categoryName: string; brandName: string }) {
+  return `${input.categoryName}__${input.brandName}__${input.label}`;
+}
+
+async function getProductNameCatalogEntriesFromGoogleSheet() {
   const accessToken = await getGoogleSheetsAccessToken();
   const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PRODUCT_NAME_SYNC_SPREADSHEET_ID}/values/${encodeURIComponent(PRODUCT_NAME_SYNC_COLUMN_RANGE)}`, {
     headers: {
@@ -80,22 +93,41 @@ async function getProductNameLabelsFromGoogleSheet() {
   const result = await response.json() as { values?: string[][]; error?: { message?: string } };
 
   if (!response.ok) {
-    throw new Error(result.error?.message || "Failed to read product name column from Google Sheets");
+    throw new Error(result.error?.message || "Failed to read product name catalog columns from Google Sheets");
   }
 
-  const orderedLabels = new Map<string, true>();
+  const orderedEntries = new Map<string, ProductNameCatalogSyncRow>();
   (result.values ?? []).forEach((row, index) => {
-    const normalizedLabel = normalizeProductNameLabel(row?.[0]);
-    if (!normalizedLabel) {
+    if (index < 2) {
       return;
     }
-    if (index === 0 && ["商品名稱", "品名", "商品名"].includes(normalizedLabel)) {
+
+    const label = normalizeProductNameLabel(row?.[0]);
+    const categoryName = normalizeOptionalText(row?.[4]);
+    const brandName = normalizeOptionalText(row?.[6]);
+    if (label && ["商品名稱", "品名", "商品名"].includes(label)) {
       return;
     }
-    orderedLabels.set(normalizedLabel, true);
+
+    if (!label || !categoryName || !brandName) {
+   return;
+    }
+
+    const key = getProductNameCatalogKey({ label, categoryName, brandName });
+    if (orderedEntries.has(key)) {
+      return;
+    }
+
+    orderedEntries.set(key, {
+      label,
+      categoryName,
+      brandName,
+      sourceRowNumber: index + 1,
+      sortOrder: (orderedEntries.size + 1) * 10,
+    });
   });
 
-  return Array.from(orderedLabels.keys());
+  return Array.from(orderedEntries.values());
 }
 
 type StationStatusSummary = {
@@ -706,6 +738,43 @@ function hasImportIdentity(input: { batchNo?: string | null; serialNumber?: stri
   );
 }
 
+async function validateImportRowsAgainstProductCatalog(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  rows: Array<{
+    categoryName: string | null;
+    brandName: string | null;
+    productName: string | null;
+  }>,
+) {
+  const catalogRows = await db
+    .select({
+      categoryName: productNameCatalogEntries.categoryName,
+      brandName: productNameCatalogEntries.brandName,
+    })
+    .from(productNameCatalogEntries)
+    .where(eq(productNameCatalogEntries.active, true));
+
+  if (catalogRows.length === 0) {
+    return;
+  }
+
+  const categoryBrandKeys = new Set(catalogRows.map((row) => `${row.categoryName}__${row.brandName}`));
+
+  rows.forEach((row, index) => {
+    const categoryName = row.categoryName?.trim();
+    const brandName = row.brandName?.trim();
+
+    if (!categoryName || !brandName) {
+      return;
+    }
+
+    const categoryBrandKey = `${categoryName}__${brandName}`;
+    if (!categoryBrandKeys.has(categoryBrandKey)) {
+      throw new Error(`第 ${index + 1} 筆資料驗證失敗：商品分類「${categoryName}」與品牌「${brandName}」不在商品編碼列表中，請重新匯入；本次匯入不成功`);
+    }
+  });
+}
+
 async function findPendingA1ProductByIdentity(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null },
@@ -1158,8 +1227,35 @@ export async function getProductNameOptions() {
   }
 
   await ensureMvpSeedData();
+
+  const catalogRows = await db
+    .select({
+      id: productNameCatalogEntries.id,
+      label: productNameCatalogEntries.label,
+      active: productNameCatalogEntries.active,
+      sortOrder: productNameCatalogEntries.sortOrder,
+      categoryName: productNameCatalogEntries.categoryName,
+      brandName: productNameCatalogEntries.brandName,
+      sourceRowNumber: productNameCatalogEntries.sourceRowNumber,
+    })
+    .from(productNameCatalogEntries)
+    .where(eq(productNameCatalogEntries.active, true))
+    .orderBy(asc(productNameCatalogEntries.sortOrder), asc(productNameCatalogEntries.id));
+
+  if (catalogRows.length > 0) {
+    return catalogRows;
+  }
+
   return db
-    .select()
+    .select({
+      id: productNameOptions.id,
+      label: productNameOptions.label,
+      active: productNameOptions.active,
+      sortOrder: productNameOptions.sortOrder,
+      categoryName: sql<string | null>`null`,
+      brandName: sql<string | null>`null`,
+      sourceRowNumber: sql<number | null>`null`,
+    })
     .from(productNameOptions)
     .where(eq(productNameOptions.active, true))
     .orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id));
@@ -1592,6 +1688,8 @@ export async function importProducts(input: {
       throw new Error(`第 ${index + 1} 列至少要填寫商品批號、商品序號、IMEI 其中一項`);
     }
   }
+
+  await validateImportRowsAgainstProductCatalog(db, normalizedRows);
 
   const imeis = Array.from(new Set(normalizedRows.map((row) => row.imei).filter((value): value is string => Boolean(value))));
   const serialNumbers = Array.from(new Set(normalizedRows.map((row) => row.serialNumber).filter((value): value is string => Boolean(value))));
@@ -3171,16 +3269,31 @@ export async function syncProductNameOptionsFromGoogleSheet() {
     throw new Error("Database is not available");
   }
 
-  const labels = await getProductNameLabelsFromGoogleSheet();
-  if (labels.length === 0) {
-    throw new Error("Google 試算表 H 欄沒有可同步的品名資料");
+  const catalogEntries = await getProductNameCatalogEntriesFromGoogleSheet();
+  if (catalogEntries.length === 0) {
+    throw new Error("Google 試算表 H／L／N 欄沒有可同步的商品編碼資料");
   }
 
-  const existingRows = await db.select({ count: sql<number>`count(*)` }).from(productNameOptions);
-  const deletedExistingLabels = existingRows[0]?.count ?? 0;
+  const [existingOptionRows, existingCatalogRows] = await Promise.all([
+    db.select({ count: sql<number>`count(*)` }).from(productNameOptions),
+    db.select({ count: sql<number>`count(*)` }).from(productNameCatalogEntries),
+  ]);
 
+  const uniqueLabels = Array.from(new Map(catalogEntries.map((entry) => [entry.label, entry.label])).values());
+
+  await db.delete(productNameCatalogEntries);
   await db.delete(productNameOptions);
-  await db.insert(productNameOptions).values(labels.map((label, index) => ({
+
+  await db.insert(productNameCatalogEntries).values(catalogEntries.map((entry) => ({
+    label: entry.label,
+    categoryName: entry.categoryName,
+    brandName: entry.brandName,
+    sourceRowNumber: entry.sourceRowNumber,
+    sortOrder: entry.sortOrder,
+    active: true,
+  })));
+
+  await db.insert(productNameOptions).values(uniqueLabels.map((label, index) => ({
     label,
     active: true,
     sortOrder: (index + 1) * 10,
@@ -3189,10 +3302,12 @@ export async function syncProductNameOptionsFromGoogleSheet() {
   return {
     spreadsheetId: PRODUCT_NAME_SYNC_SPREADSHEET_ID,
     sheetName: PRODUCT_NAME_SYNC_SHEET_NAME,
-    column: "H",
-    deletedExistingLabels,
-    insertedLabels: labels.length,
-    firstInsertedLabels: labels.slice(0, 20),
+    columns: ["H", "L", "N"],
+    deletedExistingLabels: existingOptionRows[0]?.count ?? 0,
+    deletedExistingCatalogEntries: existingCatalogRows[0]?.count ?? 0,
+    insertedLabels: uniqueLabels.length,
+    insertedCatalogEntries: catalogEntries.length,
+    firstInsertedLabels: uniqueLabels.slice(0, 20),
   };
 }
 

@@ -33,7 +33,8 @@ describe("A1/A2 掃碼 UX source coverage", () => {
 
   it("uses a fuzzy-search product-name input instead of a native select", () => {
     expect(source).toContain("const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);");
-    expect(source).toContain("const filteredProductNameOptions = useMemo(() => {");
+    expect(source).toContain("const productNamePickerState = useMemo(() => resolveA1ProductNamePickerState({");
+    expect(source).toContain("const filteredProductNameOptions = productNamePickerState.options;");
     expect(source).toContain('placeholder="輸入品名關鍵字搜尋（可選）"');
     expect(source).toContain("setProductNamePickerOpen(true);");
     expect(source).toContain('setArrivalForm((prev) => ({ ...prev, productName: nextValue }));');
@@ -41,7 +42,7 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain('productName: arrivalForm.productName.trim() || undefined,');
     expect(source).toContain("onMouseDown={(event) => event.preventDefault()}");
     expect(source).toContain("找不到符合的品名，可直接保留目前輸入。");
-    expect(source).not.toContain("<select");
+    expect(source).not.toContain('placeholder="選擇品名"');
   });
 
   it("re-focuses the batch input on A1 page load and after receive errors", () => {

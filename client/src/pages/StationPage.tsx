@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
+import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
 import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldCheck, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -292,8 +293,9 @@ export default function StationPage() {
       toast.success(`已更新 ${result?.currentStationCode === "STOCK" ? "待入庫" : (result?.currentStationCode ?? stationCode)} 的品類設定`);
       setCategoryDialogTask(null);
       setCategoryDraftValue("");
-      await invalidateStationData();
-      await utils.sampling.queue.invalidate();
+        void invalidateStationData();
+        void utils.sampling.queue.invalidate();
+
     },
     onError: (error) => {
       toast.error(error.message || "更新品類設定失敗");
@@ -450,16 +452,45 @@ export default function StationPage() {
   const showStationEmptyState = (stationCode !== "B" && stationCode !== "C") || hasKeyword;
   const pendingTasks = detailQuery.data?.tasks ?? [];
 
-  const filteredProductNameOptions = useMemo(() => {
-    const normalizedKeyword = arrivalForm.productName.trim().toLowerCase();
-    if (!normalizedKeyword) {
-      return productNameOptions.slice(0, 20);
+  const matchedA1PendingTask = useMemo(() => {
+    if (stationCode !== "A1") {
+      return null;
     }
 
-    return productNameOptions
-      .filter((option) => option.label.toLowerCase().includes(normalizedKeyword))
-      .slice(0, 20);
-  }, [arrivalForm.productName, productNameOptions]);
+    const normalizedBatchNo = arrivalForm.batchNo.trim();
+    const normalizedSerialNumber = arrivalForm.serialNumber.trim();
+    const normalizedImei = arrivalForm.imei.trim();
+
+    if (!normalizedBatchNo && !normalizedSerialNumber && !normalizedImei) {
+      return null;
+    }
+
+    return pendingTasks.find((task) => {
+      if (normalizedBatchNo && task.batchNo?.trim() === normalizedBatchNo) {
+        return true;
+      }
+      if (normalizedSerialNumber && task.serialNumber?.trim() === normalizedSerialNumber) {
+        return true;
+      }
+      if (normalizedImei && task.imei?.trim() === normalizedImei) {
+        return true;
+      }
+      return false;
+    }) ?? null;
+  }, [arrivalForm.batchNo, arrivalForm.imei, arrivalForm.serialNumber, pendingTasks, stationCode]);
+
+  const matchedA1CategoryName = matchedA1PendingTask?.categoryName ?? matchedA1PendingTask?.importedCategoryName ?? matchedA1PendingTask?.subtypeCode ?? null;
+  const matchedA1BrandName = matchedA1PendingTask?.brandName ?? matchedA1PendingTask?.importedBrandName ?? null;
+
+  const productNamePickerState = useMemo(() => resolveA1ProductNamePickerState({
+    keyword: arrivalForm.productName,
+    matchedCategoryName: matchedA1CategoryName,
+    matchedBrandName: matchedA1BrandName,
+    productNameOptions,
+  }), [arrivalForm.productName, matchedA1BrandName, matchedA1CategoryName, productNameOptions]);
+
+  const filteredProductNameOptions = productNamePickerState.options;
+  const productNamePickerUsingFallbackAllOptions = productNamePickerState.usingFallbackAllOptions;
 
   const pendingCategorySummary = useMemo(() => {
     const summaryMap = new Map<string, { label: string; count: number }>();
@@ -746,7 +777,7 @@ export default function StationPage() {
                             }
                           }}
                           className="editable-field h-14 rounded-2xl border-0 bg-slate-50 pr-12 text-base"
-                          placeholder="必填，可輸入品名關鍵字或完整品名"
+                          placeholder="輸入品名關鍵字搜尋（可選）"
                        autoComplete="off"
                         />
                         <Search className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
@@ -755,29 +786,41 @@ export default function StationPage() {
                             {productNameOptionsQuery.isLoading ? (
                               <p className="px-3 py-4 text-sm text-slate-500">品名載入中…</p>
                             ) : filteredProductNameOptions.length > 0 ? (
-                              <div className="space-y-1">
-                                {filteredProductNameOptions.map((option) => {
-                                  const isActive = option.label === arrivalForm.productName;
-                                  return (
-                                    <button
-                                      key={option.id}
-                                      type="button"
-                                      className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${isActive ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}
-                                      onMouseDown={(event) => event.preventDefault()}
-                                      onClick={() => {
-                                        setArrivalForm((prev) => ({ ...prev, productName: option.label }));
-                                        setProductNamePickerOpen(false);
-                                      }}
-                                    >
-                                      {option.label}
-                                    </button>
-                                  );
-                                })}
+                              <div className="space-y-2">
+                                {matchedA1CategoryName && matchedA1BrandName ? (
+                                  <p className="px-3 pt-2 text-xs text-slate-500">
+                                    {productNamePickerUsingFallbackAllOptions
+                                      ? `目前沒有 ${matchedA1CategoryName} × ${matchedA1BrandName} 的預設品名，已切換為全品項搜尋；你也可以直接手動修改。`
+                                      : `目前先顯示 ${matchedA1CategoryName} × ${matchedA1BrandName} 的符合品名。`}
+                                  </p>
+                                ) : null}
+                                <div className="space-y-1">
+                                  {filteredProductNameOptions.map((option) => {
+                                    const isActive = option.label === arrivalForm.productName;
+                                    return (
+                                      <button
+                                        key={`${option.id}-${option.label}`}
+                                        type="button"
+                                        className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${isActive ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={() => {
+                                          setArrivalForm((prev) => ({ ...prev, productName: option.label }));
+                                          setProductNamePickerOpen(false);
+                                        }}
+                                      >
+                                        {option.label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             ) : arrivalForm.productName.trim() ? (
-                              <p className="px-3 py-4 text-sm text-slate-500">找不到符合的品名，可直接保留目前輸入。</p>
+                              <div className="space-y-1 px-3 py-4 text-sm text-slate-500">
+                                <p>找不到符合的品名，可直接保留目前輸入。</p>
+                                <p>系統會改用全品項邏輯處理。</p>
+                              </div>
                             ) : (
-                              <p className="px-3 py-4 text-sm text-slate-500">請輸入關鍵字搜尋品名。</p>
+                              <p className="px-3 py-4 text-sm text-slate-500">請先掃描批號／序號，再輸入關鍵字搜尋品名。</p>
                             )}
                           </div>
                         ) : null}

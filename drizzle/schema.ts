@@ -109,6 +109,21 @@ export const productNameOptions = mysqlTable("product_name_options", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const productNameCatalogEntries = mysqlTable("product_name_catalog_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  label: varchar("label", { length: 191 }).notNull(),
+  categoryName: varchar("categoryName", { length: 120 }).notNull(),
+  brandName: varchar("brandName", { length: 120 }).notNull(),
+  sourceRowNumber: int("sourceRowNumber").notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  categoryBrandLabelIdx: index("product_name_catalog_category_brand_label_idx").on(table.categoryName, table.brandName, table.label),
+  activeSortIdx: index("product_name_catalog_active_sort_idx").on(table.active, table.sortOrder, table.id),
+}));
+
 export const products = mysqlTable("products", {
   id: int("id").autoincrement().primaryKey(),
   productCode: varchar("productCode", { length: 120 }).notNull().unique(),
