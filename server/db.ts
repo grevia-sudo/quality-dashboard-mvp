@@ -20,13 +20,38 @@ import {
   stationEvents,
   stationRules,
   stationTasks,
+  supportTaskCompensations,
   users,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
+const SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR = 0.125;
+const DISPLAY_POINTS_MULTIPLIER = 100;
 type StationCode = (typeof STATION_CODES)[number];
 type DefectOptionType = "fault" | "appearance" | "camera";
+
+type SupportCompensationFilterInput = {
+  startDate?: string | null;
+  endDate?: string | null;
+  userId?: number | null;
+};
+
+function toDateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
+function toDisplayPoints(points: number) {
+  return points * DISPLAY_POINTS_MULTIPLIER;
+}
+
+function dateKeyToDate(dateKey: string) {
+  return new Date(`${dateKey}T00:00:00.000Z`);
+}
+
+function getSupportCompensationInternalPoints(hours: number) {
+  return hours * SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR;
+}
 
 type StationStatusSummary = {
   stationCode: StationCode;
@@ -2154,53 +2179,163 @@ export async function submitSamplingResult(input: {
   return { success: true as const };
 }
 
+export async function createSupportCompensation(input: {
+  businessDate: string;
+  userId: number;
+  supportTask: string;
+  supportHours: number;
+  notes?: string | null;
+  createdByUserId: number;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await db.insert(supportTaskCompensations).values({
+    businessDate: dateKeyToDate(input.businessDate),
+    userId: input.userId,
+    supportTask: input.supportTask.trim(),
+    supportHours: input.supportHours.toFixed(2),
+    notes: input.notes?.trim() || null,
+    createdByUserId: input.createdByUserId,
+  });
+
+  return { success: true };
+}
+
+export async function listSupportCompensations(input?: SupportCompensationFilterInput) {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  const conditions = [];
+  if (input?.startDate) {
+    conditions.push(gte(supportTaskCompensations.businessDate, dateKeyToDate(input.startDate)));
+  }
+  if (input?.endDate) {
+    conditions.push(lte(supportTaskCompensations.businessDate, dateKeyToDate(input.endDate)));
+  }
+  if (input?.userId) {
+    conditions.push(eq(supportTaskCompensations.userId, input.userId));
+  }
+
+  return db
+    .select({
+      id: supportTaskCompensations.id,
+      businessDate: supportTaskCompensations.businessDate,
+      userId: supportTaskCompensations.userId,
+      supportTask: supportTaskCompensations.supportTask,
+      supportHours: supportTaskCompensations.supportHours,
+      notes: supportTaskCompensations.notes,
+      createdByUserId: supportTaskCompensations.createdByUserId,
+      createdAt: supportTaskCompensations.createdAt,
+      updatedAt: supportTaskCompensations.updatedAt,
+      engineerName: users.name,
+      engineerUsername: users.username,
+      createdByName: sql<string>`creator.name`,
+      createdByUsername: sql<string>`creator.username`,
+    })
+    .from(supportTaskCompensations)
+    .innerJoin(users, eq(supportTaskCompensations.userId, users.id))
+    .leftJoin(sql`users as creator`, sql`${supportTaskCompensations.createdByUserId} = creator.id`)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(supportTaskCompensations.businessDate), desc(supportTaskCompensations.createdAt), desc(supportTaskCompensations.id));
+}
+
+export async function deleteSupportCompensation(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  await db.delete(supportTaskCompensations).where(eq(supportTaskCompensations.id, id));
+  return { success: true };
+}
+
+export async function getSupportCompensationPointsForUser(userId: number, dateKey: string) {
+  const db = await getDb();
+  if (!db) {
+    return 0;
+  }
+
+  const rows = await db
+    .select({
+      supportHours: supportTaskCompensations.supportHours,
+    })
+    .from(supportTaskCompensations)
+    .where(and(eq(supportTaskCompensations.userId, userId), eq(supportTaskCompensations.businessDate, dateKeyToDate(dateKey))));
+
+  return rows.reduce((sum, row) => sum + getSupportCompensationInternalPoints(Number(row.supportHours)), 0);
+}
+
 export async function getEngineerKpiSummary(userId: number) {
   const db = await getDb();
   if (!db) {
     return {
       dailySummary: null,
       details: [],
-      monthlySummary: { attendanceDays: 0, monthTotalPoints: 0, monthAvgPoints: 0, monthAvgRate: 0 },
+      monthlySummary: {
+        attendanceDays: 0,
+        monthTotalPoints: 0,
+        monthAvgPoints: 0,
+        monthAvgRate: 0,
+        monthTotalDisplayPoints: 0,
+        monthAvgDisplayPoints: 0,
+        monthSupportHours: 0,
+        monthSupportPoints: 0,
+        monthSupportDisplayPoints: 0,
+      },
     };
   }
 
   await ensureMvpSeedData();
   const { businessDate, businessDateValue } = getOperationTimeContext();
   const monthPrefix = businessDate.slice(0, 7);
-  const toDateKey = (value: Date) => value.toISOString().slice(0, 10);
 
-  const detailRows = await db
-    .select({
-      stationCode: productivityScoreDetails.stationCode,
-      subtypeCode: productivityScoreDetails.subtypeCode,
-      completedQty: productivityScoreDetails.completedQty,
-      earnedPoints: productivityScoreDetails.earnedPoints,
-      baseUnitPoints: productivityScoreDetails.baseUnitPoints,
-      businessDate: productivityScoreDetails.businessDate,
-    })
-    .from(productivityScoreDetails)
-    .where(eq(productivityScoreDetails.userId, userId))
-    .orderBy(desc(productivityScoreDetails.id));
-
-  const eventRows = await db
-    .select({
-      productId: stationEvents.productId,
-      stationCode: stationEvents.stationCode,
-      eventType: stationEvents.eventType,
-      isRework: stationEvents.isRework,
-      businessDate: stationEvents.businessDate,
-    })
-    .from(stationEvents)
-    .where(eq(stationEvents.operatorUserId, userId));
-
-  const samplingRows = await db
-    .select({
-      passed: samplingResults.passed,
-      sampleDate: samplingResults.sampleDate,
-      sampledByUserId: samplingResults.sampledByUserId,
-    })
-    .from(samplingResults)
-    .where(eq(samplingResults.sampledByUserId, userId));
+  const [detailRows, eventRows, samplingRows, supportRows] = await Promise.all([
+    db
+      .select({
+        stationCode: productivityScoreDetails.stationCode,
+        subtypeCode: productivityScoreDetails.subtypeCode,
+        completedQty: productivityScoreDetails.completedQty,
+        earnedPoints: productivityScoreDetails.earnedPoints,
+        baseUnitPoints: productivityScoreDetails.baseUnitPoints,
+        businessDate: productivityScoreDetails.businessDate,
+      })
+      .from(productivityScoreDetails)
+      .where(eq(productivityScoreDetails.userId, userId))
+      .orderBy(desc(productivityScoreDetails.id)),
+    db
+      .select({
+        productId: stationEvents.productId,
+        stationCode: stationEvents.stationCode,
+        eventType: stationEvents.eventType,
+        isRework: stationEvents.isRework,
+        businessDate: stationEvents.businessDate,
+      })
+      .from(stationEvents)
+      .where(eq(stationEvents.operatorUserId, userId)),
+    db
+      .select({
+        passed: samplingResults.passed,
+        sampleDate: samplingResults.sampleDate,
+        sampledByUserId: samplingResults.sampledByUserId,
+      })
+      .from(samplingResults)
+      .where(eq(samplingResults.sampledByUserId, userId)),
+    db
+      .select({
+        businessDate: supportTaskCompensations.businessDate,
+        supportTask: supportTaskCompensations.supportTask,
+        supportHours: supportTaskCompensations.supportHours,
+        notes: supportTaskCompensations.notes,
+      })
+      .from(supportTaskCompensations)
+      .where(eq(supportTaskCompensations.userId, userId))
+      .orderBy(desc(supportTaskCompensations.businessDate), desc(supportTaskCompensations.id)),
+  ]);
 
   const userProductIds = Array.from(new Set(eventRows.map((row) => row.productId)));
   const relatedTasks = userProductIds.length
@@ -2218,18 +2353,31 @@ export async function getEngineerKpiSummary(userId: number) {
     : [];
 
   const dailyDetails = detailRows.filter((row) => toDateKey(row.businessDate) === businessDate);
-  const monthDetails = detailRows.filter((row) => row.businessDate.toISOString().slice(0, 7) === monthPrefix);
+  const monthDetails = detailRows.filter((row) => toDateKey(row.businessDate).startsWith(monthPrefix));
   const dailyEvents = eventRows.filter((row) => toDateKey(row.businessDate) === businessDate);
   const dailySampling = samplingRows.filter((row) => toDateKey(row.sampleDate) === businessDate);
   const completedEvents = dailyEvents.filter((row) => row.eventType === "complete");
   const reworkEvents = dailyEvents.filter((row) => row.isRework);
+  const dailySupportRows = supportRows.filter((row) => toDateKey(row.businessDate) === businessDate);
+  const monthSupportRows = supportRows.filter((row) => toDateKey(row.businessDate).startsWith(monthPrefix));
 
-  const totalPoints = dailyDetails.reduce((sum, row) => sum + Number(row.earnedPoints), 0);
-  const rawAchievementRate = totalPoints * 100;
+  const productivityPoints = dailyDetails.reduce((sum, row) => sum + Number(row.earnedPoints), 0);
+  const todaySupportHours = dailySupportRows.reduce((sum, row) => sum + Number(row.supportHours), 0);
+  const todaySupportPoints = getSupportCompensationInternalPoints(todaySupportHours);
+  const totalPoints = productivityPoints + todaySupportPoints;
+  const rawAchievementRate = toDisplayPoints(totalPoints);
   const kpiAchievementRate = Math.min(rawAchievementRate, 100);
   const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
-  const attendanceDays = new Set(monthDetails.map((row) => toDateKey(row.businessDate))).size;
-  const monthTotalPoints = monthDetails.reduce((sum, row) => sum + Number(row.earnedPoints), 0);
+
+  const attendanceDateSet = new Set<string>([
+    ...monthDetails.map((row) => toDateKey(row.businessDate)),
+    ...monthSupportRows.map((row) => toDateKey(row.businessDate)),
+  ]);
+  const attendanceDays = attendanceDateSet.size;
+  const monthProductivityPoints = monthDetails.reduce((sum, row) => sum + Number(row.earnedPoints), 0);
+  const monthSupportHours = monthSupportRows.reduce((sum, row) => sum + Number(row.supportHours), 0);
+  const monthSupportPoints = getSupportCompensationInternalPoints(monthSupportHours);
+  const monthTotalPoints = monthProductivityPoints + monthSupportPoints;
   const monthAvgPoints = attendanceDays > 0 ? monthTotalPoints / attendanceDays : 0;
 
   const failedSamples = dailySampling.filter((row) => !row.passed).length;
@@ -2248,12 +2396,18 @@ export async function getEngineerKpiSummary(userId: number) {
     : 0;
   const timelinessScore = Math.max(0, 100 - overdueHandledCount * 10 - avgProcessingHours * 5);
 
-  const fairnessScore = Math.min(100, monthAvgPoints * 100);
+  const fairnessScore = Math.min(100, toDisplayPoints(monthAvgPoints));
 
   return {
     dailySummary: {
       businessDate: businessDateValue,
       totalPoints,
+      displayPoints: toDisplayPoints(totalPoints),
+      productivityPoints,
+      productivityDisplayPoints: toDisplayPoints(productivityPoints),
+      supportHours: todaySupportHours,
+      supportPoints: todaySupportPoints,
+      supportDisplayPoints: toDisplayPoints(todaySupportPoints),
       rawAchievementRate,
       kpiAchievementRate,
       overAchievementRate,
@@ -2261,6 +2415,8 @@ export async function getEngineerKpiSummary(userId: number) {
         productivity: {
           score: Math.min(kpiAchievementRate, 100),
           totalPoints,
+          displayPoints: toDisplayPoints(totalPoints),
+          supportDisplayPoints: toDisplayPoints(todaySupportPoints),
         },
         quality: {
           score: qualityScore,
@@ -2275,15 +2431,29 @@ export async function getEngineerKpiSummary(userId: number) {
         fairness: {
           score: fairnessScore,
           monthAvgPoints,
+          monthAvgDisplayPoints: toDisplayPoints(monthAvgPoints),
         },
       },
+      supportCompensations: dailySupportRows.map((row) => ({
+        businessDate: row.businessDate,
+        supportTask: row.supportTask,
+        supportHours: Number(row.supportHours),
+        supportPoints: getSupportCompensationInternalPoints(Number(row.supportHours)),
+        supportDisplayPoints: toDisplayPoints(getSupportCompensationInternalPoints(Number(row.supportHours))),
+        notes: row.notes,
+      })),
     },
     details: dailyDetails,
     monthlySummary: {
       attendanceDays,
       monthTotalPoints,
       monthAvgPoints,
-      monthAvgRate: monthAvgPoints * 100,
+      monthAvgRate: toDisplayPoints(monthAvgPoints),
+      monthTotalDisplayPoints: toDisplayPoints(monthTotalPoints),
+      monthAvgDisplayPoints: toDisplayPoints(monthAvgPoints),
+      monthSupportHours,
+      monthSupportPoints,
+      monthSupportDisplayPoints: toDisplayPoints(monthSupportPoints),
     },
   };
 }
@@ -2517,44 +2687,89 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   }
 
   const range = normalizeAdminDateRange(input);
-  const userRows = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      name: users.name,
-      role: users.role,
-    })
-    .from(users)
-    .where(notInArray(users.role, ["admin"]));
+  const [userRows, productivityRows, supportRows] = await Promise.all([
+    db
+      .select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        role: users.role,
+      })
+      .from(users)
+      .where(notInArray(users.role, ["admin"])),
+    db
+      .select({
+        userId: engineerDailyProductivity.userId,
+        businessDate: engineerDailyProductivity.businessDate,
+        totalPoints: engineerDailyProductivity.totalPoints,
+        kpiAchievementRate: engineerDailyProductivity.kpiAchievementRate,
+        rawAchievementRate: engineerDailyProductivity.rawAchievementRate,
+        overAchievementRate: engineerDailyProductivity.overAchievementRate,
+        finalKpiScore: engineerDailyProductivity.finalKpiScore,
+        attendanceFlag: engineerDailyProductivity.attendanceFlag,
+      })
+      .from(engineerDailyProductivity),
+    db
+      .select({
+        userId: supportTaskCompensations.userId,
+        businessDate: supportTaskCompensations.businessDate,
+        supportHours: supportTaskCompensations.supportHours,
+      })
+      .from(supportTaskCompensations)
+      .where(and(
+        gte(supportTaskCompensations.businessDate, dateKeyToDate(range.startDate)),
+        lte(supportTaskCompensations.businessDate, dateKeyToDate(range.endDate)),
+      )),
+  ]);
 
-  const productivityRows = await db
-    .select({
-      userId: engineerDailyProductivity.userId,
-      businessDate: engineerDailyProductivity.businessDate,
-      totalPoints: engineerDailyProductivity.totalPoints,
-      kpiAchievementRate: engineerDailyProductivity.kpiAchievementRate,
-      rawAchievementRate: engineerDailyProductivity.rawAchievementRate,
-      overAchievementRate: engineerDailyProductivity.overAchievementRate,
-      finalKpiScore: engineerDailyProductivity.finalKpiScore,
-      attendanceFlag: engineerDailyProductivity.attendanceFlag,
-    })
-    .from(engineerDailyProductivity);
+  const rangedRows = productivityRows.filter((row) => isDateKeyWithinRange(toDateKey(row.businessDate), range));
+  const supportByUserDate = new Map<string, { supportHours: number; supportPoints: number }>();
 
-  const rangedRows = productivityRows.filter((row) => isDateKeyWithinRange(row.businessDate.toISOString().slice(0, 10), range));
+  supportRows.forEach((row) => {
+    const dateKey = toDateKey(row.businessDate);
+    const key = `${row.userId}-${dateKey}`;
+    const current = supportByUserDate.get(key) ?? { supportHours: 0, supportPoints: 0 };
+    const hours = Number(row.supportHours);
+    current.supportHours += hours;
+    current.supportPoints += getSupportCompensationInternalPoints(hours);
+    supportByUserDate.set(key, current);
+  });
 
   return userRows
     .map((user) => {
       const rows = rangedRows.filter((row) => row.userId === user.id);
-      const todayRows = rows.filter((row) => row.businessDate.toISOString().slice(0, 10) === range.todayKey);
-      const attendanceDays = rows.filter((row) => row.attendanceFlag).length;
-      const rangeTotalPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
-      const todayPoints = todayRows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
-      const avgKpiAchievementRate = rows.length > 0
-        ? rows.reduce((sum, row) => sum + Number(row.kpiAchievementRate), 0) / rows.length
-        : 0;
-      const finalKpiScore = rows.length > 0 ? Number(rows[rows.length - 1]?.finalKpiScore ?? 0) : 0;
-      const rawAchievementRate = todayRows.length > 0 ? Number(todayRows[todayRows.length - 1]?.rawAchievementRate ?? 0) : 0;
-      const overAchievementRate = todayRows.length > 0 ? Number(todayRows[todayRows.length - 1]?.overAchievementRate ?? 0) : 0;
+      const rowsByDate = new Map<string, (typeof rows)[number]>();
+      rows.forEach((row) => {
+        rowsByDate.set(toDateKey(row.businessDate), row);
+      });
+
+      const attendanceDateSet = new Set<string>();
+      rows.forEach((row) => {
+        if (row.attendanceFlag) {
+          attendanceDateSet.add(toDateKey(row.businessDate));
+        }
+      });
+      supportRows
+        .filter((row) => row.userId === user.id)
+        .forEach((row) => attendanceDateSet.add(toDateKey(row.businessDate)));
+
+      const todaySupport = supportByUserDate.get(`${user.id}-${range.todayKey}`) ?? { supportHours: 0, supportPoints: 0 };
+      const todayProductivityPoints = Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
+      const todayPoints = todayProductivityPoints + todaySupport.supportPoints;
+      const rangeSupportPoints = Array.from(supportByUserDate.entries())
+        .filter(([key]) => key.startsWith(`${user.id}-`))
+        .reduce((sum, [, value]) => sum + value.supportPoints, 0);
+      const rangeSupportHours = Array.from(supportByUserDate.entries())
+        .filter(([key]) => key.startsWith(`${user.id}-`))
+        .reduce((sum, [, value]) => sum + value.supportHours, 0);
+      const rangeProductivityPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
+      const rangeTotalPoints = rangeProductivityPoints + rangeSupportPoints;
+      const attendanceDays = attendanceDateSet.size;
+      const monthAvgPoints = attendanceDays > 0 ? rangeTotalPoints / attendanceDays : 0;
+      const avgKpiAchievementRate = attendanceDays > 0 ? Math.min(toDisplayPoints(monthAvgPoints), 100) : 0;
+      const rawAchievementRate = toDisplayPoints(todayPoints);
+      const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
+      const finalKpiScore = rows.length > 0 ? Number(rows[rows.length - 1]?.finalKpiScore ?? 0) : Math.min(rawAchievementRate, 100);
 
       return {
         userId: user.id,
@@ -2563,11 +2778,20 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
         role: user.role,
         attendanceDays,
         todayPoints,
+        todayDisplayPoints: toDisplayPoints(todayPoints),
+        todaySupportHours: todaySupport.supportHours,
+        todaySupportPoints: todaySupport.supportPoints,
+        todaySupportDisplayPoints: toDisplayPoints(todaySupport.supportPoints),
         monthTotalPoints: rangeTotalPoints,
+        monthTotalDisplayPoints: toDisplayPoints(rangeTotalPoints),
         todayLabel: range.todayKey,
         rangeStartDate: range.startDate,
         rangeEndDate: range.endDate,
-        monthAvgPoints: attendanceDays > 0 ? rangeTotalPoints / attendanceDays : 0,
+        monthAvgPoints,
+        monthAvgDisplayPoints: toDisplayPoints(monthAvgPoints),
+        rangeSupportHours,
+        rangeSupportPoints,
+        rangeSupportDisplayPoints: toDisplayPoints(rangeSupportPoints),
         avgKpiAchievementRate,
         rawAchievementRate,
         overAchievementRate,
@@ -2740,6 +2964,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
       targets: [],
       productNameOptions: [],
       kpiProgress: [],
+      supportCompensations: [],
       stationLeadTimes: [],
       categoryStockCycleTimes: [],
       categoryFlows: [],
@@ -2761,7 +2986,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
     .from(products)
     .where(and(isNull(products.archivedAt), sql`${products.createdAt} < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 6 MONTH)`));
 
-  const [userRows, ruleRows, categoryRows, targetRows, defectOptionRows, productNameRows, kpiProgress, stationLeadTimes, categoryStockCycleTimes, categoryFlows] = await Promise.all([
+  const [userRows, ruleRows, categoryRows, targetRows, defectOptionRows, productNameRows, kpiProgress, supportCompensations, stationLeadTimes, categoryStockCycleTimes, categoryFlows] = await Promise.all([
     db.select().from(users).orderBy(asc(users.id)),
     db.select().from(stationRules).orderBy(asc(stationRules.id)),
     db.select().from(productCategories).orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.id)),
@@ -2769,6 +2994,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
     db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
     db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
     getAdminEngineerKpiProgress(normalizedRange),
+    listSupportCompensations(normalizedRange),
     getAdminStationLeadTimes(),
     getAdminCategoryStockCycleTimes(),
     getCategoryStationFlowConfigs(),
@@ -2782,6 +3008,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
     defectOptions: defectOptionRows,
     productNameOptions: productNameRows,
     kpiProgress,
+    supportCompensations,
     stationLeadTimes,
     categoryStockCycleTimes,
     categoryFlows,

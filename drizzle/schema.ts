@@ -241,6 +241,21 @@ export const engineerDailyProductivity = mysqlTable("engineer_daily_productivity
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const supportTaskCompensations = mysqlTable("support_task_compensations", {
+  id: int("id").autoincrement().primaryKey(),
+  businessDate: date("businessDate").notNull(),
+  userId: int("userId").notNull().references(() => users.id),
+  supportTask: varchar("supportTask", { length: 160 }).notNull(),
+  supportHours: decimal("supportHours", { precision: 6, scale: 2 }).notNull(),
+  notes: text("notes"),
+  createdByUserId: int("createdByUserId").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userDateIdx: index("support_task_compensations_user_date_idx").on(table.userId, table.businessDate),
+  dateIdx: index("support_task_compensations_date_idx").on(table.businessDate),
+}));
+
 export const sheetSyncJobs = mysqlTable("sheet_sync_jobs", {
   id: int("id").autoincrement().primaryKey(),
   jobType: varchar("jobType", { length: 80 }).notNull(),
@@ -280,4 +295,5 @@ export type StationTask = typeof stationTasks.$inferSelect;
 export type StationEvent = typeof stationEvents.$inferSelect;
 export type ProductivityTargetConfig = typeof productivityTargetConfigs.$inferSelect;
 export type EngineerDailyProductivity = typeof engineerDailyProductivity.$inferSelect;
+export type SupportTaskCompensation = typeof supportTaskCompensations.$inferSelect;
 export type ImportBatchBackup = typeof importBatchBackups.$inferSelect;

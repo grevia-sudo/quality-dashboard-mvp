@@ -13,13 +13,16 @@ import {
   createProductCategoryOption,
   createProductNameOption,
   createImportBatchBackup,
+  createSupportCompensation,
   deleteImportedPurchaseOrder,
   deleteProductCategoryOption,
   deleteProductNameOption,
+  deleteSupportCompensation,
   ensureMvpSeedData,
   getAdminSetupData,
   getImportBatchBackups,
   getProductTraceByIdentity,
+  listSupportCompensations,
   getDefectOptions,
   getEngineerKpiSummary,
   getProductCategoryOptions,
@@ -509,6 +512,44 @@ export const appRouter = router({
     importBackups: adminProcedure.query(async () => {
       return getImportBatchBackups();
     }),
+    createSupportCompensation: adminProcedure
+      .input(z.object({
+        businessDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式需為 YYYY-MM-DD"),
+        userId: z.number().int().positive(),
+        supportTask: z.string().trim().min(1, "請輸入支援任務"),
+        supportHours: z.number().positive("支援時數需大於 0").max(24, "支援時數不可超過 24 小時"),
+        notes: optionalTextSchema.nullable().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return createSupportCompensation({
+          businessDate: input.businessDate,
+          userId: input.userId,
+          supportTask: input.supportTask,
+          supportHours: input.supportHours,
+          notes: input.notes ?? undefined,
+          createdByUserId: ctx.user.id,
+        });
+      }),
+    listSupportCompensations: adminProcedure
+      .input(z.object({
+        startDate: optionalTextSchema.nullable().optional(),
+        endDate: optionalTextSchema.nullable().optional(),
+        userId: z.number().int().positive().nullable().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        return listSupportCompensations({
+          startDate: input?.startDate ?? undefined,
+          endDate: input?.endDate ?? undefined,
+          userId: input?.userId ?? undefined,
+        });
+      }),
+    deleteSupportCompensation: adminProcedure
+      .input(z.object({
+        id: z.number().int().positive(),
+      }))
+      .mutation(async ({ input }) => {
+        return deleteSupportCompensation(input.id);
+      }),
     createImportBackup: adminProcedure
       .input(z.object({
         poNumber: z.string().trim().min(1),

@@ -16,7 +16,7 @@ describe("admin capacity settings source coverage", () => {
     expect(adminPageSource).toContain('單件點數');
     expect(adminPageSource).toContain('formatHourlyTargetQty');
     expect(adminPageSource).toContain('formatBaseUnitPoints');
-    expect(adminPageSource).toContain('儲存產能');
+    expect(adminPageSource).toContain('儲存全部設定');
   });
 
   it("submits station-category capacity payload for persistence", () => {

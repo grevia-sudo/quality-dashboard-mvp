@@ -93,6 +93,14 @@ function formatBaseUnitPoints(dailyTargetQty: number) {
   return (1 / dailyTargetQty).toFixed(6);
 }
 
+function formatDisplayPoints(value?: number | null) {
+  return `${Number(value ?? 0).toFixed(1)} 點`;
+}
+
+function formatSupportHours(value?: number | null) {
+  return `${Number(value ?? 0).toFixed(1)} 小時`;
+}
+
 export default function AdminPage() {
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
@@ -124,6 +132,11 @@ export default function AdminPage() {
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserName, setNewUserName] = useState("");
   const [newUserRole, setNewUserRole] = useState<"user" | "admin" | "manager" | "engineer" | "supervisor">("user");
+  const [supportCompBusinessDate, setSupportCompBusinessDate] = useState("");
+  const [supportCompUserId, setSupportCompUserId] = useState("");
+  const [supportCompTask, setSupportCompTask] = useState("");
+  const [supportCompHours, setSupportCompHours] = useState("1");
+  const [supportCompNotes, setSupportCompNotes] = useState("");
   const importBackupQuery = trpc.admin.importBackups.useQuery(undefined, { retry: false });
   const productTraceQuery = trpc.admin.productTrace.useQuery({
     keyword: submittedProductTraceKeyword,
@@ -346,6 +359,29 @@ export default function AdminPage() {
     },
   });
 
+  const createSupportCompensationMutation = trpc.admin.createSupportCompensation.useMutation({
+    onSuccess: async () => {
+      toast.success("支援補償已登記");
+      setSupportCompTask("");
+      setSupportCompHours("1");
+      setSupportCompNotes("");
+      await utils.admin.setup.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "支援補償登記失敗");
+    },
+  });
+
+  const deleteSupportCompensationMutation = trpc.admin.deleteSupportCompensation.useMutation({
+    onSuccess: async () => {
+      toast.success("支援補償已刪除");
+      await utils.admin.setup.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "支援補償刪除失敗");
+    },
+  });
+
   const updateRuleDraft = (id: number, patch: Partial<RuleDraft>) => {
     setRuleDrafts((prev) => prev.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
   };
@@ -431,9 +467,11 @@ export default function AdminPage() {
   };
 
   const kpiProgress = query.data?.kpiProgress ?? [];
+  const supportCompensations = query.data?.supportCompensations ?? [];
   const stationLeadTimes = query.data?.stationLeadTimes ?? [];
   const categoryStockCycleTimes = query.data?.categoryStockCycleTimes ?? [];
   const configMutationPending = saveAllSettingsMutation.isPending;
+  const supportAssignableUsers = (query.data?.users ?? []).filter((item) => item.role !== "admin");
   const topEngineer = kpiProgress[0];
   const kpiRangeLabel = query.data?.kpiRange
     ? `${query.data.kpiRange.startDate} ～ ${query.data.kpiRange.endDate}`
@@ -443,6 +481,37 @@ export default function AdminPage() {
     setAppliedKpiRange({
       startDate: kpiFilterStartDate || undefined,
       endDate: kpiFilterEndDate || undefined,
+    });
+  };
+
+  const handleCreateSupportCompensation = () => {
+    const normalizedTask = supportCompTask.trim();
+    const selectedUserId = Number(supportCompUserId);
+    const hours = Number(supportCompHours);
+
+    if (!supportCompBusinessDate) {
+      toast.error("請選擇支援日期");
+      return;
+    }
+    if (!Number.isInteger(selectedUserId) || selectedUserId <= 0) {
+      toast.error("請選擇工程師");
+      return;
+    }
+    if (!normalizedTask) {
+      toast.error("請輸入支援任務");
+      return;
+    }
+    if (!Number.isFinite(hours) || hours <= 0) {
+      toast.error("請輸入有效支援時數");
+      return;
+    }
+
+    createSupportCompensationMutation.mutate({
+      businessDate: supportCompBusinessDate,
+      userId: selectedUserId,
+      supportTask: normalizedTask,
+      supportHours: hours,
+      notes: supportCompNotes.trim() || undefined,
     });
   };
 
@@ -636,14 +705,14 @@ export default function AdminPage() {
                   <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length}</p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50 p-4">
-                  <p className="text-xs text-slate-400">此區間最高平均達標率</p>
-                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{topEngineer ? `${topEngineer.avgKpiAchievementRate.toFixed(1)}%` : "0.0%"}</p>
-                  <p className="mt-1 text-sm text-slate-500">{topEngineer ? `${topEngineer.name}｜${topEngineer.monthTotalPoints.toFixed(3)} 點` : "尚無資料"}</p>
+                  <p className="text-xs text-slate-400">此區間最高日均表現</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{topEngineer ? formatDisplayPoints(topEngineer.monthAvgDisplayPoints) : "0.0 點"}</p>
+                  <p className="mt-1 text-sm text-slate-500">{topEngineer ? `${topEngineer.name}｜區間總表現 ${formatDisplayPoints(topEngineer.monthTotalDisplayPoints)}` : "尚無資料"}</p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50 p-4">
                   <p className="text-xs text-slate-400">此區間平均 KPI 分數</p>
                   <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length > 0 ? `${(kpiProgress.reduce((sum, item) => sum + item.finalKpiScore, 0) / kpiProgress.length).toFixed(1)}` : "0.0"}</p>
-                  <p className="mt-1 text-sm text-slate-500">可用於比對目前整體工程師進度</p>
+                  <p className="mt-1 text-sm text-slate-500">前台已統一改為 100 點制顯示</p>
                 </div>
               </div>
               <div className="overflow-x-auto rounded-[24px] bg-slate-50">
@@ -652,25 +721,30 @@ export default function AdminPage() {
                     <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
                       <th className="px-4 py-3">工程師</th>
                       <th className="px-4 py-3">角色</th>
-                      <th className="px-4 py-3">今日點數</th>
-                      <th className="px-4 py-3">區間總點數</th>
-                      <th className="px-4 py-3">區間日均點數</th>
+                      <th className="px-4 py-3">今日表現</th>
+                      <th className="px-4 py-3">區間總表現</th>
+                      <th className="px-4 py-3">區間日均表現</th>
+                      <th className="px-4 py-3">今日支援補償</th>
                       <th className="px-4 py-3">平均 KPI 達標率</th>
                       <th className="px-4 py-3">最新 KPI 分數</th>
                     </tr>
                   </thead>
                   <tbody>
                     {kpiProgress.length > 0 ? kpiProgress.map((item) => (
-                      <tr key={item.userId} className="border-b border-slate-200/80 last:border-b-0">
+                      <tr key={item.userId} className="border-b border-slate-200/80 last:border-b-0 align-top">
                         <td className="px-4 py-3 font-medium text-slate-900">{item.name}<div className="text-xs text-slate-400">{item.username}</div></td>
                         <td className="px-4 py-3">{item.role}</td>
-                        <td className="px-4 py-3">{item.todayPoints.toFixed(3)}</td>
-                        <td className="px-4 py-3">{item.monthTotalPoints.toFixed(3)}</td>
-                        <td className="px-4 py-3">{item.monthAvgPoints.toFixed(3)}</td>
+                        <td className="px-4 py-3">{formatDisplayPoints(item.todayDisplayPoints)}</td>
+                        <td className="px-4 py-3">{formatDisplayPoints(item.monthTotalDisplayPoints)}</td>
+                        <td className="px-4 py-3">{formatDisplayPoints(item.monthAvgDisplayPoints)}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-900">{formatDisplayPoints(item.todaySupportDisplayPoints)}</div>
+                          <div className="text-xs text-slate-400">{formatSupportHours(item.todaySupportHours)}</div>
+                        </td>
                         <td className="px-4 py-3">{item.avgKpiAchievementRate.toFixed(1)}%</td>
                         <td className="px-4 py-3">{item.finalKpiScore.toFixed(1)}</td>
                       </tr>
-                    )) : <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">目前尚無工程師 KPI 資料</td></tr>}
+                    )) : <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500">目前尚無工程師 KPI 資料</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -750,11 +824,12 @@ export default function AdminPage() {
         </Card>
 
         <Tabs defaultValue="rules" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-6">
+          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-7">
             <TabsTrigger value="rules" className="rounded-2xl">站點規則</TabsTrigger>
             <TabsTrigger value="targets" className="rounded-2xl">產能設定</TabsTrigger>
             <TabsTrigger value="menus" className="rounded-2xl">功能表設定</TabsTrigger>
             <TabsTrigger value="tools" className="rounded-2xl">資料工具</TabsTrigger>
+            <TabsTrigger value="support" className="rounded-2xl">支援補償</TabsTrigger>
             <TabsTrigger value="users" className="rounded-2xl">帳號管理</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-2xl">品類設定</TabsTrigger>
           </TabsList>
@@ -821,6 +896,7 @@ export default function AdminPage() {
               <CardContent className="space-y-5">
                 <div className="rounded-[24px] bg-slate-50 p-4">
                   <p className="text-sm leading-7 text-slate-600">可依 A1、A2、B、C、D、E 各站點，為每個品類／品牌組合輸入每日產能。系統會同步換算每小時產能與單件點數，供後續工程師點數與 KPI 邏輯使用。</p>
+                  <p className="mt-2 text-xs text-slate-500">產能調整完成後，請使用上方統一按鈕一次儲存，避免各分頁分開送出造成設定不同步。</p>
                 </div>
                 {(query.data?.categories ?? []).length > 0 ? capacityStationOptions.map((stationCode) => {
                   const stationTargets = targetDrafts.filter((target) => target.stationCode === stationCode);
@@ -918,6 +994,104 @@ export default function AdminPage() {
                   </Card>
                 );
               })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="support">
+            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">登記支援補償</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                    管理者可依支援任務、時數與備註登記補償。系統將自動依 100 點 ÷ 8 小時換算，前台顯示 12.5 點／小時，內部計算保留 0.125 點／小時。
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>日期</span>
+                      <Input type="date" value={supportCompBusinessDate} onChange={(event) => setSupportCompBusinessDate(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>工程師</span>
+                      <select value={supportCompUserId} onChange={(event) => setSupportCompUserId(event.target.value)} className="editable-select h-10 rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none">
+                        <option value="">請選擇工程師</option>
+                        {supportAssignableUsers.map((item) => (
+                          <option key={item.id} value={item.id}>{item.name ?? item.username ?? `User-${item.id}`}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600 md:col-span-2">
+                      <span>支援任務</span>
+                      <Input value={supportCompTask} onChange={(event) => setSupportCompTask(event.target.value)} placeholder="例如：D 站全檢支援、匯入資料整理" className="editable-field rounded-2xl border-0 bg-slate-50" />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>支援時數</span>
+                      <Input type="number" min={0.5} step={0.5} value={supportCompHours} onChange={(event) => setSupportCompHours(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
+                    </label>
+                    <div className="rounded-[24px] bg-amber-50 p-4 text-sm text-amber-900">
+                      <p className="font-semibold">即時換算</p>
+                      <p className="mt-2">前台表現：{formatDisplayPoints(Number(supportCompHours || 0) * 12.5)}</p>
+                      <p className="mt-1">內部點數：{(Number(supportCompHours || 0) * 0.125).toFixed(3)} 點</p>
+                    </div>
+                    <label className="space-y-2 text-sm text-slate-600 md:col-span-2">
+                      <span>備註</span>
+                      <Input value={supportCompNotes} onChange={(event) => setSupportCompNotes(event.target.value)} placeholder="例如：代班、跨站協助、臨時支援原因" className="editable-field rounded-2xl border-0 bg-slate-50" />
+                    </label>
+                  </div>
+                  <Button className="rounded-2xl" disabled={createSupportCompensationMutation.isPending} onClick={handleCreateSupportCompensation}>
+                    登記支援補償
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">支援補償清單</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
+                    目前顯示區間：{kpiRangeLabel}。若要查看其他日期，請先在上方 KPI 篩選調整日期區間。
+                  </div>
+                  <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                    <table className="min-w-full text-sm text-slate-700">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                          <th className="px-4 py-3">日期</th>
+                          <th className="px-4 py-3">工程師</th>
+                          <th className="px-4 py-3">支援任務</th>
+                          <th className="px-4 py-3">時數</th>
+                          <th className="px-4 py-3">前台表現</th>
+                          <th className="px-4 py-3">備註</th>
+                          <th className="px-4 py-3 text-right">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {supportCompensations.length > 0 ? supportCompensations.map((item) => (
+                          <tr key={item.id} className="border-b border-slate-200/80 last:border-b-0 align-top">
+                            <td className="px-4 py-3 font-medium text-slate-900">{new Date(item.businessDate).toISOString().slice(0, 10)}</td>
+                            <td className="px-4 py-3">{item.engineerName ?? item.engineerUsername ?? `User-${item.userId}`}</td>
+                            <td className="px-4 py-3">{item.supportTask}</td>
+                            <td className="px-4 py-3">{formatSupportHours(Number(item.supportHours))}</td>
+                            <td className="px-4 py-3">{formatDisplayPoints(Number(item.supportHours) * 12.5)}</td>
+                            <td className="px-4 py-3 text-slate-600">{item.notes ?? "-"}</td>
+                            <td className="px-4 py-3 text-right">
+                              <Button
+                                variant="outline"
+                                className="rounded-2xl"
+                                disabled={deleteSupportCompensationMutation.isPending}
+                                onClick={() => deleteSupportCompensationMutation.mutate({ id: item.id })}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />刪除
+                              </Button>
+                            </td>
+                          </tr>
+                        )) : <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">目前尚無支援補償紀錄</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
