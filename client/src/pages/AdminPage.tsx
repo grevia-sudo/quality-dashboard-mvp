@@ -617,11 +617,11 @@ export default function AdminPage() {
                   <div className="grid gap-3 md:grid-cols-[180px_180px_auto_auto]">
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>開始日期</span>
-                      <Input type="date" value={kpiFilterStartDate} onChange={(event) => setKpiFilterStartDate(event.target.value)} className="rounded-2xl border-0 bg-slate-50" />
+                      <Input type="date" value={kpiFilterStartDate} onChange={(event) => setKpiFilterStartDate(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
                     </label>
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>結束日期</span>
-                      <Input type="date" value={kpiFilterEndDate} onChange={(event) => setKpiFilterEndDate(event.target.value)} className="rounded-2xl border-0 bg-slate-50" />
+                      <Input type="date" value={kpiFilterEndDate} onChange={(event) => setKpiFilterEndDate(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
                     </label>
                     <Button className="rounded-2xl self-end" disabled={query.isFetching} onClick={handleApplyKpiFilter}>套用 KPI 篩選</Button>
                     <Button variant="outline" className="rounded-2xl self-end" disabled={query.isFetching} onClick={handleResetKpiFilter}>重設為當月</Button>
@@ -781,11 +781,11 @@ export default function AdminPage() {
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <label className="space-y-2 text-sm text-slate-600">
                         <span>流程識別碼</span>
-                        <Input value={rule.routeKey} onChange={(event) => updateRuleDraft(rule.id, { routeKey: event.target.value })} className="rounded-2xl border-0 bg-white" />
+                        <Input value={rule.routeKey} onChange={(event) => updateRuleDraft(rule.id, { routeKey: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" />
                       </label>
                       <label className="space-y-2 text-sm text-slate-600">
                         <span>下一站</span>
-                        <select value={rule.nextStationCode} onChange={(event) => updateRuleDraft(rule.id, { nextStationCode: event.target.value })} className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                        <select value={rule.nextStationCode} onChange={(event) => updateRuleDraft(rule.id, { nextStationCode: event.target.value })} className="editable-select h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
                           <option value="">無</option>
                           {stationOptions.map((code) => (
                             <option key={code} value={code}>{code === "STOCK" ? "待入庫" : code}</option>
@@ -794,7 +794,7 @@ export default function AdminPage() {
                       </label>
                       <label className="space-y-2 text-sm text-slate-600">
                         <span>返工回站</span>
-                        <select value={rule.allowReworkToCode} onChange={(event) => updateRuleDraft(rule.id, { allowReworkToCode: event.target.value })} className="h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                        <select value={rule.allowReworkToCode} onChange={(event) => updateRuleDraft(rule.id, { allowReworkToCode: event.target.value })} className="editable-select h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
                           <option value="">無</option>
                           {stationOptions.map((code) => (
                             <option key={code} value={code}>{code === "STOCK" ? "待入庫" : code}</option>
@@ -803,7 +803,7 @@ export default function AdminPage() {
                       </label>
                       <label className="space-y-2 text-sm text-slate-600 md:col-span-2 xl:col-span-1">
                         <span>規則備註</span>
-                        <Input value={rule.notes} onChange={(event) => updateRuleDraft(rule.id, { notes: event.target.value })} className="rounded-2xl border-0 bg-white" />
+                        <Input value={rule.notes} onChange={(event) => updateRuleDraft(rule.id, { notes: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" />
                       </label>
                     </div>
 
@@ -854,7 +854,7 @@ export default function AdminPage() {
                                     min={0}
                                     value={target.dailyTargetQty}
                                     onChange={(event) => updateTargetDraft(target.localKey, { dailyTargetQty: Number(event.target.value || 0) })}
-                                    className="h-10 min-w-[120px] rounded-2xl border-0 bg-slate-50"
+                                    className="editable-field h-10 min-w-[120px] rounded-2xl border-0 bg-slate-50"
                                   />
                                 </td>
                                 <td className="px-4 py-3">{target.hourlyTargetQty}</td>
@@ -897,12 +897,12 @@ export default function AdminPage() {
                         <div key={option.localKey} className={`space-y-3 rounded-[24px] ${section.tone} p-4`}>
                           <label className="space-y-2 text-sm text-slate-600">
                             <span>項目名稱</span>
-                            <Input value={option.label} onChange={(event) => updateOptionDraft(option.localKey, { label: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="例如 觸控異常" />
+                            <Input value={option.label} onChange={(event) => updateOptionDraft(option.localKey, { label: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="例如 觸控異常" />
                           </label>
                           <div className="grid gap-3 md:grid-cols-2">
                             <label className="space-y-2 text-sm text-slate-600">
                               <span>排序</span>
-                              <Input type="number" value={option.sortOrder} onChange={(event) => updateOptionDraft(option.localKey, { sortOrder: Number(event.target.value || 0) })} className="rounded-2xl border-0 bg-white" />
+                              <Input type="number" value={option.sortOrder} onChange={(event) => updateOptionDraft(option.localKey, { sortOrder: Number(event.target.value || 0) })} className="editable-field rounded-2xl border-0 bg-white" />
                             </label>
                             <label className="flex items-center gap-2 self-end rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
                               <input type="checkbox" checked={option.active} onChange={(event) => updateOptionDraft(option.localKey, { active: event.target.checked })} />
@@ -933,19 +933,19 @@ export default function AdminPage() {
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_220px_auto] xl:items-end">
                   <label className="space-y-2 text-sm text-slate-600">
                     <span>帳號</span>
-                    <Input value={newUsername} onChange={(event) => setNewUsername(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 rita.lin" />
+                    <Input value={newUsername} onChange={(event) => setNewUsername(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 rita.lin" />
                   </label>
                   <label className="space-y-2 text-sm text-slate-600">
                     <span>密碼</span>
-                    <Input type="password" value={newUserPassword} onChange={(event) => setNewUserPassword(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="至少 6 碼" />
+                    <Input type="password" value={newUserPassword} onChange={(event) => setNewUserPassword(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="至少 6 碼" />
                   </label>
                   <label className="space-y-2 text-sm text-slate-600">
                     <span>名稱</span>
-                    <Input value={newUserName} onChange={(event) => setNewUserName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 林小美" />
+                    <Input value={newUserName} onChange={(event) => setNewUserName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 林小美" />
                   </label>
                   <label className="space-y-2 text-sm text-slate-600">
                     <span>角色</span>
-                    <select value={newUserRole} onChange={(event) => setNewUserRole(event.target.value as typeof newUserRole)} className="h-10 rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none">
+                    <select value={newUserRole} onChange={(event) => setNewUserRole(event.target.value as typeof newUserRole)} className="editable-select h-10 rounded-2xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none">
                       <option value="user">user</option>
                       <option value="engineer">engineer</option>
                       <option value="supervisor">supervisor</option>
@@ -1003,8 +1003,8 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                    <Input value={backupPoNumber} onChange={(event) => setBackupPoNumber(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="輸入要備份的 PO 單號" />
-                    <Input value={backupLabel} onChange={(event) => setBackupLabel(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="備份標籤（選填）" />
+                    <Input value={backupPoNumber} onChange={(event) => setBackupPoNumber(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="輸入要備份的 PO 單號" />
+                    <Input value={backupLabel} onChange={(event) => setBackupLabel(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="備份標籤（選填）" />
                     <Button
                       className="rounded-2xl"
                       disabled={createImportBackupMutation.isPending || !backupPoNumber.trim()}
@@ -1018,7 +1018,7 @@ export default function AdminPage() {
                     <p className="mt-2">這個操作是用來處理「匯入了錯誤 PO、重複匯入、或需要先清空同一張採購單後再重新上傳」的情境。它會直接刪除該 PO 目前仍在主資料表中的商品、站點任務與事件紀錄，不會自動保留現場內容，所以建議先建立備份，再執行刪除或重傳。</p>
                   </div>
                   <div className="flex flex-wrap gap-3 rounded-[24px] bg-slate-50 p-4">
-                    <Input value={deletePoNumber} onChange={(event) => setDeletePoNumber(event.target.value)} className="max-w-sm rounded-2xl border-0 bg-white" placeholder="輸入要刪除的 PO 單號" />
+                    <Input value={deletePoNumber} onChange={(event) => setDeletePoNumber(event.target.value)} className="editable-field max-w-sm rounded-2xl border-0 bg-white" placeholder="輸入要刪除的 PO 單號" />
                     <Button
                       variant="outline"
                       className="rounded-2xl"
@@ -1092,7 +1092,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-3">
-                    <Input value={productTraceKeyword} onChange={(event) => setProductTraceKeyword(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="輸入商品批號、商品序號或 IMEI" />
+                    <Input value={productTraceKeyword} onChange={(event) => setProductTraceKeyword(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="輸入商品批號、商品序號或 IMEI" />
                     <Button className="rounded-2xl" disabled={productTraceQuery.isFetching} onClick={handleProductTraceSearch}>查詢商品</Button>
                   </div>
                   <div className="space-y-3">
@@ -1175,8 +1175,8 @@ export default function AdminPage() {
                     <p className="text-sm leading-7 text-slate-600">匯入作業改為分開選擇「商品類別」與「品牌」。這裡新增或刪除的組合，會同步提供給匯入作業頁與 A1 點到貨頁使用。</p>
                   </div>
                   <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                    <Input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="商品類別，例如 智慧手機" />
-                    <Input value={newBrandName} onChange={(event) => setNewBrandName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="品牌，例如 Apple" />
+                    <Input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="商品類別，例如 智慧手機" />
+                    <Input value={newBrandName} onChange={(event) => setNewBrandName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="品牌，例如 Apple" />
                     <Button
                       className="rounded-2xl"
                       disabled={createCategoryMutation.isPending || !newCategoryName.trim() || !newBrandName.trim()}
@@ -1196,8 +1196,8 @@ export default function AdminPage() {
                     </Button>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
-                    <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
-                    <Input value={categoryFlowBrandSearch} onChange={(event) => setCategoryFlowBrandSearch(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="搜尋品牌，例如 Apple" />
+                    <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
+                    <Input value={categoryFlowBrandSearch} onChange={(event) => setCategoryFlowBrandSearch(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="搜尋品牌，例如 Apple" />
                   </div>
                   <div className="rounded-[24px] bg-slate-50 p-4">
                     <p className="text-sm font-semibold text-slate-900">快速複製現有品類流程</p>
@@ -1236,7 +1236,7 @@ export default function AdminPage() {
                             </div>
                             <label className="space-y-2 text-sm text-slate-600">
                               <span>目標品類</span>
-                              <select value={categoryFlowCopyTargets[category.id] ?? ""} onChange={(event) => setCategoryFlowCopyTargets((prev) => ({ ...prev, [category.id]: event.target.value }))} className="h-10 w-full rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                              <select value={categoryFlowCopyTargets[category.id] ?? ""} onChange={(event) => setCategoryFlowCopyTargets((prev) => ({ ...prev, [category.id]: event.target.value }))} className="editable-select h-10 w-full rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
                                 <option value="">選擇要套用的品類／品牌</option>
                                 {categories.filter((item) => item.id !== category.id).map((item) => (
                                   <option key={`copy-target-${category.id}-${item.id}`} value={String(item.id)}>{item.categoryName} × {item.brandName ?? item.subtypeCode ?? "-"}</option>
@@ -1290,7 +1290,7 @@ export default function AdminPage() {
                     <p className="text-sm leading-7 text-slate-600">這裡新增或刪除的品名，會同步提供給匯入作業頁與 A1 點到貨頁的下拉式選單使用。</p>
                   </div>
                   <div className="flex gap-3">
-                    <Input value={newProductName} onChange={(event) => setNewProductName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 14 Pro" />
+                    <Input value={newProductName} onChange={(event) => setNewProductName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 14 Pro" />
                     <Button
                       className="rounded-2xl"
                       disabled={createProductNameMutation.isPending || !newProductName.trim()}

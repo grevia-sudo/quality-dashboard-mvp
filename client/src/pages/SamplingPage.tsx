@@ -228,7 +228,7 @@ export default function SamplingPage() {
                 <Input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
+                  className="editable-field h-12 rounded-2xl border-0 bg-slate-50 pl-11"
                   placeholder="輸入商品批號、商品序號或產品編號"
                 />
               </div>
@@ -311,7 +311,7 @@ export default function SamplingPage() {
                           <Textarea
                             value={draft.batterySummary}
                             onChange={(event) => updateDraft(task, { batterySummary: event.target.value })}
-                            className="min-h-28 rounded-2xl border-0 bg-slate-50"
+                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
                             placeholder="例如：88%、待更換、正常"
                           />
                         ) : (
@@ -324,7 +324,7 @@ export default function SamplingPage() {
                           <Textarea
                             value={draft.bFaultSummary}
                             onChange={(event) => updateDraft(task, { bFaultSummary: event.target.value })}
-                            className="min-h-28 rounded-2xl border-0 bg-slate-50"
+                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
                             placeholder="例如：無法充電、Face ID 異常、正常"
                           />
                         ) : (
@@ -361,7 +361,7 @@ export default function SamplingPage() {
                           <Textarea
                             value={draft.cFaultSummary}
                             onChange={(event) => updateDraft(task, { cFaultSummary: event.target.value })}
-                            className="min-h-28 rounded-2xl border-0 bg-slate-50"
+                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
                             placeholder="例如：破裂、亮點、正常"
                           />
                         ) : (
@@ -374,7 +374,7 @@ export default function SamplingPage() {
                           <Textarea
                             value={draft.cAppearanceSummary}
                             onChange={(event) => updateDraft(task, { cAppearanceSummary: event.target.value })}
-                            className="min-h-28 rounded-2xl border-0 bg-slate-50"
+                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
                             placeholder="例如：刮傷、掉漆、正常"
                           />
                         ) : (
@@ -387,7 +387,7 @@ export default function SamplingPage() {
                           <Textarea
                             value={draft.cCameraSummary}
                             onChange={(event) => updateDraft(task, { cCameraSummary: event.target.value })}
-                            className="min-h-28 rounded-2xl border-0 bg-slate-50"
+                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
                             placeholder="例如：破裂、刮傷、正常"
                           />
                         ) : (
@@ -415,7 +415,7 @@ export default function SamplingPage() {
                       placeholder="例如：與前站結果不一致、外觀復判不通過"
                       value={reasons[task.taskId] ?? ""}
                       onChange={(event) => setReasons((prev) => ({ ...prev, [task.taskId]: event.target.value }))}
-                      className="min-h-28 rounded-2xl border-0 bg-white"
+                      className="editable-textarea min-h-28 rounded-2xl border-0 bg-white"
                     />
                   </div>
 
@@ -463,7 +463,7 @@ export default function SamplingPage() {
                 <select
                   value={categoryDraftValue}
                   onChange={(event) => setCategoryDraftValue(event.target.value)}
-                  className="h-12 w-full rounded-2xl border-0 bg-slate-50 px-4 text-slate-900"
+                  className="editable-select h-12 w-full rounded-2xl border-0 bg-slate-50 px-4 text-slate-900"
                 >
                   <option value="">清除指定，改回未分類</option>
                   {categoryOptions.map((category) => (

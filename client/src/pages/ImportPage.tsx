@@ -258,15 +258,15 @@ export default function ImportPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <label className="space-y-2 text-sm text-slate-600">
                 <span>PO 單號（留空自動生成）</span>
-                <Input value={poNumber} onChange={(event) => setPoNumber(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="留空時由系統自動產生，例如 PO-20260421-01" />
+                <Input value={poNumber} onChange={(event) => setPoNumber(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="留空時由系統自動產生，例如 PO-20260421-01" />
               </label>
               <label className="space-y-2 text-sm text-slate-600">
                 <span>廠商（必填）</span>
-                <Input value={vendorName} onChange={(event) => setVendorName(event.target.value)} className="rounded-2xl border-0 bg-slate-50" placeholder="例如 悠優" />
+                <Input value={vendorName} onChange={(event) => setVendorName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 悠優" />
               </label>
               <label className="space-y-2 text-sm text-slate-600">
                 <span>到貨時間（同批共用）</span>
-                <Input type="datetime-local" value={arrivalAt} onChange={(event) => setArrivalAt(event.target.value)} className="rounded-2xl border-0 bg-slate-50" />
+                <Input type="datetime-local" value={arrivalAt} onChange={(event) => setArrivalAt(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
               </label>
             </div>
 
@@ -282,12 +282,12 @@ export default function ImportPage() {
 
                 {visibleRows.map((row, index) => (
                   <div key={`row-${index}`} className="grid gap-3 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-6">
-                    <Input value={row.categoryName} onChange={(event) => updateRow(index, { categoryName: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品分類（必填）" />
-                    <Input value={row.brandName} onChange={(event) => updateRow(index, { brandName: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="品牌（必填）" />
-                    <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品批號（可留空）" />
-                    <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="商品序號（可留空）" />
-                    <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="IMEI（可留空）" />
-                    <Input value={row.productName} onChange={(event) => updateRow(index, { productName: event.target.value })} className="rounded-2xl border-0 bg-white" placeholder="品名可先留空" list="import-product-name-options" />
+                    <Input value={row.categoryName} onChange={(event) => updateRow(index, { categoryName: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="商品分類（必填）" />
+                    <Input value={row.brandName} onChange={(event) => updateRow(index, { brandName: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="品牌（必填）" />
+                    <Input value={row.batchNo} onChange={(event) => updateRow(index, { batchNo: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="商品批號（可留空）" />
+                    <Input value={row.serialNumber} onChange={(event) => updateRow(index, { serialNumber: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="商品序號（可留空）" />
+                    <Input value={row.imei} onChange={(event) => updateRow(index, { imei: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="IMEI（可留空）" />
+                    <Input value={row.productName} onChange={(event) => updateRow(index, { productName: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="品名可先留空" list="import-product-name-options" />
                   </div>
                 ))}
               </div>

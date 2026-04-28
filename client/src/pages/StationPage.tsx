@@ -702,7 +702,7 @@ export default function StationPage() {
                         value={arrivalForm.batchNo}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))}
                         onKeyDown={handleA1ScanSubmitKey}
-                        className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
+                        className="editable-field h-14 rounded-2xl border-0 bg-slate-50 text-base"
                         placeholder="必填，掃描批號後可直接按 Enter"
                       />
                     </label>
@@ -712,7 +712,7 @@ export default function StationPage() {
                         value={arrivalForm.serialNumber}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))}
                         onKeyDown={handleA1ScanSubmitKey}
-                        className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
+                        className="editable-field h-14 rounded-2xl border-0 bg-slate-50 text-base"
                         placeholder="必填，請輸入或掃描商品序號"
                       />
                     </label>
@@ -722,7 +722,7 @@ export default function StationPage() {
                         value={arrivalForm.imei}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))}
                         onKeyDown={handleA1ScanSubmitKey}
-                        className="h-14 rounded-2xl border-0 bg-slate-50 text-base"
+                        className="editable-field h-14 rounded-2xl border-0 bg-slate-50 text-base"
                         placeholder="選填，可補刷 IMEI 以補齊資料"
                       />
                     </label>
@@ -745,7 +745,7 @@ export default function StationPage() {
                               setProductNamePickerOpen(false);
                             }
                           }}
-                          className="h-14 rounded-2xl border-0 bg-slate-50 pr-12 text-base"
+                          className="editable-field h-14 rounded-2xl border-0 bg-slate-50 pr-12 text-base"
                           placeholder="必填，可輸入品名關鍵字或完整品名"
                        autoComplete="off"
                         />
@@ -812,7 +812,7 @@ export default function StationPage() {
                     onChange={(event) => setKeyword(event.target.value)}
                     onKeyDown={handleStationScanInputKey}
                     placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}
-                    className="h-12 rounded-2xl border-0 bg-slate-50 pl-11"
+                    className="editable-field h-12 rounded-2xl border-0 bg-slate-50 pl-11"
                   />
                 </div>
                 {stationCode === "A2" ? (
@@ -1006,7 +1006,7 @@ export default function StationPage() {
                               <Input
                                 value={selections.batteryNote}
                                 onChange={(event) => updateBatteryNote(task.taskId, event.target.value)}
-                                className="h-12 rounded-2xl border-0 bg-white shadow-sm"
+                                className="editable-field h-12 rounded-2xl border-0 bg-white shadow-sm"
                                 placeholder="例如：88、85%、待更換"
                               />
                             </label>
@@ -1053,7 +1053,7 @@ export default function StationPage() {
                                     <Input
                                       value={selections.batteryNote}
                                       onChange={(event) => updateBatteryNote(task.taskId, event.target.value)}
-                                      className="h-12 rounded-2xl border-0 bg-slate-50"
+                                      className="editable-field h-12 rounded-2xl border-0 bg-slate-50"
                                       placeholder="例如：88、85%、待更換"
                                     />
                                   </label>
@@ -1236,7 +1236,7 @@ export default function StationPage() {
                 <select
                   value={categoryDraftValue}
                   onChange={(event) => setCategoryDraftValue(event.target.value)}
-                  className="h-12 w-full rounded-2xl border-0 bg-slate-50 px-4 text-slate-900"
+                  className="editable-select h-12 w-full rounded-2xl border-0 bg-slate-50 px-4 text-slate-900"
                 >
                   <option value="">清除指定，改回未分類</option>
                   {productCategoryOptions.map((category) => (

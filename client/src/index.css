@@ -52,10 +52,16 @@
   --popover-foreground: oklch(0.22 0.02 252);
   --primary: oklch(0.66 0.09 246);
   --primary-foreground: oklch(0.99 0.004 248);
-  --secondary: oklch(0.95 0.012 248);
+  --secondary: oklch(0.938 0.015 248);
   --secondary-foreground: oklch(0.28 0.018 252);
-  --muted: oklch(0.955 0.008 248);
+  --muted: oklch(0.942 0.012 248);
   --muted-foreground: oklch(0.5 0.018 252);
+  --field-background: oklch(0.978 0.014 244);
+  --field-foreground: oklch(0.24 0.02 252);
+  --field-border: oklch(0.78 0.026 244);
+  --field-border-hover: oklch(0.71 0.038 244);
+  --field-ring: oklch(0.84 0.045 244);
+  --field-muted-surface: oklch(0.955 0.015 244);
   --accent: oklch(0.95 0.03 343);
   --accent-foreground: oklch(0.28 0.018 252);
   --destructive: oklch(0.62 0.18 24);
@@ -95,6 +101,12 @@
   --accent-foreground: oklch(0.96 0.01 248);
   --destructive: oklch(0.68 0.19 24);
   --destructive-foreground: oklch(0.98 0.01 248);
+  --field-background: oklch(0.26 0.02 252);
+  --field-foreground: oklch(0.95 0.01 248);
+  --field-border: oklch(0.42 0.025 252);
+  --field-border-hover: oklch(0.54 0.035 246);
+  --field-ring: oklch(0.46 0.03 246);
+  --field-muted-surface: oklch(0.3 0.018 252);
   --border: oklch(0.32 0.02 252);
   --input: oklch(0.32 0.02 252);
   --ring: oklch(0.74 0.08 246);
@@ -125,10 +137,42 @@
   body {
     @apply bg-background text-foreground antialiased;
     background-image:
-      radial-gradient(circle at top left, rgba(199, 220, 246, 0.35), transparent 28%),
-      radial-gradient(circle at 85% 20%, rgba(244, 213, 226, 0.28), transparent 20%),
-      linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.85));
+      radial-gradient(circle at top left, rgba(199, 220, 246, 0.28), transparent 28%),
+      radial-gradient(circle at 85% 20%, rgba(244, 213, 226, 0.2), transparent 20%),
+      linear-gradient(180deg, rgba(244, 247, 251, 0.82), rgba(249, 251, 253, 0.96));
     font-family: Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select,
+  [data-slot="select-trigger"] {
+    color: var(--field-foreground);
+    background: var(--field-background);
+    border: 1px solid var(--field-border);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+  textarea:hover,
+  select:hover,
+  [data-slot="select-trigger"]:hover {
+    border-color: var(--field-border-hover);
+    background: color-mix(in oklch, var(--field-background) 92%, white 8%);
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible,
+  [data-slot="select-trigger"]:focus,
+  [data-slot="select-trigger"]:focus-visible,
+  [data-slot="select-trigger"][data-state="open"] {
+    border-color: var(--primary);
+    background: color-mix(in oklch, var(--field-background) 88%, white 12%);
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--field-ring) 72%, transparent 28%), 0 8px 24px rgba(15, 23, 42, 0.08);
   }
 
   button:not(:disabled),
@@ -171,5 +215,36 @@
       padding-right: 2rem;
       max-width: 1280px;
     }
+  }
+
+  .editable-field,
+  .editable-select,
+  .editable-textarea {
+    border-width: 1px !important;
+    border-color: var(--field-border) !important;
+    background: var(--field-background) !important;
+    color: var(--field-foreground) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .editable-field:hover,
+  .editable-select:hover,
+  .editable-textarea:hover {
+    border-color: var(--field-border-hover) !important;
+  }
+
+  .editable-field:focus,
+  .editable-field:focus-visible,
+  .editable-select:focus,
+  .editable-select:focus-visible,
+  .editable-textarea:focus,
+  .editable-textarea:focus-visible {
+    border-color: var(--primary) !important;
+    background: color-mix(in oklch, var(--field-background) 88%, white 12%) !important;
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--field-ring) 72%, transparent 28%), 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .editable-surface {
+    background: var(--field-muted-surface) !important;
   }
 }

@@ -63,9 +63,10 @@ export default function DashboardLayout({
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-r border-border/60 bg-card/80 backdrop-blur">
-        <SidebarHeader className="h-16 justify-center border-b border-border/60 px-3">
+      <SidebarProvider>
+      <Sidebar collapsible="icon" className="border-r border-[color:rgba(148,163,184,0.18)] bg-[linear-gradient(180deg,rgba(245,248,252,0.98),rgba(237,243,249,0.98))] backdrop-blur">
+
+        <SidebarHeader className="h-16 justify-center border-b border-[color:rgba(148,163,184,0.16)] px-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <PanelLeft className="h-4 w-4" />
@@ -98,8 +99,8 @@ export default function DashboardLayout({
           </SidebarMenu>
         </SidebarContent>
 
-        <SidebarFooter className="border-t border-border/60 p-3">
-          <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3 group-data-[collapsible=icon]:justify-center">
+        <SidebarFooter className="border-t border-[color:rgba(148,163,184,0.16)] p-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/88 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)] group-data-[collapsible=icon]:justify-center">
             <Avatar className="h-10 w-10 border border-border/60">
               <AvatarFallback>{user.name?.charAt(0) ?? "U"}</AvatarFallback>
             </Avatar>
@@ -124,7 +125,7 @@ export default function DashboardLayout({
             </div>
           </div>
         ) : null}
-        <main className="min-h-screen p-4 md:p-6">{children}</main>
+        <main className="min-h-screen bg-[linear-gradient(180deg,rgba(244,247,251,0.45),rgba(250,252,255,0.7))] p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
