@@ -102,3 +102,4 @@
 - [x] 將 AdminPage、ImportPage、StationPage、SamplingPage 的硬編碼輸入樣式改為統一高對比 editable field 樣式
 - [x] 統一下拉選單、日期欄位、textarea 與表格內可編輯欄位的 hover／focus／輸入態視覺層級
 - [x] 新增頁面層級測試，驗證關鍵表單頁已套用新的共用高對比輸入樣式
+- [x] 將使用者提供的品類與品牌組合寫入品類設定，供匯入作業、站點流程與待入庫分類使用
