@@ -37,6 +37,10 @@ type SupportCompensationFilterInput = {
   userId?: number | null;
 };
 
+const PRODUCT_NAME_SYNC_SPREADSHEET_ID = "1lMd28O9G-14VQQd7-RRIF8Tr5RaOVa7fhI1fkLXAB0o";
+const PRODUCT_NAME_SYNC_SHEET_NAME = "商品編碼列表";
+const PRODUCT_NAME_SYNC_COLUMN_RANGE = `${PRODUCT_NAME_SYNC_SHEET_NAME}!H:H`;
+
 function toDateKey(value: Date) {
   return value.toISOString().slice(0, 10);
 }
@@ -51,6 +55,47 @@ function dateKeyToDate(dateKey: string) {
 
 function getSupportCompensationInternalPoints(hours: number) {
   return hours * SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR;
+}
+
+function normalizeProductNameLabel(value: unknown) {
+  if (value == null) {
+    return null;
+  }
+
+  const text = String(value).trim();
+  if (!text || text.toLowerCase() === "unnamed: 0") {
+    return null;
+  }
+
+  return text.split(/\s+/).join(" ");
+}
+
+async function getProductNameLabelsFromGoogleSheet() {
+  const accessToken = await getGoogleSheetsAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PRODUCT_NAME_SYNC_SPREADSHEET_ID}/values/${encodeURIComponent(PRODUCT_NAME_SYNC_COLUMN_RANGE)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const result = await response.json() as { values?: string[][]; error?: { message?: string } };
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "Failed to read product name column from Google Sheets");
+  }
+
+  const orderedLabels = new Map<string, true>();
+  (result.values ?? []).forEach((row, index) => {
+    const normalizedLabel = normalizeProductNameLabel(row?.[0]);
+    if (!normalizedLabel) {
+      return;
+    }
+    if (index === 0 && ["商品名稱", "品名", "商品名"].includes(normalizedLabel)) {
+      return;
+    }
+    orderedLabels.set(normalizedLabel, true);
+  });
+
+  return Array.from(orderedLabels.keys());
 }
 
 type StationStatusSummary = {
@@ -3118,6 +3163,37 @@ export async function deleteProductNameOption(id: number) {
 
   await db.delete(productNameOptions).where(eq(productNameOptions.id, id));
   return { success: true as const };
+}
+
+export async function syncProductNameOptionsFromGoogleSheet() {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const labels = await getProductNameLabelsFromGoogleSheet();
+  if (labels.length === 0) {
+    throw new Error("Google 試算表 H 欄沒有可同步的品名資料");
+  }
+
+  const existingRows = await db.select({ count: sql<number>`count(*)` }).from(productNameOptions);
+  const deletedExistingLabels = existingRows[0]?.count ?? 0;
+
+  await db.delete(productNameOptions);
+  await db.insert(productNameOptions).values(labels.map((label, index) => ({
+    label,
+    active: true,
+    sortOrder: (index + 1) * 10,
+  })));
+
+  return {
+    spreadsheetId: PRODUCT_NAME_SYNC_SPREADSHEET_ID,
+    sheetName: PRODUCT_NAME_SYNC_SHEET_NAME,
+    column: "H",
+    deletedExistingLabels,
+    insertedLabels: labels.length,
+    firstInsertedLabels: labels.slice(0, 20),
+  };
 }
 
 export async function createProductCategoryOption(input: { categoryName: string; brandName: string }) {

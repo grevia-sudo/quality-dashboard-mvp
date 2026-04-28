@@ -43,6 +43,7 @@ const dbMocks = vi.hoisted(() => ({
   upsertDefectOption: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   replaceCategoryStationFlow: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   createProductNameOption: vi.fn(async (input: unknown) => ({ id: 99, active: true, sortOrder: 60, ...(typeof input === "object" && input ? input : {}) })),
+  syncProductNameOptionsFromGoogleSheet: vi.fn(async () => ({ spreadsheetId: "sheet-1", sheetName: "商品編碼列表", column: "H", deletedExistingLabels: 4, insertedLabels: 12, firstInsertedLabels: ["Apple iPhone 6 16GB 銀色"] })),
   deleteProductNameOption: vi.fn(async (id: number) => ({ success: true as const, id })),
   updateStationRule: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   updateProductivityTarget: vi.fn(async (input: unknown) => ({ success: true as const, input })),
@@ -72,6 +73,7 @@ const {
   upsertDefectOption,
   replaceCategoryStationFlow,
   createProductNameOption,
+  syncProductNameOptionsFromGoogleSheet,
   deleteProductNameOption,
   updateStationRule,
   updateProductivityTarget,
@@ -476,7 +478,7 @@ describe("warehouse MVP router", () => {
     });
   });
 
-  it("allows admins to create product name options", async () => {
+  it("delegates product-name creation for admins", async () => {
     const caller = appRouter.createCaller(createContext("admin"));
 
     await caller.admin.createProductNameOption({
@@ -488,7 +490,17 @@ describe("warehouse MVP router", () => {
     });
   });
 
-  it("allows admins to delete product name options", async () => {
+  it("delegates Google Sheet product-name sync for admins", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    const result = await caller.admin.syncProductNameOptionsFromSheet();
+
+    expect(syncProductNameOptionsFromGoogleSheet).toHaveBeenCalled();
+    expect(result.insertedLabels).toBe(12);
+    expect(result.sheetName).toBe("商品編碼列表");
+  });
+
+  it("delegates product-name deletion for admins", async () => {
     const caller = appRouter.createCaller(createContext("admin"));
 
     await caller.admin.deleteProductNameOption({

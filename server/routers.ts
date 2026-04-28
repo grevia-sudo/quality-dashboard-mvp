@@ -18,6 +18,7 @@ import {
   deleteProductCategoryOption,
   deleteProductNameOption,
   deleteSupportCompensation,
+  syncProductNameOptionsFromGoogleSheet,
   ensureMvpSeedData,
   getAdminSetupData,
   getImportBatchBackups,
@@ -387,6 +388,10 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         return createProductNameOption({ label: input.label });
+      }),
+    syncProductNameOptionsFromSheet: adminProcedure
+      .mutation(async () => {
+        return syncProductNameOptionsFromGoogleSheet();
       }),
     deleteProductNameOption: adminProcedure
       .input(

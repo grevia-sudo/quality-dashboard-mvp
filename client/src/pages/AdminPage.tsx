@@ -263,6 +263,17 @@ export default function AdminPage() {
     },
   });
 
+  const syncProductNamesFromSheetMutation = trpc.admin.syncProductNameOptionsFromSheet.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已從 Google 試算表同步 ${result.insertedLabels} 筆品名`);
+      await utils.admin.setup.invalidate();
+      await utils.station.productNameOptions.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品名同步失敗");
+    },
+  });
+
   const deleteProductNameMutation = trpc.admin.deleteProductNameOption.useMutation({
     onSuccess: async () => {
       toast.success("品名已刪除");
@@ -1462,6 +1473,18 @@ export default function AdminPage() {
                 <CardContent className="space-y-4">
                   <div className="rounded-[24px] bg-slate-50 p-4">
                     <p className="text-sm leading-7 text-slate-600">這裡新增或刪除的品名，會同步提供給匯入作業頁與 A1 點到貨頁的下拉式選單使用。</p>
+                    <p className="mt-2 text-xs text-slate-500">也可直接從 Google 試算表「商品編碼列表」工作表的 H 欄重新同步，系統會以試算表資料全量覆蓋目前品名清單。</p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-2xl"
+                      disabled={syncProductNamesFromSheetMutation.isPending}
+                      onClick={() => syncProductNamesFromSheetMutation.mutate()}
+                    >
+                      {syncProductNamesFromSheetMutation.isPending ? "同步中…" : "從 Google 試算表同步 H 欄"}
+                    </Button>
                   </div>
                   <div className="flex gap-3">
                     <Input value={newProductName} onChange={(event) => setNewProductName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 14 Pro" />
