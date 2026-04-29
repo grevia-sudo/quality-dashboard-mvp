@@ -66,6 +66,7 @@ export default function ImportPage() {
     },
   );
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [shortcutPrefillHint, setShortcutPrefillHint] = useState("");
   const [expandedSummaryKeys, setExpandedSummaryKeys] = useState<Record<string, boolean>>({});
   const [showAllRows, setShowAllRows] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,6 +80,7 @@ export default function ImportPage() {
       setArrivalAt("");
       setRows([]);
       setSelectedFileName("");
+      setShortcutPrefillHint("");
       setShowAllRows(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -140,6 +142,33 @@ export default function ImportPage() {
       setLocation("/operations");
     }
   }, [canAccessManagementOps, loading, setLocation, user]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const batchNo = params.get("batchNo")?.trim() ?? "";
+    const serialNumber = params.get("serialNumber")?.trim() ?? "";
+    const imei = params.get("imei")?.trim() ?? "";
+    const shortcutVendorName = params.get("vendorName")?.trim() ?? "";
+    if (!batchNo && !serialNumber && !imei && !shortcutVendorName) {
+      return;
+    }
+    setVendorName((prev) => prev || shortcutVendorName);
+    setRows((prev) => {
+      if (prev.length > 0) {
+        return prev;
+      }
+      return [{
+        ...createEmptyRow(),
+        batchNo,
+        serialNumber,
+        imei,
+      }];
+    });
+    setShortcutPrefillHint("已從待比對清單帶入識別資訊，請補齊商品分類與品牌後再執行補匯入。");
+  }, []);
 
   if (!loading && user && !canAccessManagementOps) {
     return null;
@@ -269,6 +298,11 @@ export default function ImportPage() {
                 <Input type="datetime-local" value={arrivalAt} onChange={(event) => setArrivalAt(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
               </label>
             </div>
+            {shortcutPrefillHint ? (
+              <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-900">
+                {shortcutPrefillHint}
+              </div>
+            ) : null}
 
             {rows.length > 0 ? (
               <div className="space-y-3">

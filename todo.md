@@ -26,3 +26,7 @@
 - [x] 補上 PendingStockMismatchPage 的前端行為測試，覆蓋 loading、empty、error、列表渲染與查詢篩選
 - [x] 補上 getPendingStockImportMismatchProducts() 的整合或行為測試，直接驗證實際查詢只回傳待入庫且缺少匯入比對欄位的商品
 - [x] 補上 PendingStockMismatchPage 的組件行為測試，覆蓋 loading、empty、error、列表渲染，以及關鍵字與缺漏欄位篩選互動
+- [x] 在 A1 與待入庫畫面顯示「是否已完成匯入比對」狀態，僅作資訊提示，不新增操作步驟
+- [x] 在待入庫待比對頁面加入「一鍵前往補匯入」快捷操作，並自動帶入對應批號或關鍵資料
+- [x] 在待入庫待比對頁面加入 CSV 匯出功能，方便現場追蹤未比對清單
+- [x] 在待入庫待比對頁面加入依廠商與到貨日期的篩選能力

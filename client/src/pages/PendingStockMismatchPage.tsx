@@ -6,8 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { filterPendingStockMismatchRows, summarizePendingStockMismatchRows } from "./pending-stock-mismatch-filter";
-import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  exportPendingStockMismatchRowsToCsv,
+  filterPendingStockMismatchRows,
+  getPendingStockMismatchVendorOptions,
+  summarizePendingStockMismatchRows,
+  type PendingStockMismatchMissingFieldFilter,
+  type PendingStockMismatchRow,
+} from "./pending-stock-mismatch-filter";
+import { Boxes, ClipboardCheck, Download, Gauge, PackagePlus, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useLocation } from "wouter";
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
@@ -45,7 +52,10 @@ export default function PendingStockMismatchPage() {
   const [, setLocation] = useLocation();
   const query = trpc.admin.pendingStockMismatches.useQuery(undefined, { retry: false });
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [missingFieldFilter, setMissingFieldFilter] = useState<"all" | "採購單號" | "商品分類" | "品牌">("all");
+  const [missingFieldFilter, setMissingFieldFilter] = useState<PendingStockMismatchMissingFieldFilter>("all");
+  const [vendorFilter, setVendorFilter] = useState("");
+  const [arrivalDateStart, setArrivalDateStart] = useState("");
+  const [arrivalDateEnd, setArrivalDateEnd] = useState("");
 
   useEffect(() => {
     if (user && user.role !== "admin") {
@@ -54,12 +64,46 @@ export default function PendingStockMismatchPage() {
   }, [setLocation, user]);
 
   const rows = query.data ?? [];
+  const vendorOptions = useMemo(() => getPendingStockMismatchVendorOptions(rows), [rows]);
   const filteredRows = useMemo(() => filterPendingStockMismatchRows(rows, {
     searchKeyword,
     missingFieldFilter,
-  }), [missingFieldFilter, rows, searchKeyword]);
+    vendorFilter,
+    arrivalDateStart,
+    arrivalDateEnd,
+  }), [arrivalDateEnd, arrivalDateStart, missingFieldFilter, rows, searchKeyword, vendorFilter]);
 
   const summary = useMemo(() => summarizePendingStockMismatchRows(filteredRows), [filteredRows]);
+  const handleExportCsv = () => {
+    const csvContent = exportPendingStockMismatchRowsToCsv(filteredRows);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const timestamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
+    link.href = url;
+    link.download = `pending-stock-mismatches-${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+  const goToImportPage = (row?: PendingStockMismatchRow) => {
+    const params = new URLSearchParams();
+    if (row?.batchNo) {
+      params.set("batchNo", row.batchNo);
+    }
+    if (row?.serialNumber) {
+      params.set("serialNumber", row.serialNumber);
+    }
+    if (row?.imei) {
+      params.set("imei", row.imei);
+    }
+    if (row?.vendorName) {
+      params.set("vendorName", row.vendorName);
+    }
+    const queryString = params.toString();
+    setLocation(queryString ? `/import?${queryString}` : "/import");
+  };
 
   if (user && user.role !== "admin") {
     return null;
@@ -86,7 +130,11 @@ export default function PendingStockMismatchPage() {
               <Button variant="outline" className="rounded-2xl" onClick={() => query.refetch()} disabled={query.isFetching}>
                 {query.isFetching ? "重新整理中" : "重新整理"}
               </Button>
-              <Button className="rounded-2xl" onClick={() => setLocation("/import")}>
+              <Button variant="outline" className="rounded-2xl" onClick={handleExportCsv} disabled={filteredRows.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                匯出 CSV
+              </Button>
+              <Button className="rounded-2xl" onClick={() => goToImportPage()}>
                 前往匯入作業
               </Button>
             </div>
@@ -136,13 +184,13 @@ export default function PendingStockMismatchPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4 md:grid-cols-[minmax(0,1.6fr)_220px]">
-              <div className="space-y-2">
+            <div className="grid gap-3 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="space-y-2 xl:col-span-2">
                 <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">查詢關鍵字</p>
                 <Input
                   value={searchKeyword}
                   onChange={(event) => setSearchKeyword(event.target.value)}
-                  placeholder="可搜尋產品編號、品名、批號、序號、IMEI、PO"
+                  placeholder="可搜尋產品編號、品名、批號、序號、IMEI、PO、廠商"
                   className="editable-field rounded-2xl border-0 bg-white"
                 />
               </div>
@@ -150,7 +198,7 @@ export default function PendingStockMismatchPage() {
                 <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">缺漏欄位</p>
                 <select
                   value={missingFieldFilter}
-                  onChange={(event) => setMissingFieldFilter(event.target.value as "all" | "採購單號" | "商品分類" | "品牌")}
+                  onChange={(event) => setMissingFieldFilter(event.target.value as PendingStockMismatchMissingFieldFilter)}
                   className="editable-select h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none"
                 >
                   <option value="all">全部缺漏</option>
@@ -158,6 +206,37 @@ export default function PendingStockMismatchPage() {
                   <option value="商品分類">缺商品分類</option>
                   <option value="品牌">缺品牌</option>
                 </select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">廠商</p>
+                <select
+                  value={vendorFilter}
+                  onChange={(event) => setVendorFilter(event.target.value)}
+                  className="editable-select h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none"
+                >
+                  <option value="">全部廠商</option>
+                  {vendorOptions.map((vendorName) => (
+                    <option key={vendorName} value={vendorName}>{vendorName}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">到貨日期起</p>
+                <Input
+                  type="date"
+                  value={arrivalDateStart}
+                  onChange={(event) => setArrivalDateStart(event.target.value)}
+                  className="editable-field rounded-2xl border-0 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">到貨日期迄</p>
+                <Input
+                  type="date"
+                  value={arrivalDateEnd}
+                  onChange={(event) => setArrivalDateEnd(event.target.value)}
+                  className="editable-field rounded-2xl border-0 bg-white"
+                />
               </div>
             </div>
 
@@ -185,6 +264,7 @@ export default function PendingStockMismatchPage() {
                       <th className="px-4 py-2">匯入比對缺漏</th>
                       <th className="px-4 py-2">已掛站點資訊</th>
                       <th className="px-4 py-2">最後更新</th>
+                      <th className="px-4 py-2 text-right">操作</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -226,9 +306,14 @@ export default function PendingStockMismatchPage() {
                             <p>到貨時間：{formatDateTime(row.arrivalAt)}</p>
                           </div>
                         </td>
-                        <td className="rounded-r-[22px] bg-slate-50/80 px-4 py-4 text-xs leading-6 text-slate-600">
+                        <td className="bg-slate-50/80 px-4 py-4 text-xs leading-6 text-slate-600">
                           <p>任務建立：{formatDateTime(row.stockTaskCreatedAt)}</p>
                           <p>最後更新：{formatDateTime(row.updatedAt)}</p>
+                        </td>
+                        <td className="rounded-r-[22px] bg-slate-50/80 px-4 py-4 text-right">
+                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => goToImportPage(row)}>
+                            前往補匯入
+                          </Button>
                         </td>
                       </tr>
                     ))}

@@ -55,8 +55,35 @@ const defaultSelections = (): OptionSelections => ({
 const normalizeIdList = (values: number[]) => Array.from(new Set(values)).sort((left, right) => left - right);
 const normalizeTextList = (values: string[]) => Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((left, right) => left.localeCompare(right, "zh-Hant"));
 const summarizeTextResult = (values: string[]) => values.map((value) => value.trim()).filter(Boolean).join(", ") || "正常";
-
 const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
+const getImportComparisonStatus = (task: {
+  poNumber?: string | null;
+  importedCategoryName?: string | null;
+  importedBrandName?: string | null;
+}) => {
+  const missingFields: string[] = [];
+  if (!task.poNumber) {
+    missingFields.push("PO");
+  }
+  if (!task.importedCategoryName) {
+    missingFields.push("商品分類");
+  }
+  if (!task.importedBrandName) {
+    missingFields.push("品牌");
+  }
+  if (missingFields.length === 0) {
+    return {
+      label: "已完成匯入比對",
+      detail: "PO、商品分類與品牌都已補齊",
+      className: "bg-emerald-100 text-emerald-700",
+    };
+  }
+  return {
+    label: "尚未完成匯入比對",
+    detail: `待補 ${missingFields.join("、")}`,
+    className: "bg-amber-100 text-amber-700",
+  };
+};
 
 export function normalizeStationCodeParam(value?: string | null): StationCode | null {
   if (!value) return null;
@@ -829,7 +856,20 @@ export default function StationPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-[#eef2f7] p-4 text-sm text-slate-600">
-                    <p>為了讓掃描槍操作更快，本區不再要求先填 PO、廠商、到貨時間與商品分類；只要任一識別碼命中已匯入的 A1 待處理商品，就會直接完成點到貨、同步回寫資料，並留在 A1 等待下一筆。</p>
+                    <div className="space-y-2">
+                      <p>為了讓掃描槍操作更快，本區不再要求先填 PO、廠商、到貨時間與商品分類；只要任一識別碼命中已匯入的 A1 待處理商品，就會直接完成點到貨、同步回寫資料，並留在 A1 等待下一筆。</p>
+                      {matchedA1PendingTask ? (() => {
+                        const importComparisonStatus = getImportComparisonStatus(matchedA1PendingTask);
+                        return (
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <Badge variant="secondary" className={importComparisonStatus.className}>
+                              {importComparisonStatus.label}
+                            </Badge>
+                            <span>{importComparisonStatus.detail}</span>
+                          </div>
+                        );
+                      })() : null}
+                    </div>
                     <Button type="submit" className="rounded-2xl" disabled={receiveMutation.isPending || !canReceiveA1}>
                       {receiveMutation.isPending ? "比對中..." : "完成 A1 並準備下一筆"}
                     </Button>
@@ -903,6 +943,7 @@ export default function StationPage() {
                       <th className="px-4 py-3">批號</th>
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
+                      <th className="px-4 py-3">匯入比對</th>
                       <th className="px-4 py-3">狀態</th>
                       {canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}
                     </tr>
@@ -916,6 +957,19 @@ export default function StationPage() {
                         <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
                         <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
                         <td className="px-4 py-3">{task.imei ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const importComparisonStatus = getImportComparisonStatus(task);
+                            return (
+                              <div className="space-y-1">
+                                <Badge variant="secondary" className={importComparisonStatus.className}>
+                                  {importComparisonStatus.label}
+                                </Badge>
+                                <p className="text-xs text-slate-500">{importComparisonStatus.detail}</p>
+                              </div>
+                            );
+                          })()}
+                        </td>
                         <td className="px-4 py-3">
                           <Badge variant="secondary" className={task.isOverdue ? "bg-[#f7e8ee] text-rose-700" : "bg-slate-100 text-slate-700"}>
                             {task.isOverdue ? "逾期" : task.taskStatus}
@@ -983,12 +1037,28 @@ export default function StationPage() {
                   <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 md:grid-cols-2">
                     <div><p className="text-xs text-slate-400">商品名稱</p><p className="mt-1 font-semibold text-slate-900">{task.productName ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">品類 / 品牌</p><p className="mt-1 font-semibold text-slate-900">{[task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-", task.brandName ?? task.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p></div>
+                  </div>
+                  <div className="grid gap-3 text-sm md:grid-cols-5">
                     <div><p className="text-xs text-slate-400">批號</p><p className="mt-1 font-semibold text-slate-900">{task.batchNo ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">序號</p><p className="mt-1 font-semibold text-slate-900">{task.serialNumber ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">IMEI</p><p className="mt-1 font-semibold text-slate-900">{task.imei ?? "-"}</p></div>
                     <div><p className="text-xs text-slate-400">目前站點</p><p className="mt-1 font-semibold text-slate-900">{task.currentStationCode}</p></div>
+                    <div>
+                      <p className="text-xs text-slate-400">匯入比對</p>
+                      {(() => {
+                        const importComparisonStatus = getImportComparisonStatus(task);
+                        return (
+                          <div className="mt-1 space-y-1">
+                            <Badge variant="secondary" className={importComparisonStatus.className}>
+                              {importComparisonStatus.label}
+                            </Badge>
+                            <p className="text-xs text-slate-500">{importComparisonStatus.detail}</p>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
-                  {canEditCategory ? (
+                {canEditCategory ? (
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
                       <div className="space-y-1">
                         <p className="text-xs text-slate-400">套用品類設定</p>
@@ -1220,6 +1290,7 @@ export default function StationPage() {
                       <th className="px-4 py-3">批號</th>
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
+                      <th className="px-4 py-3">匯入比對</th>
                       <th className="px-4 py-3">狀態</th>
                       {canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}
                     </tr>
@@ -1233,6 +1304,19 @@ export default function StationPage() {
                         <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
                         <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
                         <td className="px-4 py-3">{task.imei ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const importComparisonStatus = getImportComparisonStatus(task);
+                            return (
+                              <div className="space-y-1">
+                                <Badge variant="secondary" className={importComparisonStatus.className}>
+                                  {importComparisonStatus.label}
+                                </Badge>
+                                <p className="text-xs text-slate-500">{importComparisonStatus.detail}</p>
+                              </div>
+                            );
+                          })()}
+                        </td>
                         <td className="px-4 py-3">
                           <Badge variant="secondary" className={task.isOverdue ? "bg-[#f7e8ee] text-rose-700" : "bg-slate-100 text-slate-700"}>
                             {task.isOverdue ? "逾期" : task.taskStatus}
