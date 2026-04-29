@@ -36,6 +36,7 @@ const dbMocks = vi.hoisted(() => ({
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   getAdminSetupData: vi.fn(async (input?: { startDate?: string; endDate?: string }) => ({ users: [], rules: [], categories: [{ id: 3, categoryName: "智慧手機", brandName: "Apple", subtypeCode: "Apple", active: true }], targets: [], defectOptions: [], categoryFlows: [{ categoryId: 3, stationCode: "A1", stepOrder: 1 }, { categoryId: 3, stationCode: "C", stepOrder: 2 }, { categoryId: 3, stationCode: "D", stepOrder: 3 }, { categoryId: 3, stationCode: "E", stepOrder: 4 }, { categoryId: 3, stationCode: "STOCK", stepOrder: 5 }], kpiProgress: [{ userId: 7, name: "Demo User", role: "user", monthTotalPoints: 12.5, avgKpiAchievementRate: 83.3, attendanceDays: 18, finalKpiScore: 88 }], stationLeadTimes: [{ stationCode: "C", avgDaysFromImport: 1.5, sampleCount: 12 }], categoryStockCycleTimes: [{ categoryId: 3, categoryName: "智慧手機", brandName: "Apple", avgDaysToStock: 3.2, sampleCount: 10 }], kpiRange: { startDate: input?.startDate ?? "2026-04-01", endDate: input?.endDate ?? "2026-04-30" }, productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10, categoryName: "智慧手機", brandName: "Apple", sourceRowNumber: 2 }], syncSummary: { queuedJobs: 0, targetSheetName: "採購單" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
+  getPendingStockImportMismatchProducts: vi.fn(async () => [{ productId: 88, productCode: "P-100088", productName: "iPhone 15 Pro", poNumber: null, vendorName: null, batchNo: "BATCH-88", serialNumber: "SN-88", imei: "IMEI-88", arrivalAt: new Date("2026-04-28T02:00:00Z"), currentStationCode: "STOCK", currentStatus: "pending_stock", importedCategoryName: null, importedBrandName: "Apple", assignedCategoryName: "智慧型手機", assignedBrandName: "Apple", updatedAt: new Date("2026-04-28T08:00:00Z"), stockTaskId: 501, stockTaskStatus: "pending", stockTaskCreatedAt: new Date("2026-04-28T07:30:00Z"), missingFields: ["採購單號", "商品分類"], missingFieldSummary: "採購單號、商品分類", mismatchReason: "缺少採購單號、商品分類，尚未完成匯入比對" }]),
   getImportBatchBackups: vi.fn(async () => [{ id: 11, poNumber: "PO-20260426-01", vendorName: "綠途未來", backupLabel: "PO-20260426-01 匯入備份", productCount: 2, createdAt: new Date("2026-04-26T02:00:00Z"), restoredAt: null, createdByUserId: 7, restoredByUserId: null }]),
   createImportBatchBackup: vi.fn(async (input: unknown) => ({ id: 11, backupLabel: "PO-20260426-01 匯入備份", ...(typeof input === "object" && input ? input : {}) })),
   restoreImportBatchBackup: vi.fn(async (input: unknown) => ({ success: true as const, poNumber: "PO-20260426-01", restoredCount: 2, ...(typeof input === "object" && input ? input : {}) })),
@@ -66,6 +67,7 @@ const {
   getSamplingQueue,
   submitSamplingResult,
   getAdminSetupData,
+  getPendingStockImportMismatchProducts,
   getImportBatchBackups,
   createImportBatchBackup,
   restoreImportBatchBackup,
@@ -144,6 +146,16 @@ describe("warehouse MVP router", () => {
 
     const userCaller = appRouter.createCaller(createContext("user"));
     await expect(userCaller.admin.setup()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("allows admins to query pending stock mismatch products", async () => {
+    const caller = appRouter.createCaller(createContext("admin"));
+
+    const result = await caller.admin.pendingStockMismatches();
+
+    expect(getPendingStockImportMismatchProducts).toHaveBeenCalled();
+    expect(result[0]?.currentStationCode).toBe("STOCK");
+    expect(result[0]?.mismatchReason).toContain("尚未完成匯入比對");
   });
 
   it("passes KPI date range filters to the admin setup data layer", async () => {

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analyzeProductTraceResults } from "@/lib/adminProductTrace";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, Search, ShieldCheck, Trash2 } from "lucide-react";
+import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 
@@ -20,6 +20,7 @@ const navItems: DashboardNavItem[] = [
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
+  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
 
 const stationOptions = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;

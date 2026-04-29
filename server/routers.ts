@@ -21,6 +21,7 @@ import {
   syncProductNameOptionsFromGoogleSheet,
   ensureMvpSeedData,
   getAdminSetupData,
+  getPendingStockImportMismatchProducts,
   getImportBatchBackups,
   getProductTraceByIdentity,
   listSupportCompensations,
@@ -295,6 +296,11 @@ export const appRouter = router({
           startDate: input?.startDate ?? undefined,
           endDate: input?.endDate ?? undefined,
         });
+      }),
+    pendingStockMismatches: adminProcedure
+      .query(async () => {
+        await ensureMvpSeedData();
+        return getPendingStockImportMismatchProducts();
       }),
     getDefectOptions: adminProcedure
       .input(

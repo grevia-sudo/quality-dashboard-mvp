@@ -25,6 +25,7 @@ import {
   users,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "./pending-stock-mismatch";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 const SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR = 0.125;
@@ -3157,6 +3158,66 @@ export async function replaceCategoryStationFlow(input: { categoryId: number; st
   })));
 
   return getCategoryStationFlowConfigs();
+}
+
+export async function getPendingStockImportMismatchProducts() {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  await ensureMvpSeedData();
+
+  const rows = await db
+    .select({
+      productId: products.id,
+      productCode: products.productCode,
+      poNumber: products.poNumber,
+      vendorName: products.vendorName,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      productName: products.productName,
+      arrivalAt: products.arrivalAt,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      assignedCategoryName: productCategories.categoryName,
+      assignedBrandName: productCategories.brandName,
+      updatedAt: products.updatedAt,
+      stockTaskId: stationTasks.id,
+      stockTaskStatus: stationTasks.taskStatus,
+      stockTaskCreatedAt: stationTasks.createdAt,
+    })
+    .from(products)
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .leftJoin(
+      stationTasks,
+      and(
+        eq(stationTasks.productId, products.id),
+        eq(stationTasks.stationCode, "STOCK"),
+        inArray(stationTasks.taskStatus, ["pending", "in_progress", "overdue", "returned"]),
+      ),
+    )
+    .where(and(
+      eq(products.currentStationCode, "STOCK"),
+      eq(products.currentStatus, "pending_stock"),
+      isNull(products.archivedAt),
+      or(
+        isNull(products.poNumber),
+        isNull(products.importedCategoryName),
+        isNull(products.importedBrandName),
+      ),
+    ))
+    .orderBy(desc(products.updatedAt), desc(products.id));
+
+  return rows
+    .filter((row) => isPendingStockImportMismatch(row))
+    .map((row) => ({
+      ...row,
+      ...buildPendingStockMismatchSummary(row),
+    }));
 }
 
 export async function getAdminSetupData(input?: AdminDateRangeInput) {

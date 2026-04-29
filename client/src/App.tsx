@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import ImportPage from "./pages/ImportPage";
 import LoginPage from "./pages/LoginPage";
 import OperationsPage from "./pages/OperationsPage";
+import PendingStockMismatchPage from "./pages/PendingStockMismatchPage";
 import SamplingPage from "./pages/SamplingPage";
 import StationPage from "./pages/StationPage";
 
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/station/:stationCode" component={StationPage} />
       <Route path="/sampling" component={SamplingPage} />
       <Route path="/kpi" component={EngineerKpiPage} />
+      <Route path="/admin/pending-stock-mismatches" component={PendingStockMismatchPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/404" component={NotFound} />
       <Route path="/" component={Home} />

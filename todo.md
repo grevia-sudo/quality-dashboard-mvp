@@ -17,3 +17,12 @@
 - [x] 修正 A1 在無匯入資料時跳出「無匯入資料」而無法正常完成的流程
 - [x] 調整無匯入資料時的站點流轉，讓商品可從 A1 繼續操作到待入庫，不在 A1 先強制完成比對
 - [x] 將比對完成改為入庫前控制條件，確認未完成比對的商品仍可經過各站作業但不可直接完成入庫
+- [x] 新增管理後台查詢頁面，列出所有已到達待入庫站點但尚未完成匯入比對的商品
+- [x] 在管理後台加入未比對待入庫商品的查詢欄位與必要資訊，方便追查與補匯入
+- [x] 補上未比對待入庫查詢頁面的後端／前端測試並驗證結果
+- [x] 修正 PendingStockMismatchPage 的權限導向邏輯，避免在 render 階段直接跳轉，並補上查詢失敗提示 UI
+- [x] 在待入庫待比對頁面加入真正的查詢／篩選欄位，支援依產品編號、批號、序號、IMEI 與缺漏欄位過濾清單
+- [x] 補上 getPendingStockImportMismatchProducts 的後端行為測試，驗證只撈出待入庫且缺少匯入比對資料的商品
+- [x] 補上 PendingStockMismatchPage 的前端行為測試，覆蓋 loading、empty、error、列表渲染與查詢篩選
+- [x] 補上 getPendingStockImportMismatchProducts() 的整合或行為測試，直接驗證實際查詢只回傳待入庫且缺少匯入比對欄位的商品
+- [x] 補上 PendingStockMismatchPage 的組件行為測試，覆蓋 loading、empty、error、列表渲染，以及關鍵字與缺漏欄位篩選互動
