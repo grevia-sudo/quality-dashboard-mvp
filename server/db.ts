@@ -142,6 +142,10 @@ type StationStatusSummary = {
 let _db: ReturnType<typeof createDatabaseClient> | null = null;
 let purchaseSheetSyncTriggeredAt = 0;
 let purchaseSheetSyncPromise: Promise<void> | null = null;
+let purchaseSheetSyncWorkerStarted = false;
+let purchaseSheetSyncWorkerTimer: ReturnType<typeof setTimeout> | null = null;
+const PURCHASE_SHEET_SYNC_IDLE_POLL_MS = 30_000;
+const PURCHASE_SHEET_SYNC_BUSY_POLL_MS = 5_000;
 let stockSheetReconcileTriggeredAt = 0;
 let stockSheetReconcilePromise: Promise<void> | null = null;
 const STOCK_MATCH_SPREADSHEET_ID = "1JgtjGPwL8MXQLFUKi5OSx3wubgpSX4n4MFcj-iHgEW0";
@@ -188,13 +192,72 @@ async function runPurchaseSheetSyncInProcess() {
   return purchaseSheetSyncPromise;
 }
 
-function triggerPurchaseSheetSyncInBackground() {
-  const now = Date.now();
-  if (now - purchaseSheetSyncTriggeredAt < 10_000) {
+async function getQueuedPurchaseSheetSyncJobCount() {
+  const db = await getDb();
+  if (!db) {
+    return 0;
+  }
+
+  const rows = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(sheetSyncJobs)
+    .where(and(
+      eq(sheetSyncJobs.jobType, "purchase_sheet_sync"),
+      eq(sheetSyncJobs.targetSheetName, "採購單"),
+      eq(sheetSyncJobs.status, "queued"),
+    ));
+
+  return rows[0]?.count ?? 0;
+}
+
+async function drainPurchaseSheetSyncQueueOnce() {
+  const queuedCount = await getQueuedPurchaseSheetSyncJobCount();
+  if (queuedCount <= 0) {
+    return false;
+  }
+
+  purchaseSheetSyncTriggeredAt = Date.now();
+  await runPurchaseSheetSyncInProcess();
+  return true;
+}
+
+function schedulePurchaseSheetSyncWorker(delayMs: number) {
+  if (process.env.NODE_ENV === "test" || process.env.VITEST) {
     return;
   }
 
-  purchaseSheetSyncTriggeredAt = now;
+  if (purchaseSheetSyncWorkerTimer) {
+    clearTimeout(purchaseSheetSyncWorkerTimer);
+  }
+
+  purchaseSheetSyncWorkerTimer = setTimeout(async () => {
+    purchaseSheetSyncWorkerTimer = null;
+
+    try {
+      const drained = await drainPurchaseSheetSyncQueueOnce();
+      schedulePurchaseSheetSyncWorker(drained ? PURCHASE_SHEET_SYNC_BUSY_POLL_MS : PURCHASE_SHEET_SYNC_IDLE_POLL_MS);
+    } catch (error) {
+      console.error("[purchase-sheet-sync] worker cycle failed", error);
+      schedulePurchaseSheetSyncWorker(PURCHASE_SHEET_SYNC_BUSY_POLL_MS);
+    }
+  }, Math.max(100, delayMs));
+}
+
+export function startPurchaseSheetSyncWorker() {
+  if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+    return;
+  }
+
+  if (purchaseSheetSyncWorkerStarted) {
+    return;
+  }
+
+  purchaseSheetSyncWorkerStarted = true;
+  schedulePurchaseSheetSyncWorker(1_000);
+}
+
+function triggerPurchaseSheetSyncInBackground() {
+  const now = Date.now();
 
   if (process.env.NODE_ENV === "test" || process.env.VITEST) {
     const command = "cd /home/ubuntu/quality-dashboard-mvp && pnpm sync:purchase-sheet >/tmp/quality-dashboard-purchase-sheet-sync.log 2>&1";
@@ -213,7 +276,14 @@ function triggerPurchaseSheetSyncInBackground() {
     return;
   }
 
-  void runPurchaseSheetSyncInProcess();
+  startPurchaseSheetSyncWorker();
+
+  if (now - purchaseSheetSyncTriggeredAt < 2_000 && purchaseSheetSyncPromise) {
+    return;
+  }
+
+  purchaseSheetSyncTriggeredAt = now;
+  schedulePurchaseSheetSyncWorker(200);
 }
 
 function normalizeBatchMatchValue(value: unknown) {
@@ -393,6 +463,14 @@ async function reconcilePendingStockFromSheet(db: NonNullable<Awaited<ReturnType
           batchNo: row.batchNo ?? null,
         },
       })));
+
+      await db.insert(sheetSyncJobs).values({
+        jobType: "purchase_sheet_sync",
+        targetSheetName: "採購單",
+        status: "queued",
+      });
+
+      triggerPurchaseSheetSyncInBackground();
     } catch (error) {
       console.error("[stock-sheet-reconcile] failed", error);
     } finally {
@@ -1866,6 +1944,21 @@ export async function importProducts(input: {
     resultSummary: string;
     metadata: Record<string, unknown>;
   }> = [];
+  const importEventInserts: Array<{
+    productId: number;
+    stationCode: "A1";
+    eventType: "enter";
+    operatorUserId: number | null;
+    businessDate: Date;
+    categoryId: number | null;
+    subtypeCode: null;
+    payload: {
+      summary: string;
+      source: string;
+      vendorName: string;
+      poNumber: string;
+    };
+  }> = [];
   const newProductEntries: Array<{
     productCode: string;
     productName: string | null;
@@ -1934,6 +2027,22 @@ export async function importProducts(input: {
         })
         .where(eq(products.id, matchedProduct.id));
 
+      importEventInserts.push({
+        productId: matchedProduct.id,
+        stationCode: "A1",
+        eventType: "enter",
+        operatorUserId: input.importedByUserId ?? null,
+        businessDate: businessDateValue,
+        categoryId: nextCategoryId,
+        subtypeCode: null,
+        payload: {
+          summary: nextPoNumber ? `匯入更新，PO：${nextPoNumber}` : "匯入更新",
+          source: "import_patch",
+          vendorName,
+          poNumber: nextPoNumber ?? resolvedPoNumber,
+        },
+      });
+
       if (shouldResetToPendingA1 && !pendingA1TaskProductIds.has(matchedProduct.id)) {
         pendingTaskInserts.push({
           productId: matchedProduct.id,
@@ -1984,6 +2093,10 @@ export async function importProducts(input: {
     await db.insert(stationTasks).values(pendingTaskInserts);
   }
 
+  if (importEventInserts.length > 0) {
+    await db.insert(stationEvents).values(importEventInserts);
+  }
+
   const insertChunkSize = 200;
   for (let index = 0; index < newProductEntries.length; index += insertChunkSize) {
     const chunk = newProductEntries.slice(index, index + insertChunkSize);
@@ -2008,6 +2121,35 @@ export async function importProducts(input: {
       await db.insert(stationTasks).values(taskValues);
     }
 
+    const importEventValues = insertedProducts.flatMap((product, offset) => {
+      if (!product?.id) {
+        return [];
+      }
+      const entry = chunk[offset];
+      if (!entry) {
+        return [];
+      }
+
+      return [{
+        productId: product.id,
+        stationCode: "A1" as const,
+        eventType: "enter" as const,
+        operatorUserId: input.importedByUserId ?? null,
+        businessDate: businessDateValue,
+        categoryId: entry.values.categoryId,
+        subtypeCode: null,
+        payload: {
+          summary: resolvedPoNumber ? `匯入建立，PO：${resolvedPoNumber}` : "匯入建立",
+          source: "import",
+          vendorName,
+        },
+      }];
+    });
+
+    if (importEventValues.length > 0) {
+      await db.insert(stationEvents).values(importEventValues);
+    }
+
     insertedProducts.forEach((product, offset) => {
       if (!product?.id) {
         return;
@@ -2024,12 +2166,12 @@ export async function importProducts(input: {
     });
   }
 
-  await db.insert(sheetSyncJobs).values({
+   await db.insert(sheetSyncJobs).values({
     jobType: "purchase_sheet_sync",
     targetSheetName: "採購單",
     status: "queued",
   });
-
+  triggerPurchaseSheetSyncInBackground();
   return {
     success: true as const,
     importedCount: createdProducts.length,
@@ -2215,7 +2357,7 @@ export async function completeStationTask(input: {
       })
       .where(eq(products.id, input.productId));
 
-    await db.insert(stationTasks).values({
+    const nextTaskResult = await db.insert(stationTasks).values({
       productId: input.productId,
       stationCode: nextStation,
       taskStatus: "pending",
@@ -2233,7 +2375,24 @@ export async function completeStationTask(input: {
         faultSummary: applyBChanges ? carriedBFaultSummary : undefined,
         applyBChanges,
       },
-    });
+    }).$returningId();
+
+    if (nextStation === "STOCK") {
+      await db.insert(stationEvents).values({
+        productId: input.productId,
+        stationTaskId: nextTaskResult[0]?.id ?? null,
+        stationCode: "STOCK",
+        eventType: "stock_ready",
+        operatorUserId: input.operatorUserId,
+        businessDate: businessDateValue,
+        categoryId: effectiveCategoryId,
+        subtypeCode: input.subtypeCode ?? null,
+        payload: {
+          summary: input.summary ?? `${stationToLabel(input.stationCode)} 完成後進入待入庫`,
+          sourceStation: input.stationCode,
+        },
+      });
+    }
   } else {
     await db
       .update(products)
@@ -3906,11 +4065,31 @@ export async function getProductTraceByIdentity(keyword: string) {
     payload: unknown;
   }>>());
 
-  return productRows.map((product) => ({
-    ...product,
-    timeline: taskMap.get(product.id) ?? [],
-    events: eventMap.get(product.id) ?? [],
-  }));
+  return productRows.map((product) => {
+    const timeline = taskMap.get(product.id) ?? [];
+    const events = eventMap.get(product.id) ?? [];
+    const stockTask = timeline.find((task) => task.stationCode === "STOCK") ?? null;
+    const importEvent = events.filter((event) => event.stationCode === "A1" && event.eventType === "enter").at(-1) ?? null;
+    const pendingStockEvent = events.filter((event) => event.stationCode === "STOCK" && event.eventType === "stock_ready").at(-1) ?? null;
+    const stockCompletedEvent = events.filter((event) => event.stationCode === "STOCK" && event.eventType === "complete").at(-1) ?? null;
+
+    return {
+      ...product,
+      timeline,
+      events,
+      inventoryMovement: {
+        importedAt: importEvent?.createdAt ?? product.createdAt,
+        importSummary: importEvent?.summary ?? (product.poNumber ? `匯入建立，PO：${product.poNumber}` : "匯入建立"),
+        importedOperatorName: importEvent?.operatorName ?? null,
+        pendingStockAt: pendingStockEvent?.createdAt ?? stockTask?.createdAt ?? null,
+        pendingStockSummary: pendingStockEvent?.summary ?? stockTask?.resultSummary ?? "待入庫 待處理",
+        pendingStockOperatorName: pendingStockEvent?.operatorName ?? null,
+        stockedAt: stockTask?.completedAt ?? stockCompletedEvent?.createdAt ?? null,
+        stockedSummary: stockCompletedEvent?.summary ?? stockTask?.resultSummary ?? (product.currentStatus === "completed" ? "已完成入庫" : "尚未入庫"),
+        stockedOperatorName: stockCompletedEvent?.operatorName ?? null,
+      },
+    };
+  });
 }
 
 export async function deleteImportedPurchaseOrder(poNumber: string) {

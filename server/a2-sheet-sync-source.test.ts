@@ -48,5 +48,15 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(dbSource).toContain('await import("../scripts/sync-purchase-sheet.mjs")');
     expect(syncScriptSource).toContain('export async function runPurchaseSheetSync()');
   });
+
+  it("triggers purchase sheet sync immediately after import queues the job", () => {
+    expect(dbSource).toContain('await db.insert(sheetSyncJobs).values({\n    jobType: "purchase_sheet_sync",\n    targetSheetName: "採購單",\n    status: "queued",\n  });\n  triggerPurchaseSheetSyncInBackground();');
+  });
+
+  it("requeues purchase sheet sync when pending stock is auto-removed by external sheet matching", () => {
+    expect(dbSource).toContain('summary: "外部進貨明細批號比對成功，自動移除待入庫"');
+    expect(dbSource).toContain('matchedColumn: "F"');
+    expect(dbSource).toContain('await db.insert(sheetSyncJobs).values({\n        jobType: "purchase_sheet_sync",\n        targetSheetName: "採購單",\n        status: "queued",\n      });\n\n      triggerPurchaseSheetSyncInBackground();');
+  });
 });
 

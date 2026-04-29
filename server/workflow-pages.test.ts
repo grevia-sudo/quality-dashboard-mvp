@@ -150,6 +150,16 @@ describe("warehouse workflow pages", () => {
     expect(engineerKpiPageSource).toContain('{ label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES }');
   });
 
+  it("exposes inventory history from real backend movement fields", () => {
+    expect(adminPageSource).toContain('<TabsTrigger value="inventory-history" className="rounded-2xl">庫存異動紀錄</TabsTrigger>');
+    expect(adminPageSource).toContain('product.inventoryMovement.importedOperatorName');
+    expect(adminPageSource).toContain('product.inventoryMovement.pendingStockOperatorName');
+    expect(adminPageSource).toContain('product.inventoryMovement.stockedOperatorName');
+    expect(dbSource).toContain('await db.insert(stationEvents).values(importEventInserts);');
+    expect(dbSource).toContain('event.stationCode === "A1" && event.eventType === "enter").at(-1)');
+    expect(dbSource).toContain('event.stationCode === "STOCK" && event.eventType === "stock_ready").at(-1)');
+  });
+
   it("includes category edit controls on the sampling page", () => {
     expect(samplingPageSource).toContain("trpc.station.productCategoryOptions.useQuery");
     expect(samplingPageSource).toContain('shouldEnableManagementQuery');
@@ -238,6 +248,11 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).toContain("C 站鏡頭狀態");
     expect(adminPageSource).toContain("品名管理");
     expect(adminPageSource).toContain("TabsTrigger value=\"tools\"");
+    expect(adminPageSource).toContain("TabsTrigger value=\"inventory-history\"");
+    expect(adminPageSource).toContain("庫存異動紀錄");
+    expect(adminPageSource).toContain("匯入時間");
+    expect(adminPageSource).toContain("待入庫時間");
+    expect(adminPageSource).toContain("入庫時間");
     expect(adminPageSource).toContain("匯入批次備份／還原");
     expect(adminPageSource).toContain("trpc.admin.importBackups.useQuery");
     expect(adminPageSource).toContain("trpc.admin.createImportBackup.useMutation");

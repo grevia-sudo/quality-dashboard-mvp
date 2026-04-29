@@ -458,6 +458,7 @@ export default function AdminPage() {
     () => analyzeProductTraceResults(productTraceQuery.data ?? []),
     [productTraceQuery.data],
   );
+  const inventoryMovementResults = productTraceQuery.data ?? [];
 
   const toggleCategoryFlowStation = (categoryId: number, stationCode: (typeof stationOptions)[number]) => {
     if (stationCode === "A1" || stationCode === "STOCK") {
@@ -836,11 +837,12 @@ export default function AdminPage() {
         </Card>
 
         <Tabs defaultValue="rules" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-7">
+          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-8">
             <TabsTrigger value="rules" className="rounded-2xl">站點規則</TabsTrigger>
             <TabsTrigger value="targets" className="rounded-2xl">產能設定</TabsTrigger>
             <TabsTrigger value="menus" className="rounded-2xl">功能表設定</TabsTrigger>
             <TabsTrigger value="tools" className="rounded-2xl">資料工具</TabsTrigger>
+            <TabsTrigger value="inventory-history" className="rounded-2xl">庫存異動紀錄</TabsTrigger>
             <TabsTrigger value="support" className="rounded-2xl">支援補償</TabsTrigger>
             <TabsTrigger value="users" className="rounded-2xl">帳號管理</TabsTrigger>
             <TabsTrigger value="categories" className="rounded-2xl">品類設定</TabsTrigger>
@@ -1348,6 +1350,73 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="inventory-history">
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-bold">庫存異動紀錄</CardTitle>
+                <p className="text-sm leading-7 text-slate-500">可依商品批號、序號或 IMEI 查詢該商品從匯入、進入待入庫，到完成入庫或自動移除待入庫的時間、說明與操作者。</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-3">
+                  <Input value={productTraceKeyword} onChange={(event) => setProductTraceKeyword(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="輸入商品批號、商品序號或 IMEI" />
+                  <Button className="rounded-2xl" disabled={productTraceQuery.isFetching} onClick={handleProductTraceSearch}>查詢異動</Button>
+                </div>
+                <div className="space-y-3">
+                  {submittedProductTraceKeyword && !productTraceQuery.isFetching && inventoryMovementResults.length === 0 ? <div className="rounded-[20px] bg-slate-50 p-4 text-sm text-slate-500">查無符合「{submittedProductTraceKeyword}」的庫存異動紀錄。</div> : null}
+                  {inventoryMovementResults.map((product) => (
+                    <div key={`inventory-history-${product.id}`} className="space-y-4 rounded-[20px] bg-slate-50 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-slate-900">{product.productName ?? product.batchNo ?? product.serialNumber ?? `商品 #${product.id}`}</p>
+                          <p className="mt-1 text-xs text-slate-500">PO：{product.poNumber ?? "-"}・批號：{product.batchNo ?? "-"}・序號：{product.serialNumber ?? "-"}・目前狀態：{product.currentStatus}</p>
+                        </div>
+                        <Badge className="bg-slate-100 text-slate-700">目前站點 {product.currentStationCode ?? "-"}</Badge>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">匯入時間</p>
+                          <p className="mt-2 font-semibold text-slate-900">{product.inventoryMovement.importedAt ? new Date(product.inventoryMovement.importedAt).toLocaleString("zh-TW", { hour12: false }) : "-"}</p>
+                          <p className="mt-1 text-xs text-slate-500">{product.inventoryMovement.importSummary}</p>
+                        </div>
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">待入庫時間</p>
+                          <p className="mt-2 font-semibold text-slate-900">{product.inventoryMovement.pendingStockAt ? new Date(product.inventoryMovement.pendingStockAt).toLocaleString("zh-TW", { hour12: false }) : "尚未進入待入庫"}</p>
+                          <p className="mt-1 text-xs text-slate-500">{product.inventoryMovement.pendingStockSummary}</p>
+                        </div>
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">入庫時間</p>
+                          <p className="mt-2 font-semibold text-slate-900">{product.inventoryMovement.stockedAt ? new Date(product.inventoryMovement.stockedAt).toLocaleString("zh-TW", { hour12: false }) : "尚未完成入庫"}</p>
+                            <p className="mt-1 text-xs text-slate-500">操作者：{product.inventoryMovement.stockedOperatorName ?? "系統或尚未完成"}</p>
+
+                        </div>
+                      </div>
+                      <div className="rounded-[18px] bg-white p-3">
+                        <p className="text-xs text-slate-400">庫存異動時間軸</p>
+                        <div className="mt-3 space-y-2">
+                          <div className="rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            <p className="font-medium text-slate-900">匯入</p>
+                            <p className="mt-1 text-xs text-slate-500">時間：{product.inventoryMovement.importedAt ? new Date(product.inventoryMovement.importedAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・操作者：{product.inventoryMovement.importedOperatorName ?? "系統或未記錄"}</p>
+                            <p className="mt-1 text-xs text-slate-500">說明：{product.inventoryMovement.importSummary}</p>
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            <p className="font-medium text-slate-900">待入庫</p>
+                            <p className="mt-1 text-xs text-slate-500">時間：{product.inventoryMovement.pendingStockAt ? new Date(product.inventoryMovement.pendingStockAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・操作者：{product.inventoryMovement.pendingStockOperatorName ?? "系統或未記錄"}</p>
+                            <p className="mt-1 text-xs text-slate-500">說明：{product.inventoryMovement.pendingStockSummary}</p>
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            <p className="font-medium text-slate-900">入庫</p>
+                            <p className="mt-1 text-xs text-slate-500">時間：{product.inventoryMovement.stockedAt ? new Date(product.inventoryMovement.stockedAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・操作者：{product.inventoryMovement.stockedOperatorName ?? "系統或尚未完成"}</p>
+                            <p className="mt-1 text-xs text-slate-500">說明：{product.inventoryMovement.stockedSummary}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="categories">
