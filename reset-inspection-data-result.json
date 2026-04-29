@@ -1,0 +1,45 @@
+{
+  "success": true,
+  "beforeFlowCounts": {
+    "productivity_score_details": 0,
+    "sampling_results": 13,
+    "station_events": 246,
+    "station_tasks": 2212,
+    "products": 2003,
+    "engineer_daily_productivity": 0,
+    "sheet_sync_jobs": 552,
+    "import_batch_backups": 0
+  },
+  "afterFlowCounts": {
+    "productivity_score_details": 0,
+    "sampling_results": 0,
+    "station_events": 0,
+    "station_tasks": 0,
+    "products": 0,
+    "engineer_daily_productivity": 0,
+    "sheet_sync_jobs": 0,
+    "import_batch_backups": 0
+  },
+  "beforePreservedCounts": {
+    "station_rules": 0,
+    "category_station_flows": 197,
+    "productivity_target_configs": 139,
+    "defect_options": 86,
+    "product_name_options": 5334,
+    "product_name_catalog_entries": 5334,
+    "product_categories": 37,
+    "support_task_compensations": 0,
+    "users": 3
+  },
+  "afterPreservedCounts": {
+    "station_rules": 0,
+    "category_station_flows": 197,
+    "productivity_target_configs": 139,
+    "defect_options": 86,
+    "product_name_options": 5334,
+    "product_name_catalog_entries": 5334,
+    "product_categories": 37,
+    "support_task_compensations": 0,
+    "users": 3
+  }
+}

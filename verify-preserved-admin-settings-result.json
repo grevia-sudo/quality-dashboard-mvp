@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "adminSettingGroups": [
+    {
+      "label": "站點規則",
+      "tableCounts": {
+        "station_rules": 0
+      },
+      "hasAnyData": false
+    },
+    {
+      "label": "產能設定",
+      "tableCounts": {
+        "productivity_target_configs": 139
+      },
+      "hasAnyData": true
+    },
+    {
+      "label": "功能表設定",
+      "tableCounts": {
+        "defect_options": 86,
+        "product_name_options": 5334
+      },
+      "hasAnyData": true
+    },
+    {
+      "label": "支援補償",
+      "tableCounts": {
+        "support_task_compensations": 0
+      },
+      "hasAnyData": false
+    },
+    {
+      "label": "帳號管理",
+      "tableCounts": {
+        "users": 3
+      },
+      "hasAnyData": true
+    },
+    {
+      "label": "品類設定",
+      "tableCounts": {
+        "product_categories": 37,
+        "category_station_flows": 197,
+        "product_name_catalog_entries": 5334
+      },
+      "hasAnyData": true
+    }
+  ],
+  "clearedFlowCounts": {
+    "products": 0,
+    "station_tasks": 0,
+    "station_events": 0,
+    "sampling_results": 0,
+    "sheet_sync_jobs": 0
+  }
+}
