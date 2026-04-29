@@ -13,7 +13,8 @@ describe("shared operation time source coverage", () => {
   });
 
   it("uses the shared helper in A1 receive, station completion, and D sampling flows", () => {
-    expect(dbSource).toContain("const { businessDateValue, now: completedAt } = getOperationTimeContext();\n  const pendingTaskId = matchedProduct.pendingTaskId");
+    expect(dbSource).toContain("const { businessDateValue, now: completedAt } = getOperationTimeContext();");
+    expect(dbSource).toContain("const pendingTaskId = matchedProduct.pendingTaskId ?? (await ensurePendingA1Task(");
     expect(dbSource).toContain("const { businessDateValue, now: completedAt } = getOperationTimeContext();\n  const currentStationOptionIds = Array.from(new Set([");
     expect(dbSource).toContain("const { businessDateValue, now: completedAt } = getOperationTimeContext();\n  const normalizedBatterySummary = normalizeOptionalText(input.batterySummary) ?? \"正常\"");
   });

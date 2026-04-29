@@ -923,18 +923,67 @@ export async function completeA1ArrivalByScan(input: {
     return { success: false as const, message: "商品批號、商品序號、IMEI 至少要填一項" };
   }
 
-  const matchedProduct = await findPendingA1ProductByIdentity(db, input);
+  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
+  const normalizedSerialNumber = normalizeOptionalText(input.serialNumber);
+  const normalizedImei = normalizeOptionalText(input.imei);
+  const normalizedProductName = normalizeOptionalText(input.productName);
+  const { businessDateValue, now: completedAt } = getOperationTimeContext();
+
+  let matchedProduct = await findPendingA1ProductByIdentity(db, input);
   if (!matchedProduct) {
-    return { success: false as const, message: "找不到符合批號、序號或 IMEI 的 A1 待處理商品" };
+    if (!normalizedBatchNo || !normalizedSerialNumber || !normalizedProductName) {
+      return {
+        success: false as const,
+        message: "查無匯入資料時，需填寫商品批號、商品序號與品名，系統才能先建立流程商品並往下一站",
+      };
+    }
+
+    const productCode = buildProductCode(completedAt.getTime(), input.operatorUserId);
+    const insertedProduct = await db.insert(products).values({
+      productCode,
+      batchNo: normalizedBatchNo,
+      serialNumber: normalizedSerialNumber,
+      imei: normalizedImei,
+      productName: normalizedProductName,
+      currentStationCode: "A1",
+      currentStatus: "pending_a1",
+      inspectionSummary: "A1 現場新增，待後續比對匯入資料",
+    }).$returningId();
+
+    const productId = insertedProduct[0]?.id;
+    if (!productId) {
+      return { success: false as const, message: "無法建立 A1 臨時商品，請稍後再試" };
+    }
+
+    const pendingTask = await ensurePendingA1Task(db, productId, businessDateValue, {
+      source: "a1_scan_receive_without_import",
+      awaitingImportMatch: true,
+    });
+
+    matchedProduct = {
+      id: productId,
+      productCode,
+      poNumber: null,
+      vendorName: null,
+      importedCategoryName: null,
+      batchNo: normalizedBatchNo,
+      serialNumber: normalizedSerialNumber,
+      imei: normalizedImei,
+      productName: normalizedProductName,
+      categoryId: null,
+      currentStationCode: "A1" as const,
+      currentStatus: "pending_a1" as const,
+      pendingTaskId: pendingTask?.id ?? null,
+    };
   }
 
-  const nextBatchNo = mergeScannedIdentityField("商品批號", matchedProduct.batchNo, input.batchNo);
-  const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, input.serialNumber);
-  const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, input.imei);
-  const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, input.productName);
-  const { businessDateValue, now: completedAt } = getOperationTimeContext();
+  const nextBatchNo = mergeScannedIdentityField("商品批號", matchedProduct.batchNo, normalizedBatchNo);
+  const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, normalizedSerialNumber);
+  const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, normalizedImei);
+  const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, normalizedProductName);
   const pendingTaskId = matchedProduct.pendingTaskId ?? (await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
-    source: "a1_scan_receive",
+    source: matchedProduct.poNumber ? "a1_scan_receive" : "a1_scan_receive_without_import",
+    awaitingImportMatch: matchedProduct.poNumber ? undefined : true,
   }))?.id;
 
   if (!pendingTaskId) {
@@ -1706,7 +1755,6 @@ export async function importProducts(input: {
         .from(products)
         .where(
           and(
-            eq(products.currentStationCode, "A1"),
             isNull(products.archivedAt),
             or(...identityConditions),
           ),
@@ -1815,6 +1863,8 @@ export async function importProducts(input: {
       const nextVendorName = matchedProduct.vendorName ?? vendorName;
       const nextArrivalAt = matchedProduct.arrivalAt ?? arrivalAt;
 
+      const shouldResetToPendingA1 = matchedProduct.currentStationCode === "A1" && matchedProduct.currentStatus === "pending_a1";
+
       await db
         .update(products)
         .set({
@@ -1828,14 +1878,14 @@ export async function importProducts(input: {
           importedCategoryName: nextImportedCategoryName,
           importedBrandName: nextImportedBrandName,
           categoryId: nextCategoryId,
-          currentStationCode: "A1",
-          currentStatus: "pending_a1",
+          currentStationCode: shouldResetToPendingA1 ? "A1" : matchedProduct.currentStationCode,
+          currentStatus: shouldResetToPendingA1 ? "pending_a1" : matchedProduct.currentStatus,
           inspectionSummary: nextPoNumber ? `PO:${nextPoNumber}` : matchedProduct.inspectionSummary,
           updatedAt: new Date(),
         })
         .where(eq(products.id, matchedProduct.id));
 
-      if (!pendingA1TaskProductIds.has(matchedProduct.id)) {
+      if (shouldResetToPendingA1 && !pendingA1TaskProductIds.has(matchedProduct.id)) {
         pendingTaskInserts.push({
           productId: matchedProduct.id,
           stationCode: "A1",
@@ -1963,12 +2013,25 @@ export async function completeStationTask(input: {
   }
 
   const productRows = await db
-    .select({ categoryId: products.categoryId })
+    .select({
+      categoryId: products.categoryId,
+      poNumber: products.poNumber,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+    })
     .from(products)
     .where(eq(products.id, input.productId))
     .limit(1);
-  const effectiveCategoryId = input.categoryId ?? productRows[0]?.categoryId ?? null;
+  const productRow = productRows[0] ?? null;
+  const effectiveCategoryId = input.categoryId ?? productRow?.categoryId ?? null;
   const nextStation = await resolveNextStationByCategory(effectiveCategoryId, input.stationCode);
+
+  if (input.stationCode === "STOCK" && (!productRow?.poNumber || !productRow.importedCategoryName || !productRow.importedBrandName)) {
+    return {
+      success: false as const,
+      message: "此商品尚未完成匯入比對，請先補匯入對應資料後再完成入庫",
+    };
+  }
   const { businessDateValue, now: completedAt } = getOperationTimeContext();
   const currentStationOptionIds = Array.from(new Set([
     ...(input.faultOptionIds ?? []),

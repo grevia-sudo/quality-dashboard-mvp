@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { productArchives, products, sheetSyncJobs, stationTasks } from "../drizzle/schema";
+import { productArchives, productCategories, products, sheetSyncJobs, stationTasks } from "../drizzle/schema";
 
 const { spawnMock } = vi.hoisted(() => ({
   spawnMock: vi.fn(() => ({
@@ -12,7 +12,7 @@ vi.mock("node:child_process", () => ({
   spawn: spawnMock,
 }));
 
-import { completeA1ArrivalByScan, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
+import { completeA1ArrivalByScan, completeStationTask, ensureMvpSeedData, getDb, getStationPageData, importProducts } from "./db";
 
 const createdPoNumbers = new Set<string>();
 
@@ -132,6 +132,37 @@ async function importSingleIdentityRow(input: {
   };
 }
 
+async function getPendingTaskSnapshot(productId: number, stationCode: "A2" | "B" | "C" | "D" | "E" | "STOCK") {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const rows = await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(eq(stationTasks.productId, productId), eq(stationTasks.stationCode, stationCode), eq(stationTasks.taskStatus, "pending")))
+      .limit(1);
+
+    if (rows[0]) {
+      return rows[0];
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return null;
+}
+
 describe("A1 single-identity scan integration", () => {
   beforeAll(async () => {
     await ensureMvpSeedData();
@@ -148,7 +179,7 @@ describe("A1 single-identity scan integration", () => {
       poNumber: `TEST-A1-IMEI-${seed}`,
       row: {
         imei,
-        categoryName: "智慧手機",
+         categoryName: "智慧型手機",
         brandName: "Apple",
         productName: "IMEI Only Device",
       },
@@ -163,7 +194,7 @@ describe("A1 single-identity scan integration", () => {
     expect(result.productId).toBe(importedProduct.id);
     expect(result.poNumber).toBe(importedProduct.poNumber);
     expect(result.vendorName).toBe("A1 單識別碼驗證廠商");
-    expect(result.categoryName).toBe("智慧手機");
+    expect(result.categoryName).toBe("智慧型手機");
 
     const db = await getDb();
     if (!db) {
@@ -219,6 +250,214 @@ describe("A1 single-identity scan integration", () => {
     expect(queuedJobs.some((job) => job.jobType === "purchase_sheet_sync")).toBe(true);
   }, 10000);
 
+  it("creates a flow item when A1 has no imported row yet, and later import patches metadata without resetting the station", async () => {
+    const seed = Date.now();
+    const batchNo = `NO-IMPORT-BATCH-${seed}`;
+    const serialNumber = `NO-IMPORT-SN-${seed}`;
+    const imei = `93${uniqueDigits(seed + 1, 13)}`;
+    const productName = "No Import Flow Device";
+
+    const receiveResult = await completeA1ArrivalByScan({
+      operatorUserId: 1,
+      batchNo,
+      serialNumber,
+      imei,
+      productName,
+    });
+
+    expect(receiveResult.success).toBe(true);
+    expect(receiveResult.poNumber ?? null).toBeNull();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const beforeImport = await db
+      .select({
+        id: products.id,
+        poNumber: products.poNumber,
+        vendorName: products.vendorName,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+        currentStationCode: products.currentStationCode,
+        currentStatus: products.currentStatus,
+      })
+      .from(products)
+      .where(eq(products.id, receiveResult.productId ?? 0))
+      .limit(1);
+
+    expect(beforeImport[0]).toMatchObject({
+      poNumber: null,
+      vendorName: null,
+      importedCategoryName: null,
+      importedBrandName: null,
+      currentStationCode: "A2",
+      currentStatus: "pending_a2",
+    });
+
+    const manualImportPo = `PO-NO-IMPORT-${seed}`;
+    const importResult = await importProducts({
+      poNumber: manualImportPo,
+      vendorName: "後補匯入廠商",
+      rows: [{
+        batchNo,
+        serialNumber,
+        imei,
+        productName,
+        categoryName: "智慧型手機",
+        brandName: "Apple",
+      }],
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const afterImport = await db
+      .select({
+        id: products.id,
+        poNumber: products.poNumber,
+        vendorName: products.vendorName,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+        currentStationCode: products.currentStationCode,
+        currentStatus: products.currentStatus,
+      })
+      .from(products)
+      .where(eq(products.id, receiveResult.productId ?? 0))
+      .limit(1);
+
+    const a1Tasks = await db
+      .select({
+        taskStatus: stationTasks.taskStatus,
+      })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.productId, receiveResult.productId ?? 0), eq(stationTasks.stationCode, "A1")));
+
+    const a2Tasks = await db
+      .select({
+        taskStatus: stationTasks.taskStatus,
+      })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.productId, receiveResult.productId ?? 0), eq(stationTasks.stationCode, "A2")));
+
+    expect(importResult.products[0]?.id).toBe(receiveResult.productId);
+    expect(afterImport[0]).toMatchObject({
+      poNumber: manualImportPo,
+      vendorName: "後補匯入廠商",
+      importedCategoryName: "智慧型手機",
+      importedBrandName: "Apple",
+      currentStationCode: "A2",
+      currentStatus: "pending_a2",
+    });
+    expect(a1Tasks.map((task) => task.taskStatus)).toContain("completed");
+    expect(a1Tasks.map((task) => task.taskStatus)).not.toContain("pending");
+    expect(a2Tasks.map((task) => task.taskStatus)).toContain("pending");
+  }, 15000);
+
+  it("allows no-import products to keep flowing until STOCK, but blocks stock-in before import matching is completed", async () => {
+    const seed = Date.now();
+    const batchNo = `FLOW-STOCK-BATCH-${seed}`;
+    const serialNumber = `FLOW-STOCK-SN-${seed}`;
+    const imei = `95${uniqueDigits(seed + 1, 13)}`;
+    const productName = "No Import To Stock Device";
+
+    const receiveResult = await completeA1ArrivalByScan({
+      operatorUserId: 1,
+      batchNo,
+      serialNumber,
+      imei,
+      productName,
+    });
+
+    expect(receiveResult.success).toBe(true);
+    const productId = receiveResult.productId ?? 0;
+
+    for (const stationCode of ["A2", "B", "C", "D", "E"] as const) {
+      const pendingTask = await getPendingTaskSnapshot(productId, stationCode);
+      expect(pendingTask).not.toBeNull();
+
+      const completeResult = await completeStationTask({
+        taskId: pendingTask?.taskId ?? 0,
+        stationCode,
+        operatorUserId: 1,
+        productId,
+        categoryId: pendingTask?.categoryId ?? null,
+        subtypeCode: pendingTask?.subtypeCode ?? null,
+        summary: `${stationCode} 測試完成`,
+      });
+
+      expect(completeResult.success).toBe(true);
+    }
+
+    const stockTaskBeforeImport = await getPendingTaskSnapshot(productId, "STOCK");
+    expect(stockTaskBeforeImport).not.toBeNull();
+
+    const blockedStockResult = await completeStationTask({
+      taskId: stockTaskBeforeImport?.taskId ?? 0,
+      stationCode: "STOCK",
+      operatorUserId: 1,
+      productId,
+      categoryId: stockTaskBeforeImport?.categoryId ?? null,
+      subtypeCode: stockTaskBeforeImport?.subtypeCode ?? null,
+      summary: "待入庫完成前檢查",
+    });
+
+    expect(blockedStockResult.success).toBe(false);
+    expect(blockedStockResult.message).toContain("尚未完成匯入比對");
+
+    const manualImportPo = `PO-STOCK-BLOCK-${seed}`;
+    const importResult = await importProducts({
+      poNumber: manualImportPo,
+      vendorName: "待入庫前補匯入廠商",
+      rows: [{
+        batchNo,
+        serialNumber,
+        imei,
+        productName,
+        categoryName: "智慧型手機",
+        brandName: "Apple",
+      }],
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const stockTaskAfterImport = await getPendingTaskSnapshot(productId, "STOCK");
+    expect(stockTaskAfterImport).not.toBeNull();
+
+    const completedStockResult = await completeStationTask({
+      taskId: stockTaskAfterImport?.taskId ?? 0,
+      stationCode: "STOCK",
+      operatorUserId: 1,
+      productId,
+      categoryId: stockTaskAfterImport?.categoryId ?? null,
+      subtypeCode: stockTaskAfterImport?.subtypeCode ?? null,
+      summary: "補匯入後完成待入庫",
+    });
+
+    expect(completedStockResult.success).toBe(true);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const finalProduct = await db
+      .select({
+        poNumber: products.poNumber,
+        currentStationCode: products.currentStationCode,
+        currentStatus: products.currentStatus,
+        stockStatus: products.stockStatus,
+      })
+      .from(products)
+      .where(eq(products.id, productId))
+      .limit(1);
+
+    expect(finalProduct[0]).toMatchObject({
+      poNumber: manualImportPo,
+      currentStationCode: "STOCK",
+      currentStatus: "completed",
+      stockStatus: "stocked",
+    });
+  }, 30000);
+
   it("writes productName back to the product record when A1 scan includes a selected name", async () => {
     const seed = Date.now();
     const serialNumber = `WITH-NAME-${seed}`;
@@ -227,7 +466,7 @@ describe("A1 single-identity scan integration", () => {
       poNumber: `TEST-A1-NAME-${seed}`,
       row: {
         serialNumber,
-        categoryName: "智慧手機",
+        categoryName: "智慧型手機",
         brandName: "Apple",
         productName: "",
       },
@@ -273,7 +512,7 @@ describe("A1 single-identity scan integration", () => {
       poNumber: `TEST-A1-SN-${seed}`,
       row: {
         serialNumber,
-        categoryName: "智慧手機",
+        categoryName: "智慧型手機",
         brandName: "Apple",
         productName: "Serial Only Device",
       },
@@ -286,7 +525,7 @@ describe("A1 single-identity scan integration", () => {
 
     expect(result.success).toBe(true);
     expect(result.productId).toBe(importedProduct.id);
-    expect(result.categoryName).toBe("智慧手機");
+    expect(result.categoryName).toBe("智慧型手機");
 
     const db = await getDb();
     if (!db) {
@@ -333,8 +572,8 @@ describe("A1 single-identity scan integration", () => {
       poNumber: `TEST-A1-BATCH-${seed}`,
       row: {
         batchNo,
-        categoryName: "平板",
-        brandName: "Samsung",
+        categoryName: "智慧型手機",
+        brandName: "Apple",
         productName: "Batch Only Device",
       },
     });
@@ -346,7 +585,7 @@ describe("A1 single-identity scan integration", () => {
 
     expect(result.success).toBe(true);
     expect(result.productId).toBe(importedProduct.id);
-    expect(result.categoryName).toBe("平板");
+    expect(result.categoryName).toBe("智慧型手機");
 
     const db = await getDb();
     if (!db) {
@@ -393,7 +632,7 @@ describe("A1 single-identity scan integration", () => {
       poNumber: `TEST-A1-GHOST-${seed}`,
       row: {
         serialNumber,
-        categoryName: "智慧手機",
+        categoryName: "智慧型手機",
         brandName: "Apple",
         productName: "Ghost Guard Device",
       },
