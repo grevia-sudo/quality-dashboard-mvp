@@ -11,6 +11,26 @@ import {
   PURCHASE_SHEET_HEADER,
 } from "./purchase-sheet-sync-helpers.mjs";
 
+const SHEETS_WRITE_THROTTLE_MS = 1_100;
+let lastSheetsWriteAt = 0;
+
+function wait(delayMs) {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+async function throttleSheetsWrite(method) {
+  if (method === "GET") {
+    return;
+  }
+
+  const waitMs = Math.max(0, SHEETS_WRITE_THROTTLE_MS - (Date.now() - lastSheetsWriteAt));
+  if (waitMs > 0) {
+    await wait(waitMs);
+  }
+
+  lastSheetsWriteAt = Date.now();
+}
+
 function parseServiceAccountCredentials() {
   const rawCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
@@ -104,6 +124,8 @@ export async function callSheetsApi(accessToken, path, { method = "GET", query =
   let lastError = null;
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
+    await throttleSheetsWrite(method);
+
     const response = await fetch(url, {
       method,
       headers: {
@@ -125,8 +147,8 @@ export async function callSheetsApi(accessToken, path, { method = "GET", query =
       throw lastError;
     }
 
-    const retryDelayMs = 1_500 * (attempt + 1);
-    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    const retryDelayMs = response.status === 429 ? 10_000 * (attempt + 1) : 1_500 * (attempt + 1);
+    await wait(retryDelayMs);
   }
 
   throw lastError ?? new Error("Google Sheets API 呼叫失敗");

@@ -150,8 +150,9 @@ describe("warehouse workflow pages", () => {
     expect(engineerKpiPageSource).toContain('{ label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES }');
   });
 
-  it("exposes inventory history from real backend movement fields", () => {
-    expect(adminPageSource).toContain('<TabsTrigger value="inventory-history" className="rounded-2xl">庫存異動紀錄</TabsTrigger>');
+  it("exposes inventory history from sidebar sub navigation and real backend movement fields", () => {
+    expect(adminPageSource).toContain('label: "庫存異動紀錄", path: "/admin/inventory-history"');
+    expect(adminPageSource).toContain('const activeAdminSection = resolveAdminSectionId(location);');
     expect(adminPageSource).toContain('product.inventoryMovement.importedOperatorName');
     expect(adminPageSource).toContain('product.inventoryMovement.pendingStockOperatorName');
     expect(adminPageSource).toContain('product.inventoryMovement.stockedOperatorName');
@@ -247,8 +248,8 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).toContain("C 站機身外觀");
     expect(adminPageSource).toContain("C 站鏡頭狀態");
     expect(adminPageSource).toContain("品名管理");
-    expect(adminPageSource).toContain("TabsTrigger value=\"tools\"");
-    expect(adminPageSource).toContain("TabsTrigger value=\"inventory-history\"");
+    expect(adminPageSource).toContain('label: "資料工具", path: "/admin/tools"');
+    expect(adminPageSource).toContain('label: "庫存異動紀錄", path: "/admin/inventory-history"');
     expect(adminPageSource).toContain("庫存異動紀錄");
     expect(adminPageSource).toContain("匯入時間");
     expect(adminPageSource).toContain("待入庫時間");

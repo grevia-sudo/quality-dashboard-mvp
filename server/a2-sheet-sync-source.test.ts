@@ -56,6 +56,12 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(dbSource).toContain('return countQueuedSheetSyncJobs({\n    jobType: "purchase_sheet_sync",\n    targetSheetName: "採購單",\n  });');
   });
 
+  it("paces write requests and uses longer backoff for Sheets 429 limits", () => {
+    expect(syncScriptSource).toContain('const SHEETS_WRITE_THROTTLE_MS = 1_100;');
+    expect(syncScriptSource).toContain('await throttleSheetsWrite(method);');
+    expect(syncScriptSource).toContain('const retryDelayMs = response.status === 429 ? 10_000 * (attempt + 1) : 1_500 * (attempt + 1);');
+  });
+
   it("triggers purchase sheet sync immediately after import queues the job", () => {
     expect(dbSource).toContain('await db.insert(sheetSyncJobs).values({\n    jobType: "purchase_sheet_sync",\n    targetSheetName: "採購單",\n    status: "queued",\n  });\n  triggerPurchaseSheetSyncInBackground();');
   });

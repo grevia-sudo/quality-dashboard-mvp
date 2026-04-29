@@ -1,8 +1,9 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { importBatchBackups, products, stationEvents, stationTasks, users } from "../drizzle/schema";
 import {
   completeA1ArrivalByScan,
+  completeStationTask,
   createImportBatchBackup,
   deleteImportedPurchaseOrder,
   ensureMvpSeedData,
@@ -15,18 +16,43 @@ import {
 
 const createdPoNumbers = new Set<string>();
 
-async function getActorUserId() {
+async function getActorUser() {
   const db = await getDb();
   if (!db) {
     throw new Error("Database is not available");
   }
 
-  const firstUser = (await db.select({ id: users.id }).from(users).limit(1))[0];
+  const firstUser = (await db.select({ id: users.id, name: users.name }).from(users).limit(1))[0];
   if (!firstUser?.id) {
     throw new Error("No seeded user found for integration tests");
   }
 
-  return firstUser.id;
+  return firstUser;
+}
+
+async function getActorUserId() {
+  const actor = await getActorUser();
+  return actor.id;
+}
+
+async function getLatestPendingTaskId(productId: number, stationCode: "A2" | "B" | "C" | "D" | "E" | "STOCK") {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const pendingTask = (await db
+    .select({ id: stationTasks.id })
+    .from(stationTasks)
+    .where(and(
+      eq(stationTasks.productId, productId),
+      eq(stationTasks.stationCode, stationCode),
+      eq(stationTasks.taskStatus, "pending"),
+    ))
+    .orderBy(desc(stationTasks.id))
+    .limit(1))[0];
+
+  return pendingTask?.id ?? null;
 }
 
 async function cleanupCreatedRows() {
@@ -74,7 +100,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `BACKUP-SN-${uniqueSuffix}-01`,
           imei: `86${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
           productName: "Backup Device 01",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -82,7 +108,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `BACKUP-SN-${uniqueSuffix}-02`,
           imei: `86${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
           productName: "Backup Device 02",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
       ],
@@ -107,7 +133,7 @@ describe("admin backup and product trace integration", () => {
     expect(backupSummary?.previewRows[0]).toMatchObject({
       batchNo: `BACKUP-BATCH-${uniqueSuffix}-01`,
       serialNumber: `BACKUP-SN-${uniqueSuffix}-01`,
-      categoryName: "智慧手機",
+      categoryName: "智慧型手機",
       brandName: "Apple",
     });
     expect(backupSummary?.diffSummary).toMatchObject({
@@ -179,7 +205,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `DIFF-SN-${uniqueSuffix}-01`,
           imei: `89${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
           productName: "Diff Device 01",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -187,7 +213,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `DIFF-SN-${uniqueSuffix}-02`,
           imei: `89${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
           productName: "Diff Device 02",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -195,7 +221,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `DIFF-SN-${uniqueSuffix}-03`,
           imei: `89${`${Number(uniqueSuffix) + 3}`.padStart(13, "0").slice(-13)}`,
           productName: "Diff Device 03",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -203,7 +229,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `DIFF-SN-${uniqueSuffix}-04`,
           imei: `89${`${Number(uniqueSuffix) + 4}`.padStart(13, "0").slice(-13)}`,
           productName: "Diff Device 04",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -211,7 +237,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `DIFF-SN-${uniqueSuffix}-05`,
           imei: `89${`${Number(uniqueSuffix) + 5}`.padStart(13, "0").slice(-13)}`,
           productName: "Diff Device 05",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -219,7 +245,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: `DIFF-SN-${uniqueSuffix}-06`,
           imei: `89${`${Number(uniqueSuffix) + 6}`.padStart(13, "0").slice(-13)}`,
           productName: "Diff Device 06",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
       ],
@@ -288,7 +314,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber,
           imei: `87${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
           productName: "Edge Device",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
       ],
@@ -326,8 +352,9 @@ describe("admin backup and product trace integration", () => {
     })).rejects.toThrow("找不到指定備份");
   }, 15000);
 
-  it("returns complete product trace results for batch or serial lookups, including timeline ordering, events, and empty results", async () => {
-    const actorUserId = await getActorUserId();
+  it("returns complete product trace results for batch or serial lookups, including timeline ordering, events, empty results, and inventory movement metadata", async () => {
+    const actor = await getActorUser();
+    const actorUserId = actor.id;
     const uniqueSuffix = `${Date.now()}`;
     const sharedSerial = `TRACE-SN-${uniqueSuffix}`;
     const importResult = await importProducts({
@@ -339,7 +366,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: sharedSerial,
           imei: `88${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
           productName: "Trace Device 01",
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
         {
@@ -347,7 +374,7 @@ describe("admin backup and product trace integration", () => {
           serialNumber: sharedSerial,
           imei: `88${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
           productName: null,
-          categoryName: "智慧手機",
+          categoryName: "智慧型手機",
           brandName: "Apple",
         },
       ],
@@ -392,5 +419,45 @@ describe("admin backup and product trace integration", () => {
 
     expect(tracedEvents.length).toBeGreaterThan(0);
     expect(new Set(batchMatch[0]?.timeline.map((task) => task.stationCode) ?? [])).toContain("A1");
-  }, 15000);
+
+    const tracedProductId = batchMatch[0]?.id ?? 0;
+    for (const stationCode of ["A2", "B", "C", "D", "E"] as const) {
+      const pendingTaskId = await getLatestPendingTaskId(tracedProductId, stationCode);
+      expect(pendingTaskId).toBeTruthy();
+
+      const completeResult = await completeStationTask({
+        taskId: pendingTaskId ?? 0,
+        stationCode,
+        operatorUserId: actorUserId,
+        productId: tracedProductId,
+        summary: `${stationCode} 測試完成`,
+      });
+
+      expect(completeResult.success).toBe(true);
+    }
+
+    const stockTaskId = await getLatestPendingTaskId(tracedProductId, "STOCK");
+    expect(stockTaskId).toBeTruthy();
+
+    const completeStockResult = await completeStationTask({
+      taskId: stockTaskId ?? 0,
+      stationCode: "STOCK",
+      operatorUserId: actorUserId,
+      productId: tracedProductId,
+      summary: "待入庫完成",
+    });
+
+    expect(completeStockResult.success).toBe(true);
+
+    const [movementTrace] = await getProductTraceByIdentity(`TRACE-BATCH-${uniqueSuffix}-01`);
+    expect(movementTrace?.inventoryMovement.importedAt).toBeTruthy();
+    expect(movementTrace?.inventoryMovement.importSummary).toContain("匯入建立");
+    expect(movementTrace?.inventoryMovement.importedOperatorName).toBeNull();
+    expect(movementTrace?.inventoryMovement.pendingStockAt).toBeTruthy();
+    expect(movementTrace?.inventoryMovement.pendingStockSummary).toContain("E 測試完成");
+    expect(movementTrace?.inventoryMovement.pendingStockOperatorName).toBe(actor.name);
+    expect(movementTrace?.inventoryMovement.stockedAt).toBeTruthy();
+    expect(movementTrace?.inventoryMovement.stockedSummary).toContain("待入庫完成");
+    expect(movementTrace?.inventoryMovement.stockedOperatorName).toBe(actor.name);
+  }, 30000);
 });

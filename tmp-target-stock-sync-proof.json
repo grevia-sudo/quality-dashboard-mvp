@@ -1,0 +1,512 @@
+{
+  "productRows": [
+    {
+      "id": 120001,
+      "poNumber": "PO-20260429-08",
+      "batchNo": "00500023929",
+      "serialNumber": "HP2M632XC2",
+      "imei": "358481580294759",
+      "productName": "Apple iPhone 16 Pro 256GB 沙漠色鈦金屬",
+      "currentStationCode": "STOCK",
+      "currentStatus": "completed",
+      "stockStatus": "stocked",
+      "sheetRowNumber": 14,
+      "lastSheetSyncedAt": "2026-04-29T05:39:26.000Z",
+      "createdAt": "2026-04-29T04:04:42.000Z",
+      "updatedAt": "2026-04-29T05:39:26.000Z"
+    },
+    {
+      "id": 90034,
+      "poNumber": "PO-20260429-08",
+      "batchNo": "005123321000",
+      "serialNumber": "adsfhiuahfpiu",
+      "imei": "358281860838956",
+      "productName": "Apple iPhone 6 16GB 太空灰色",
+      "currentStationCode": "STOCK",
+      "currentStatus": "pending_stock",
+      "stockStatus": "pending",
+      "sheetRowNumber": 13,
+      "lastSheetSyncedAt": "2026-04-29T05:39:25.000Z",
+      "createdAt": "2026-04-29T01:34:53.000Z",
+      "updatedAt": "2026-04-29T05:39:25.000Z"
+    }
+  ],
+  "taskRows": [
+    {
+      "id": 150017,
+      "productId": 120001,
+      "stationCode": "STOCK",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:05:51.000Z",
+      "completedAt": "2026-04-29T04:18:46.000Z",
+      "resultSummary": "外部進貨明細批號比對成功，自動移除待入庫"
+    },
+    {
+      "id": 150016,
+      "productId": 120001,
+      "stationCode": "E",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:05:39.000Z",
+      "completedAt": "2026-04-29T04:05:52.000Z",
+      "resultSummary": "E 站抹除 完成"
+    },
+    {
+      "id": 150015,
+      "productId": 120001,
+      "stationCode": "D",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:05:27.000Z",
+      "completedAt": "2026-04-29T04:05:39.000Z",
+      "resultSummary": "全檢通過，送往 E 站抹除"
+    },
+    {
+      "id": 150014,
+      "productId": 120001,
+      "stationCode": "C",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:05:12.000Z",
+      "completedAt": "2026-04-29T04:05:28.000Z",
+      "resultSummary": "C 站品檢完成"
+    },
+    {
+      "id": 150013,
+      "productId": 120001,
+      "stationCode": "B",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:04:55.000Z",
+      "completedAt": "2026-04-29T04:05:13.000Z",
+      "resultSummary": "B 站軟體測試完成"
+    },
+    {
+      "id": 150012,
+      "productId": 120001,
+      "stationCode": "A2",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:04:42.000Z",
+      "completedAt": "2026-04-29T04:04:55.000Z",
+      "resultSummary": "A2 安裝 掃碼完成"
+    },
+    {
+      "id": 150011,
+      "productId": 120001,
+      "stationCode": "A1",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T04:04:42.000Z",
+      "completedAt": "2026-04-29T04:04:42.000Z",
+      "resultSummary": "A1 掃碼點到貨完成"
+    },
+    {
+      "id": 150004,
+      "productId": 90034,
+      "stationCode": "STOCK",
+      "taskStatus": "pending",
+      "createdAt": "2026-04-29T02:12:31.000Z",
+      "completedAt": null,
+      "resultSummary": "待入庫 待處理"
+    },
+    {
+      "id": 150003,
+      "productId": 90034,
+      "stationCode": "E",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T02:12:25.000Z",
+      "completedAt": "2026-04-29T02:12:32.000Z",
+      "resultSummary": "E 站抹除 完成"
+    },
+    {
+      "id": 150002,
+      "productId": 90034,
+      "stationCode": "D",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T02:12:17.000Z",
+      "completedAt": "2026-04-29T02:12:25.000Z",
+      "resultSummary": "全檢通過，送往 E 站抹除"
+    },
+    {
+      "id": 150001,
+      "productId": 90034,
+      "stationCode": "C",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T02:12:06.000Z",
+      "completedAt": "2026-04-29T02:12:17.000Z",
+      "resultSummary": "C 站品檢完成"
+    },
+    {
+      "id": 120072,
+      "productId": 90034,
+      "stationCode": "B",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T01:35:15.000Z",
+      "completedAt": "2026-04-29T02:12:06.000Z",
+      "resultSummary": "B 站軟體測試完成"
+    },
+    {
+      "id": 120071,
+      "productId": 90034,
+      "stationCode": "A2",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T01:34:54.000Z",
+      "completedAt": "2026-04-29T01:35:14.000Z",
+      "resultSummary": "A2 安裝 完成"
+    },
+    {
+      "id": 120070,
+      "productId": 90034,
+      "stationCode": "A1",
+      "taskStatus": "completed",
+      "createdAt": "2026-04-29T01:34:53.000Z",
+      "completedAt": "2026-04-29T01:34:53.000Z",
+      "resultSummary": "A1 掃碼點到貨完成"
+    }
+  ],
+  "eventRows": [
+    {
+      "id": 150018,
+      "productId": 120001,
+      "stationCode": "STOCK",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T04:18:45.000Z",
+      "payload": {
+        "batchNo": "00500023929",
+        "matchedColumn": "F",
+        "matchedSheetId": 806211245,
+        "matchedSpreadsheetId": "1JgtjGPwL8MXQLFUKi5OSx3wubgpSX4n4MFcj-iHgEW0",
+        "summary": "外部進貨明細批號比對成功，自動移除待入庫"
+      }
+    },
+    {
+      "id": 150017,
+      "productId": 120001,
+      "stationCode": "E",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T04:05:51.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "E 站抹除 完成"
+      }
+    },
+    {
+      "id": 150016,
+      "productId": 120001,
+      "stationCode": "D",
+      "eventType": "sampling_pass",
+      "createdAt": "2026-04-29T04:05:39.000Z",
+      "payload": {
+        "applyInspectionChanges": false,
+        "bFaultSummary": "正常",
+        "batterySummary": "正常",
+        "cAppearanceSummary": "正常",
+        "cCameraSummary": "正常",
+        "cFaultSummary": "正常",
+        "defectReason": null
+      }
+    },
+    {
+      "id": 150015,
+      "productId": 120001,
+      "stationCode": "C",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T04:05:27.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "batterySummary": "正常",
+        "cAppearanceSummary": "正常",
+        "cCameraSummary": "正常",
+        "cFaultSummary": "正常",
+        "cInspectionSummary": "正常",
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "C 站品檢完成"
+      }
+    },
+    {
+      "id": 150014,
+      "productId": 120001,
+      "stationCode": "B",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T04:05:12.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "batterySummary": "正常",
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "faultSummary": "正常",
+        "summary": "B 站軟體測試完成"
+      }
+    },
+    {
+      "id": 150013,
+      "productId": 120001,
+      "stationCode": "A2",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T04:04:55.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "A2 安裝 掃碼完成"
+      }
+    },
+    {
+      "id": 150012,
+      "productId": 120001,
+      "stationCode": "A1",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T04:04:42.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "A1 掃碼點到貨完成"
+      }
+    },
+    {
+      "id": 150005,
+      "productId": 90034,
+      "stationCode": "E",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T02:12:31.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "E 站抹除 完成"
+      }
+    },
+    {
+      "id": 150004,
+      "productId": 90034,
+      "stationCode": "D",
+      "eventType": "sampling_pass",
+      "createdAt": "2026-04-29T02:12:25.000Z",
+      "payload": {
+        "applyInspectionChanges": false,
+        "bFaultSummary": "底部麥克風, 前麥克風",
+        "batterySummary": "88",
+        "cAppearanceSummary": "正常",
+        "cCameraSummary": "正常",
+        "cFaultSummary": "正常",
+        "defectReason": null
+      }
+    },
+    {
+      "id": 150003,
+      "productId": 90034,
+      "stationCode": "C",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T02:12:17.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "batteryNote": "88",
+        "batterySummary": "88",
+        "cAppearanceSummary": "正常",
+        "cCameraSummary": "正常",
+        "cFaultSummary": "正常",
+        "cInspectionSummary": "正常",
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "C 站品檢完成"
+      }
+    },
+    {
+      "id": 150002,
+      "productId": 90034,
+      "stationCode": "B",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T02:12:06.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "batteryNote": "88",
+        "batterySummary": "88",
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [
+          "底部麥克風",
+          "前麥克風"
+        ],
+        "faultOptionIds": [
+          17,
+          27
+        ],
+        "faultSummary": "底部麥克風, 前麥克風",
+        "summary": "B 站軟體測試完成"
+      }
+    },
+    {
+      "id": 120035,
+      "productId": 90034,
+      "stationCode": "A2",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T01:35:14.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "applyBChanges": false,
+        "bFaultLabels": [],
+        "bFaultOptionIds": [],
+        "batteryIssueLabels": [],
+        "cameraLabels": [],
+        "cameraOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "A2 安裝 完成"
+      }
+    },
+    {
+      "id": 120034,
+      "productId": 90034,
+      "stationCode": "A1",
+      "eventType": "complete",
+      "createdAt": "2026-04-29T01:34:54.000Z",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "A1 掃碼點到貨完成"
+      }
+    }
+  ],
+  "jobRows": [
+    {
+      "id": 180097,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:43.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:44.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180094,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:39.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:40.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180092,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:37.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:40.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180090,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:35.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:35.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180088,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:32.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:33.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180086,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:31.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:33.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180085,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:29.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:31.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180083,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:26.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:31.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180082,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:22.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:31.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 180080,
+      "jobType": "purchase_sheet_sync",
+      "status": "success",
+      "queuedAt": "2026-04-29T12:28:20.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-04-29T12:28:22.000Z",
+      "errorMessage": null
+    }
+  ]
+}

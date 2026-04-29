@@ -33,6 +33,6 @@ describe("purchase sheet sync retry", () => {
 
     expect(result).toEqual({ updatedRange: "採購單!A2:AA2" });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(setTimeoutMock).toHaveBeenCalledTimes(1);
+    expect(setTimeoutMock).toHaveBeenCalledTimes(2);
   });
 });
