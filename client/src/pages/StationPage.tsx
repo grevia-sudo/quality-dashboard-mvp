@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
-import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldCheck, Undo2 } from "lucide-react";
+import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
@@ -21,6 +21,7 @@ const navItems: DashboardNavItem[] = [
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
+  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
 
 const stationCodes = ["A1", "A2", "B", "C", "E", "STOCK"] as const;

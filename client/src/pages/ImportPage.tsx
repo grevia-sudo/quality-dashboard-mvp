@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { shouldEnableManagementQuery, shouldRedirectFromManagementOps, MANAGEMENT_VIEWER_ROLES } from "@/lib/managementAccess";
 import { shouldRetryTransientQuery } from "@/lib/query-retry";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldCheck, Upload } from "lucide-react";
+import { Boxes, ChevronDown, ChevronRight, ClipboardCheck, FileUp, Gauge, PackagePlus, ShieldAlert, ShieldCheck, Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -24,6 +24,7 @@ const navItems: DashboardNavItem[] = [
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: [...MANAGEMENT_VIEWER_ROLES] },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
+  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
 
 const IMPORT_EXAMPLE_CSV_URL = "/manus-storage/import-products-example_756ddafb.csv";

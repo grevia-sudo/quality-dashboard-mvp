@@ -37,7 +37,16 @@ vi.mock("@/components/DashboardLayout", async () => {
   const actual = await vi.importActual<typeof import("../client/src/components/DashboardLayout")>("../client/src/components/DashboardLayout");
   return {
     ...actual,
-    default: ({ children }: { children: React.ReactNode }) => React.createElement("div", null, children),
+    default: ({ children, navItems }: { children: React.ReactNode; navItems?: Array<{ label: string }> }) => React.createElement(
+      "div",
+      null,
+      React.createElement(
+        "nav",
+        { "data-testid": "dashboard-nav" },
+        ...(navItems ?? []).map((item) => React.createElement("span", { key: item.label }, item.label)),
+      ),
+      children,
+    ),
   };
 });
 
@@ -57,6 +66,22 @@ describe("PendingStockMismatchPage component", () => {
         role: "admin",
       },
     });
+  });
+
+  it("renders admin nav entry and does not auto-redirect for admin users", () => {
+    pendingStockMismatchesUseQueryMock.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(React.createElement(PendingStockMismatchPage));
+
+    expect(screen.getByTestId("dashboard-nav").textContent).toContain("待入庫待比對");
+    expect(screen.getByTestId("dashboard-nav").textContent).toContain("管理後台");
+    expect(setLocationMock).not.toHaveBeenCalled();
   });
 
   it("renders loading state", () => {

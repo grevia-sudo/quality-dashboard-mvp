@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldCheck, Undo2 } from "lucide-react";
+import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 
@@ -18,6 +18,7 @@ const navItems: DashboardNavItem[] = [
   { label: "D 站全檢", path: "/sampling", icon: ClipboardCheck, allowedRoles: [...MANAGEMENT_VIEWER_ROLES] },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
+  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
 
 type SamplingTask = {

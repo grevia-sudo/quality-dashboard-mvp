@@ -6,6 +6,7 @@ const samplingPageSource = readFileSync(new URL("../client/src/pages/SamplingPag
 const importPageSource = readFileSync(new URL("../client/src/pages/ImportPage.tsx", import.meta.url), "utf8");
 const operationsPageSource = readFileSync(new URL("../client/src/pages/OperationsPage.tsx", import.meta.url), "utf8");
 const adminPageSource = readFileSync(new URL("../client/src/pages/AdminPage.tsx", import.meta.url), "utf8");
+const engineerKpiPageSource = readFileSync(new URL("../client/src/pages/EngineerKpiPage.tsx", import.meta.url), "utf8");
 const managementAccessSource = readFileSync(new URL("../client/src/lib/managementAccess.ts", import.meta.url), "utf8");
 const dbSource = readFileSync(new URL("../server/db.ts", import.meta.url), "utf8");
 
@@ -91,7 +92,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("編輯品類設定");
     expect(stationPageSource).toContain("openCategoryEditor(task)");
     expect(stationPageSource).toContain("A1 改為掃碼補齊模式");
-    expect(stationPageSource).toContain("必填，可輸入品名關鍵字或完整品名");
+    expect(stationPageSource).toContain("輸入品名關鍵字搜尋（可選）");
     expect(stationPageSource).toContain("完成 A1 並準備下一筆");
     expect(stationPageSource).toContain("留在本頁");
   });
@@ -131,6 +132,16 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("batteryNote");
     expect(stationPageSource).toContain("summarizeTextResult");
     expect(stationPageSource).toContain("是否修改電池／非螢幕功能狀態");
+  });
+
+  it("keeps the pending stock mismatch admin nav entry consistent across management pages", () => {
+    const pendingMismatchNavEntry = '{ label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] }';
+
+    expect(importPageSource).toContain(pendingMismatchNavEntry);
+    expect(samplingPageSource).toContain(pendingMismatchNavEntry);
+    expect(stationPageSource).toContain(pendingMismatchNavEntry);
+    expect(adminPageSource).toContain(pendingMismatchNavEntry);
+    expect(engineerKpiPageSource).toContain(pendingMismatchNavEntry);
   });
 
   it("includes category edit controls on the sampling page", () => {
