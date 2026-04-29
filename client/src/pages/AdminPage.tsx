@@ -769,14 +769,14 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
-                系統會以商品匯入時間對比各站任務建立／完成時間，讓管理者快速看出哪個節點目前最耗時。
+                系統會以商品匯入時間對比各站任務建立／完成時間，讓管理者快速看出哪個節點目前最耗時。這裡的樣本數是歷史進站／完工統計，並非目前站上待處理數量；若要看目前待入庫商品，請以待入庫站點頁清單為準。
               </div>
               <div className="overflow-x-auto rounded-[24px] bg-slate-50">
                 <table className="min-w-full text-sm text-slate-700">
                   <thead>
                     <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
                       <th className="px-4 py-3">節點</th>
-                      <th className="px-4 py-3">樣本數</th>
+                      <th className="px-4 py-3">歷史樣本數</th>
                       <th className="px-4 py-3">平均天數</th>
                       <th className="px-4 py-3">最短</th>
                       <th className="px-4 py-3">最長</th>

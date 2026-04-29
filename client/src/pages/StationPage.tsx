@@ -1029,6 +1029,24 @@ export default function StationPage() {
               {filteredTasks.length === 0 ? (
                 <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">目前待入庫沒有符合條件的商品。</div>
               ) : null}
+              {(detailQuery.data?.recentAutoRemovedStockItems?.length ?? 0) > 0 ? (
+                <div className="space-y-3 rounded-[24px] bg-amber-50 p-4 text-sm leading-7 text-amber-900">
+                  <p className="font-semibold">最近自動移除待入庫</p>
+                  <p className="text-amber-800">以下商品已命中外部進貨明細，因此系統自動完成待入庫並從上方清單移除；若你剛找不到某筆批號，請先在這裡確認。</p>
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {detailQuery.data?.recentAutoRemovedStockItems?.map((item) => (
+                      <div key={`auto-removed-${item.taskId}`} className="rounded-[20px] bg-white/80 px-4 py-3 text-sm text-amber-900">
+                        <p className="font-semibold">{item.productName ?? item.productCode}</p>
+                        <p className="mt-1 text-xs leading-6 text-amber-800">批號：{item.batchNo ?? "-"}</p>
+                        <p className="text-xs leading-6 text-amber-800">序號：{item.serialNumber ?? "-"}</p>
+                        <p className="text-xs leading-6 text-amber-800">IMEI：{item.imei ?? "-"}</p>
+                        <p className="text-xs leading-6 text-amber-800">完成時間：{item.completedAt ? new Date(item.completedAt).toLocaleString() : "-"}</p>
+                        <p className="mt-1 text-xs leading-6 text-amber-800">{item.resultSummary ?? "已自動移除待入庫"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         ) : null}

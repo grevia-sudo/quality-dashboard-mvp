@@ -1471,7 +1471,7 @@ function normalizeNumberArray(value: unknown): number[] {
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
-    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [], cameraOptions: [], bFaultOptions: [] };
+    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [], cameraOptions: [], bFaultOptions: [], recentAutoRemovedStockItems: [] };
   }
 
   await ensureMvpSeedData();
@@ -1688,6 +1688,32 @@ export async function getStationPageData(stationCode: StationCode) {
         })()
       : rows;
 
+  const recentAutoRemovedStockItems = stationCode === "STOCK"
+    ? (await db
+        .select({
+          taskId: stationTasks.id,
+          productId: products.id,
+          productCode: products.productCode,
+          batchNo: products.batchNo,
+          serialNumber: products.serialNumber,
+          imei: products.imei,
+          productName: products.productName,
+          completedAt: stationTasks.completedAt,
+          resultSummary: stationTasks.resultSummary,
+        })
+        .from(stationTasks)
+        .innerJoin(products, eq(stationTasks.productId, products.id))
+        .where(and(
+          eq(stationTasks.stationCode, "STOCK"),
+          eq(stationTasks.taskStatus, "completed"),
+          isNull(products.archivedAt),
+        ))
+        .orderBy(desc(stationTasks.completedAt), desc(stationTasks.id))
+        .limit(12))
+        .filter((item) => (item.resultSummary ?? "").includes("自動移除待入庫"))
+        .slice(0, 5)
+    : [];
+
   return {
     stationCode,
     label: stationToLabel(stationCode),
@@ -1696,6 +1722,7 @@ export async function getStationPageData(stationCode: StationCode) {
     appearanceOptions,
     cameraOptions,
     bFaultOptions,
+    recentAutoRemovedStockItems,
   };
 }
 

@@ -72,6 +72,8 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("待點貨數量");
     expect(stationPageSource).toContain("pendingCategorySummary");
     expect(stationPageSource).toContain("待入庫表格清單");
+    expect(stationPageSource).toContain("最近自動移除待入庫");
+    expect(stationPageSource).toContain("recentAutoRemovedStockItems");
     expect(stationPageSource).toContain("handleExportStockCsv");
     expect(stationPageSource).toContain("匯出 CSV");
     expect(stationPageSource).toContain("目前共有 <span className=\"font-semibold text-slate-900\">{filteredTasks.length}</span> 筆待入庫商品");
@@ -181,6 +183,8 @@ describe("warehouse workflow pages", () => {
     expect(operationsPageSource).toContain('gcTime: 5 * 60_000');
     expect(dbSource).toContain('let lastEnsureMvpSeedDataAt = 0');
     expect(dbSource).toContain('let lastArchiveExpiredDataAt = 0');
+    expect(dbSource).toContain('recentAutoRemovedStockItems');
+    expect(dbSource).toContain('includes("自動移除待入庫")');
     expect(dbSource).toContain('Date.now() - lastEnsureMvpSeedDataAt < 60_000');
     expect(dbSource).toContain('Date.now() - lastArchiveExpiredDataAt < 60_000');
   });
@@ -198,6 +202,8 @@ describe("warehouse workflow pages", () => {
     expect(adminPageSource).toContain("套用 KPI 篩選");
     expect(adminPageSource).toContain("重設為當月");
     expect(adminPageSource).toContain("匯入到各節點平均天數");
+    expect(adminPageSource).toContain("歷史樣本數");
+    expect(adminPageSource).toContain("若要看目前待入庫商品，請以待入庫站點頁清單為準");
     expect(adminPageSource).toContain("待入庫週期摘要");
     expect(adminPageSource).toContain("品類設定");
     expect(adminPageSource).toContain("此品類需要經過的節點");
