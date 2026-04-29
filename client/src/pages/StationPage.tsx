@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
-import { Boxes, ClipboardCheck, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
+import { createUtf8CsvBlob, exportStationStockRowsToCsv } from "./station-stock-export";
+import { Boxes, ClipboardCheck, Download, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
@@ -479,6 +480,19 @@ export default function StationPage() {
 
   const showStationEmptyState = (stationCode !== "B" && stationCode !== "C") || hasKeyword;
   const pendingTasks = detailQuery.data?.tasks ?? [];
+  const handleExportStockCsv = () => {
+    const csvContent = exportStationStockRowsToCsv(filteredTasks);
+    const blob = createUtf8CsvBlob(csvContent);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const timestamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
+    link.href = url;
+    link.download = `stock-items-${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
 
   const matchedA1PendingTask = useMemo(() => {
     if (stationCode !== "A1") {
@@ -919,16 +933,40 @@ export default function StationPage() {
             <CardHeader>
               <CardTitle className="text-base font-bold">待入庫詳細清單</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm leading-7 text-slate-600">
-              待入庫頁僅保留明細查看，不提供額外按鈕操作；如需確認品項狀態，請直接查看下方詳細清單。
+            <CardContent className="space-y-4 text-sm leading-7 text-slate-600">
+              <div className="rounded-[24px] bg-slate-50 p-4">
+                目前共有 <span className="font-semibold text-slate-900">{filteredTasks.length}</span> 筆待入庫商品；下方表格可直接比對批號、序號、IMEI、匯入比對狀態，並支援匯出 CSV。
+              </div>
+              {filteredTasks.length > 0 ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {filteredTasks.slice(0, 3).map((task) => (
+                    <div key={`stock-preview-${task.taskId}`} className="rounded-[24px] bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                      <p className="font-semibold text-slate-900">{task.productName ?? task.productCode}</p>
+                      <p className="mt-1 text-xs leading-6 text-slate-500">產品代碼：{task.productCode}</p>
+                      <p className="text-xs leading-6 text-slate-500">批號：{task.batchNo ?? "-"}</p>
+                      <p className="text-xs leading-6 text-slate-500">序號：{task.serialNumber ?? "-"}</p>
+                      <p className="text-xs leading-6 text-slate-500">IMEI：{task.imei ?? "-"}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">目前待入庫沒有商品。</div>
+              )}
+              {filteredTasks.length > 3 ? (
+                <p className="text-xs text-slate-500">其餘 {filteredTasks.length - 3} 筆資料請查看下方待入庫表格清單。</p>
+              ) : null}
             </CardContent>
           </Card>
         )}
 
         {stationCode === "STOCK" ? (
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-            <CardHeader>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle className="text-base font-bold">待入庫表格清單</CardTitle>
+              <Button type="button" variant="outline" className="rounded-2xl" onClick={handleExportStockCsv} disabled={filteredTasks.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                匯出 CSV
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">

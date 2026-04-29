@@ -2,12 +2,13 @@ import DashboardLayout, { type DashboardNavItem } from "@/components/DashboardLa
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Gauge, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Boxes, ClipboardCheck, Gauge, PackagePlus, ShieldAlert, ShieldCheck } from "lucide-react";
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
+  { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },

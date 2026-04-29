@@ -14,6 +14,7 @@ import {
   type PendingStockMismatchMissingFieldFilter,
   type PendingStockMismatchRow,
 } from "./pending-stock-mismatch-filter";
+import { createUtf8CsvBlob } from "./station-stock-export";
 import { Boxes, ClipboardCheck, Download, Gauge, PackagePlus, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -76,7 +77,7 @@ export default function PendingStockMismatchPage() {
   const summary = useMemo(() => summarizePendingStockMismatchRows(filteredRows), [filteredRows]);
   const handleExportCsv = () => {
     const csvContent = exportPendingStockMismatchRowsToCsv(filteredRows);
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = createUtf8CsvBlob(csvContent);
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     const timestamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");

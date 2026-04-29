@@ -172,24 +172,32 @@ export function mergeMissingCells(existingRow, generatedRow, product) {
   });
 }
 
-export function findMatchingRowNumber(values, product) {
+export function matchesSheetRow(row, product) {
   const imei = stringifyCell(product.imei);
   const serialNumber = stringifyCell(product.serialNumber);
   const batchNo = stringifyCell(product.batchNo);
+  const rowBatchNo = stringifyCell(row?.[3]);
+  const rowSerialNumber = stringifyCell(row?.[4]);
+  const rowImei = stringifyCell(row?.[5]);
 
+  if (imei && rowImei && rowImei === imei) {
+    return true;
+  }
+  if (serialNumber && rowSerialNumber && rowSerialNumber === serialNumber) {
+    return true;
+  }
+  if (batchNo && rowBatchNo && rowBatchNo === batchNo) {
+    return true;
+  }
+
+  return false;
+}
+
+export function findMatchingRowNumber(values, product) {
   for (let index = 1; index < values.length; index += 1) {
     const row = values[index] ?? [];
-    const rowBatchNo = stringifyCell(row[3]);
-    const rowSerialNumber = stringifyCell(row[4]);
-    const rowImei = stringifyCell(row[5]);
 
-    if (imei && rowImei && rowImei === imei) {
-      return index + 1;
-    }
-    if (serialNumber && rowSerialNumber && rowSerialNumber === serialNumber) {
-      return index + 1;
-    }
-    if (batchNo && rowBatchNo && rowBatchNo === batchNo) {
+    if (matchesSheetRow(row, product)) {
       return index + 1;
     }
   }

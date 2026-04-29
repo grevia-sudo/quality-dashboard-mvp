@@ -4,6 +4,7 @@ import {
   buildSheetRow,
   createInitialSheetValues,
   findMatchingRowNumber,
+  matchesSheetRow,
   mergeMissingCells,
   SHEET_NAME,
   SPREADSHEET_ID,
@@ -91,7 +92,7 @@ async function getGoogleAccessToken() {
   return result.access_token;
 }
 
-async function callSheetsApi(accessToken, path, { method = "GET", query = {}, body } = {}) {
+export async function callSheetsApi(accessToken, path, { method = "GET", query = {}, body } = {}) {
   const url = new URL(`https://sheets.googleapis.com/v4/${path}`);
 
   Object.entries(query).forEach(([key, value]) => {
@@ -100,22 +101,35 @@ async function callSheetsApi(accessToken, path, { method = "GET", query = {}, bo
     }
   });
 
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      ...(body ? { "Content-Type": "application/json" } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
+  let lastError = null;
 
-  const result = await response.json();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(body ? { "Content-Type": "application/json" } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Google Sheets API 失敗：${JSON.stringify(result)}`);
+    const result = await response.json();
+
+    if (response.ok) {
+      return result;
+    }
+
+    lastError = new Error(`Google Sheets API 失敗：${JSON.stringify(result)}`);
+    const shouldRetry = response.status === 429 || response.status >= 500;
+    if (!shouldRetry || attempt === 4) {
+      throw lastError;
+    }
+
+    const retryDelayMs = 1_500 * (attempt + 1);
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
   }
 
-  return result;
+  throw lastError ?? new Error("Google Sheets API 呼叫失敗");
 }
 
 async function getSheetValues(accessToken) {
@@ -429,7 +443,10 @@ export async function runPurchaseSheetSync() {
 
     for (const product of products) {
       const generatedRow = buildSheetRow(product);
-      let rowNumber = product.sheetRowNumber ?? findMatchingRowNumber(normalizedValues, product);
+      const storedRowNumber = product.sheetRowNumber;
+      const storedRow = storedRowNumber ? normalizedValues[storedRowNumber - 1] ?? [] : null;
+      const matchedStoredRow = storedRowNumber && storedRow ? matchesSheetRow(storedRow, product) : false;
+      let rowNumber = matchedStoredRow ? storedRowNumber : findMatchingRowNumber(normalizedValues, product);
 
       if (rowNumber) {
         const existingRow = normalizedValues[rowNumber - 1] ?? [];

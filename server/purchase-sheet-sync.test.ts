@@ -4,6 +4,7 @@ import {
   createInitialSheetValues,
   findMatchingRowNumber,
   getSheetRefreshIndexes,
+  matchesSheetRow,
   mergeMissingCells,
   PURCHASE_SHEET_HEADER,
 } from "../scripts/purchase-sheet-sync-helpers.mjs";
@@ -106,6 +107,19 @@ describe("purchase sheet sync helpers", () => {
     expect(findMatchingRowNumber(values, { imei: "", serialNumber: "SN-2", batchNo: "BATCH-X" })).toBe(3);
     expect(findMatchingRowNumber(values, { imei: "", serialNumber: "", batchNo: "BATCH-1" })).toBe(2);
     expect(findMatchingRowNumber(values, { imei: "", serialNumber: "", batchNo: "" })).toBeNull();
+  });
+
+  it("validates whether a stored row number still points to the same product", () => {
+    expect(matchesSheetRow(["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1"], {
+      batchNo: "BATCH-1",
+      serialNumber: "SN-X",
+      imei: "IMEI-X",
+    })).toBe(true);
+    expect(matchesSheetRow(["PO-2", "綠途未來", "智慧型手機", "OTHER-BATCH", "OTHER-SN", "OTHER-IMEI"], {
+      batchNo: "BATCH-1",
+      serialNumber: "SN-1",
+      imei: "IMEI-1",
+    })).toBe(false);
   });
 
   it("preserves downstream stage columns when only A1 has new changes", () => {

@@ -72,6 +72,9 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("待點貨數量");
     expect(stationPageSource).toContain("pendingCategorySummary");
     expect(stationPageSource).toContain("待入庫表格清單");
+    expect(stationPageSource).toContain("handleExportStockCsv");
+    expect(stationPageSource).toContain("匯出 CSV");
+    expect(stationPageSource).toContain("目前共有 <span className=\"font-semibold text-slate-900\">{filteredTasks.length}</span> 筆待入庫商品");
     expect(stationPageSource).toContain("task.brandName ?? task.importedBrandName ?? \"\"");
     expect(stationPageSource).toContain("A1 點到貨新增／補齊");
     expect(stationPageSource).not.toContain("廠商（必填）");
@@ -142,6 +145,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain(pendingMismatchNavEntry);
     expect(adminPageSource).toContain(pendingMismatchNavEntry);
     expect(engineerKpiPageSource).toContain(pendingMismatchNavEntry);
+    expect(engineerKpiPageSource).toContain('{ label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES }');
   });
 
   it("includes category edit controls on the sampling page", () => {
