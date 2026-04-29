@@ -718,6 +718,11 @@ function normalizeOptionalText(value?: string | null) {
   return trimmed ? trimmed : null;
 }
 
+function normalizeCatalogComparisonText(value?: string | null) {
+  const normalized = normalizeOptionalText(value);
+  return normalized ? normalized.toLocaleUpperCase("en-US") : null;
+}
+
 function parseArrivalAt(value?: string | Date | null) {
   if (!value) {
     return null;
@@ -759,11 +764,19 @@ async function validateImportRowsAgainstProductCatalog(
     return;
   }
 
-  const categoryBrandKeys = new Set(catalogRows.map((row) => `${row.categoryName}__${row.brandName}`));
+  const categoryBrandKeys = new Set(
+    catalogRows
+      .map((row) => {
+        const categoryName = normalizeOptionalText(row.categoryName);
+        const brandName = normalizeCatalogComparisonText(row.brandName);
+        return categoryName && brandName ? `${categoryName}__${brandName}` : null;
+      })
+      .filter((value): value is string => Boolean(value)),
+  );
 
   rows.forEach((row, index) => {
-    const categoryName = row.categoryName?.trim();
-    const brandName = row.brandName?.trim();
+    const categoryName = normalizeOptionalText(row.categoryName);
+    const brandName = normalizeCatalogComparisonText(row.brandName);
 
     if (!categoryName || !brandName) {
       return;
@@ -1772,10 +1785,16 @@ export async function importProducts(input: {
     .from(productCategories)
     .where(eq(productCategories.active, true));
 
-  const categoryByKey = new Map(categoryOptions.map((category) => [
-    `${category.categoryName.trim()}__${(category.brandName ?? category.subtypeCode ?? "").trim()}`,
-    category,
-  ]));
+  const categoryByKeyEntries: Array<[string, (typeof categoryOptions)[number]]> = [];
+  categoryOptions.forEach((category) => {
+    const normalizedBrand = normalizeCatalogComparisonText(category.brandName ?? category.subtypeCode ?? "");
+    const normalizedCategory = normalizeOptionalText(category.categoryName);
+    if (!normalizedCategory || !normalizedBrand) {
+      return;
+    }
+    categoryByKeyEntries.push([`${normalizedCategory}__${normalizedBrand}`, category]);
+  });
+  const categoryByKey = new Map(categoryByKeyEntries);
 
   const matchedByImei = new Map<string, (typeof matchedProducts)[number]>();
   const matchedBySerialNumber = new Map<string, (typeof matchedProducts)[number]>();
@@ -1846,7 +1865,9 @@ export async function importProducts(input: {
     const row = normalizedRows[index]!;
     const categoryName = row.categoryName as string;
     const brandName = row.brandName as string;
-    const matchedCategory = categoryByKey.get(`${categoryName}__${brandName}`) ?? null;
+    const matchedCategory = categoryByKey.get(
+      `${normalizeOptionalText(categoryName)}__${normalizeCatalogComparisonText(brandName)}`,
+    ) ?? null;
     const matchedProduct = (row.imei ? matchedByImei.get(row.imei) : undefined)
       ?? (row.serialNumber ? matchedBySerialNumber.get(row.serialNumber) : undefined)
       ?? (row.batchNo ? matchedByBatchNo.get(row.batchNo) : undefined)
@@ -1858,7 +1879,7 @@ export async function importProducts(input: {
       const nextImei = matchedProduct.imei ?? row.imei;
       const nextProductName = matchedProduct.productName ?? row.productName;
       const nextImportedCategoryName = categoryName;
-      const nextImportedBrandName = brandName;
+      const nextImportedBrandName = matchedCategory?.brandName ?? brandName;
       const nextCategoryId = matchedCategory?.id ?? null;
       const nextPoNumber = matchedProduct.poNumber ?? resolvedPoNumber;
       const nextVendorName = matchedProduct.vendorName ?? vendorName;
@@ -1923,7 +1944,7 @@ export async function importProducts(input: {
         productName: row.productName,
         arrivalAt,
         importedCategoryName: categoryName,
-        importedBrandName: brandName,
+        importedBrandName: matchedCategory?.brandName ?? brandName,
         categoryId: matchedCategory?.id ?? null,
         currentStationCode: "A1",
         currentStatus: "pending_a1",

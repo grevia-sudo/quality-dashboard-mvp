@@ -89,6 +89,49 @@ describe("import PO summary integration", () => {
     }
   }, 30000);
 
+  it("accepts category and brand validation when brand casing differs from the local catalog mirror", async () => {
+    await syncProductNameOptionsFromGoogleSheet();
+
+    try {
+      const uniqueSuffix = `${Date.now()}`;
+      const importResult = await importProducts({
+        vendorName: "品牌大小寫驗證廠商",
+        rows: [
+          {
+            batchNo: `CATALOG-CASE-${uniqueSuffix}-01`,
+            serialNumber: `CATALOG-CASE-SN-${uniqueSuffix}-01`,
+            imei: `36${`${Number(uniqueSuffix) + 21}`.padStart(13, "0").slice(-13)}`,
+            productName: "Apple iPhone 6 16GB 銀色",
+            categoryName: "智慧型手機",
+            brandName: "APPLE",
+          },
+        ],
+      });
+      createdPoNumbers.add(importResult.poNumber);
+
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database is not available");
+      }
+
+      const importedRows = await db
+        .select({
+          batchNo: products.batchNo,
+          importedBrandName: products.importedBrandName,
+        })
+        .from(products)
+        .where(and(inArray(products.batchNo, [`CATALOG-CASE-${uniqueSuffix}-01`]), isNull(products.archivedAt)));
+
+      expect(importResult.importedCount).toBe(1);
+      expect(importedRows[0]?.importedBrandName).toBe("Apple");
+    } finally {
+      const db = await getDb();
+      if (db) {
+        await db.delete(productNameCatalogEntries);
+      }
+    }
+  }, 30000);
+
   it("backfills missing pending A1 PO numbers and exposes grouped data for the import page", async () => {
     const result = await getStationPageData("A1");
     const tasks = result.tasks;
