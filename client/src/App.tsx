@@ -24,6 +24,7 @@ function Router() {
       <Route path="/sampling" component={SamplingPage} />
       <Route path="/kpi" component={EngineerKpiPage} />
       <Route path="/admin/pending-stock-mismatches" component={PendingStockMismatchPage} />
+      <Route path="/admin/:section" component={AdminPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/404" component={NotFound} />
       <Route path="/" component={Home} />

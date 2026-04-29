@@ -42,6 +42,7 @@ type SupportCompensationFilterInput = {
 const PRODUCT_NAME_SYNC_SPREADSHEET_ID = "1lMd28O9G-14VQQd7-RRIF8Tr5RaOVa7fhI1fkLXAB0o";
 const PRODUCT_NAME_SYNC_SHEET_NAME = "商品編碼列表";
 const PRODUCT_NAME_SYNC_COLUMN_RANGE = `${PRODUCT_NAME_SYNC_SHEET_NAME}!H:N`;
+const PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN = /ECONNRESET|PROTOCOL_CONNECTION_LOST|ETIMEDOUT|Connection lost|The server closed the connection/i;
 
 function toDateKey(value: Date) {
   return value.toISOString().slice(0, 10);
@@ -192,22 +193,57 @@ async function runPurchaseSheetSyncInProcess() {
   return purchaseSheetSyncPromise;
 }
 
-async function getQueuedPurchaseSheetSyncJobCount() {
+function isRetryablePurchaseSheetSyncDbError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN.test(message);
+}
+
+function waitForPurchaseSheetSyncDbRetry(delayMs: number) {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+async function countQueuedSheetSyncJobs(filters?: { jobType?: string; targetSheetName?: string }) {
   const db = await getDb();
   if (!db) {
     return 0;
   }
 
-  const rows = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(sheetSyncJobs)
-    .where(and(
-      eq(sheetSyncJobs.jobType, "purchase_sheet_sync"),
-      eq(sheetSyncJobs.targetSheetName, "採購單"),
-      eq(sheetSyncJobs.status, "queued"),
-    ));
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const conditions = [eq(sheetSyncJobs.status, "queued")];
 
-  return rows[0]?.count ?? 0;
+      if (filters?.jobType) {
+        conditions.push(eq(sheetSyncJobs.jobType, filters.jobType));
+      }
+
+      if (filters?.targetSheetName) {
+        conditions.push(eq(sheetSyncJobs.targetSheetName, filters.targetSheetName));
+      }
+
+      const rows = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(sheetSyncJobs)
+        .where(and(...conditions));
+
+      return rows[0]?.count ?? 0;
+    } catch (error) {
+      if (attempt >= 3 || !isRetryablePurchaseSheetSyncDbError(error)) {
+        throw error;
+      }
+
+      console.warn(`[purchase-sheet-sync] queued job count query failed (attempt ${attempt}/3), retrying`, error);
+      await waitForPurchaseSheetSyncDbRetry(attempt * 400);
+    }
+  }
+
+  return 0;
+}
+
+async function getQueuedPurchaseSheetSyncJobCount() {
+  return countQueuedSheetSyncJobs({
+    jobType: "purchase_sheet_sync",
+    targetSheetName: "採購單",
+  });
 }
 
 async function drainPurchaseSheetSyncQueueOnce() {
@@ -3450,10 +3486,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
   }
 
   await ensureMvpSeedData();
-  const queuedSyncJobs = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(sheetSyncJobs)
-    .where(eq(sheetSyncJobs.status, "queued"));
+  const queuedSyncJobsCount = await countQueuedSheetSyncJobs();
 
   const archiveCandidates = await db
     .select({ count: sql<number>`count(*)` })
@@ -3491,7 +3524,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
       endDate: normalizedRange.endDate,
     },
     syncSummary: {
-      queuedJobs: queuedSyncJobs[0]?.count ?? 0,
+      queuedJobs: queuedSyncJobsCount,
       targetSheetName: "採購單",
     },
     archiveSummary: {

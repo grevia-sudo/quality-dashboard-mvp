@@ -49,6 +49,13 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(syncScriptSource).toContain('export async function runPurchaseSheetSync()');
   });
 
+  it("retries queued job count queries when the database connection is reset", () => {
+    expect(dbSource).toContain('const PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN = /ECONNRESET|PROTOCOL_CONNECTION_LOST|ETIMEDOUT|Connection lost|The server closed the connection/i;');
+    expect(dbSource).toContain('async function countQueuedSheetSyncJobs(filters?: { jobType?: string; targetSheetName?: string }) {');
+    expect(dbSource).toContain('console.warn(`[purchase-sheet-sync] queued job count query failed (attempt ${attempt}/3), retrying`, error);');
+    expect(dbSource).toContain('return countQueuedSheetSyncJobs({\n    jobType: "purchase_sheet_sync",\n    targetSheetName: "採購單",\n  });');
+  });
+
   it("triggers purchase sheet sync immediately after import queues the job", () => {
     expect(dbSource).toContain('await db.insert(sheetSyncJobs).values({\n    jobType: "purchase_sheet_sync",\n    targetSheetName: "採購單",\n    status: "queued",\n  });\n  triggerPurchaseSheetSyncInBackground();');
   });

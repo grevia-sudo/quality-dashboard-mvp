@@ -9,6 +9,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -19,11 +22,18 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { PanelLeft, LogOut, type LucideIcon } from "lucide-react";
 import { useLocation } from "wouter";
 
+export type DashboardNavSubItem = {
+  label: string;
+  path: string;
+};
+
 export type DashboardNavItem = {
   label: string;
   path: string;
   icon: LucideIcon;
   allowedRoles?: string[];
+  matchPaths?: string[];
+  subItems?: DashboardNavSubItem[];
 };
 
 export default function DashboardLayout({
@@ -41,6 +51,16 @@ export default function DashboardLayout({
   const visibleNavItems = user
     ? navItems.filter((item) => !item.allowedRoles || item.allowedRoles.includes(user.role))
     : navItems;
+
+  const matchesPath = (targetPath: string, exact = false) => exact
+    ? location === targetPath
+    : location === targetPath || (targetPath !== "/" && location.startsWith(`${targetPath}/`));
+
+  const isItemActive = (item: DashboardNavItem) => item.matchPaths?.length
+    ? item.matchPaths.some((path) => matchesPath(path, path === item.path))
+    : matchesPath(item.path);
+
+  const isSubItemActive = (subItemPath: string) => matchesPath(subItemPath, subItemPath === "/admin");
 
   if (loading) {
     return <DashboardLayoutSkeleton />;
@@ -81,7 +101,7 @@ export default function DashboardLayout({
         <SidebarContent className="px-2 py-4">
           <SidebarMenu>
             {visibleNavItems.map((item) => {
-              const isActive = location === item.path;
+              const isActive = isItemActive(item);
               return (
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton
@@ -93,6 +113,27 @@ export default function DashboardLayout({
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
+                  {item.subItems?.length && isActive ? (
+                    <SidebarMenuSub>
+                      {item.subItems.map((subItem) => {
+                        const subItemActive = isSubItemActive(subItem.path);
+                        return (
+                          <SidebarMenuSubItem key={subItem.path}>
+                            <SidebarMenuSubButton
+                              href={subItem.path}
+                              isActive={subItemActive}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                setLocation(subItem.path);
+                              }}
+                            >
+                              <span>{subItem.label}</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        );
+                      })}
+                    </SidebarMenuSub>
+                  ) : null}
                 </SidebarMenuItem>
               );
             })}

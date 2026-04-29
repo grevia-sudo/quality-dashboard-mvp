@@ -7,19 +7,44 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { analyzeProductTraceResults } from "@/lib/adminProductTrace";
 import { trpc } from "@/lib/trpc";
 import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 
+type AdminSectionId = "rules" | "targets" | "menus" | "tools" | "inventory-history" | "support" | "users" | "categories";
+
+const adminSections: Array<{ id: AdminSectionId; label: string; path: string; description: string }> = [
+  { id: "rules", label: "站點規則", path: "/admin", description: "設定各站流程、下一站與返工規則。" },
+  { id: "targets", label: "產能設定", path: "/admin/targets", description: "維護各站點在不同品類與品牌下的每日產能。" },
+  { id: "menus", label: "功能表設定", path: "/admin/menus", description: "管理 B、C 站使用的故障與外觀選項。" },
+  { id: "tools", label: "資料工具", path: "/admin/tools", description: "集中處理備份還原、商品追蹤與資料同步工具。" },
+  { id: "inventory-history", label: "庫存異動紀錄", path: "/admin/inventory-history", description: "查詢商品從匯入到待入庫與入庫的完整異動時間軸。" },
+  { id: "support", label: "支援補償", path: "/admin/support", description: "登記跨站支援時數並檢視補償紀錄。" },
+  { id: "users", label: "帳號管理", path: "/admin/users", description: "建立本地帳號並檢視現有登入資訊。" },
+  { id: "categories", label: "品類設定", path: "/admin/categories", description: "維護品類流程與品名來源資料。" },
+];
+
+function resolveAdminSectionId(pathname: string): AdminSectionId {
+  const matchedSection = adminSections.find((section) => section.path === pathname || (section.path !== "/admin" && pathname.startsWith(`${section.path}/`)));
+  return matchedSection?.id ?? "rules";
+}
+
 const navItems: DashboardNavItem[] = [
   { label: "站點總覽", path: "/operations", icon: Boxes },
   { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
+  {
+    label: "管理後台",
+    path: "/admin",
+    icon: ShieldCheck,
+    allowedRoles: ["admin"],
+    matchPaths: adminSections.map((section) => section.path),
+    subItems: adminSections.map((section) => ({ label: section.label, path: section.path })),
+  },
   { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
 
@@ -104,7 +129,9 @@ function formatSupportHours(value?: number | null) {
 
 export default function AdminPage() {
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const activeAdminSection = resolveAdminSectionId(location);
+  const activeAdminSectionMeta = adminSections.find((section) => section.id === activeAdminSection) ?? adminSections[0];
   const utils = trpc.useUtils();
   const [appliedKpiRange, setAppliedKpiRange] = useState<{ startDate?: string; endDate?: string }>({});
   const query = trpc.admin.setup.useQuery({
@@ -836,18 +863,19 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="rules" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm md:grid-cols-8">
-            <TabsTrigger value="rules" className="rounded-2xl">站點規則</TabsTrigger>
-            <TabsTrigger value="targets" className="rounded-2xl">產能設定</TabsTrigger>
-            <TabsTrigger value="menus" className="rounded-2xl">功能表設定</TabsTrigger>
-            <TabsTrigger value="tools" className="rounded-2xl">資料工具</TabsTrigger>
-            <TabsTrigger value="inventory-history" className="rounded-2xl">庫存異動紀錄</TabsTrigger>
-            <TabsTrigger value="support" className="rounded-2xl">支援補償</TabsTrigger>
-            <TabsTrigger value="users" className="rounded-2xl">帳號管理</TabsTrigger>
-            <TabsTrigger value="categories" className="rounded-2xl">品類設定</TabsTrigger>
-          </TabsList>
+        <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+          <CardContent className="flex flex-col gap-3 p-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-900">目前功能：{activeAdminSectionMeta.label}</p>
+              <p className="text-sm leading-7 text-slate-600">{activeAdminSectionMeta.description}</p>
+            </div>
+            <div className="rounded-[20px] bg-slate-50 px-4 py-3 text-sm text-slate-500">
+              功能入口已移到左側管理後台子列表，請直接從側邊欄切換各功能。
+            </div>
+          </CardContent>
+        </Card>
 
+        <Tabs value={activeAdminSection} className="space-y-4">
           <TabsContent value="rules">
             <Card className="rounded-[28px] border-0 bg-white shadow-sm">
               <CardHeader>
