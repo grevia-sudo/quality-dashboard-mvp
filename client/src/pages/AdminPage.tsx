@@ -996,46 +996,59 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="menus">
-            <div className="grid gap-4 xl:grid-cols-3">
-              {[
-                { key: "bFault", title: "B 站軟測故障狀態", stationCode: "B" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
-                { key: "cFault", title: "C 站螢幕狀態", stationCode: "C" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]" },
-                { key: "cAppearance", title: "C 站機身外觀", stationCode: "C" as const, optionType: "appearance" as const, tone: "bg-[#f7e8ee]" },
-                { key: "cCamera", title: "C 站鏡頭狀態", stationCode: "C" as const, optionType: "camera" as const, tone: "bg-[#eef7f3]" },
-              ].map((section) => {
-                const sectionItems = groupedOptionDrafts[section.key as keyof typeof groupedOptionDrafts];
+            <div className="space-y-4">
+              <div className="rounded-[28px] bg-slate-50 px-5 py-4 text-sm leading-7 text-slate-600">
+                功能表設定改成與 C 站作業相同的寬版編輯節奏。每個項目會以橫向列呈現，方便直接調整名稱、排序與啟用狀態，不需要在狹長卡片中反覆上下捲動。
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                {[
+                  { key: "bFault", title: "B 站軟測故障狀態", stationCode: "B" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]", placeholder: "例如 無法開機" },
+                  { key: "cFault", title: "C 站螢幕狀態", stationCode: "C" as const, optionType: "fault" as const, tone: "bg-[#eef2f7]", placeholder: "例如 觸控異常" },
+                  { key: "cAppearance", title: "C 站機身外觀", stationCode: "C" as const, optionType: "appearance" as const, tone: "bg-[#f7e8ee]", placeholder: "例如 邊框刮傷" },
+                  { key: "cCamera", title: "C 站鏡頭狀態", stationCode: "C" as const, optionType: "camera" as const, tone: "bg-[#eef7f3]", placeholder: "例如 無法對焦" },
+                ].map((section) => {
+                  const sectionItems = groupedOptionDrafts[section.key as keyof typeof groupedOptionDrafts];
 
-                return (
-                  <Card key={section.key} className="rounded-[28px] border-0 bg-white shadow-sm">
-                    <CardHeader>
-                      <CardTitle className="text-base font-bold text-slate-900">{section.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {sectionItems.map((option) => (
-                        <div key={option.localKey} className={`space-y-3 rounded-[24px] ${section.tone} p-4`}>
-                          <label className="space-y-2 text-sm text-slate-600">
-                            <span>項目名稱</span>
-                            <Input value={option.label} onChange={(event) => updateOptionDraft(option.localKey, { label: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder="例如 觸控異常" />
-                          </label>
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <label className="space-y-2 text-sm text-slate-600">
-                              <span>排序</span>
-                              <Input type="number" value={option.sortOrder} onChange={(event) => updateOptionDraft(option.localKey, { sortOrder: Number(event.target.value || 0) })} className="editable-field rounded-2xl border-0 bg-white" />
-                            </label>
-                            <label className="flex items-center gap-2 self-end rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
-                              <input type="checkbox" checked={option.active} onChange={(event) => updateOptionDraft(option.localKey, { active: event.target.checked })} />
-                              啟用
-                            </label>
-                          </div>
+                  return (
+                    <Card key={section.key} className="rounded-[28px] border-0 bg-white shadow-sm">
+                      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-base font-bold text-slate-900">{section.title}</CardTitle>
+                          <p className="text-sm text-slate-500">目前共 {sectionItems.length} 個可編輯項目，使用寬版列編輯更容易快速調整。</p>
                         </div>
-                      ))}
-                      <Button variant="outline" className="w-full rounded-2xl" onClick={() => appendOptionDraft(section.stationCode, section.optionType)}>
-                        新增一個項目
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                        <Button variant="outline" className="rounded-2xl sm:self-start" onClick={() => appendOptionDraft(section.stationCode, section.optionType)}>
+                          新增一個項目
+                        </Button>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="hidden rounded-[24px] bg-slate-100 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 xl:grid xl:grid-cols-[minmax(0,1.6fr)_140px_120px] xl:items-center xl:gap-3">
+                          <span>項目名稱</span>
+                          <span>排序</span>
+                          <span>狀態</span>
+                        </div>
+                        {sectionItems.map((option) => (
+                          <div key={option.localKey} className={`rounded-[24px] ${section.tone} p-4`}>
+                            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_140px_120px] xl:items-center">
+                              <label className="space-y-2 text-sm text-slate-600 xl:space-y-1">
+                                <span className="xl:text-xs xl:font-semibold xl:uppercase xl:tracking-[0.12em] xl:text-slate-500">項目名稱</span>
+                                <Input value={option.label} onChange={(event) => updateOptionDraft(option.localKey, { label: event.target.value })} className="editable-field rounded-2xl border-0 bg-white" placeholder={section.placeholder} />
+                              </label>
+                              <label className="space-y-2 text-sm text-slate-600 xl:space-y-1">
+                                <span className="xl:text-xs xl:font-semibold xl:uppercase xl:tracking-[0.12em] xl:text-slate-500">排序</span>
+                                <Input type="number" value={option.sortOrder} onChange={(event) => updateOptionDraft(option.localKey, { sortOrder: Number(event.target.value || 0) })} className="editable-field rounded-2xl border-0 bg-white" />
+                              </label>
+                              <label className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 xl:mt-6 xl:min-h-[44px]">
+                                <input type="checkbox" checked={option.active} onChange={(event) => updateOptionDraft(option.localKey, { active: event.target.checked })} />
+                                啟用
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
           </TabsContent>
 

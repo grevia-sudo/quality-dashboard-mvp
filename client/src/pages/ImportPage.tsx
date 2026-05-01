@@ -72,6 +72,7 @@ export default function ImportPage() {
   const [showAllRows, setShowAllRows] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
+  const canDeleteImportedPo = user?.role === "admin";
 
   const importMutation = trpc.station.importBatch.useMutation({
     onSuccess: async (result) => {
@@ -95,6 +96,19 @@ export default function ImportPage() {
     },
     onError: (error) => {
       toast.error(error.message || "匯入作業失敗");
+    },
+  });
+
+  const deletePoMutation = trpc.admin.deleteImportedPurchaseOrder.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已刪除採購單 ${result.poNumber}，共清除 ${result.deletedProducts} 筆商品與 ${result.deletedTasks} 筆站點任務`);
+      await utils.station.list.invalidate();
+      await utils.dashboard.home.invalidate();
+      await utils.station.detail.invalidate({ stationCode: "A1" });
+      await pendingA1Query.refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "刪除採購單失敗");
     },
   });
 
@@ -188,6 +202,22 @@ export default function ImportPage() {
       ...prev,
       [key]: !prev[key],
     }));
+  };
+
+  const handleDeletePo = (targetPoNumber: string) => {
+    if (!canDeleteImportedPo) {
+      toast.error("只有管理者可以刪除採購單");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      const confirmed = window.confirm(`確定要刪除採購單 ${targetPoNumber} 嗎？這會一併移除該 PO 的商品、站點任務與事件紀錄。`);
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    deletePoMutation.mutate({ poNumber: targetPoNumber });
   };
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -377,15 +407,16 @@ export default function ImportPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊採購單列可展開查看尚未完成 A1 點貨的品項細項。</p>
+              <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊採購單列可展開查看尚未完成 A1 點貨的品項細項。管理者也可以直接在這裡刪除錯誤或重複匯入的採購單。</p>
               <Badge className="w-fit bg-slate-900 text-white">待點貨 {pendingPoSummary.reduce((total, item) => total + item.totalQuantity, 0)} 筆</Badge>
             </div>
 
             <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white">
-              <div className="hidden grid-cols-[1.2fr_1.2fr_100px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid">
+              <div className={`hidden gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid ${canDeleteImportedPo ? "md:grid-cols-[1.1fr_1.1fr_100px_120px]" : "md:grid-cols-[1.2fr_1.2fr_100px]"}`}>
                 <div>採購單號</div>
                 <div>商品類別 × 品牌</div>
                 <div className="text-right">總數量</div>
+                {canDeleteImportedPo ? <div className="text-right">操作</div> : null}
               </div>
 
               {pendingPoSummary.length > 0 ? (
@@ -394,18 +425,33 @@ export default function ImportPage() {
                     const isExpanded = Boolean(expandedSummaryKeys[item.key]);
                     return (
                       <div key={item.key} className="bg-white">
-                        <button
-                          type="button"
-                          className="grid w-full gap-3 px-4 py-4 text-left transition hover:bg-slate-50 md:grid-cols-[1.2fr_1.2fr_100px] md:items-center"
-                          onClick={() => toggleSummaryRow(item.key)}
-                        >
-                          <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
-                            {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
-                            <span>{item.poNumber}</span>
-                          </div>
-                          <div className="text-sm text-slate-700">{item.categoryLabel}</div>
-                          <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
-                        </button>
+                        <div className={`grid gap-3 px-4 py-4 transition hover:bg-slate-50 ${canDeleteImportedPo ? "md:grid-cols-[1.1fr_1.1fr_100px_120px] md:items-center" : "md:grid-cols-[1.2fr_1.2fr_100px] md:items-center"}`}>
+                          <button
+                            type="button"
+                            className={`grid min-w-0 gap-3 text-left ${canDeleteImportedPo ? "md:col-span-3 md:grid-cols-[1.1fr_1.1fr_100px] md:items-center" : "md:grid-cols-[1.2fr_1.2fr_100px] md:items-center"}`}
+                            onClick={() => toggleSummaryRow(item.key)}
+                          >
+                            <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
+                              {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
+                              <span>{item.poNumber}</span>
+                            </div>
+                            <div className="text-sm text-slate-700">{item.categoryLabel}</div>
+                            <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
+                          </button>
+                          {canDeleteImportedPo ? (
+                            <div className="flex justify-start md:justify-end">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-2xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                                disabled={deletePoMutation.isPending}
+                                onClick={() => handleDeletePo(item.poNumber)}
+                              >
+                                刪除
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
 
                         {isExpanded ? (
                           <div className="border-t border-slate-100 bg-slate-50 px-4 py-4">
