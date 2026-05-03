@@ -99,6 +99,13 @@
       "when": 1777369636567,
       "tag": "0013_natural_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1777813656210,
+      "tag": "0014_open_zarda",
+      "breakpoints": true
     }
   ]
 }

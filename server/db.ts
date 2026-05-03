@@ -12,6 +12,7 @@ import {
   productArchives,
   productCategories,
   productNameCatalogEntries,
+  purchaseOrderDeletionLogs,
   productNameOptions,
   productivityScoreDetails,
   productivityTargetConfigs,
@@ -1585,7 +1586,17 @@ function normalizeNumberArray(value: unknown): number[] {
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
-    return { stationCode, label: stationToLabel(stationCode), tasks: [], faultOptions: [], appearanceOptions: [], cameraOptions: [], bFaultOptions: [], recentAutoRemovedStockItems: [] };
+    return {
+      stationCode,
+      label: stationToLabel(stationCode),
+      tasks: [],
+      faultOptions: [],
+      appearanceOptions: [],
+      cameraOptions: [],
+      bFaultOptions: [],
+      recentAutoRemovedStockItems: [],
+      poDeletionLogs: [],
+    };
   }
 
   await ensureMvpSeedData();
@@ -1824,8 +1835,22 @@ export async function getStationPageData(stationCode: StationCode) {
         ))
         .orderBy(desc(stationTasks.completedAt), desc(stationTasks.id))
         .limit(12))
-        .filter((item) => (item.resultSummary ?? "").includes("自動移除待入庫"))
-        .slice(0, 5)
+    : [];
+
+  const poDeletionLogs = stationCode === "A1"
+    ? await db
+        .select({
+          id: purchaseOrderDeletionLogs.id,
+          poNumber: purchaseOrderDeletionLogs.poNumber,
+          vendorName: purchaseOrderDeletionLogs.vendorName,
+          deletedProducts: purchaseOrderDeletionLogs.deletedProducts,
+          deletedTasks: purchaseOrderDeletionLogs.deletedTasks,
+          deletedByName: purchaseOrderDeletionLogs.deletedByName,
+          createdAt: purchaseOrderDeletionLogs.createdAt,
+        })
+        .from(purchaseOrderDeletionLogs)
+        .orderBy(desc(purchaseOrderDeletionLogs.createdAt), desc(purchaseOrderDeletionLogs.id))
+        .limit(20)
     : [];
 
   return {
@@ -1837,6 +1862,7 @@ export async function getStationPageData(stationCode: StationCode) {
     cameraOptions,
     bFaultOptions,
     recentAutoRemovedStockItems,
+    poDeletionLogs,
   };
 }
 
@@ -4125,19 +4151,26 @@ export async function getProductTraceByIdentity(keyword: string) {
   });
 }
 
-export async function deleteImportedPurchaseOrder(poNumber: string) {
+export async function deleteImportedPurchaseOrder(input: {
+  poNumber: string;
+  deletedByUserId?: number | null;
+  deletedByName?: string | null;
+}) {
   const db = await getDb();
   if (!db) {
     throw new Error("Database is not available");
   }
 
-  const normalizedPoNumber = normalizeOptionalText(poNumber);
+  const normalizedPoNumber = normalizeOptionalText(input.poNumber);
   if (!normalizedPoNumber) {
     throw new Error("PO 單號為必填欄位");
   }
 
   const productRows = await db
-    .select({ id: products.id })
+    .select({
+      id: products.id,
+      vendorName: products.vendorName,
+    })
     .from(products)
     .where(eq(products.poNumber, normalizedPoNumber));
   const productIds = productRows.map((row) => row.id);
@@ -4148,14 +4181,26 @@ export async function deleteImportedPurchaseOrder(poNumber: string) {
   const deletedTasks = await db.delete(stationTasks).where(inArray(stationTasks.productId, productIds));
   await db.delete(stationEvents).where(inArray(stationEvents.productId, productIds));
   await db.delete(samplingResults).where(inArray(samplingResults.productId, productIds));
-  await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.productId, productIds));
+  await db.delete(productArchives).where(inArray(productArchives.originalProductId, productIds));
   const deletedProducts = await db.delete(products).where(inArray(products.id, productIds));
+
+  const deletedProductCount = typeof deletedProducts === "number" ? deletedProducts : productIds.length;
+  const deletedTaskCount = typeof deletedTasks === "number" ? deletedTasks : 0;
+
+  await db.insert(purchaseOrderDeletionLogs).values({
+    poNumber: normalizedPoNumber,
+    vendorName: productRows[0]?.vendorName ?? null,
+    deletedProducts: deletedProductCount,
+    deletedTasks: deletedTaskCount,
+    deletedByUserId: input.deletedByUserId ?? null,
+    deletedByName: normalizeOptionalText(input.deletedByName) ?? null,
+  });
 
   return {
     success: true as const,
     poNumber: normalizedPoNumber,
-    deletedProducts: typeof deletedProducts === "number" ? deletedProducts : productIds.length,
-    deletedTasks: typeof deletedTasks === "number" ? deletedTasks : 0,
+    deletedProducts: deletedProductCount,
+    deletedTasks: deletedTaskCount,
   };
 }
 

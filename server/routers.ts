@@ -596,8 +596,12 @@ export const appRouter = router({
           poNumber: z.string().trim().min(1),
         }),
       )
-      .mutation(async ({ input }) => {
-        return deleteImportedPurchaseOrder(input.poNumber);
+      .mutation(async ({ ctx, input }) => {
+        return deleteImportedPurchaseOrder({
+          poNumber: input.poNumber,
+          deletedByUserId: ctx.user.id,
+          deletedByName: ctx.user.name ?? ctx.user.username ?? "管理者",
+        });
       }),
     createUser: adminProcedure
       .input(

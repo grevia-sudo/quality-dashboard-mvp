@@ -107,7 +107,20 @@ describe("ImportPage purchase-order delete access", () => {
       refetch: vi.fn(),
     });
     stationDetailUseQueryMock.mockReturnValue({
-      data: { tasks: [createPendingTask("PO-20260430-05")] },
+      data: {
+        tasks: [createPendingTask("PO-20260430-05")],
+        poDeletionLogs: [
+          {
+            id: 91,
+            poNumber: "PO-20260429-09",
+            vendorName: "悠優",
+            deletedProducts: 12,
+            deletedTasks: 12,
+            deletedByName: "佳珉",
+            createdAt: "2026-05-01T11:30:00.000Z",
+          },
+        ],
+      },
       isLoading: false,
       refetch: vi.fn(),
     });
@@ -119,7 +132,7 @@ describe("ImportPage purchase-order delete access", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows delete action for admin and triggers delete mutation", () => {
+  it("shows deletion record columns and lets admin delete purchase orders", () => {
     useAuthMock.mockReturnValue({
       loading: false,
       user: {
@@ -130,6 +143,11 @@ describe("ImportPage purchase-order delete access", () => {
     });
 
     render(React.createElement(ImportPage));
+
+    expect(screen.getByText("刪除操作紀錄")).toBeTruthy();
+    expect(screen.getByText("操作者")).toBeTruthy();
+    expect(screen.getByText("佳珉")).toBeTruthy();
+    expect(screen.getByText(/已刪除 12 筆商品／12 筆任務/)).toBeTruthy();
 
     const deleteButton = screen.getByRole("button", { name: "刪除" });
     expect(deleteButton).toBeTruthy();
@@ -153,5 +171,7 @@ describe("ImportPage purchase-order delete access", () => {
 
     expect(screen.queryByRole("button", { name: "刪除" })).toBeNull();
     expect(screen.getByText("PO-20260430-05")).toBeTruthy();
+    expect(screen.getByText("操作者")).toBeTruthy();
+    expect(screen.getByText("佳珉")).toBeTruthy();
   });
 });

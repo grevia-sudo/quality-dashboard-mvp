@@ -47,6 +47,25 @@ function hasAnyRowValue(row: ImportDraftRow) {
   return Boolean(row.categoryName.trim() || row.brandName.trim() || row.batchNo.trim() || row.serialNumber.trim() || row.imei.trim() || row.productName.trim());
 }
 
+function formatDeletionRecordTime(value: string | number | Date | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleString("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function ImportPage() {
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
@@ -148,6 +167,50 @@ export default function ImportPage() {
   }, [preparedRows, rows, vendorName]);
 
   const pendingPoSummary = useMemo(() => buildPendingPoSummary(pendingA1Query.data?.tasks ?? []), [pendingA1Query.data?.tasks]);
+  const purchaseOrderRows = useMemo(() => {
+    const deletionLogs = pendingA1Query.data?.poDeletionLogs ?? [];
+    const latestDeletionByPo = deletionLogs.reduce((accumulator, log) => {
+      if (!log.poNumber || accumulator.has(log.poNumber)) {
+        return accumulator;
+      }
+      accumulator.set(log.poNumber, log);
+      return accumulator;
+    }, new Map<string, (typeof deletionLogs)[number]>());
+
+    const activeRows = pendingPoSummary.map((item) => {
+      const deletionLog = latestDeletionByPo.get(item.poNumber);
+      return {
+        key: `active-${item.key}`,
+        kind: "active" as const,
+        poNumber: item.poNumber,
+        categoryLabel: item.categoryLabel,
+        totalQuantity: item.totalQuantity,
+        deleteRecord: deletionLog
+          ? `${formatDeletionRecordTime(deletionLog.createdAt)} 已刪除 ${deletionLog.deletedProducts} 筆商品`
+          : "未刪除",
+        operatorName: deletionLog?.deletedByName ?? "—",
+        details: item.details,
+        itemKey: item.key,
+      };
+    });
+
+    const activePoNumbers = new Set(activeRows.map((item) => item.poNumber));
+    const deletedRows = deletionLogs
+      .filter((log) => log.poNumber && !activePoNumbers.has(log.poNumber))
+      .map((log) => ({
+        key: `deleted-${log.id}`,
+        kind: "deleted" as const,
+        poNumber: log.poNumber,
+        categoryLabel: log.vendorName ? `已刪除／${log.vendorName}` : "已刪除採購單",
+        totalQuantity: log.deletedProducts,
+        deleteRecord: `${formatDeletionRecordTime(log.createdAt)} 已刪除 ${log.deletedProducts} 筆商品／${log.deletedTasks} 筆任務`,
+        operatorName: log.deletedByName ?? "—",
+        details: [],
+        itemKey: `deleted-${log.id}`,
+      }));
+
+    return [...activeRows, ...deletedRows];
+  }, [pendingA1Query.data?.poDeletionLogs, pendingPoSummary]);
   const visibleRows = useMemo(() => (showAllRows ? rows : rows.slice(0, LARGE_IMPORT_PREVIEW_LIMIT)), [rows, showAllRows]);
   const hiddenRowCount = Math.max(rows.length - visibleRows.length, 0);
   const canImport = !importValidationMessage;
@@ -407,48 +470,66 @@ export default function ImportPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊採購單列可展開查看尚未完成 A1 點貨的品項細項。管理者也可以直接在這裡刪除錯誤或重複匯入的採購單。</p>
+              <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊採購單列可展開查看尚未完成 A1 點貨的品項細項。列表也會保留最近刪除操作紀錄與操作者，方便追蹤誰刪除了哪一張採購單。</p>
               <Badge className="w-fit bg-slate-900 text-white">待點貨 {pendingPoSummary.reduce((total, item) => total + item.totalQuantity, 0)} 筆</Badge>
             </div>
 
             <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white">
-              <div className={`hidden gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid ${canDeleteImportedPo ? "md:grid-cols-[1.1fr_1.1fr_100px_120px]" : "md:grid-cols-[1.2fr_1.2fr_100px]"}`}>
+              <div className={`hidden gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500 md:grid ${canDeleteImportedPo ? "md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px_96px]" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px]"}`}>
                 <div>採購單號</div>
                 <div>商品類別 × 品牌</div>
                 <div className="text-right">總數量</div>
+                <div>刪除操作紀錄</div>
+                <div>操作者</div>
                 {canDeleteImportedPo ? <div className="text-right">操作</div> : null}
               </div>
 
-              {pendingPoSummary.length > 0 ? (
+              {purchaseOrderRows.length > 0 ? (
                 <div className="divide-y divide-slate-100">
-                  {pendingPoSummary.map((item) => {
-                    const isExpanded = Boolean(expandedSummaryKeys[item.key]);
+                  {purchaseOrderRows.map((item) => {
+                    const isExpanded = item.kind === "active" && Boolean(expandedSummaryKeys[item.itemKey]);
                     return (
                       <div key={item.key} className="bg-white">
-                        <div className={`grid gap-3 px-4 py-4 transition hover:bg-slate-50 ${canDeleteImportedPo ? "md:grid-cols-[1.1fr_1.1fr_100px_120px] md:items-center" : "md:grid-cols-[1.2fr_1.2fr_100px] md:items-center"}`}>
-                          <button
-                            type="button"
-                            className={`grid min-w-0 gap-3 text-left ${canDeleteImportedPo ? "md:col-span-3 md:grid-cols-[1.1fr_1.1fr_100px] md:items-center" : "md:grid-cols-[1.2fr_1.2fr_100px] md:items-center"}`}
-                            onClick={() => toggleSummaryRow(item.key)}
-                          >
-                            <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
-                              {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
-                              <span>{item.poNumber}</span>
+                        <div className={`grid gap-3 px-4 py-4 transition hover:bg-slate-50 ${canDeleteImportedPo ? "md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px_96px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
+                          {item.kind === "active" ? (
+                            <button
+                              type="button"
+                              className={`grid min-w-0 gap-3 text-left ${canDeleteImportedPo ? "md:col-span-5 md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}
+                              onClick={() => toggleSummaryRow(item.itemKey)}
+                            >
+                              <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
+                                {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
+                                <span>{item.poNumber}</span>
+                              </div>
+                              <div className="text-sm text-slate-700">{item.categoryLabel}</div>
+                              <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
+                              <div className="text-sm text-slate-600">{item.deleteRecord}</div>
+                              <div className="text-sm text-slate-700">{item.operatorName}</div>
+                            </button>
+                          ) : (
+                            <div className={`grid min-w-0 gap-3 ${canDeleteImportedPo ? "md:col-span-5 md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
+                              <div className="text-sm font-semibold text-slate-500">{item.poNumber}</div>
+                              <div className="text-sm text-slate-500">{item.categoryLabel}</div>
+                              <div className="text-sm font-bold text-slate-500 md:text-right">{item.totalQuantity}</div>
+                              <div className="text-sm text-rose-700">{item.deleteRecord}</div>
+                              <div className="text-sm text-slate-600">{item.operatorName}</div>
                             </div>
-                            <div className="text-sm text-slate-700">{item.categoryLabel}</div>
-                            <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
-                          </button>
+                          )}
                           {canDeleteImportedPo ? (
                             <div className="flex justify-start md:justify-end">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="rounded-2xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
-                                disabled={deletePoMutation.isPending}
-                                onClick={() => handleDeletePo(item.poNumber)}
-                              >
-                                刪除
-                              </Button>
+                              {item.kind === "active" ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-2xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                                  disabled={deletePoMutation.isPending}
+                                  onClick={() => handleDeletePo(item.poNumber)}
+                                >
+                                  刪除
+                                </Button>
+                              ) : (
+                                <span className="text-xs font-semibold tracking-wide text-slate-400">已刪除</span>
+                              )}
                             </div>
                           ) : null}
                         </div>
@@ -485,7 +566,7 @@ export default function ImportPage() {
                   })}
                 </div>
               ) : (
-                <div className="px-4 py-8 text-sm text-slate-600">目前沒有已匯入且尚未完成 A1 點貨的採購單；完成匯入後，系統會在這裡依採購單號整理待處理資料。</div>
+                <div className="px-4 py-8 text-sm text-slate-600">目前沒有待點貨採購單，也沒有最近刪除紀錄；完成匯入或執行刪除後，系統會在這裡整理採購單與刪除歷程。</div>
               )}
             </div>
           </CardContent>

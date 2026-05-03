@@ -295,6 +295,20 @@ export const importBatchBackups = mysqlTable("import_batch_backups", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+export const purchaseOrderDeletionLogs = mysqlTable("purchase_order_deletion_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  poNumber: varchar("poNumber", { length: 120 }).notNull(),
+  vendorName: varchar("vendorName", { length: 160 }),
+  deletedProducts: int("deletedProducts").default(0).notNull(),
+  deletedTasks: int("deletedTasks").default(0).notNull(),
+  deletedByUserId: int("deletedByUserId").references(() => users.id),
+  deletedByName: varchar("deletedByName", { length: 120 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  poNumberIdx: index("purchase_order_deletion_logs_po_idx").on(table.poNumber),
+  createdAtIdx: index("purchase_order_deletion_logs_created_at_idx").on(table.createdAt),
+}));
+
 export const productArchives = mysqlTable("product_archives", {
   id: int("id").autoincrement().primaryKey(),
   originalProductId: int("originalProductId").notNull(),
@@ -312,3 +326,4 @@ export type ProductivityTargetConfig = typeof productivityTargetConfigs.$inferSe
 export type EngineerDailyProductivity = typeof engineerDailyProductivity.$inferSelect;
 export type SupportTaskCompensation = typeof supportTaskCompensations.$inferSelect;
 export type ImportBatchBackup = typeof importBatchBackups.$inferSelect;
+export type PurchaseOrderDeletionLog = typeof purchaseOrderDeletionLogs.$inferSelect;
