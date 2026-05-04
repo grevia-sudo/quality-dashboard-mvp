@@ -62,3 +62,6 @@
 - [x] 補上採購單刪除功能的必要測試，驗證管理者可刪除、非管理者不可刪除
 - [x] 在採購單列表頁面新增「刪除操作紀錄」與「操作者」欄位
 - [x] 補上採購單列表新增刪除欄位的必要測試與畫面驗證
+- [x] 修正採購單刪除時刪除 station_tasks 失敗的問題，確認關聯資料刪除順序與條件正確
+- [x] 補上採購單刪除失敗案例的回歸測試，驗證刪除流程可正常完成
+- [x] 新增採購單刪除的資料層或整合測試，建立含 station_tasks、station_events、sampling_results、productivity_score_details 的關聯資料，實際執行 deleteImportedPurchaseOrder 並驗證刪除成功

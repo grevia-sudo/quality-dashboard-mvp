@@ -4178,14 +4178,29 @@ export async function deleteImportedPurchaseOrder(input: {
     return { success: true as const, poNumber: normalizedPoNumber, deletedProducts: 0, deletedTasks: 0 };
   }
 
-  const deletedTasks = await db.delete(stationTasks).where(inArray(stationTasks.productId, productIds));
-  await db.delete(stationEvents).where(inArray(stationEvents.productId, productIds));
+  const stationEventRows = await db
+    .select({ id: stationEvents.id })
+    .from(stationEvents)
+    .where(inArray(stationEvents.productId, productIds));
+  const stationEventIds = stationEventRows.map((row) => row.id);
+
+  if (stationEventIds.length > 0) {
+    await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.stationEventId, stationEventIds));
+  }
+
+  const stationTaskRows = await db
+    .select({ id: stationTasks.id })
+    .from(stationTasks)
+    .where(inArray(stationTasks.productId, productIds));
+
   await db.delete(samplingResults).where(inArray(samplingResults.productId, productIds));
+  await db.delete(stationEvents).where(inArray(stationEvents.productId, productIds));
+  await db.delete(stationTasks).where(inArray(stationTasks.productId, productIds));
   await db.delete(productArchives).where(inArray(productArchives.originalProductId, productIds));
   const deletedProducts = await db.delete(products).where(inArray(products.id, productIds));
 
   const deletedProductCount = typeof deletedProducts === "number" ? deletedProducts : productIds.length;
-  const deletedTaskCount = typeof deletedTasks === "number" ? deletedTasks : 0;
+  const deletedTaskCount = stationTaskRows.length;
 
   await db.insert(purchaseOrderDeletionLogs).values({
     poNumber: normalizedPoNumber,
