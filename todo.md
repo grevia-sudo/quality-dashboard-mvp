@@ -65,3 +65,5 @@
 - [x] 修正採購單刪除時刪除 station_tasks 失敗的問題，確認關聯資料刪除順序與條件正確
 - [x] 補上採購單刪除失敗案例的回歸測試，驗證刪除流程可正常完成
 - [x] 新增採購單刪除的資料層或整合測試，建立含 station_tasks、station_events、sampling_results、productivity_score_details 的關聯資料，實際執行 deleteImportedPurchaseOrder 並驗證刪除成功
+- [x] 將 quality-dashboard-mvp 專案排除不必要目錄後打包成 ZIP 並交付下載
+- [x] A1 刷入商品批號後自動跳到商品序號，刷入商品序號後自動跳到 IMEI，刷入 IMEI 後自動跳到品名

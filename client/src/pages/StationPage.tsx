@@ -119,6 +119,9 @@ export default function StationPage() {
   } | null>(null);
   const [categoryDraftValue, setCategoryDraftValue] = useState("");
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
+  const serialNumberInputRef = useRef<HTMLInputElement | null>(null);
+  const imeiInputRef = useRef<HTMLInputElement | null>(null);
+  const productNameInputRef = useRef<HTMLInputElement | null>(null);
   const quickScanInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
   const canEditCategory = stationCode === "A1" || stationCode === "C";
@@ -183,6 +186,28 @@ export default function StationPage() {
     window.requestAnimationFrame(() => {
       batchNoInputRef.current?.focus();
       batchNoInputRef.current?.select();
+    });
+  };
+
+  const focusSerialNumberInput = () => {
+    window.requestAnimationFrame(() => {
+      serialNumberInputRef.current?.focus();
+      serialNumberInputRef.current?.select();
+    });
+  };
+
+  const focusImeiInput = () => {
+    window.requestAnimationFrame(() => {
+      imeiInputRef.current?.focus();
+      imeiInputRef.current?.select();
+    });
+  };
+
+  const focusProductNameInput = () => {
+    window.requestAnimationFrame(() => {
+      productNameInputRef.current?.focus();
+      productNameInputRef.current?.select();
+      setProductNamePickerOpen(true);
     });
   };
 
@@ -267,12 +292,45 @@ export default function StationPage() {
     });
   };
 
-  const handleA1ScanSubmitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleA1BatchNoKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== "Enter") {
       return;
     }
 
     event.preventDefault();
+    focusSerialNumberInput();
+  };
+
+  const handleA1SerialNumberKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    focusImeiInput();
+  };
+
+  const handleA1ImeiKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    focusProductNameInput();
+  };
+
+  const handleA1ProductNameKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Escape") {
+      setProductNamePickerOpen(false);
+      return;
+    }
+
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    setProductNamePickerOpen(false);
     submitA1Receive();
   };
 
@@ -774,7 +832,7 @@ export default function StationPage() {
                         autoFocus
                         value={arrivalForm.batchNo}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, batchNo: event.target.value }))}
-                        onKeyDown={handleA1ScanSubmitKey}
+                        onKeyDown={handleA1BatchNoKeyDown}
                         className="editable-field h-14 rounded-2xl border-0 bg-slate-50 text-base"
                         placeholder="必填，掃描批號後可直接按 Enter"
                       />
@@ -782,9 +840,10 @@ export default function StationPage() {
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>商品序號（必填）</span>
                       <Input
+                        ref={serialNumberInputRef}
                         value={arrivalForm.serialNumber}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, serialNumber: event.target.value }))}
-                        onKeyDown={handleA1ScanSubmitKey}
+                        onKeyDown={handleA1SerialNumberKeyDown}
                         className="editable-field h-14 rounded-2xl border-0 bg-slate-50 text-base"
                         placeholder="必填，請輸入或掃描商品序號"
                       />
@@ -792,9 +851,10 @@ export default function StationPage() {
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>IMEI（非必填）</span>
                       <Input
+                        ref={imeiInputRef}
                         value={arrivalForm.imei}
                         onChange={(event) => setArrivalForm((prev) => ({ ...prev, imei: event.target.value }))}
-                        onKeyDown={handleA1ScanSubmitKey}
+                        onKeyDown={handleA1ImeiKeyDown}
                         className="editable-field h-14 rounded-2xl border-0 bg-slate-50 text-base"
                         placeholder="選填，可補刷 IMEI 以補齊資料"
                       />
@@ -803,6 +863,7 @@ export default function StationPage() {
                       <span>品名（必填）</span>
                       <div className="relative">
                         <Input
+                          ref={productNameInputRef}
                           value={arrivalForm.productName}
                           onChange={(event) => {
                             const nextValue = event.target.value;
@@ -813,11 +874,7 @@ export default function StationPage() {
                           onBlur={() => {
                             window.setTimeout(() => setProductNamePickerOpen(false), 120);
                           }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Escape") {
-                              setProductNamePickerOpen(false);
-                            }
-                          }}
+                          onKeyDown={handleA1ProductNameKeyDown}
                           className="editable-field h-14 rounded-2xl border-0 bg-slate-50 pr-12 text-base"
                           placeholder="輸入品名關鍵字搜尋（可選）"
                        autoComplete="off"

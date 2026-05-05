@@ -8,11 +8,24 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     "utf8",
   );
 
-  it("supports Enter 快速送出 on all A1 scan inputs", () => {
-    expect(source).toContain("const handleA1ScanSubmitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {");
-    expect(source).toContain("if (event.key !== \"Enter\") {");
+  it("advances A1 scan focus from batch to serial to IMEI to product name, then submits on product name Enter", () => {
+    expect(source).toContain("const serialNumberInputRef = useRef<HTMLInputElement | null>(null);");
+    expect(source).toContain("const imeiInputRef = useRef<HTMLInputElement | null>(null);");
+    expect(source).toContain("const productNameInputRef = useRef<HTMLInputElement | null>(null);");
+    expect(source).toContain("const handleA1BatchNoKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {");
+    expect(source).toContain("const handleA1SerialNumberKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {");
+    expect(source).toContain("const handleA1ImeiKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {");
+    expect(source).toContain("const handleA1ProductNameKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {");
+    expect(source).toContain("focusSerialNumberInput();");
+    expect(source).toContain("focusImeiInput();");
+    expect(source).toContain("focusProductNameInput();");
+    expect(source).toContain("setProductNamePickerOpen(true);");
+    expect(source).toContain("setProductNamePickerOpen(false);");
     expect(source).toContain("submitA1Receive();");
-    expect(source.match(/onKeyDown=\{handleA1ScanSubmitKey\}/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(source).toContain("onKeyDown={handleA1BatchNoKeyDown}");
+    expect(source).toContain("onKeyDown={handleA1SerialNumberKeyDown}");
+    expect(source).toContain("onKeyDown={handleA1ImeiKeyDown}");
+    expect(source).toContain("onKeyDown={handleA1ProductNameKeyDown}");
   });
 
   it("clears A1 scan fields, keeps the operator on A1, and refreshes in background after success", () => {
@@ -45,10 +58,13 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).not.toContain('placeholder="選擇品名"');
   });
 
-  it("re-focuses the batch input on A1 page load and after receive errors", () => {
+  it("re-focuses the batch input on A1 page load and after receive errors, while preserving follow-up focus helpers", () => {
     expect(source).toContain("const batchNoInputRef = useRef<HTMLInputElement | null>(null);");
     expect(source).toContain("batchNoInputRef.current?.focus();");
     expect(source).toContain("batchNoInputRef.current?.select();");
+    expect(source).toContain("serialNumberInputRef.current?.focus();");
+    expect(source).toContain("imeiInputRef.current?.focus();");
+    expect(source).toContain("productNameInputRef.current?.focus();");
     expect(source).toContain("if (stationCode === \"A1\" && !detailQuery.isLoading) {");
     expect(source).toContain("focusBatchInput();");
     expect(source).toContain("onError: (error) => {");
