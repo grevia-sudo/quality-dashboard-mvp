@@ -67,3 +67,10 @@
 - [x] 新增採購單刪除的資料層或整合測試，建立含 station_tasks、station_events、sampling_results、productivity_score_details 的關聯資料，實際執行 deleteImportedPurchaseOrder 並驗證刪除成功
 - [x] 將 quality-dashboard-mvp 專案排除不必要目錄後打包成 ZIP 並交付下載
 - [x] A1 刷入商品批號後自動跳到商品序號，刷入商品序號後自動跳到 IMEI，刷入 IMEI 後自動跳到品名
+- [x] 調查序號 fy7gg9pqqw 刷入後未寫入系統的原因，確認是否為即時寫入失敗或背景延遲
+- [x] 調查序號 fy7gg9pqqw 對應商品未背景回寫 Google Sheet 的原因，確認是否未建立同步工作、同步條件不符或背景寫入失敗
+- [x] 調整 A1 流程，讓未完成匯入比對的掃碼資料也會先被系統明確記錄並可追蹤，避免現場無法判斷是否少入或漏刷
+- [x] 補上未完成匯入比對商品的可見提示或查詢狀態，區分「已入系統但尚未回寫 Google」
+- [x] 讓 A1 掃碼建立的未完成匯入比對商品仍先寫入系統，並保留可追蹤紀錄
+- [x] 在商品或站點資料中明確標示「未完成同步／尚未回寫 Google」狀態
+- [x] 調整查詢頁，列出已刷入但尚未回寫 Google 的商品並支援以序號搜尋

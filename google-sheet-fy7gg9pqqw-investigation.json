@@ -1,0 +1,145 @@
+{
+  "target": "FY7GG9PQQW",
+  "productRows": [
+    {
+      "id": 300001,
+      "productCode": "P-1777970740279-750193",
+      "poNumber": null,
+      "vendorName": null,
+      "batchNo": "00500024813",
+      "serialNumber": "FY7GG9PQQW",
+      "imei": "350367276759965",
+      "productName": "IPhone 13 pro 128G 銀",
+      "importedCategoryName": null,
+      "importedBrandName": null,
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "sheetRowNumber": null,
+      "lastSheetSyncedAt": null,
+      "createdAt": "2026-05-05T12:45:40.000Z",
+      "updatedAt": "2026-05-05T12:45:40.000Z"
+    }
+  ],
+  "latestJobs": [
+    {
+      "id": 300006,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-05T12:50:48.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-05T12:50:50.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 300004,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-05T12:50:42.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-05T12:50:50.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 300002,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-05T12:45:40.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-05T12:45:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270020,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:25.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:26.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270017,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:21.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:22.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270015,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:19.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:19.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270013,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:17.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:17.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270011,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:14.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:14.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270009,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:12.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:14.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270008,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:10.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:12.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270006,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:08.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:12.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 270005,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-01T15:44:04.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-01T15:44:12.000Z",
+      "errorMessage": null
+    }
+  ]
+}

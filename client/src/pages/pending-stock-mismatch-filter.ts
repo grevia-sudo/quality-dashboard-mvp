@@ -18,11 +18,16 @@ export type PendingStockMismatchRow = {
   arrivalAt?: string | Date | null;
   stockTaskCreatedAt?: string | Date | null;
   updatedAt?: string | Date | null;
+  sheetRowNumber?: number | null;
+  lastSheetSyncedAt?: string | Date | null;
   mismatchReason?: string;
+  googleSyncPending?: boolean;
+  googleSyncStatusLabel?: string;
+  flowStageLabel?: string;
   missingFields: string[];
 };
 
-export type PendingStockMismatchMissingFieldFilter = "all" | "採購單號" | "商品分類" | "品牌";
+export type PendingStockMismatchMissingFieldFilter = "all" | "採購單號" | "商品分類" | "品牌" | "Google 回寫";
 
 export type PendingStockMismatchFilter = {
   searchKeyword: string;
@@ -79,6 +84,8 @@ export function filterPendingStockMismatchRows(rows: PendingStockMismatchRow[], 
       row.imei,
       row.poNumber,
       row.vendorName,
+      row.googleSyncStatusLabel,
+      row.flowStageLabel,
     ].some((value) => normalizeKeyword(value).includes(keyword));
 
     const matchesMissingField = filter.missingFieldFilter === "all" || row.missingFields.includes(filter.missingFieldFilter);
@@ -98,6 +105,7 @@ export function summarizePendingStockMismatchRows(rows: PendingStockMismatchRow[
     missingPo: rows.filter((row) => row.missingFields.includes("採購單號")).length,
     missingCategory: rows.filter((row) => row.missingFields.includes("商品分類")).length,
     missingBrand: rows.filter((row) => row.missingFields.includes("品牌")).length,
+    pendingGoogleSync: rows.filter((row) => row.missingFields.includes("Google 回寫")).length,
   };
 }
 
@@ -105,6 +113,8 @@ export function exportPendingStockMismatchRowsToCsv(rows: PendingStockMismatchRo
   const header = [
     "產品編號",
     "品名",
+    "流程狀態",
+    "Google 回寫狀態",
     "PO單號",
     "廠商",
     "批號",
@@ -114,6 +124,8 @@ export function exportPendingStockMismatchRowsToCsv(rows: PendingStockMismatchRo
     "匯入品牌",
     "指定品類",
     "指定品牌",
+    "Google 列號",
+    "最後回寫時間",
     "缺漏欄位",
     "比對說明",
     "到貨時間",
@@ -123,9 +135,12 @@ export function exportPendingStockMismatchRowsToCsv(rows: PendingStockMismatchRo
   const lines = rows.map((row) => {
     const arrivalDate = normalizeDateValue(row.arrivalAt);
     const updatedAt = normalizeDateValue(row.updatedAt);
+    const lastSheetSyncedAt = normalizeDateValue(row.lastSheetSyncedAt ?? null);
     return [
       row.productCode,
       row.productName,
+      row.flowStageLabel,
+      row.googleSyncStatusLabel,
       row.poNumber,
       row.vendorName,
       row.batchNo,
@@ -135,6 +150,8 @@ export function exportPendingStockMismatchRowsToCsv(rows: PendingStockMismatchRo
       row.importedBrandName,
       row.assignedCategoryName,
       row.assignedBrandName,
+      row.sheetRowNumber ? String(row.sheetRowNumber) : "",
+      lastSheetSyncedAt ? lastSheetSyncedAt.toISOString() : "",
       row.missingFields.join("、"),
       row.mismatchReason,
       arrivalDate ? toDateInputValue(arrivalDate) : "",

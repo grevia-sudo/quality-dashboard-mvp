@@ -1076,7 +1076,7 @@ export async function completeA1ArrivalByScan(input: {
       productName: normalizedProductName,
       currentStationCode: "A1",
       currentStatus: "pending_a1",
-      inspectionSummary: "A1 現場新增，待後續比對匯入資料",
+      inspectionSummary: "已刷入系統，待匯入比對與 Google 回寫",
     }).$returningId();
 
     const productId = insertedProduct[0]?.id;
@@ -1130,6 +1130,7 @@ export async function completeA1ArrivalByScan(input: {
       productName: nextProductName,
       currentStationCode: nextStation ?? matchedProduct.currentStationCode,
       currentStatus: nextStation ? statusForStation(nextStation) : matchedProduct.currentStatus,
+      inspectionSummary: matchedProduct.poNumber ? "A1 掃碼點到貨完成，待背景同步 Google" : "已刷入系統，待匯入比對與 Google 回寫",
       updatedAt: completedAt,
     })
     .where(eq(products.id, matchedProduct.id));
@@ -3454,6 +3455,8 @@ export async function getPendingStockImportMismatchProducts() {
       importedBrandName: products.importedBrandName,
       assignedCategoryName: productCategories.categoryName,
       assignedBrandName: productCategories.brandName,
+      sheetRowNumber: products.sheetRowNumber,
+      lastSheetSyncedAt: products.lastSheetSyncedAt,
       updatedAt: products.updatedAt,
       stockTaskId: stationTasks.id,
       stockTaskStatus: stationTasks.taskStatus,
@@ -3470,13 +3473,16 @@ export async function getPendingStockImportMismatchProducts() {
       ),
     )
     .where(and(
-      eq(products.currentStationCode, "STOCK"),
-      eq(products.currentStatus, "pending_stock"),
       isNull(products.archivedAt),
+      sql`NOT (${products.currentStationCode} = 'A1' AND ${products.currentStatus} = 'pending_a1')`,
+      sql`${products.currentStatus} <> 'completed'`,
+      sql`${products.currentStatus} <> 'archived'`,
       or(
         isNull(products.poNumber),
         isNull(products.importedCategoryName),
         isNull(products.importedBrandName),
+        isNull(products.sheetRowNumber),
+        isNull(products.lastSheetSyncedAt),
       ),
     ))
     .orderBy(desc(products.updatedAt), desc(products.id));

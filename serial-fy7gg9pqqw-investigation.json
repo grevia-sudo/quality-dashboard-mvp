@@ -1,0 +1,71 @@
+{
+  "target": "fy7gg9pqqw",
+  "productRows": [
+    {
+      "id": 300001,
+      "productCode": "P-1777970740279-750193",
+      "poNumber": null,
+      "vendorName": null,
+      "batchNo": "00500024813",
+      "serialNumber": "FY7GG9PQQW",
+      "imei": "350367276759965",
+      "productName": "IPhone 13 pro 128G 銀",
+      "currentStationCode": "A2",
+      "currentStatus": "pending_a2",
+      "createdAt": "2026-05-05T08:45:40.000Z",
+      "updatedAt": "2026-05-05T08:45:40.000Z",
+      "archivedAt": null
+    }
+  ],
+  "archivedRows": [
+    {
+      "id": 300001,
+      "productCode": "P-1777970740279-750193",
+      "poNumber": null,
+      "batchNo": "00500024813",
+      "serialNumber": "FY7GG9PQQW",
+      "imei": "350367276759965",
+      "archivedAt": null,
+      "updatedAt": "2026-05-05T08:45:40.000Z"
+    }
+  ],
+  "taskRows": [
+    {
+      "id": 330002,
+      "productId": 300001,
+      "stationCode": "A2",
+      "taskStatus": "pending",
+      "createdAt": "2026-05-05T08:45:40.000Z",
+      "updatedAt": "2026-05-05T08:45:40.000Z",
+      "completedAt": null,
+      "resultSummary": "A2 安裝 待處理"
+    },
+    {
+      "id": 330001,
+      "productId": 300001,
+      "stationCode": "A1",
+      "taskStatus": "completed",
+      "createdAt": "2026-05-05T08:45:40.000Z",
+      "updatedAt": "2026-05-05T08:45:40.000Z",
+      "completedAt": "2026-05-05T08:45:40.000Z",
+      "resultSummary": "A1 掃碼點到貨完成"
+    }
+  ],
+  "eventRows": [
+    {
+      "id": 330001,
+      "productId": 300001,
+      "stationCode": "A1",
+      "eventType": "complete",
+      "payload": {
+        "appearanceLabels": [],
+        "appearanceOptionIds": [],
+        "faultLabels": [],
+        "faultOptionIds": [],
+        "summary": "A1 掃碼點到貨完成"
+      },
+      "createdAt": "2026-05-05T08:45:40.000Z",
+      "operatorUserId": 750192
+    }
+  ]
+}

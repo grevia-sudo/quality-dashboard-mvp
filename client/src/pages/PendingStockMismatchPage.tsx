@@ -26,7 +26,7 @@ const navItems: DashboardNavItem[] = [
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
   { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
-  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
+  { label: "已刷入未同步", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
 ];
 
 function formatDateTime(value?: string | Date | null) {
@@ -75,6 +75,7 @@ export default function PendingStockMismatchPage() {
   }), [arrivalDateEnd, arrivalDateStart, missingFieldFilter, rows, searchKeyword, vendorFilter]);
 
   const summary = useMemo(() => summarizePendingStockMismatchRows(filteredRows), [filteredRows]);
+
   const handleExportCsv = () => {
     const csvContent = exportPendingStockMismatchRowsToCsv(filteredRows);
     const blob = createUtf8CsvBlob(csvContent);
@@ -88,6 +89,7 @@ export default function PendingStockMismatchPage() {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   };
+
   const goToImportPage = (row?: PendingStockMismatchRow) => {
     const params = new URLSearchParams();
     if (row?.batchNo) {
@@ -111,19 +113,19 @@ export default function PendingStockMismatchPage() {
   }
 
   return (
-    <DashboardLayout title="待入庫待比對查詢" navItems={navItems}>
+    <DashboardLayout title="已刷入未同步查詢" navItems={navItems}>
       <div className="space-y-6">
         <section className="rounded-[28px] border border-slate-200/70 bg-white/92 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit rounded-full bg-amber-100 px-3 py-1 text-amber-700">
-                待入庫但未完成匯入比對
+                已刷入系統但尚未完成同步
               </Badge>
               <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">待入庫待比對商品清單</h1>
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">已刷入未同步商品查詢</h1>
                 <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                  這個頁面只列出目前已經流轉到待入庫站點，但仍缺少採購單號、商品分類或品牌資料的商品。
-                  管理者可先用這份清單追查補匯入，再回到待入庫站點完成入庫。
+                  這個頁面會列出所有已經刷入系統、但尚未完成匯入比對或尚未回寫 Google 的商品。
+                  現場可先確認是否真的有刷入，再決定是前往補匯入，還是等待背景同步完成。
                 </p>
               </div>
             </div>
@@ -142,7 +144,7 @@ export default function PendingStockMismatchPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <Card className="rounded-[26px] border-slate-200/70 bg-white/90 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-slate-500">待追查總數</CardTitle>
@@ -175,13 +177,21 @@ export default function PendingStockMismatchPage() {
               <p className="text-3xl font-semibold text-slate-900">{summary.missingBrand}</p>
             </CardContent>
           </Card>
+          <Card className="rounded-[26px] border-slate-200/70 bg-white/90 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-slate-500">尚未回寫 Google</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-semibold text-slate-900">{summary.pendingGoogleSync}</p>
+            </CardContent>
+          </Card>
         </section>
 
         <Card className="rounded-[28px] border-slate-200/70 bg-white/94 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
           <CardHeader className="space-y-2 pb-4">
             <CardTitle className="text-xl text-slate-900">詳細清單</CardTitle>
             <p className="text-sm leading-7 text-slate-600">
-              若商品已在待入庫，但這裡仍出現，代表它尚未完成匯入比對，系統會在待入庫完成前阻止直接入庫。
+              若商品已刷入系統但這裡仍出現，代表它仍缺少匯入資料，或 Google Sheet 回寫尚未完成。
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -206,6 +216,7 @@ export default function PendingStockMismatchPage() {
                   <option value="採購單號">缺採購單號</option>
                   <option value="商品分類">缺商品分類</option>
                   <option value="品牌">缺品牌</option>
+                  <option value="Google 回寫">尚未回寫 Google</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -249,75 +260,88 @@ export default function PendingStockMismatchPage() {
 
             {query.isLoading ? (
               <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50/80 px-6 py-10 text-sm text-slate-500">
-                正在載入未比對待入庫商品清單。
+                正在載入已刷入但未同步的商品清單。
               </div>
             ) : filteredRows.length === 0 ? (
               <div className="rounded-[24px] border border-dashed border-emerald-200 bg-emerald-50/70 px-6 py-10 text-sm leading-7 text-emerald-700">
-                目前沒有待入庫但尚未完成匯入比對的商品，表示待入庫清單已經清乾淨。
+                目前沒有已刷入但尚未完成匯入比對或 Google 回寫的商品。
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full table-fixed border-separate border-spacing-y-3 text-sm text-slate-700">
+                <table className="min-w-full table-fixed border-separate border-spacing-y-2">
                   <thead>
                     <tr className="text-left text-xs uppercase tracking-[0.16em] text-slate-500">
                       <th className="px-4 py-2">商品</th>
                       <th className="px-4 py-2">識別資訊</th>
-                      <th className="px-4 py-2">匯入比對缺漏</th>
-                      <th className="px-4 py-2">已掛站點資訊</th>
-                      <th className="px-4 py-2">最後更新</th>
+                      <th className="px-4 py-2">匯入 / 同步狀態</th>
+                      <th className="px-4 py-2">流程資訊</th>
+                      <th className="px-4 py-2">最後時間</th>
                       <th className="px-4 py-2 text-right">操作</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRows.map((row) => (
-                      <tr key={`${row.productId}-${row.stockTaskId ?? "no-task"}`} className="align-top">
-                        <td className="rounded-l-[22px] bg-slate-50/80 px-4 py-4">
-                          <div className="space-y-1">
-                            <p className="font-semibold text-slate-900">{row.productName || "未填品名"}</p>
-                            <p className="text-xs text-slate-500">產品編號：{row.productCode || "-"}</p>
-                            <p className="text-xs text-slate-500">PO：{row.poNumber || "未補匯入"}</p>
-                            <p className="text-xs text-slate-500">廠商：{row.vendorName || "-"}</p>
-                          </div>
-                        </td>
-                        <td className="bg-slate-50/80 px-4 py-4">
-                          <div className="space-y-1 text-xs leading-6 text-slate-600">
-                            <p>批號：{row.batchNo || "-"}</p>
-                            <p>序號：{row.serialNumber || "-"}</p>
-                            <p>IMEI：{row.imei || "-"}</p>
-                          </div>
-                        </td>
-                        <td className="bg-slate-50/80 px-4 py-4">
-                          <div className="space-y-2">
-                            <Badge variant="secondary" className="rounded-full bg-amber-100 text-amber-700">
-                              {row.mismatchReason}
-                            </Badge>
-                            <div className="space-y-1 text-xs leading-6 text-slate-600">
-                              <p>匯入分類：{row.importedCategoryName || "未補齊"}</p>
-                              <p>匯入品牌：{row.importedBrandName || "未補齊"}</p>
-                              <p>指定品類：{row.assignedCategoryName || "未指定"}</p>
-                              <p>指定品牌：{row.assignedBrandName || "未指定"}</p>
+                    {filteredRows.map((row) => {
+                      const needsImportBackfill = row.missingFields.some((field) => field !== "Google 回寫");
+                      return (
+                        <tr key={`${row.productId}-${row.stockTaskId ?? "no-task"}`} className="align-top">
+                          <td className="rounded-l-[22px] bg-slate-50/80 px-4 py-4">
+                            <div className="space-y-1">
+                              <p className="font-semibold text-slate-900">{row.productName || "未填品名"}</p>
+                              <p className="text-xs text-slate-500">產品編號：{row.productCode || "-"}</p>
+                              <p className="text-xs text-slate-500">PO：{row.poNumber || "未補匯入"}</p>
+                              <p className="text-xs text-slate-500">廠商：{row.vendorName || "-"}</p>
                             </div>
-                          </div>
-                        </td>
-                        <td className="bg-slate-50/80 px-4 py-4">
-                          <div className="space-y-1 text-xs leading-6 text-slate-600">
-                            <p>目前站點：{row.currentStationCode}</p>
-                            <p>狀態：{row.currentStatus}</p>
-                            <p>待入庫任務：{row.stockTaskStatus || "未建立"}</p>
-                            <p>到貨時間：{formatDateTime(row.arrivalAt)}</p>
-                          </div>
-                        </td>
-                        <td className="bg-slate-50/80 px-4 py-4 text-xs leading-6 text-slate-600">
-                          <p>任務建立：{formatDateTime(row.stockTaskCreatedAt)}</p>
-                          <p>最後更新：{formatDateTime(row.updatedAt)}</p>
-                        </td>
-                        <td className="rounded-r-[22px] bg-slate-50/80 px-4 py-4 text-right">
-                          <Button type="button" variant="outline" className="rounded-2xl" onClick={() => goToImportPage(row)}>
-                            前往補匯入
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="bg-slate-50/80 px-4 py-4">
+                            <div className="space-y-1 text-xs leading-6 text-slate-600">
+                              <p>批號：{row.batchNo || "-"}</p>
+                              <p>序號：{row.serialNumber || "-"}</p>
+                              <p>IMEI：{row.imei || "-"}</p>
+                            </div>
+                          </td>
+                          <td className="bg-slate-50/80 px-4 py-4">
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-2">
+                                <Badge variant="secondary" className="rounded-full bg-amber-100 text-amber-700">
+                                  {row.flowStageLabel || "已刷入待同步"}
+                                </Badge>
+                                <Badge variant="secondary" className="rounded-full bg-sky-100 text-sky-700">
+                                  {row.googleSyncStatusLabel || "尚未回寫 Google"}
+                                </Badge>
+                              </div>
+                              <div className="space-y-1 text-xs leading-6 text-slate-600">
+                                <p>{row.mismatchReason}</p>
+                                <p>匯入分類：{row.importedCategoryName || "未補齊"}</p>
+                                <p>匯入品牌：{row.importedBrandName || "未補齊"}</p>
+                                <p>Google 列號：{row.sheetRowNumber || "尚未建立"}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="bg-slate-50/80 px-4 py-4">
+                            <div className="space-y-1 text-xs leading-6 text-slate-600">
+                              <p>目前站點：{row.currentStationCode || "-"}</p>
+                              <p>狀態：{row.currentStatus || "-"}</p>
+                              <p>待入庫任務：{row.stockTaskStatus || "未建立"}</p>
+                              <p>到貨時間：{formatDateTime(row.arrivalAt)}</p>
+                            </div>
+                          </td>
+                          <td className="bg-slate-50/80 px-4 py-4 text-xs leading-6 text-slate-600">
+                            <p>最後回寫：{formatDateTime(row.lastSheetSyncedAt)}</p>
+                            <p>任務建立：{formatDateTime(row.stockTaskCreatedAt)}</p>
+                            <p>最後更新：{formatDateTime(row.updatedAt)}</p>
+                          </td>
+                          <td className="rounded-r-[22px] bg-slate-50/80 px-4 py-4 text-right">
+                            {needsImportBackfill ? (
+                              <Button type="button" variant="outline" className="rounded-2xl" onClick={() => goToImportPage(row)}>
+                                前往補匯入
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-slate-500">等待背景回寫</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

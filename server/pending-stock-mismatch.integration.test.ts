@@ -1,4 +1,4 @@
-import { and, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { productArchives, products, stationTasks } from "../drizzle/schema";
 import { ensureMvpSeedData, getDb, getPendingStockImportMismatchProducts, importProducts, syncProductNameOptionsFromGoogleSheet } from "./db";
@@ -56,28 +56,28 @@ describe("pending stock mismatch integration", () => {
     await archiveCreatedRows();
   });
 
-  it("returns only STOCK products that still miss import comparison fields", async () => {
+  it("returns post-A1 products that still miss import comparison data or Google sync", async () => {
     const uniqueSuffix = `${Date.now()}`;
     const rows = [
       {
-        batchNo: `PENDING-STOCK-MISS-${uniqueSuffix}-01`,
-        serialNumber: `PENDING-STOCK-SN-${uniqueSuffix}-01`,
+        batchNo: `A2-MISS-${uniqueSuffix}-01`,
+        serialNumber: `A2-MISS-SN-${uniqueSuffix}-01`,
         imei: `86${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
         categoryName: "智慧型手機",
         brandName: "Apple",
       },
       {
-        batchNo: `PENDING-STOCK-OK-${uniqueSuffix}-02`,
-        serialNumber: `PENDING-STOCK-SN-${uniqueSuffix}-02`,
+        batchNo: `STOCK-UNSYNC-${uniqueSuffix}-02`,
+        serialNumber: `STOCK-UNSYNC-SN-${uniqueSuffix}-02`,
         imei: `86${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
         categoryName: "智慧型手機",
         brandName: "Apple",
       },
       {
-        batchNo: `PENDING-A2-MISS-${uniqueSuffix}-03`,
-        serialNumber: `PENDING-STOCK-SN-${uniqueSuffix}-03`,
+        batchNo: `SYNCED-OK-${uniqueSuffix}-03`,
+        serialNumber: `SYNCED-OK-SN-${uniqueSuffix}-03`,
         imei: `86${`${Number(uniqueSuffix) + 3}`.padStart(13, "0").slice(-13)}`,
         productName: "Apple iPhone 6 16GB 銀色",
         categoryName: "智慧型手機",
@@ -88,7 +88,7 @@ describe("pending stock mismatch integration", () => {
     rows.forEach((row) => createdBatchNos.add(row.batchNo));
 
     const importResult = await importProducts({
-      vendorName: "待入庫待比對測試廠商",
+      vendorName: "已刷入未同步測試廠商",
       rows: [...rows],
     });
 
@@ -106,33 +106,13 @@ describe("pending stock mismatch integration", () => {
       .where(and(inArray(products.batchNo, rows.map((row) => row.batchNo)), isNull(products.archivedAt)));
 
     const productByBatchNo = new Map(importedProducts.map((product) => [product.batchNo ?? "", product]));
-    const missingStockProduct = productByBatchNo.get(rows[0].batchNo);
-    const matchedStockProduct = productByBatchNo.get(rows[1].batchNo);
-    const nonStockProduct = productByBatchNo.get(rows[2].batchNo);
+    const a2MismatchProduct = productByBatchNo.get(rows[0].batchNo);
+    const stockUnsyncedProduct = productByBatchNo.get(rows[1].batchNo);
+    const syncedProduct = productByBatchNo.get(rows[2].batchNo);
 
-    expect(missingStockProduct?.id).toBeTruthy();
-    expect(matchedStockProduct?.id).toBeTruthy();
-    expect(nonStockProduct?.id).toBeTruthy();
-
-    await db
-      .update(products)
-      .set({
-        currentStationCode: "STOCK",
-        currentStatus: "pending_stock",
-        poNumber: null,
-        importedCategoryName: null,
-        updatedAt: new Date(),
-      })
-      .where(inArray(products.id, [missingStockProduct!.id]));
-
-    await db
-      .update(products)
-      .set({
-        currentStationCode: "STOCK",
-        currentStatus: "pending_stock",
-        updatedAt: new Date(),
-      })
-      .where(inArray(products.id, [matchedStockProduct!.id]));
+    expect(a2MismatchProduct?.id).toBeTruthy();
+    expect(stockUnsyncedProduct?.id).toBeTruthy();
+    expect(syncedProduct?.id).toBeTruthy();
 
     await db
       .update(products)
@@ -140,19 +120,43 @@ describe("pending stock mismatch integration", () => {
         currentStationCode: "A2",
         currentStatus: "pending_a2",
         poNumber: null,
-        importedBrandName: null,
+        importedCategoryName: null,
+        sheetRowNumber: null,
+        lastSheetSyncedAt: null,
         updatedAt: new Date(),
       })
-      .where(inArray(products.id, [nonStockProduct!.id]));
+      .where(eq(products.id, a2MismatchProduct!.id));
+
+    await db
+      .update(products)
+      .set({
+        currentStationCode: "STOCK",
+        currentStatus: "pending_stock",
+        sheetRowNumber: null,
+        lastSheetSyncedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, stockUnsyncedProduct!.id));
+
+    await db
+      .update(products)
+      .set({
+        currentStationCode: "STOCK",
+        currentStatus: "pending_stock",
+        sheetRowNumber: 188,
+        lastSheetSyncedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, syncedProduct!.id));
 
     await db.insert(stationTasks).values([
       {
-        productId: missingStockProduct!.id,
+        productId: stockUnsyncedProduct!.id,
         stationCode: "STOCK",
         taskStatus: "pending",
       },
       {
-        productId: matchedStockProduct!.id,
+        productId: syncedProduct!.id,
         stationCode: "STOCK",
         taskStatus: "pending",
       },
@@ -162,14 +166,19 @@ describe("pending stock mismatch integration", () => {
     const resultBatchNos = new Set(result.map((item) => item.batchNo));
 
     expect(resultBatchNos.has(rows[0].batchNo)).toBe(true);
-    expect(resultBatchNos.has(rows[1].batchNo)).toBe(false);
+    expect(resultBatchNos.has(rows[1].batchNo)).toBe(true);
     expect(resultBatchNos.has(rows[2].batchNo)).toBe(false);
 
-    const mismatchRow = result.find((item) => item.batchNo === rows[0].batchNo);
-    expect(mismatchRow?.currentStationCode).toBe("STOCK");
-    expect(mismatchRow?.currentStatus).toBe("pending_stock");
-    expect(mismatchRow?.missingFields).toEqual(["採購單號", "商品分類"]);
-    expect(mismatchRow?.mismatchReason).toBe("缺少採購單號、商品分類，尚未完成匯入比對");
+    const a2Row = result.find((item) => item.batchNo === rows[0].batchNo);
+    expect(a2Row?.currentStationCode).toBe("A2");
+    expect(a2Row?.currentStatus).toBe("pending_a2");
+    expect(a2Row?.missingFields).toEqual(["採購單號", "商品分類", "Google 回寫"]);
+    expect(a2Row?.mismatchReason).toBe("缺少採購單號、商品分類，已刷入系統但尚未完成匯入比對，Google 尚未回寫");
+
+    const stockRow = result.find((item) => item.batchNo === rows[1].batchNo);
+    expect(stockRow?.currentStationCode).toBe("STOCK");
+    expect(stockRow?.missingFields).toEqual(["Google 回寫"]);
+    expect(stockRow?.mismatchReason).toBe("已刷入系統，等待背景回寫 Google");
     expect(importResult.importedCount).toBe(3);
   }, 30000);
 });

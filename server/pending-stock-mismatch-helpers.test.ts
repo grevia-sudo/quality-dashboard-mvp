@@ -11,7 +11,9 @@ const rows: PendingStockMismatchRow[] = [
     serialNumber: "SN-001",
     imei: "IMEI-001",
     poNumber: null,
-    missingFields: ["採購單號", "商品分類"],
+    googleSyncStatusLabel: "尚未回寫 Google",
+    flowStageLabel: "已刷入待補匯入",
+    missingFields: ["採購單號", "商品分類", "Google 回寫"],
   },
   {
     productId: 2,
@@ -21,26 +23,42 @@ const rows: PendingStockMismatchRow[] = [
     serialNumber: "SN-002",
     imei: null,
     poNumber: "PO-002",
-    missingFields: ["品牌"],
+    googleSyncStatusLabel: "尚未回寫 Google",
+    flowStageLabel: "已刷入待同步",
+    missingFields: ["Google 回寫"],
   },
 ];
 
 describe("pending stock mismatch helpers", () => {
-  it("marks only STOCK + pending_stock rows with missing import data as mismatches", () => {
-    expect(isPendingStockImportMismatch({
-      currentStationCode: "STOCK",
-      currentStatus: "pending_stock",
-      poNumber: null,
-      importedCategoryName: "智慧型手機",
-      importedBrandName: "Apple",
-    })).toBe(true);
-
+  it("marks post-A1 rows with missing import data or pending Google sync as mismatches", () => {
     expect(isPendingStockImportMismatch({
       currentStationCode: "A2",
       currentStatus: "pending_a2",
       poNumber: null,
       importedCategoryName: "智慧型手機",
       importedBrandName: "Apple",
+      sheetRowNumber: null,
+      lastSheetSyncedAt: null,
+    })).toBe(true);
+
+    expect(isPendingStockImportMismatch({
+      currentStationCode: "STOCK",
+      currentStatus: "pending_stock",
+      poNumber: "PO-001",
+      importedCategoryName: "智慧型手機",
+      importedBrandName: "Apple",
+      sheetRowNumber: null,
+      lastSheetSyncedAt: null,
+    })).toBe(true);
+
+    expect(isPendingStockImportMismatch({
+      currentStationCode: "A1",
+      currentStatus: "pending_a1",
+      poNumber: null,
+      importedCategoryName: "智慧型手機",
+      importedBrandName: "Apple",
+      sheetRowNumber: null,
+      lastSheetSyncedAt: null,
     })).toBe(false);
 
     expect(isPendingStockImportMismatch({
@@ -49,6 +67,8 @@ describe("pending stock mismatch helpers", () => {
       poNumber: "PO-001",
       importedCategoryName: "智慧型手機",
       importedBrandName: "Apple",
+      sheetRowNumber: 18,
+      lastSheetSyncedAt: "2026-05-05T12:45:51.000Z",
     })).toBe(false);
   });
 
@@ -57,24 +77,32 @@ describe("pending stock mismatch helpers", () => {
       poNumber: null,
       importedCategoryName: null,
       importedBrandName: "Apple",
+      sheetRowNumber: null,
+      lastSheetSyncedAt: null,
     });
     const summary = buildPendingStockMismatchSummary({
-      currentStationCode: "STOCK",
-      currentStatus: "pending_stock",
+      currentStationCode: "A2",
+      currentStatus: "pending_a2",
       poNumber: null,
       importedCategoryName: null,
       importedBrandName: "Apple",
+      sheetRowNumber: null,
+      lastSheetSyncedAt: null,
     });
 
-    expect(missingFields).toEqual(["採購單號", "商品分類"]);
-    expect(summary.missingFieldSummary).toBe("採購單號、商品分類");
-    expect(summary.mismatchReason).toBe("缺少採購單號、商品分類，尚未完成匯入比對");
+    expect(missingFields).toEqual(["採購單號", "商品分類", "Google 回寫"]);
+    expect(summary.missingFieldSummary).toBe("採購單號、商品分類、Google 回寫");
+    expect(summary.mismatchReason).toBe("缺少採購單號、商品分類，已刷入系統但尚未完成匯入比對，Google 尚未回寫");
+    expect(summary.googleSyncStatusLabel).toBe("尚未回寫 Google");
   });
 
-  it("filters rows by keyword and missing field selection for the pending stock page", () => {
+  it("filters rows by keyword and missing field selection for the unsynced query page", () => {
     const filtered = filterPendingStockMismatchRows(rows, {
       searchKeyword: "watch",
-      missingFieldFilter: "品牌",
+      missingFieldFilter: "Google 回寫",
+      vendorFilter: "",
+      arrivalDateStart: "",
+      arrivalDateEnd: "",
     });
 
     expect(filtered).toHaveLength(1);
@@ -88,7 +116,8 @@ describe("pending stock mismatch helpers", () => {
       total: 2,
       missingPo: 1,
       missingCategory: 1,
-      missingBrand: 1,
+      missingBrand: 0,
+      pendingGoogleSync: 2,
     });
   });
 });
