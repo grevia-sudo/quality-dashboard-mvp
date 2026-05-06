@@ -1169,6 +1169,35 @@ function mergeScannedIdentityField(fieldLabel: string, currentValue?: string | n
   throw new Error(`${fieldLabel} 與既有待點貨資料不一致，請確認掃碼內容是否正確`);
 }
 
+async function findOtherActiveProductByBatchNo(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: { batchNo?: string | null; excludeProductId?: number | null },
+) {
+  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
+  if (!normalizedBatchNo) {
+    return null;
+  }
+
+  const rows = await db
+    .select({
+      id: products.id,
+      productCode: products.productCode,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      archivedAt: products.archivedAt,
+    })
+    .from(products)
+    .where(and(
+      eq(products.batchNo, normalizedBatchNo),
+      isNull(products.archivedAt),
+      input.excludeProductId ? sql`${products.id} <> ${input.excludeProductId}` : sql`true`,
+    ))
+    .orderBy(desc(products.updatedAt), desc(products.id))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
 export async function completeA1ArrivalByScan(input: {
   operatorUserId: number;
   batchNo?: string | null;
@@ -1192,6 +1221,18 @@ export async function completeA1ArrivalByScan(input: {
   const { businessDateValue, now: completedAt } = getOperationTimeContext();
 
   let matchedProduct = await findPendingA1ProductByIdentity(db, input);
+  const duplicatedBatchProduct = await findOtherActiveProductByBatchNo(db, {
+    batchNo: normalizedBatchNo,
+    excludeProductId: matchedProduct?.id ?? null,
+  });
+
+  if (duplicatedBatchProduct) {
+    return {
+      success: false as const,
+      message: `商品批號 ${normalizedBatchNo} 已存在於 ${duplicatedBatchProduct.productCode ?? "其他商品"}，請確認後再刷入`,
+    };
+  }
+
   if (!matchedProduct) {
     if (!normalizedBatchNo || !normalizedSerialNumber || !normalizedProductName) {
       return {
@@ -1240,6 +1281,17 @@ export async function completeA1ArrivalByScan(input: {
   }
 
   const nextBatchNo = mergeScannedIdentityField("商品批號", matchedProduct.batchNo, normalizedBatchNo);
+  const duplicateAfterMerge = await findOtherActiveProductByBatchNo(db, {
+    batchNo: nextBatchNo,
+    excludeProductId: matchedProduct.id,
+  });
+  if (duplicateAfterMerge) {
+    return {
+      success: false as const,
+      message: `商品批號 ${nextBatchNo} 已存在於 ${duplicateAfterMerge.productCode ?? "其他商品"}，請確認後再刷入`,
+    };
+  }
+
   const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, normalizedSerialNumber);
   const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, normalizedImei);
   const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, normalizedProductName);
@@ -1717,6 +1769,113 @@ function normalizeNumberArray(value: unknown): number[] {
     .filter((item): item is number => item !== null);
 }
 
+async function getLatestBcInspectionSummariesByProductIds(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  productIds: number[],
+) {
+  if (productIds.length === 0) {
+    return new Map<number, {
+      bBatterySummary: string;
+      bFaultSummary: string;
+      cFaultSummary: string;
+      cAppearanceSummary: string;
+      cCameraSummary: string;
+      cInspectionSummary: string;
+    }>();
+  }
+
+  const [completedBRows, completedCRows] = await Promise.all([
+    db
+      .select({
+        productId: stationTasks.productId,
+        metadata: stationTasks.metadata,
+        completedAt: stationTasks.completedAt,
+      })
+      .from(stationTasks)
+      .where(and(
+        inArray(stationTasks.productId, productIds),
+        eq(stationTasks.stationCode, "B"),
+        eq(stationTasks.taskStatus, "completed"),
+      ))
+      .orderBy(desc(stationTasks.completedAt), desc(stationTasks.id)),
+    db
+      .select({
+        productId: stationTasks.productId,
+        metadata: stationTasks.metadata,
+        completedAt: stationTasks.completedAt,
+      })
+      .from(stationTasks)
+      .where(and(
+        inArray(stationTasks.productId, productIds),
+        eq(stationTasks.stationCode, "C"),
+        eq(stationTasks.taskStatus, "completed"),
+      ))
+      .orderBy(desc(stationTasks.completedAt), desc(stationTasks.id)),
+  ]);
+
+  const latestBMetaByProductId = new Map<number, Record<string, unknown>>();
+  for (const completedTask of completedBRows) {
+    if (latestBMetaByProductId.has(completedTask.productId)) {
+      continue;
+    }
+    latestBMetaByProductId.set(completedTask.productId, (completedTask.metadata ?? {}) as Record<string, unknown>);
+  }
+
+  const latestCMetaByProductId = new Map<number, Record<string, unknown>>();
+  for (const completedTask of completedCRows) {
+    if (latestCMetaByProductId.has(completedTask.productId)) {
+      continue;
+    }
+    latestCMetaByProductId.set(completedTask.productId, (completedTask.metadata ?? {}) as Record<string, unknown>);
+  }
+
+  const summaryByProductId = new Map<number, {
+    bBatterySummary: string;
+    bFaultSummary: string;
+    cFaultSummary: string;
+    cAppearanceSummary: string;
+    cCameraSummary: string;
+    cInspectionSummary: string;
+  }>();
+
+  for (const productId of productIds) {
+    const latestBMetadata = latestBMetaByProductId.get(productId) ?? {};
+    const latestCMetadata = latestCMetaByProductId.get(productId) ?? {};
+    const bBatterySummary = typeof latestBMetadata.batterySummary === "string" && latestBMetadata.batterySummary.trim()
+      ? latestBMetadata.batterySummary.trim()
+      : [
+          typeof latestBMetadata.batteryNote === "string" ? latestBMetadata.batteryNote.trim() : "",
+          ...normalizeTextArray(latestBMetadata.batteryIssueLabels),
+        ].filter(Boolean).join(", ") || "正常";
+    const bFaultSummary = typeof latestBMetadata.faultSummary === "string" && latestBMetadata.faultSummary.trim()
+      ? latestBMetadata.faultSummary.trim()
+      : normalizeTextArray(latestBMetadata.faultLabels).join(", ") || "正常";
+    const cFaultSummary = typeof latestCMetadata.cFaultSummary === "string" && latestCMetadata.cFaultSummary.trim()
+      ? latestCMetadata.cFaultSummary.trim()
+      : normalizeTextArray(latestCMetadata.faultLabels).join(", ") || "正常";
+    const cAppearanceSummary = typeof latestCMetadata.cAppearanceSummary === "string" && latestCMetadata.cAppearanceSummary.trim()
+      ? latestCMetadata.cAppearanceSummary.trim()
+      : normalizeTextArray(latestCMetadata.appearanceLabels).join(", ") || "正常";
+    const cCameraSummary = typeof latestCMetadata.cCameraSummary === "string" && latestCMetadata.cCameraSummary.trim()
+      ? latestCMetadata.cCameraSummary.trim()
+      : normalizeTextArray(latestCMetadata.cameraLabels).join(", ") || "正常";
+    const cInspectionSummary = [cFaultSummary, cAppearanceSummary, cCameraSummary]
+      .filter((value) => value && value !== "正常")
+      .join(", ") || "正常";
+
+    summaryByProductId.set(productId, {
+      bBatterySummary,
+      bFaultSummary,
+      cFaultSummary,
+      cAppearanceSummary,
+      cCameraSummary,
+      cInspectionSummary,
+    });
+  }
+
+  return summaryByProductId;
+}
+
 export async function getStationPageData(stationCode: StationCode) {
   const db = await getDb();
   if (!db) {
@@ -1953,7 +2112,22 @@ export async function getStationPageData(stationCode: StationCode) {
             };
           });
         })()
-      : rows;
+      : stationCode === "STOCK"
+        ? await (async () => {
+            const inspectionSummaryMap = await getLatestBcInspectionSummariesByProductIds(db, rows.map((row) => row.productId));
+            return rows.map((row) => ({
+              ...row,
+              ...(inspectionSummaryMap.get(row.productId) ?? {
+                bBatterySummary: "正常",
+                bFaultSummary: "正常",
+                cFaultSummary: "正常",
+                cAppearanceSummary: "正常",
+                cCameraSummary: "正常",
+                cInspectionSummary: "正常",
+              }),
+            }));
+          })()
+        : rows;
 
   const recentAutoRemovedStockItems = stationCode === "STOCK"
     ? (await db
@@ -2048,6 +2222,8 @@ export async function importProducts(input: {
     productName: normalizeOptionalText(row.productName),
   }));
 
+  const importBatchRowIndexByBatchNo = new Map<string, number>();
+
   for (let index = 0; index < normalizedRows.length; index += 1) {
     const row = normalizedRows[index]!;
     if (!row.categoryName) {
@@ -2058,6 +2234,13 @@ export async function importProducts(input: {
     }
     if (!hasImportIdentity(row)) {
       throw new Error(`第 ${index + 1} 列至少要填寫商品批號、商品序號、IMEI 其中一項`);
+    }
+    if (row.batchNo) {
+      const duplicatedRowIndex = importBatchRowIndexByBatchNo.get(row.batchNo);
+      if (duplicatedRowIndex !== undefined) {
+        throw new Error(`第 ${index + 1} 列商品批號 ${row.batchNo} 與第 ${duplicatedRowIndex + 1} 列重複，請先修正後再匯入`);
+      }
+      importBatchRowIndexByBatchNo.set(row.batchNo, index);
     }
   }
 
@@ -2118,6 +2301,13 @@ export async function importProducts(input: {
     }
     if (product.batchNo && !matchedByBatchNo.has(product.batchNo)) {
       matchedByBatchNo.set(product.batchNo, product);
+    }
+  }
+
+  const activeProductByBatchNo = new Map<string, (typeof matchedProducts)[number]>();
+  for (const product of matchedProducts) {
+    if (product.batchNo && !activeProductByBatchNo.has(product.batchNo)) {
+      activeProductByBatchNo.set(product.batchNo, product);
     }
   }
 
@@ -2196,6 +2386,19 @@ export async function importProducts(input: {
       ?? (row.serialNumber ? matchedBySerialNumber.get(row.serialNumber) : undefined)
       ?? (row.batchNo ? matchedByBatchNo.get(row.batchNo) : undefined)
       ?? null;
+    const duplicatedBatchProduct = row.batchNo ? activeProductByBatchNo.get(row.batchNo) ?? null : null;
+
+    if (duplicatedBatchProduct && duplicatedBatchProduct.id !== matchedProduct?.id) {
+      throw new Error(`第 ${index + 1} 列商品批號 ${row.batchNo} 已存在於 ${duplicatedBatchProduct.productCode ?? "其他商品"}，請確認後再匯入`);
+    }
+
+    if (matchedProduct && row.batchNo && matchedProduct.batchNo === row.batchNo) {
+      const hasSerialConflict = Boolean(matchedProduct.serialNumber && row.serialNumber && matchedProduct.serialNumber !== row.serialNumber);
+      const hasImeiConflict = Boolean(matchedProduct.imei && row.imei && matchedProduct.imei !== row.imei);
+      if (hasSerialConflict || hasImeiConflict) {
+        throw new Error(`第 ${index + 1} 列商品批號 ${row.batchNo} 已存在於 ${matchedProduct.productCode ?? "其他商品"}，且對應序號或 IMEI 不一致，請確認後再匯入`);
+      }
+    }
 
     if (matchedProduct) {
       const nextBatchNo = matchedProduct.batchNo ?? row.batchNo;
@@ -3673,10 +3876,20 @@ export async function getPendingStockImportMismatchProducts() {
     ))
     .orderBy(desc(products.updatedAt), desc(products.id));
 
+  const inspectionSummaryMap = await getLatestBcInspectionSummariesByProductIds(db, rows.map((row) => row.productId));
+
   return rows
     .filter((row) => isPendingStockImportMismatch(row))
     .map((row) => ({
       ...row,
+      ...(inspectionSummaryMap.get(row.productId) ?? {
+        bBatterySummary: "正常",
+        bFaultSummary: "正常",
+        cFaultSummary: "正常",
+        cAppearanceSummary: "正常",
+        cCameraSummary: "正常",
+        cInspectionSummary: "正常",
+      }),
       ...buildPendingStockMismatchSummary(row),
     }));
 }

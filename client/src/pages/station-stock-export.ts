@@ -12,6 +12,12 @@ export type StationStockExportRow = {
   poNumber?: string | null;
   taskStatus?: string | null;
   isOverdue?: boolean;
+  bBatterySummary?: string | null;
+  bFaultSummary?: string | null;
+  cFaultSummary?: string | null;
+  cAppearanceSummary?: string | null;
+  cCameraSummary?: string | null;
+  cInspectionSummary?: string | null;
 };
 
 function escapeCsvCell(value: string | null | undefined) {
@@ -42,7 +48,7 @@ function resolveImportComparisonLabel(row: StationStockExportRow) {
 }
 
 export function exportStationStockRowsToCsv(rows: StationStockExportRow[]) {
-  const header = ["產品代碼", "品名", "品類", "批號", "序號", "IMEI", "採購單號", "匯入比對", "狀態"];
+  const header = ["產品代碼", "品名", "品類", "批號", "序號", "IMEI", "採購單號", "B站電池結果", "B站功能結果", "C站功能結果", "C站外觀結果", "C站相機結果", "C站總結", "匯入比對", "狀態"];
   const lines = rows.map((row) => [
     row.productCode,
     row.productName ?? "",
@@ -51,6 +57,12 @@ export function exportStationStockRowsToCsv(rows: StationStockExportRow[]) {
     row.serialNumber ?? "",
     row.imei ?? "",
     row.poNumber ?? "",
+    row.bBatterySummary ?? "",
+    row.bFaultSummary ?? "",
+    row.cFaultSummary ?? "",
+    row.cAppearanceSummary ?? "",
+    row.cCameraSummary ?? "",
+    row.cInspectionSummary ?? "",
     resolveImportComparisonLabel(row),
     row.isOverdue ? "逾期" : (row.taskStatus ?? ""),
   ].map((value) => escapeCsvCell(value)).join(","));

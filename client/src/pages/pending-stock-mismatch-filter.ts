@@ -24,6 +24,12 @@ export type PendingStockMismatchRow = {
   googleSyncPending?: boolean;
   googleSyncStatusLabel?: string;
   flowStageLabel?: string;
+  bBatterySummary?: string | null;
+  bFaultSummary?: string | null;
+  cFaultSummary?: string | null;
+  cAppearanceSummary?: string | null;
+  cCameraSummary?: string | null;
+  cInspectionSummary?: string | null;
   missingFields: string[];
 };
 
@@ -86,6 +92,12 @@ export function filterPendingStockMismatchRows(rows: PendingStockMismatchRow[], 
       row.vendorName,
       row.googleSyncStatusLabel,
       row.flowStageLabel,
+      row.bBatterySummary,
+      row.bFaultSummary,
+      row.cFaultSummary,
+      row.cAppearanceSummary,
+      row.cCameraSummary,
+      row.cInspectionSummary,
     ].some((value) => normalizeKeyword(value).includes(keyword));
 
     const matchesMissingField = filter.missingFieldFilter === "all" || row.missingFields.includes(filter.missingFieldFilter);
@@ -125,6 +137,12 @@ export function exportPendingStockMismatchRowsToCsv(rows: PendingStockMismatchRo
     "指定品類",
     "指定品牌",
     "Google 列號",
+    "B站電池結果",
+    "B站功能結果",
+    "C站功能結果",
+    "C站外觀結果",
+    "C站相機結果",
+    "C站總結",
     "最後回寫時間",
     "缺漏欄位",
     "比對說明",
@@ -151,6 +169,12 @@ export function exportPendingStockMismatchRowsToCsv(rows: PendingStockMismatchRo
       row.assignedCategoryName,
       row.assignedBrandName,
       row.sheetRowNumber ? String(row.sheetRowNumber) : "",
+      row.bBatterySummary,
+      row.bFaultSummary,
+      row.cFaultSummary,
+      row.cAppearanceSummary,
+      row.cCameraSummary,
+      row.cInspectionSummary,
       lastSheetSyncedAt ? lastSheetSyncedAt.toISOString() : "",
       row.missingFields.join("、"),
       row.mismatchReason,

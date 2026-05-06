@@ -677,6 +677,11 @@ export default function StationPage() {
 
   const pendingTotalCount = detailQuery.data?.tasks.length ?? 0;
 
+  const getTaskSummaryText = (task: (typeof filteredTasks)[number], key: "bBatterySummary" | "bFaultSummary" | "cFaultSummary" | "cAppearanceSummary" | "cCameraSummary") => {
+    const value = (task as Record<string, unknown>)[key];
+    return typeof value === "string" && value.trim() ? value.trim() : "正常";
+  };
+
   const toggleSelection = (taskId: number, key: "faultOptionIds" | "appearanceOptionIds" | "cameraOptionIds" | "bFaultOptionIds", optionId: number, checked: boolean) => {
     setSelectedOptions((prev) => {
       const current = prev[taskId] ?? defaultSelections();
@@ -1142,6 +1147,8 @@ export default function StationPage() {
                       <th className="px-4 py-3">批號</th>
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
+                      <th className="px-4 py-3">B站結果</th>
+                      <th className="px-4 py-3">C站結果</th>
                       <th className="px-4 py-3">匯入比對</th>
                       <th className="px-4 py-3">狀態</th>
                       {canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}
@@ -1156,6 +1163,15 @@ export default function StationPage() {
                         <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
                         <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
                         <td className="px-4 py-3">{task.imei ?? "-"}</td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">
+                          <p>電池：{getTaskSummaryText(task, "bBatterySummary")}</p>
+                          <p>功能：{getTaskSummaryText(task, "bFaultSummary")}</p>
+                        </td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">
+                          <p>功能：{getTaskSummaryText(task, "cFaultSummary")}</p>
+                          <p>外觀：{getTaskSummaryText(task, "cAppearanceSummary")}</p>
+                          <p>相機：{getTaskSummaryText(task, "cCameraSummary")}</p>
+                        </td>
                         <td className="px-4 py-3">
                           {(() => {
                             const importComparisonStatus = getImportComparisonStatus(task);
@@ -1541,6 +1557,8 @@ export default function StationPage() {
                       <th className="px-4 py-3">批號</th>
                       <th className="px-4 py-3">序號</th>
                       <th className="px-4 py-3">IMEI</th>
+                      <th className="px-4 py-3">B站結果</th>
+                      <th className="px-4 py-3">C站結果</th>
                       <th className="px-4 py-3">匯入比對</th>
                       <th className="px-4 py-3">狀態</th>
                       {canEditCategory ? <th className="px-4 py-3 text-right">操作</th> : null}
@@ -1555,6 +1573,15 @@ export default function StationPage() {
                         <td className="px-4 py-3">{task.batchNo ?? "-"}</td>
                         <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
                         <td className="px-4 py-3">{task.imei ?? "-"}</td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">
+                          <p>電池：{getTaskSummaryText(task, "bBatterySummary")}</p>
+                          <p>功能：{getTaskSummaryText(task, "bFaultSummary")}</p>
+                        </td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">
+                          <p>功能：{getTaskSummaryText(task, "cFaultSummary")}</p>
+                          <p>外觀：{getTaskSummaryText(task, "cAppearanceSummary")}</p>
+                          <p>相機：{getTaskSummaryText(task, "cCameraSummary")}</p>
+                        </td>
                         <td className="px-4 py-3">
                           {(() => {
                             const importComparisonStatus = getImportComparisonStatus(task);

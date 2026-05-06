@@ -274,6 +274,7 @@ export default function PendingStockMismatchPage() {
                       <th className="px-4 py-2">商品</th>
                       <th className="px-4 py-2">識別資訊</th>
                       <th className="px-4 py-2">匯入 / 同步狀態</th>
+                      <th className="px-4 py-2">B/C 檢測結果</th>
                       <th className="px-4 py-2">流程資訊</th>
                       <th className="px-4 py-2">最後時間</th>
                       <th className="px-4 py-2 text-right">操作</th>
@@ -315,6 +316,15 @@ export default function PendingStockMismatchPage() {
                                 <p>匯入品牌：{row.importedBrandName || "未補齊"}</p>
                                 <p>Google 列號：{row.sheetRowNumber || "尚未建立"}</p>
                               </div>
+                            </div>
+                          </td>
+                          <td className="bg-slate-50/80 px-4 py-4">
+                            <div className="space-y-1 text-xs leading-6 text-slate-600">
+                              <p>B站電池：{row.bBatterySummary || "正常"}</p>
+                              <p>B站功能：{row.bFaultSummary || "正常"}</p>
+                              <p>C站功能：{row.cFaultSummary || "正常"}</p>
+                              <p>C站外觀：{row.cAppearanceSummary || "正常"}</p>
+                              <p>C站相機：{row.cCameraSummary || "正常"}</p>
                             </div>
                           </td>
                           <td className="bg-slate-50/80 px-4 py-4">

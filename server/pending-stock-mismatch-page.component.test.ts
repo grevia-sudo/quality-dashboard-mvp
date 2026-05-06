@@ -153,6 +153,12 @@ describe("PendingStockMismatchPage component", () => {
           lastSheetSyncedAt: null,
           googleSyncStatusLabel: "尚未回寫 Google",
           flowStageLabel: "已刷入待補匯入",
+          bBatterySummary: "耗電偏快",
+          bFaultSummary: "藍牙異常",
+          cFaultSummary: "Face ID 異常",
+          cAppearanceSummary: "邊框刮傷",
+          cCameraSummary: "前鏡頭模糊",
+          cInspectionSummary: "Face ID 異常, 邊框刮傷, 前鏡頭模糊",
           missingFields: ["採購單號", "商品分類", "Google 回寫"],
           mismatchReason: "缺少採購單號、商品分類，已刷入系統但尚未完成匯入比對，Google 尚未回寫",
         },
@@ -180,6 +186,12 @@ describe("PendingStockMismatchPage component", () => {
           lastSheetSyncedAt: null,
           googleSyncStatusLabel: "尚未回寫 Google",
           flowStageLabel: "已刷入待同步",
+          bBatterySummary: "正常",
+          bFaultSummary: "正常",
+          cFaultSummary: "正常",
+          cAppearanceSummary: "正常",
+          cCameraSummary: "正常",
+          cInspectionSummary: "正常",
           missingFields: ["Google 回寫"],
           mismatchReason: "已刷入系統，等待背景回寫 Google",
         },
@@ -196,6 +208,8 @@ describe("PendingStockMismatchPage component", () => {
     expect(screen.getByText("Apple Watch")).toBeTruthy();
     expect(screen.getAllByText("尚未回寫 Google").length).toBeGreaterThan(0);
     expect(screen.getByText("等待背景回寫")).toBeTruthy();
+    expect(screen.getByText("B站電池：耗電偏快")).toBeTruthy();
+    expect(screen.getByText("C站外觀：邊框刮傷")).toBeTruthy();
 
     const searchField = screen.getByText("查詢關鍵字").parentElement?.querySelector("input");
     expect(searchField).toBeTruthy();
