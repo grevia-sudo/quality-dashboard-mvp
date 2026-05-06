@@ -120,7 +120,12 @@ export default function ImportPage() {
 
   const deletePoMutation = trpc.admin.deleteImportedPurchaseOrder.useMutation({
     onSuccess: async (result) => {
-      toast.success(`已刪除採購單 ${result.poNumber}，共清除 ${result.deletedProducts} 筆商品與 ${result.deletedTasks} 筆站點任務`);
+      const successMessage = `已刪除採購單 ${result.poNumber}，共清除 ${result.deletedProducts} 筆商品與 ${result.deletedTasks} 筆站點任務`;
+      if (result.resultStatus === "partial_success") {
+        toast.warning(`${successMessage}；${result.googleSheetSyncMessage}`);
+      } else {
+        toast.success(`${successMessage}；${result.googleSheetSyncMessage}`);
+      }
       await utils.station.list.invalidate();
       await utils.dashboard.home.invalidate();
       await utils.station.detail.invalidate({ stationCode: "A1" });

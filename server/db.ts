@@ -27,6 +27,7 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "./pending-stock-mismatch";
+import { markPurchaseOrderRowsDeletedInGoogleSheet } from "./purchase-sheet-delete-sync";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 const SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR = 0.125;
@@ -4176,6 +4177,11 @@ export async function deleteImportedPurchaseOrder(input: {
     .select({
       id: products.id,
       vendorName: products.vendorName,
+      sheetRowNumber: products.sheetRowNumber,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      poNumber: products.poNumber,
     })
     .from(products)
     .where(eq(products.poNumber, normalizedPoNumber));
@@ -4217,11 +4223,60 @@ export async function deleteImportedPurchaseOrder(input: {
     deletedByName: normalizeOptionalText(input.deletedByName) ?? null,
   });
 
+  let googleSheetSync: {
+    success: boolean;
+    skipped: boolean;
+    updatedRowNumbers: number[];
+    reason: string | null;
+    errorMessage?: string;
+  } = {
+    success: true,
+    skipped: true,
+    updatedRowNumbers: [],
+    reason: "not_attempted",
+  };
+
+  try {
+    googleSheetSync = await markPurchaseOrderRowsDeletedInGoogleSheet({
+      poNumber: normalizedPoNumber,
+      products: productRows.map((row) => ({
+        poNumber: row.poNumber,
+        sheetRowNumber: row.sheetRowNumber,
+        batchNo: row.batchNo,
+        serialNumber: row.serialNumber,
+        imei: row.imei,
+      })),
+    });
+  } catch (error) {
+    googleSheetSync = {
+      success: false,
+      skipped: true,
+      updatedRowNumbers: [],
+      reason: "google_sheet_sync_failed",
+      errorMessage: error instanceof Error ? error.message : String(error),
+    };
+    console.error("[deleteImportedPurchaseOrder] failed to write deletion strike-through to Google Sheet", error);
+  }
+
+  const resultStatus = googleSheetSync.success && [null, "test_environment"].includes(googleSheetSync.reason)
+    ? "success"
+    : "partial_success";
+  const googleSheetSyncMessage = resultStatus === "success"
+    ? "已回寫 Google 並加上刪除線"
+    : googleSheetSync.reason === "rows_not_found"
+      ? "採購單已刪除，但找不到 Google 對應列，尚未加上刪除線"
+      : googleSheetSync.reason === "google_sheet_sync_failed"
+        ? "採購單已刪除，但回寫 Google 刪除線失敗"
+        : "採購單已刪除，但 Google 回寫狀態需要人工確認";
+
   return {
     success: true as const,
+    resultStatus,
     poNumber: normalizedPoNumber,
     deletedProducts: deletedProductCount,
     deletedTasks: deletedTaskCount,
+    googleSheetSync,
+    googleSheetSyncMessage,
   };
 }
 

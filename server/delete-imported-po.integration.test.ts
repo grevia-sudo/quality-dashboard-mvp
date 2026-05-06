@@ -92,6 +92,7 @@ describe("deleteImportedPurchaseOrder integration", () => {
         poNumber,
         vendorName: "Delete Test Vendor",
         productName: "Delete Test Device 1",
+        sheetRowNumber: 18,
         currentStationCode: "A1",
         currentStatus: "pending_a1",
       },
@@ -100,6 +101,7 @@ describe("deleteImportedPurchaseOrder integration", () => {
         poNumber,
         vendorName: "Delete Test Vendor",
         productName: "Delete Test Device 2",
+        sheetRowNumber: 19,
         currentStationCode: "A1",
         currentStatus: "pending_a1",
       },
@@ -175,6 +177,12 @@ describe("deleteImportedPurchaseOrder integration", () => {
     expect(result.success).toBe(true);
     expect(result.deletedProducts).toBe(2);
     expect(result.deletedTasks).toBe(2);
+    expect(result.googleSheetSync).toMatchObject({
+      success: true,
+      skipped: true,
+      updatedRowNumbers: [18, 19],
+      reason: "test_environment",
+    });
 
     const [remainingProducts, remainingTasks, remainingEvents, remainingSampling, remainingScores, deletionLogs] = await Promise.all([
       db.select({ id: products.id }).from(products).where(eq(products.poNumber, poNumber)),

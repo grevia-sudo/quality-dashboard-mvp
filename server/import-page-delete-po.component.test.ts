@@ -4,12 +4,19 @@ import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const toastMocks = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+}));
+
 const setLocationMock = vi.fn();
 const useAuthMock = vi.fn();
 const stationDetailUseQueryMock = vi.fn();
 const productNameOptionsUseQueryMock = vi.fn();
 const deletePoMutateMock = vi.fn();
 const importMutateMock = vi.fn();
+let deletePoMutationOptions: { onSuccess?: (result: any) => Promise<void> | void; onError?: (error: Error) => void } | undefined;
 
 vi.mock("wouter", () => ({
   useLocation: () => ["/import", setLocationMock],
@@ -20,11 +27,7 @@ vi.mock("@/_core/hooks/useAuth", () => ({
 }));
 
 vi.mock("sonner", () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-    warning: vi.fn(),
-  },
+  toast: toastMocks,
 }));
 
 vi.mock("@/components/DashboardLayout", async () => {
@@ -71,10 +74,13 @@ vi.mock("@/lib/trpc", () => ({
     },
     admin: {
       deleteImportedPurchaseOrder: {
-        useMutation: () => ({
-          mutate: deletePoMutateMock,
-          isPending: false,
-        }),
+        useMutation: (options?: { onSuccess?: (result: any) => Promise<void> | void; onError?: (error: Error) => void }) => {
+          deletePoMutationOptions = options;
+          return {
+            mutate: deletePoMutateMock,
+            isPending: false,
+          };
+        },
       },
     },
   },
@@ -101,6 +107,7 @@ function createPendingTask(poNumber: string) {
 describe("ImportPage purchase-order delete access", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    deletePoMutationOptions = undefined;
     productNameOptionsUseQueryMock.mockReturnValue({
       data: [],
       isLoading: false,
@@ -155,6 +162,51 @@ describe("ImportPage purchase-order delete access", () => {
 
     expect(globalThis.confirm).toHaveBeenCalled();
     expect(deletePoMutateMock).toHaveBeenCalledWith({ poNumber: "PO-20260430-05" });
+  });
+
+  it("shows success toast when Google strikethrough write-back also succeeds", async () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: {
+        id: 1,
+        name: "Admin User",
+        role: "admin",
+      },
+    });
+
+    render(React.createElement(ImportPage));
+    await deletePoMutationOptions?.onSuccess?.({
+      poNumber: "PO-20260430-05",
+      deletedProducts: 2,
+      deletedTasks: 2,
+      resultStatus: "success",
+      googleSheetSyncMessage: "已回寫 Google 並加上刪除線",
+    });
+
+    expect(toastMocks.success).toHaveBeenCalledWith("已刪除採購單 PO-20260430-05，共清除 2 筆商品與 2 筆站點任務；已回寫 Google 並加上刪除線");
+    expect(toastMocks.warning).not.toHaveBeenCalled();
+  });
+
+  it("shows warning toast when Google strikethrough write-back is only partially successful", async () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: {
+        id: 1,
+        name: "Admin User",
+        role: "admin",
+      },
+    });
+
+    render(React.createElement(ImportPage));
+    await deletePoMutationOptions?.onSuccess?.({
+      poNumber: "PO-20260430-05",
+      deletedProducts: 2,
+      deletedTasks: 2,
+      resultStatus: "partial_success",
+      googleSheetSyncMessage: "採購單已刪除，但回寫 Google 刪除線失敗",
+    });
+
+    expect(toastMocks.warning).toHaveBeenCalledWith("已刪除採購單 PO-20260430-05，共清除 2 筆商品與 2 筆站點任務；採購單已刪除，但回寫 Google 刪除線失敗");
   });
 
   it("hides delete action for non-admin management users", () => {
