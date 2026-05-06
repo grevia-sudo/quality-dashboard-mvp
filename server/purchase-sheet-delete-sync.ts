@@ -1,8 +1,8 @@
 import { createSign } from "node:crypto";
 
-const PURCHASE_SHEET_SPREADSHEET_ID = "1lMd28O9G-14VQQd7-RRIF8Tr5RaOVa7fhI1fkLXAB0o";
+const PURCHASE_SHEET_SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 const PURCHASE_SHEET_NAME = "採購單";
-const PURCHASE_SHEET_COLUMN_COUNT = 27;
+const PURCHASE_SHEET_COLUMN_COUNT = 30;
 
 type DeletedPurchaseSheetProduct = {
   poNumber?: string | null;
@@ -177,7 +177,7 @@ async function getPurchaseSheetId(accessToken: string) {
 }
 
 async function getPurchaseSheetValues(accessToken: string) {
-  const encodedRange = encodeURIComponent(`${PURCHASE_SHEET_NAME}!A:AA`);
+  const encodedRange = encodeURIComponent(`${PURCHASE_SHEET_NAME}!A:AD`);
   return callSheetsApi<SheetValuesResponse>(
     accessToken,
     `spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodedRange}`,

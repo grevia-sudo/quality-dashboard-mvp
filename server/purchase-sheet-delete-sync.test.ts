@@ -108,7 +108,7 @@ describe("purchase sheet delete sync helpers", () => {
             startRowIndex: 7,
             endRowIndex: 8,
             startColumnIndex: 0,
-            endColumnIndex: 27,
+            endColumnIndex: 30,
           },
           cell: {
             userEnteredFormat: {
@@ -127,7 +127,7 @@ describe("purchase sheet delete sync helpers", () => {
             startRowIndex: 10,
             endRowIndex: 11,
             startColumnIndex: 0,
-            endColumnIndex: 27,
+            endColumnIndex: 30,
           },
           cell: {
             userEnteredFormat: {

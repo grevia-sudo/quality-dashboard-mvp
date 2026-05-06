@@ -155,13 +155,13 @@ export async function callSheetsApi(accessToken, path, { method = "GET", query =
 }
 
 async function getSheetValues(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:AA`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:AD`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`);
 }
 
 async function updateSheetRow(accessToken, rowNumber, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AA${rowNumber}`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AD${rowNumber}`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -175,7 +175,7 @@ async function updateSheetRow(accessToken, rowNumber, rowValues) {
 }
 
 async function updateSheetHeader(accessToken) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:AA1`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A1:AD1`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}`, {
     method: "PUT",
@@ -189,7 +189,7 @@ async function updateSheetHeader(accessToken) {
 }
 
 async function appendSheetRow(accessToken, rowValues) {
-  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:AA`);
+  const encodedRange = encodeURIComponent(`${SHEET_NAME}!A:AD`);
 
   return callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodedRange}:append`, {
     method: "POST",
@@ -269,7 +269,9 @@ export async function runPurchaseSheetSync() {
           dMeta.dBFaultSummary,
           dMeta.dCFaultSummary,
           dMeta.dCAppearanceSummary,
-          dMeta.dCCameraSummary
+          dMeta.dCCameraSummary,
+          eMeta.eFrontPhotoUrl,
+          eMeta.eBackPhotoUrl
         FROM products p
         LEFT JOIN product_categories c ON c.id = p.categoryId
         LEFT JOIN (
@@ -433,8 +435,23 @@ export async function runPurchaseSheetSync() {
           ) latestD ON latestD.\`productId\` = st.\`productId\` AND latestD.\`completedAt\` = st.\`completedAt\`
           WHERE st.\`stationCode\` = 'D' AND st.\`stationTaskStatus\` = 'completed'
         ) dMeta ON dMeta.\`productId\` = p.id
-
+        LEFT JOIN (
+          SELECT
+            latestE.\`productId\`,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.eFrontPhotoUrl')) AS eFrontPhotoUrl,
+            JSON_UNQUOTE(JSON_EXTRACT(st.\`metadata\`, '$.eBackPhotoUrl')) AS eBackPhotoUrl
+          FROM \`station_tasks\` st
+          INNER JOIN (
+            SELECT \`productId\`, MAX(\`completedAt\`) AS \`completedAt\`
+            FROM \`station_tasks\`
+            WHERE \`stationCode\` = 'E' AND \`stationTaskStatus\` = 'completed'
+            GROUP BY \`productId\`
+          ) latestE ON latestE.\`productId\` = st.\`productId\` AND latestE.\`completedAt\` = st.\`completedAt\`
+          WHERE st.\`stationCode\` = 'E' AND st.\`stationTaskStatus\` = 'completed'
+        ) eMeta ON eMeta.\`productId\` = p.id
+ 
         WHERE p.archivedAt IS NULL
+
 
           AND p.vendorName IS NOT NULL
           AND (p.importedCategoryName IS NOT NULL OR c.categoryName IS NOT NULL)

@@ -69,7 +69,7 @@ async function getGoogleAccessToken() {
 }
 
 async function getSheetRow(accessToken, rowNumber) {
-  const range = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AA${rowNumber}`);
+  const range = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AD${rowNumber}`);
   const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueRenderOption=FORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });

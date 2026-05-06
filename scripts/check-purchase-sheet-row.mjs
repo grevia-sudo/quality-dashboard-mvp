@@ -62,7 +62,7 @@ async function getAccessToken() {
 }
 
 const accessToken = await getAccessToken();
-const range = encodeURIComponent(`${SHEET_NAME}!A:AA`);
+const range = encodeURIComponent(`${SHEET_NAME}!A:AD`);
 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}`, {
   headers: { Authorization: `Bearer ${accessToken}` },
 });

@@ -82,7 +82,7 @@ try {
   `);
 
   const accessToken = await getGoogleAccessToken();
-  const range = encodeURIComponent(`${SHEET_NAME}!A:AA`);
+  const range = encodeURIComponent(`${SHEET_NAME}!A:AD`);
   const sheetResponse = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });

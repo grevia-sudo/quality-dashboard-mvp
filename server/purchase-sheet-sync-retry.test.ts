@@ -16,7 +16,7 @@ describe("purchase sheet sync retry", () => {
       {
         ok: true,
         status: 200,
-        json: async () => ({ updatedRange: "採購單!A2:AA2" }),
+        json: async () => ({ updatedRange: "採購單!A2:AD2" }),
       },
     ];
 
@@ -31,7 +31,7 @@ describe("purchase sheet sync retry", () => {
       body: { values: [["test"]] },
     });
 
-    expect(result).toEqual({ updatedRange: "採購單!A2:AA2" });
+    expect(result).toEqual({ updatedRange: "採購單!A2:AD2" });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(setTimeoutMock).toHaveBeenCalledTimes(2);
   });

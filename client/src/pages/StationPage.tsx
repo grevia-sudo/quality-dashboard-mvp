@@ -29,6 +29,11 @@ const stationCodes = ["A1", "A2", "B", "C", "E", "STOCK"] as const;
 type StationCode = (typeof stationCodes)[number];
 
 type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
+type StationCapturedPhoto = {
+  dataUrl: string;
+  mimeType: string;
+  fileName: string;
+};
 
 type OptionSelections = {
   faultOptionIds: number[];
@@ -37,6 +42,8 @@ type OptionSelections = {
   bFaultOptionIds: number[];
   batteryNote: string;
   batteryIssueLabels: BatteryIssueLabel[];
+  eFrontPhoto: StationCapturedPhoto | null;
+  eBackPhoto: StationCapturedPhoto | null;
   isEditingBFaults: boolean;
   hasOpenedBFaultEditor: boolean;
   hasOpenedBatteryEditor: boolean;
@@ -49,6 +56,8 @@ const defaultSelections = (): OptionSelections => ({
   bFaultOptionIds: [],
   batteryNote: "",
   batteryIssueLabels: [],
+  eFrontPhoto: null,
+  eBackPhoto: null,
   isEditingBFaults: false,
   hasOpenedBFaultEditor: false,
   hasOpenedBatteryEditor: false,
@@ -58,6 +67,55 @@ const normalizeIdList = (values: number[]) => Array.from(new Set(values)).sort((
 const normalizeTextList = (values: string[]) => Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((left, right) => left.localeCompare(right, "zh-Hant"));
 const summarizeTextResult = (values: string[]) => values.map((value) => value.trim()).filter(Boolean).join(", ") || "正常";
 const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
+
+const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (typeof reader.result === "string") {
+      resolve(reader.result);
+      return;
+    }
+    reject(new Error("照片讀取失敗"));
+  };
+  reader.onerror = () => reject(reader.error ?? new Error("照片讀取失敗"));
+  reader.readAsDataURL(file);
+});
+
+const compressCapturedPhoto = async (file: File): Promise<StationCapturedPhoto> => {
+  const sourceDataUrl = await readFileAsDataUrl(file);
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const nextImage = new Image();
+    nextImage.onload = () => resolve(nextImage);
+    nextImage.onerror = () => reject(new Error("照片載入失敗"));
+    nextImage.src = sourceDataUrl;
+  });
+
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const targetWidth = Math.max(1, Math.round(image.width * scale));
+  const targetHeight = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("瀏覽器不支援照片處理，請改用其他裝置或重新整理後再試");
+  }
+
+  context.drawImage(image, 0, 0, targetWidth, targetHeight);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+  const normalizedBaseName = (file.name || "capture")
+    .replace(/\.[^.]+$/, "")
+    .trim()
+    .replace(/\s+/g, "-") || "capture";
+
+  return {
+    dataUrl,
+    mimeType: "image/jpeg",
+    fileName: `${normalizedBaseName}.jpg`,
+  };
+};
+
 const getImportComparisonStatus = (task: {
   poNumber?: string | null;
   importedCategoryName?: string | null;
@@ -501,6 +559,8 @@ export default function StationPage() {
           bFaultOptionIds: carryoverTask.inheritedBFaultOptionIds ?? [],
           batteryNote: carryoverTask.inheritedBatteryNote ?? "",
           batteryIssueLabels: carryoverTask.inheritedBatteryIssueLabels ?? [],
+          eFrontPhoto: null,
+          eBackPhoto: null,
           isEditingBFaults: false,
           hasOpenedBFaultEditor: false,
           hasOpenedBatteryEditor: false,
@@ -693,6 +753,35 @@ export default function StationPage() {
     setBatteryDialogTaskId(taskId);
   };
 
+  const updateStationPhoto = (taskId: number, key: "eFrontPhoto" | "eBackPhoto", photo: StationCapturedPhoto | null) => {
+    setSelectedOptions((prev) => {
+      const current = prev[taskId] ?? defaultSelections();
+      return {
+        ...prev,
+        [taskId]: {
+          ...current,
+          [key]: photo,
+        },
+      };
+    });
+  };
+
+  const handleStationPhotoChange = async (taskId: number, key: "eFrontPhoto" | "eBackPhoto", fileList: FileList | null) => {
+    const selectedFile = fileList?.[0];
+    if (!selectedFile) {
+      updateStationPhoto(taskId, key, null);
+      return;
+    }
+
+    try {
+      const compressedPhoto = await compressCapturedPhoto(selectedFile);
+      updateStationPhoto(taskId, key, compressedPhoto);
+      toast.success(key === "eFrontPhoto" ? "已更新正面照片" : "已更新反面照片");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "照片處理失敗，請重新拍照");
+    }
+  };
+
   const submitStationCompletion = (task: (typeof filteredTasks)[number]) => {
     const selections = getTaskSelections(task.taskId);
     const basePayload = {
@@ -745,6 +834,20 @@ export default function StationPage() {
         batteryNote: applyBChanges ? selections.batteryNote : carryoverTask.inheritedBatteryNote ?? undefined,
         batteryIssueLabels: applyBChanges ? selections.batteryIssueLabels : carryoverTask.inheritedBatteryIssueLabels ?? [],
         applyBChanges,
+      });
+      return;
+    }
+
+    if (stationCode === "E") {
+      if (!selections.eFrontPhoto || !selections.eBackPhoto) {
+        toast.error("請先拍攝正面與反面照片，再完成 E 站抹除");
+        return;
+      }
+
+      completeMutation.mutate({
+        ...basePayload,
+        eFrontPhoto: selections.eFrontPhoto,
+        eBackPhoto: selections.eBackPhoto,
       });
       return;
     }
@@ -1356,6 +1459,40 @@ export default function StationPage() {
                           ))}
                         </div>
                       </div>
+                    </div>
+                  ) : null}
+
+                  {stationCode === "E" ? (
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      {[
+                        { key: "eFrontPhoto" as const, title: "正面照片", helper: "上傳後會寫入 Google 試算表 AC 欄，檔名為商品批號-1" },
+                        { key: "eBackPhoto" as const, title: "反面照片", helper: "上傳後會寫入 Google 試算表 AD 欄，檔名為商品批號-2" },
+                      ].map((photoField) => {
+                        const currentPhoto = photoField.key === "eFrontPhoto" ? selections.eFrontPhoto : selections.eBackPhoto;
+                        return (
+                          <div key={photoField.key} className="space-y-3 rounded-[24px] bg-[#eef6ff] p-4 md:p-5">
+                            <div>
+                              <p className="text-sm font-bold text-slate-900">{photoField.title}</p>
+                              <p className="mt-1 text-xs leading-6 text-slate-500">{photoField.helper}。手持裝置會優先開啟相機拍照。</p>
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              capture="environment"
+                              className="editable-field h-12 rounded-2xl border-0 bg-white shadow-sm file:mr-4 file:rounded-xl file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium"
+                              onChange={(event) => void handleStationPhotoChange(task.taskId, photoField.key, event.target.files)}
+                            />
+                            {currentPhoto ? (
+                              <div className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">
+                                <img src={currentPhoto.dataUrl} alt={photoField.title} className="h-48 w-full rounded-2xl object-cover" />
+                                <p className="text-xs text-slate-500">已準備上傳，完成 E 站時會同步寫入 Drive 與採購單試算表。</p>
+                              </div>
+                            ) : (
+                              <div className="rounded-2xl bg-white px-4 py-6 text-sm text-slate-500 shadow-sm">尚未拍攝 {photoField.title}</div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : null}
 

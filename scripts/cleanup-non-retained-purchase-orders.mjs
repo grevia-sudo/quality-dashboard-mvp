@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import { SHEET_NAME, SPREADSHEET_ID } from "./purchase-sheet-sync-helpers.mjs";
 
 const retainedPoNumbers = new Set(["PO-20260506-02", "PO-20260505-01"]);
-const GOOGLE_COLUMN_COUNT = 27;
+const GOOGLE_COLUMN_COUNT = 30;
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is missing");
@@ -134,7 +134,7 @@ try {
   const accessToken = await getGoogleAccessToken();
   const [sheetId, sheetData] = await Promise.all([
     getSheetId(accessToken),
-    callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(`${SHEET_NAME}!A:AA`)}`),
+    callSheetsApi(accessToken, `spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(`${SHEET_NAME}!A:AD`)}`),
   ]);
 
   const values = sheetData.values ?? [];

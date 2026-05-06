@@ -45,6 +45,11 @@ import {
 const stationCodeSchema = z.enum(["A1", "A2", "B", "C", "D", "E", "STOCK"]);
 const defectOptionStationSchema = z.enum(["B", "C"]);
 const defectOptionTypeSchema = z.enum(["fault", "appearance", "camera"]);
+const stationPhotoInputSchema = z.object({
+  dataUrl: z.string().trim().min(1),
+  mimeType: z.string().trim().min(1),
+  fileName: z.string().trim().min(1),
+});
 const batteryIssueLabelSchema = z.enum(["電池膨脹", "副廠電池", "電池異常"]);
 const optionalTextSchema = z.string().trim().optional().transform((value) => value || undefined);
 const importRowSchema = z.object({
@@ -168,6 +173,8 @@ export const appRouter = router({
           batteryNote: optionalTextSchema,
           batteryIssueLabels: z.array(batteryIssueLabelSchema).optional(),
           applyBChanges: z.boolean().optional(),
+          eFrontPhoto: stationPhotoInputSchema.optional(),
+          eBackPhoto: stationPhotoInputSchema.optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -186,6 +193,8 @@ export const appRouter = router({
           batteryNote: input.batteryNote,
           batteryIssueLabels: input.batteryIssueLabels,
           applyBChanges: input.applyBChanges,
+          eFrontPhoto: input.eFrontPhoto,
+          eBackPhoto: input.eBackPhoto,
         });
       }),
     receive: protectedProcedure

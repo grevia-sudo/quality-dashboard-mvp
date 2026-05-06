@@ -45,7 +45,7 @@ async function accessToken() {
   return json.access_token;
 }
 async function readRows(token, rowNumbers) {
-  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?ranges=${rowNumbers.map((row) => encodeURIComponent(`${SHEET_NAME}!A${row}:AA${row}`)).join("&ranges=")}&valueRenderOption=FORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`, {
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?ranges=${rowNumbers.map((row) => encodeURIComponent(`${SHEET_NAME}!A${row}:AD${row}`)).join("&ranges=")}&valueRenderOption=FORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const json = await response.json();
@@ -53,7 +53,7 @@ async function readRows(token, rowNumbers) {
   return json.valueRanges ?? [];
 }
 async function updateRow(token, rowNumber, values) {
-  const range = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AA${rowNumber}`);
+  const range = encodeURIComponent(`${SHEET_NAME}!A${rowNumber}:AD${rowNumber}`);
   const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`, {
     method: "PUT",
     headers: {
@@ -222,7 +222,7 @@ try {
   const valueRanges = await readRows(token, rows.map((row) => row.sheetRowNumber));
   const currentByRow = new Map();
   for (const range of valueRanges) {
-    const match = /!(?:A)?(\d+):AA\1$/.exec(range.range || "");
+    const match = /!(?:A)?(\d+):AD\1$/.exec(range.range || "");
     if (!match) continue;
     currentByRow.set(Number(match[1]), range.values?.[0] ?? []);
   }

@@ -44,6 +44,9 @@ type SupportCompensationFilterInput = {
 const PRODUCT_NAME_SYNC_SPREADSHEET_ID = "1lMd28O9G-14VQQd7-RRIF8Tr5RaOVa7fhI1fkLXAB0o";
 const PRODUCT_NAME_SYNC_SHEET_NAME = "商品編碼列表";
 const PRODUCT_NAME_SYNC_COLUMN_RANGE = `${PRODUCT_NAME_SYNC_SHEET_NAME}!H:N`;
+const PURCHASE_SHEET_SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
+const PURCHASE_SHEET_NAME = "採購單";
+const E_STATION_PHOTO_DRIVE_FOLDER_ID = "1PPdt4swkmSav8G6k2Dfpk55OBPJk4srW";
 const PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN = /ECONNRESET|PROTOCOL_CONNECTION_LOST|ETIMEDOUT|Connection lost|The server closed the connection/i;
 
 function toDateKey(value: Date) {
@@ -359,12 +362,18 @@ function base64UrlEncode(value: string) {
     .replace(/\//g, "_");
 }
 
-async function getGoogleSheetsAccessToken() {
+type StationPhotoUploadInput = {
+  dataUrl: string;
+  mimeType: string;
+  fileName: string;
+};
+
+async function getGoogleAccessToken(scopes: string | string[]) {
   const credentials = getGoogleServiceAccountCredentials();
   const nowInSeconds = Math.floor(Date.now() / 1000);
   const unsignedToken = `${base64UrlEncode(JSON.stringify({ alg: "RS256", typ: "JWT" }))}.${base64UrlEncode(JSON.stringify({
     iss: credentials.client_email,
-    scope: "https://www.googleapis.com/auth/spreadsheets",
+    scope: Array.isArray(scopes) ? scopes.join(" ") : scopes,
     aud: credentials.token_uri ?? "https://oauth2.googleapis.com/token",
     exp: nowInSeconds + 3600,
     iat: nowInSeconds,
@@ -391,10 +400,133 @@ async function getGoogleSheetsAccessToken() {
 
   const result = await response.json() as { access_token?: string; error?: string; error_description?: string };
   if (!response.ok || !result.access_token) {
-    throw new Error(result.error_description || result.error || "Failed to get Google Sheets access token");
+    throw new Error(result.error_description || result.error || "Failed to get Google access token");
   }
 
   return result.access_token;
+}
+
+async function getGoogleSheetsAccessToken() {
+  return getGoogleAccessToken("https://www.googleapis.com/auth/spreadsheets");
+}
+
+function decodeStationPhotoDataUrl(photo: StationPhotoUploadInput) {
+  const matched = photo.dataUrl.match(/^data:(.+?);base64,(.+)$/);
+  if (!matched) {
+    throw new Error("E 站照片格式不正確，請重新拍照後再試");
+  }
+
+  const mimeType = matched[1] || photo.mimeType || "image/jpeg";
+  return {
+    mimeType,
+    buffer: Buffer.from(matched[2], "base64"),
+  };
+}
+
+async function uploadStationPhotoToGoogleDrive(photo: StationPhotoUploadInput) {
+  const accessToken = await getGoogleAccessToken("https://www.googleapis.com/auth/drive");
+  const { mimeType, buffer } = decodeStationPhotoDataUrl(photo);
+  const boundary = `manus-e-photo-${Date.now()}`;
+  const metadata = {
+    name: photo.fileName,
+    parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID],
+  };
+  const requestBody = Buffer.concat([
+    Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`, "utf8"),
+    Buffer.from(`--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`, "utf8"),
+    buffer,
+    Buffer.from(`\r\n--${boundary}--`, "utf8"),
+  ]);
+
+  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink,webContentLink", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`,
+    },
+    body: requestBody,
+  });
+
+  const result = await response.json() as { id?: string; webViewLink?: string; webContentLink?: string; error?: { message?: string } };
+  if (!response.ok || !result.id) {
+    throw new Error(result.error?.message || "E 站照片上傳 Google Drive 失敗");
+  }
+
+  return result.webViewLink ?? result.webContentLink ?? `https://drive.google.com/file/d/${result.id}/view`;
+}
+
+function matchesPurchaseSheetIdentity(row: string[] | undefined, identity: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null }) {
+  const rowBatchNo = String(row?.[3] ?? "").trim();
+  const rowSerialNumber = String(row?.[4] ?? "").trim();
+  const rowImei = String(row?.[5] ?? "").trim();
+  const batchNo = String(identity.batchNo ?? "").trim();
+  const serialNumber = String(identity.serialNumber ?? "").trim();
+  const imei = String(identity.imei ?? "").trim();
+
+  return Boolean(
+    (imei && rowImei && imei === rowImei)
+    || (serialNumber && rowSerialNumber && serialNumber === rowSerialNumber)
+    || (batchNo && rowBatchNo && batchNo === rowBatchNo)
+  );
+}
+
+async function resolvePurchaseSheetRowNumber(identity: {
+  sheetRowNumber?: number | null;
+  batchNo?: string | null;
+  serialNumber?: string | null;
+  imei?: string | null;
+}) {
+  if (identity.sheetRowNumber && identity.sheetRowNumber > 1) {
+    return identity.sheetRowNumber;
+  }
+
+  const accessToken = await getGoogleSheetsAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodeURIComponent(`${PURCHASE_SHEET_NAME}!A:F`)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const result = await response.json() as { values?: string[][]; error?: { message?: string } };
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "讀取採購單資料列失敗");
+  }
+
+  const rowNumber = (result.values ?? []).findIndex((row, index) => index > 0 && matchesPurchaseSheetIdentity(row, identity));
+  if (rowNumber < 0) {
+    throw new Error("找不到對應的採購單資料列，無法回寫 E 站照片連結");
+  }
+
+  return rowNumber + 1;
+}
+
+async function writeEStationPhotoLinksToSheet(input: {
+  sheetRowNumber?: number | null;
+  batchNo?: string | null;
+  serialNumber?: string | null;
+  imei?: string | null;
+  frontPhotoUrl: string;
+  backPhotoUrl: string;
+}) {
+  const rowNumber = await resolvePurchaseSheetRowNumber(input);
+  const accessToken = await getGoogleSheetsAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodeURIComponent(`${PURCHASE_SHEET_NAME}!AC${rowNumber}:AD${rowNumber}`)}?valueInputOption=RAW`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      values: [[input.frontPhotoUrl, input.backPhotoUrl]],
+    }),
+  });
+  const result = await response.json() as { error?: { message?: string } };
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "回寫 E 站照片連結到採購單失敗");
+  }
+
+  return rowNumber;
 }
 
 async function readStockMatchedBatchNumbersFromSheet() {
@@ -2269,6 +2401,8 @@ export async function completeStationTask(input: {
   batteryNote?: string;
   batteryIssueLabels?: Array<"電池膨脹" | "副廠電池" | "電池異常">;
   applyBChanges?: boolean;
+  eFrontPhoto?: StationPhotoUploadInput;
+  eBackPhoto?: StationPhotoUploadInput;
 }) {
   const db = await getDb();
   if (!db) {
@@ -2281,6 +2415,10 @@ export async function completeStationTask(input: {
       poNumber: products.poNumber,
       importedCategoryName: products.importedCategoryName,
       importedBrandName: products.importedBrandName,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      sheetRowNumber: products.sheetRowNumber,
     })
     .from(products)
     .where(eq(products.id, input.productId))
@@ -2336,6 +2474,41 @@ export async function completeStationTask(input: {
     ? [...faultLabels, ...appearanceLabels, ...cameraLabels].filter(Boolean).join(", ") || "正常"
     : undefined;
   const applyBChanges = input.stationCode === "C" ? Boolean(input.applyBChanges) : false;
+  let eFrontPhotoUrl: string | undefined;
+  let eBackPhotoUrl: string | undefined;
+
+  if (input.stationCode === "E") {
+    if (!input.eFrontPhoto || !input.eBackPhoto) {
+      return { success: false as const, message: "請先拍攝正面與反面照片，再完成 E 站抹除" };
+    }
+
+    const batchNoForPhoto = String(productRow?.batchNo ?? "").trim();
+    if (!batchNoForPhoto) {
+      return { success: false as const, message: "此商品缺少商品批號，無法依規則建立 E 站照片檔名，請先補齊批號" };
+    }
+
+    const fileNameBase = batchNoForPhoto
+      .replace(/\s+/g, "")
+      .replace(/[\\/:*?"<>|#%{}]+/g, "-");
+
+    eFrontPhotoUrl = await uploadStationPhotoToGoogleDrive({
+      ...input.eFrontPhoto,
+      fileName: `${fileNameBase}-1.jpg`,
+    });
+    eBackPhotoUrl = await uploadStationPhotoToGoogleDrive({
+      ...input.eBackPhoto,
+      fileName: `${fileNameBase}-2.jpg`,
+    });
+
+    await writeEStationPhotoLinksToSheet({
+      sheetRowNumber: productRow?.sheetRowNumber ?? null,
+      batchNo: productRow?.batchNo ?? null,
+      serialNumber: productRow?.serialNumber ?? null,
+      imei: productRow?.imei ?? null,
+      frontPhotoUrl: eFrontPhotoUrl,
+      backPhotoUrl: eBackPhotoUrl,
+    });
+  }
 
   await db
     .update(stationTasks)
@@ -2364,6 +2537,8 @@ export async function completeStationTask(input: {
         applyBChanges,
         cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
         cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
+        eFrontPhotoUrl,
+        eBackPhotoUrl,
       },
       updatedAt: completedAt,
     })
@@ -2399,6 +2574,8 @@ export async function completeStationTask(input: {
         applyBChanges,
         cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
         cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
+        eFrontPhotoUrl,
+        eBackPhotoUrl,
       },
 
   });

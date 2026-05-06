@@ -1,6 +1,6 @@
 export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 export const SHEET_NAME = "採購單";
-export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態", "D站是否修改檢查結果", "D站完成時間", "D站檢測者", "E站抹除完成時間", "E站測試人員"];
+export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態", "D站是否修改檢查結果", "D站完成時間", "D站檢測者", "E站抹除完成時間", "E站測試人員", "E站照片同步狀態", "E站正面照片", "E站反面照片"];
 
 export function stringifyCell(value) {
   if (value === null || value === undefined) {
@@ -93,6 +93,9 @@ export function buildSheetRow(product) {
     stringifyCell(product.dOperatorName),
     formatSheetDateTime(product.eCompletedAt),
     stringifyCell(product.eOperatorName),
+    stringifyCell(product.eFrontPhotoUrl && product.eBackPhotoUrl ? "Y" : ""),
+    stringifyCell(product.eFrontPhotoUrl),
+    stringifyCell(product.eBackPhotoUrl),
   ];
 }
 
@@ -113,7 +116,7 @@ export function getSheetRefreshIndexes(product) {
   const refreshIndexes = new Set();
 
   if (!product) {
-    for (let index = 7; index <= 26; index += 1) {
+    for (let index = 7; index <= 29; index += 1) {
       refreshIndexes.add(index);
     }
     return refreshIndexes;
@@ -121,7 +124,7 @@ export function getSheetRefreshIndexes(product) {
 
   const lastSyncedAt = product.lastSheetSyncedAt ? new Date(product.lastSheetSyncedAt) : null;
   if (!lastSyncedAt || Number.isNaN(lastSyncedAt.getTime())) {
-    for (let index = 7; index <= 26; index += 1) {
+    for (let index = 7; index <= 29; index += 1) {
       refreshIndexes.add(index);
     }
     return refreshIndexes;
@@ -152,7 +155,7 @@ export function getSheetRefreshIndexes(product) {
     [7, 8, 9, 10, 11, 14, 15, 19, 20, 12, 13, 17, 18, 21, 22, 23, 24].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.e) {
-    [7, 8, 9, 10, 11, 14, 15, 19, 20, 23, 24, 25, 26].forEach((index) => refreshIndexes.add(index));
+    [7, 8, 9, 10, 11, 14, 15, 19, 20, 23, 24, 25, 26, 27, 28, 29].forEach((index) => refreshIndexes.add(index));
   }
 
   return refreshIndexes;
