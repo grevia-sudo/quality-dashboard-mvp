@@ -1,0 +1,238 @@
+{
+  "targetBatches": [
+    "00500024813",
+    "00500024814",
+    "00500024827",
+    "00500024828"
+  ],
+  "matchedProducts": [],
+  "relatedStationEvents": [],
+  "sheetSyncJobColumns": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "jobType"
+    },
+    {
+      "COLUMN_NAME": "targetSheetName"
+    },
+    {
+      "COLUMN_NAME": "syncJobStatus"
+    },
+    {
+      "COLUMN_NAME": "queuedAt"
+    },
+    {
+      "COLUMN_NAME": "startedAt"
+    },
+    {
+      "COLUMN_NAME": "finishedAt"
+    },
+    {
+      "COLUMN_NAME": "errorMessage"
+    }
+  ],
+  "recentSheetSyncJobsRaw": [
+    {
+      "id": 330091,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:38:37.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:39:35.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330090,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:38:37.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330089,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:37:48.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330088,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:37:48.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330087,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:37:26.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330086,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:37:26.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330085,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:36:57.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330084,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:36:57.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330083,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:32:33.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330082,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:32:33.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330081,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:31:13.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330080,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:31:13.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330079,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:08.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330078,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:07.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330077,
+      "jobType": "station_task_sync",
+      "targetSheetName": "手機檢測資料庫",
+      "syncJobStatus": "queued",
+      "queuedAt": "2026-05-06T02:17:07.000Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "errorMessage": null
+    },
+    {
+      "id": 330076,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:05.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330075,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:01.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330074,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:16:58.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330073,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:16:55.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330072,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:16:52.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    }
+  ]
+}

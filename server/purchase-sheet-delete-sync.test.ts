@@ -75,22 +75,28 @@ describe("purchase sheet delete sync helpers", () => {
     })).toBe(false);
   });
 
-  it("resolves row numbers from stored row numbers and fallback identity matching", () => {
+  it("resolves row numbers from stored row numbers, fallback identity matching, and the full po range", () => {
     const values = [
       ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI"],
       ["PO-1", "Vendor", "手機", "BATCH-1", "", ""],
       ["PO-1", "Vendor", "手機", "", "SER-2", ""],
       ["PO-1", "Vendor", "手機", "", "", "IMEI-3"],
+      ["PO-1", "Vendor", "手機", "BATCH-4", "", ""],
+      ["PO-2", "Vendor", "手機", "BATCH-X", "", ""],
     ];
 
-    const rowNumbers = resolveDeletedPurchaseSheetRowNumbers(values, [
-      { poNumber: "PO-1", sheetRowNumber: 2, batchNo: "BATCH-1" },
-      { poNumber: "PO-1", serialNumber: "SER-2" },
-      { poNumber: "PO-1", imei: "IMEI-3" },
-      { poNumber: "PO-1", serialNumber: "SER-2" },
-    ]);
+    const rowNumbers = resolveDeletedPurchaseSheetRowNumbers(
+      values,
+      [
+        { poNumber: "PO-1", sheetRowNumber: 2, batchNo: "BATCH-1" },
+        { poNumber: "PO-1", serialNumber: "SER-2" },
+        { poNumber: "PO-1", imei: "IMEI-3" },
+        { poNumber: "PO-1", serialNumber: "SER-2" },
+      ],
+      "PO-1",
+    );
 
-    expect(rowNumbers).toEqual([2, 3, 4]);
+    expect(rowNumbers).toEqual([2, 3, 4, 5]);
   });
 
   it("builds repeatCell requests that strike through the full purchase row", () => {
@@ -136,7 +142,7 @@ describe("purchase sheet delete sync helpers", () => {
     ]);
   });
 
-  it("marks matching Google Sheet rows with strikethrough when rows can be resolved", async () => {
+  it("marks all rows of the purchase order with strikethrough when rows can be resolved", async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValueOnce(createJsonResponse({ access_token: "token-123" }));
     fetchMock.mockResolvedValueOnce(createJsonResponse({
@@ -144,6 +150,7 @@ describe("purchase sheet delete sync helpers", () => {
         ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI"],
         ["PO-1", "Vendor", "手機", "BATCH-1", "", ""],
         ["PO-1", "Vendor", "手機", "", "SER-2", ""],
+        ["PO-1", "Vendor", "手機", "BATCH-OLD", "", ""],
       ],
     }));
     fetchMock.mockResolvedValueOnce(createJsonResponse({
@@ -162,14 +169,14 @@ describe("purchase sheet delete sync helpers", () => {
     expect(result).toMatchObject({
       success: true,
       skipped: false,
-      updatedRowNumbers: [2, 3],
+      updatedRowNumbers: [2, 3, 4],
       reason: null,
     });
     expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(String(fetchMock.mock.calls[3]?.[0])).toContain(":batchUpdate");
   });
 
-  it("returns rows_not_found when no matching Google Sheet row exists", async () => {
+  it("returns rows_not_found when the purchase order does not exist in Google Sheet", async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValueOnce(createJsonResponse({ access_token: "token-123" }));
     fetchMock.mockResolvedValueOnce(createJsonResponse({

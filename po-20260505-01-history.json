@@ -1,0 +1,536 @@
+{
+  "poNumber": "PO-20260505-01",
+  "targetBatches": [
+    "00500024813",
+    "00500024814",
+    "00500024827",
+    "00500024828"
+  ],
+  "deletionLogs": [
+    {
+      "id": 60001,
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "deletedProducts": 383,
+      "deletedTasks": 384,
+      "deletedByUserId": 750008,
+      "deletedByName": "佳珉",
+      "createdAt": "2026-05-06T01:38:26.000Z"
+    },
+    {
+      "id": 30001,
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "deletedProducts": 383,
+      "deletedTasks": 415,
+      "deletedByUserId": 750008,
+      "deletedByName": "佳珉",
+      "createdAt": "2026-05-05T10:19:20.000Z"
+    }
+  ],
+  "backups": [],
+  "backupSnapshots": [],
+  "archiveMatches": [],
+  "recentPurchaseSyncJobs": [
+    {
+      "id": 330091,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:38:37.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:39:35.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330089,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:37:48.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330087,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:37:26.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330085,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:36:57.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330083,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:32:33.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330081,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:31:13.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330079,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:08.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330078,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:07.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330076,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:05.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330075,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:17:01.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330074,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:16:58.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330073,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:16:55.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330072,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:16:52.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330071,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:15:39.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330070,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:13:21.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330068,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T02:09:51.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T02:38:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330067,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T01:39:06.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T01:53:02.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330066,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T01:21:32.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T01:21:41.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330064,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:49.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330062,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:47.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330061,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:46.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330059,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:44.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330058,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:43.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330056,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:41.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330055,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:40.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:51.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330053,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:39.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:40.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330051,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:35.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:40.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330050,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:32.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:40.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330047,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:29.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330045,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:27.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330043,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:25.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330041,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:24.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330039,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:22.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330038,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:21.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330037,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:20.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330035,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:17.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330033,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:40:15.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:40:30.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330032,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:57.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330030,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:56.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330029,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:55.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330027,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:53.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330026,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:52.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330024,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:50.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330023,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:49.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330021,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:47.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330019,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:44.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330018,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:41.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:59.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330015,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:37.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:39.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330013,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:35.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:39.000Z",
+      "errorMessage": null
+    },
+    {
+      "id": 330011,
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-06T00:38:34.000Z",
+      "startedAt": null,
+      "finishedAt": "2026-05-06T00:38:39.000Z",
+      "errorMessage": null
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "retainedPoNumbers": [
+    "PO-20260506-02",
+    "PO-20260505-01"
+  ],
+  "deletedDbProducts": 530,
+  "deletedDbTasks": 583,
+  "deletedGoogleRows": 910,
+  "deletedGooglePoNumbers": [
+    "PO-20260430-01",
+    "PO-20260430-02",
+    "PO-20260430-03",
+    "PO-20260430-04",
+    "PO-20260430-05",
+    "PO-20260505-02",
+    "PO-20260505-05",
+    "PO-20260505-06",
+    "PO-20260505-07",
+    "PO-20260505-08",
+    "PO-20260505-09",
+    "PO-20260505-10",
+    "PO-BACKUP-EDGE-1777635846124"
+  ],
+  "remainingGoogleRowsExpectedColumns": 27
+}

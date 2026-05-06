@@ -210,7 +210,11 @@ export function matchesDeletedProductRow(row: string[] | undefined, product: Del
   return false;
 }
 
-export function resolveDeletedPurchaseSheetRowNumbers(values: string[][], products: DeletedPurchaseSheetProduct[]) {
+export function resolveDeletedPurchaseSheetRowNumbers(
+  values: string[][],
+  products: DeletedPurchaseSheetProduct[],
+  poNumber?: string | null,
+) {
   const resolved = new Set<number>();
 
   products.forEach((product) => {
@@ -226,6 +230,17 @@ export function resolveDeletedPurchaseSheetRowNumbers(values: string[][], produc
       }
     }
   });
+
+  const normalizedPoNumber = normalizeSheetCell(
+    poNumber ?? products.find((product) => normalizeSheetCell(product.poNumber))?.poNumber,
+  );
+  if (normalizedPoNumber) {
+    for (let index = 1; index < values.length; index += 1) {
+      if (normalizeSheetCell(values[index]?.[0]) === normalizedPoNumber) {
+        resolved.add(index + 1);
+      }
+    }
+  }
 
   return Array.from(resolved).sort((a, b) => a - b);
 }
@@ -256,15 +271,6 @@ export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
   poNumber: string;
   products: DeletedPurchaseSheetProduct[];
 }) {
-  if (input.products.length === 0) {
-    return {
-      success: true as const,
-      skipped: true,
-      updatedRowNumbers: [] as number[],
-      reason: "no_products",
-    };
-  }
-
   if (process.env.NODE_ENV === "test" || process.env.VITEST) {
     return {
       success: true as const,
@@ -282,10 +288,14 @@ export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
     getPurchaseSheetId(accessToken),
   ]);
 
-  const rowNumbers = resolveDeletedPurchaseSheetRowNumbers(values, input.products.map((product) => ({
-    ...product,
-    poNumber: product.poNumber ?? input.poNumber,
-  })));
+  const rowNumbers = resolveDeletedPurchaseSheetRowNumbers(
+    values,
+    input.products.map((product) => ({
+      ...product,
+      poNumber: product.poNumber ?? input.poNumber,
+    })),
+    input.poNumber,
+  );
 
   if (rowNumbers.length === 0) {
     return {

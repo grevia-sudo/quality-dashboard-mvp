@@ -1,0 +1,318 @@
+[
+  {
+    "TABLE_NAME": "product_archives",
+    "COLUMN_NAME": "id"
+  },
+  {
+    "TABLE_NAME": "product_archives",
+    "COLUMN_NAME": "originalProductId"
+  },
+  {
+    "TABLE_NAME": "product_archives",
+    "COLUMN_NAME": "productSnapshot"
+  },
+  {
+    "TABLE_NAME": "product_archives",
+    "COLUMN_NAME": "archivedAt"
+  },
+  {
+    "TABLE_NAME": "product_archives",
+    "COLUMN_NAME": "archiveMonth"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "id"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "businessDate"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "userId"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "stationEventId"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "productId"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "stationCode"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "categoryId"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "subtypeCode"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "targetConfigId"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "completedQty"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "baseUnitPoints"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "reworkFactor"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "qualityFactor"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "earnedPoints"
+  },
+  {
+    "TABLE_NAME": "productivity_score_details",
+    "COLUMN_NAME": "createdAt"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "id"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "productCode"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "batchNo"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "serialNumber"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "imei"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "productName"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "warrantyDate"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "categoryId"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "stationCode"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "productStatus"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "inspectionSummary"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "wipeStatus"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "stockStatus"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "archivedAt"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "createdAt"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "updatedAt"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "poNumber"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "vendorName"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "arrivalAt"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "sheetRowNumber"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "lastSheetSyncedAt"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "importedCategoryName"
+  },
+  {
+    "TABLE_NAME": "products",
+    "COLUMN_NAME": "importedBrandName"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "id"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "productId"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "stationTaskId"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "sampledByUserId"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "sampleDate"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "passed"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "defectReason"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "stationCode"
+  },
+  {
+    "TABLE_NAME": "sampling_results",
+    "COLUMN_NAME": "createdAt"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "id"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "productId"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "stationTaskId"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "stationCode"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "stationEventType"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "operatorUserId"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "businessDate"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "categoryId"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "subtypeCode"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "isRework"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "reworkRound"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "countForProductivity"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "payload"
+  },
+  {
+    "TABLE_NAME": "station_events",
+    "COLUMN_NAME": "createdAt"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "id"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "productId"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "stationCode"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "assignedUserId"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "stationTaskStatus"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "dueDate"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "startedAt"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "completedAt"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "isOverdue"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "resultSummary"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "metadata"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "createdAt"
+  },
+  {
+    "TABLE_NAME": "station_tasks",
+    "COLUMN_NAME": "updatedAt"
+  }
+]

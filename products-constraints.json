@@ -1,0 +1,140 @@
+[
+  {
+    "COLUMN_NAME": "id",
+    "IS_NULLABLE": "NO",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "int"
+  },
+  {
+    "COLUMN_NAME": "productCode",
+    "IS_NULLABLE": "NO",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  },
+  {
+    "COLUMN_NAME": "batchNo",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  },
+  {
+    "COLUMN_NAME": "serialNumber",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  },
+  {
+    "COLUMN_NAME": "imei",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  },
+  {
+    "COLUMN_NAME": "productName",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(160)"
+  },
+  {
+    "COLUMN_NAME": "warrantyDate",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "date"
+  },
+  {
+    "COLUMN_NAME": "categoryId",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "int"
+  },
+  {
+    "COLUMN_NAME": "stationCode",
+    "IS_NULLABLE": "NO",
+    "COLUMN_DEFAULT": "A1",
+    "COLUMN_TYPE": "enum('A1','A2','B','C','D','E','STOCK')"
+  },
+  {
+    "COLUMN_NAME": "productStatus",
+    "IS_NULLABLE": "NO",
+    "COLUMN_DEFAULT": "pending_a1",
+    "COLUMN_TYPE": "enum('pending_a1','pending_a2','pending_b','pending_c','pending_d','pending_e','pending_stock','completed','archived')"
+  },
+  {
+    "COLUMN_NAME": "inspectionSummary",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "text"
+  },
+  {
+    "COLUMN_NAME": "wipeStatus",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": "pending",
+    "COLUMN_TYPE": "varchar(40)"
+  },
+  {
+    "COLUMN_NAME": "stockStatus",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": "pending",
+    "COLUMN_TYPE": "varchar(40)"
+  },
+  {
+    "COLUMN_NAME": "archivedAt",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "timestamp"
+  },
+  {
+    "COLUMN_NAME": "createdAt",
+    "IS_NULLABLE": "NO",
+    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+    "COLUMN_TYPE": "timestamp"
+  },
+  {
+    "COLUMN_NAME": "updatedAt",
+    "IS_NULLABLE": "NO",
+    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+    "COLUMN_TYPE": "timestamp"
+  },
+  {
+    "COLUMN_NAME": "poNumber",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  },
+  {
+    "COLUMN_NAME": "vendorName",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(160)"
+  },
+  {
+    "COLUMN_NAME": "arrivalAt",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "timestamp"
+  },
+  {
+    "COLUMN_NAME": "sheetRowNumber",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "int"
+  },
+  {
+    "COLUMN_NAME": "lastSheetSyncedAt",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "timestamp"
+  },
+  {
+    "COLUMN_NAME": "importedCategoryName",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  },
+  {
+    "COLUMN_NAME": "importedBrandName",
+    "IS_NULLABLE": "YES",
+    "COLUMN_DEFAULT": null,
+    "COLUMN_TYPE": "varchar(120)"
+  }
+]
