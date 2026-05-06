@@ -1642,10 +1642,14 @@ export async function getStationPageData(stationCode: StationCode) {
     .orderBy(desc(stationTasks.isOverdue), asc(stationTasks.id));
 
   const [faultOptions, appearanceOptions, cameraOptions, bFaultOptions] = await Promise.all([
-    stationCode === "B" || stationCode === "C" ? getDefectOptions(stationCode, "fault") : Promise.resolve([]),
-    stationCode === "C" ? getDefectOptions(stationCode, "appearance") : Promise.resolve([]),
-    stationCode === "C" ? getDefectOptions(stationCode, "camera") : Promise.resolve([]),
-    stationCode === "C" ? getDefectOptions("B", "fault") : Promise.resolve([]),
+    stationCode === "B"
+      ? getDefectOptions("B", "fault")
+      : stationCode === "C" || stationCode === "D"
+        ? getDefectOptions("C", "fault")
+        : Promise.resolve([]),
+    stationCode === "C" || stationCode === "D" ? getDefectOptions("C", "appearance") : Promise.resolve([]),
+    stationCode === "C" || stationCode === "D" ? getDefectOptions("C", "camera") : Promise.resolve([]),
+    stationCode === "C" || stationCode === "D" ? getDefectOptions("B", "fault") : Promise.resolve([]),
   ]);
 
   const nextRows = stationCode === "C"
@@ -1777,15 +1781,19 @@ export async function getStationPageData(stationCode: StationCode) {
             const taskMetadata = (row.taskMetadata ?? {}) as Record<string, unknown>;
             const latestBMetadata = latestBMetaByProductId.get(row.productId) ?? {};
             const latestCMetadata = latestCMetaByProductId.get(row.productId) ?? {};
-            const inheritedBatterySummary = typeof latestBMetadata.batterySummary === "string" && latestBMetadata.batterySummary.trim()
-              ? latestBMetadata.batterySummary.trim()
+            const inheritedBatterySummary = typeof (taskMetadata.batterySummary ?? latestBMetadata.batterySummary) === "string"
+              && String(taskMetadata.batterySummary ?? latestBMetadata.batterySummary).trim()
+              ? String(taskMetadata.batterySummary ?? latestBMetadata.batterySummary).trim()
               : [
-                  typeof latestBMetadata.batteryNote === "string" ? latestBMetadata.batteryNote.trim() : "",
-                  ...normalizeTextArray(latestBMetadata.batteryIssueLabels),
+                  typeof (taskMetadata.batteryNote ?? latestBMetadata.batteryNote) === "string"
+                    ? String(taskMetadata.batteryNote ?? latestBMetadata.batteryNote).trim()
+                    : "",
+                  ...normalizeTextArray(taskMetadata.batteryIssueLabels ?? latestBMetadata.batteryIssueLabels),
                 ].filter(Boolean).join(", ") || "正常";
-            const inheritedBFaultSummary = typeof latestBMetadata.faultSummary === "string" && latestBMetadata.faultSummary.trim()
-              ? latestBMetadata.faultSummary.trim()
-              : normalizeTextArray(latestBMetadata.faultLabels).join(", ") || "正常";
+            const inheritedBFaultSummary = typeof (taskMetadata.faultSummary ?? latestBMetadata.faultSummary) === "string"
+              && String(taskMetadata.faultSummary ?? latestBMetadata.faultSummary).trim()
+              ? String(taskMetadata.faultSummary ?? latestBMetadata.faultSummary).trim()
+              : normalizeTextArray(taskMetadata.faultLabels ?? latestBMetadata.faultLabels).join(", ") || "正常";
             const inheritedCFaultSummary = typeof (taskMetadata.cFaultSummary ?? latestCMetadata.cFaultSummary) === "string"
               && String(taskMetadata.cFaultSummary ?? latestCMetadata.cFaultSummary).trim()
               ? String(taskMetadata.cFaultSummary ?? latestCMetadata.cFaultSummary).trim()

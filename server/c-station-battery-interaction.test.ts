@@ -110,6 +110,7 @@ vi.mock("lucide-react", () => {
     Gauge: Icon,
     PackagePlus: Icon,
     Search: Icon,
+    ShieldAlert: Icon,
     ShieldCheck: Icon,
     Undo2: Icon,
   };
@@ -149,8 +150,14 @@ vi.mock("@/lib/trpc", () => ({
       productNameOptions: {
         useQuery: () => ({ data: [], isLoading: false }),
       },
+      productCategoryOptions: {
+        useQuery: () => ({ data: [], isLoading: false }),
+      },
       detail: {
         useQuery: () => ({ data: stationDetailData, isLoading: false }),
+      },
+      assignCategory: {
+        useMutation: () => ({ isPending: false, mutate: mutateMock }),
       },
       complete: {
         useMutation: () => ({ isPending: false, mutate: mutateMock }),

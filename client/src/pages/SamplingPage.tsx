@@ -4,6 +4,7 @@ import { shouldEnableManagementQuery, shouldRedirectFromManagementOps, MANAGEMEN
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,28 +44,93 @@ type SamplingTask = {
   inheritedCInspectionSummary?: string | null;
 };
 
+const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
+
+type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
+
+type DefectOption = {
+  id: number;
+  label: string;
+  active: boolean;
+  optionType?: string | null;
+};
+
+type StationDetailData = {
+  faultOptions?: DefectOption[];
+  appearanceOptions?: DefectOption[];
+  cameraOptions?: DefectOption[];
+  bFaultOptions?: DefectOption[];
+};
+
 type InspectionDraft = {
   batterySummary: string;
+  batteryNote: string;
+  batteryIssueLabels: BatteryIssueLabel[];
   bFaultSummary: string;
+  bFaultOptionIds: number[];
   cFaultSummary: string;
+  cFaultOptionIds: number[];
   cAppearanceSummary: string;
+  cAppearanceOptionIds: number[];
   cCameraSummary: string;
+  cCameraOptionIds: number[];
   isEditingPrevious: boolean;
   isEditingCurrent: boolean;
 };
+
+const normalizeIdList = (values: number[]) => Array.from(new Set(values)).sort((left, right) => left - right);
+const normalizeTextList = (values: string[]) => Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((left, right) => left.localeCompare(right, "zh-Hant"));
+const summarizeTextResult = (values: string[]) => values.map((value) => value.trim()).filter(Boolean).join(", ") || "正常";
 
 function normalizeResultText(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : "正常";
 }
 
-function createInitialDraft(task: SamplingTask): InspectionDraft {
+function parseSummaryTokens(value?: string | null) {
+  if (!value) {
+    return [] as string[];
+  }
+  return normalizeTextList(value.split(/[，,]/).map((token) => token.trim()).filter((token) => token && token !== "正常"));
+}
+
+function isBatteryIssueLabel(value: string): value is BatteryIssueLabel {
+  return B_BATTERY_ISSUE_OPTIONS.includes(value as BatteryIssueLabel);
+}
+
+function mapSummaryToOptionIds(summary: string | null | undefined, options: DefectOption[]) {
+  const tokens = new Set(parseSummaryTokens(summary));
+  return normalizeIdList(options.filter((option) => tokens.has(option.label)).map((option) => option.id));
+}
+
+function mapSummaryToBatteryInputs(summary: string | null | undefined) {
+  const tokens = parseSummaryTokens(summary);
+  const batteryIssueLabels = tokens.filter(isBatteryIssueLabel);
+  const batteryNotes = tokens.filter((token) => !batteryIssueLabels.includes(token as BatteryIssueLabel));
+  return {
+    batteryNote: batteryNotes.join(", "),
+    batteryIssueLabels,
+  };
+}
+
+function createInitialDraft(task: SamplingTask, detailData?: StationDetailData): InspectionDraft {
+  const batteryInputs = mapSummaryToBatteryInputs(task.inheritedBatterySummary);
+  const bFaultOptions = (detailData?.bFaultOptions ?? []).filter((option) => option.active);
+  const faultOptions = (detailData?.faultOptions ?? []).filter((option) => option.active);
+  const appearanceOptions = (detailData?.appearanceOptions ?? []).filter((option) => option.active);
+  const cameraOptions = (detailData?.cameraOptions ?? []).filter((option) => option.active);
   return {
     batterySummary: normalizeResultText(task.inheritedBatterySummary),
+    batteryNote: batteryInputs.batteryNote,
+    batteryIssueLabels: batteryInputs.batteryIssueLabels,
     bFaultSummary: normalizeResultText(task.inheritedBFaultSummary),
+    bFaultOptionIds: mapSummaryToOptionIds(task.inheritedBFaultSummary, bFaultOptions),
     cFaultSummary: normalizeResultText(task.inheritedCFaultSummary),
+    cFaultOptionIds: mapSummaryToOptionIds(task.inheritedCFaultSummary, faultOptions),
     cAppearanceSummary: normalizeResultText(task.inheritedCAppearanceSummary),
+    cAppearanceOptionIds: mapSummaryToOptionIds(task.inheritedCAppearanceSummary, appearanceOptions),
     cCameraSummary: normalizeResultText(task.inheritedCCameraSummary),
+    cCameraOptionIds: mapSummaryToOptionIds(task.inheritedCCameraSummary, cameraOptions),
     isEditingPrevious: false,
     isEditingCurrent: false,
   };
@@ -83,12 +149,21 @@ export default function SamplingPage() {
   const query = trpc.sampling.queue.useQuery(undefined, {
     enabled: canAccessManagementOps,
   });
+  const detailQuery = trpc.station.detail.useQuery({ stationCode: "D" }, {
+    enabled: canAccessManagementOps,
+    retry: false,
+  });
   const categoryOptionsQuery = trpc.station.productCategoryOptions.useQuery(undefined, {
     retry: false,
     enabled: canAccessManagementOps && Boolean(categoryDialogTask),
   });
   const tasks = ((query.data?.tasks ?? []) as SamplingTask[]);
+  const detailData = detailQuery.data as StationDetailData | undefined;
   const categoryOptions = categoryOptionsQuery.data ?? [];
+  const bFaultOptions = (detailData?.bFaultOptions ?? []).filter((option) => option.active);
+  const faultOptions = (detailData?.faultOptions ?? []).filter((option) => option.active);
+  const appearanceOptions = (detailData?.appearanceOptions ?? []).filter((option) => option.active);
+  const cameraOptions = (detailData?.cameraOptions ?? []).filter((option) => option.active);
 
   useEffect(() => {
     if (shouldRedirectFromManagementOps({ loading, role: user?.role })) {
@@ -132,7 +207,7 @@ export default function SamplingPage() {
     });
   }, [searchTerm, tasks]);
 
-  const getDraft = (task: SamplingTask) => drafts[task.taskId] ?? createInitialDraft(task);
+  const getDraft = (task: SamplingTask) => drafts[task.taskId] ?? createInitialDraft(task, detailData);
 
   const updateDraft = (task: SamplingTask, patch: Partial<InspectionDraft>) => {
     setDrafts((prev) => ({
@@ -145,20 +220,26 @@ export default function SamplingPage() {
   };
 
   const resetSection = (task: SamplingTask, section: "previous" | "current") => {
-    const initial = createInitialDraft(task);
+    const initial = createInitialDraft(task, detailData);
     const currentDraft = getDraft(task);
 
     updateDraft(task, section === "previous"
       ? {
           batterySummary: initial.batterySummary,
+          batteryNote: initial.batteryNote,
+          batteryIssueLabels: initial.batteryIssueLabels,
           bFaultSummary: initial.bFaultSummary,
+          bFaultOptionIds: initial.bFaultOptionIds,
           isEditingPrevious: false,
           isEditingCurrent: currentDraft.isEditingCurrent,
         }
       : {
           cFaultSummary: initial.cFaultSummary,
+          cFaultOptionIds: initial.cFaultOptionIds,
           cAppearanceSummary: initial.cAppearanceSummary,
+          cAppearanceOptionIds: initial.cAppearanceOptionIds,
           cCameraSummary: initial.cCameraSummary,
+          cCameraOptionIds: initial.cCameraOptionIds,
           isEditingCurrent: false,
           isEditingPrevious: currentDraft.isEditingPrevious,
         });
@@ -169,9 +250,72 @@ export default function SamplingPage() {
     setCategoryDraftValue(task.categoryId ? String(task.categoryId) : "");
   };
 
+  const updateBatteryNote = (task: SamplingTask, value: string) => {
+    const currentDraft = getDraft(task);
+    updateDraft(task, {
+      batteryNote: value,
+      batterySummary: summarizeTextResult([value, ...currentDraft.batteryIssueLabels]),
+    });
+  };
+
+  const toggleBatteryIssueLabel = (task: SamplingTask, optionLabel: BatteryIssueLabel, checked: boolean) => {
+    const currentDraft = getDraft(task);
+    const nextLabels = checked
+      ? Array.from(new Set([...currentDraft.batteryIssueLabels, optionLabel]))
+      : currentDraft.batteryIssueLabels.filter((item) => item !== optionLabel);
+    updateDraft(task, {
+      batteryIssueLabels: nextLabels,
+      batterySummary: summarizeTextResult([currentDraft.batteryNote, ...nextLabels]),
+    });
+  };
+
+  const toggleBFaultOption = (task: SamplingTask, optionId: number, checked: boolean) => {
+    const currentDraft = getDraft(task);
+    const nextIds = checked
+      ? normalizeIdList([...currentDraft.bFaultOptionIds, optionId])
+      : currentDraft.bFaultOptionIds.filter((value) => value !== optionId);
+    updateDraft(task, {
+      bFaultOptionIds: nextIds,
+      bFaultSummary: summarizeTextResult(bFaultOptions.filter((option) => nextIds.includes(option.id)).map((option) => option.label)),
+    });
+  };
+
+  const toggleCFaultOption = (task: SamplingTask, optionId: number, checked: boolean) => {
+    const currentDraft = getDraft(task);
+    const nextIds = checked
+      ? normalizeIdList([...currentDraft.cFaultOptionIds, optionId])
+      : currentDraft.cFaultOptionIds.filter((value) => value !== optionId);
+    updateDraft(task, {
+      cFaultOptionIds: nextIds,
+      cFaultSummary: summarizeTextResult(faultOptions.filter((option) => nextIds.includes(option.id)).map((option) => option.label)),
+    });
+  };
+
+  const toggleCAppearanceOption = (task: SamplingTask, optionId: number, checked: boolean) => {
+    const currentDraft = getDraft(task);
+    const nextIds = checked
+      ? normalizeIdList([...currentDraft.cAppearanceOptionIds, optionId])
+      : currentDraft.cAppearanceOptionIds.filter((value) => value !== optionId);
+    updateDraft(task, {
+      cAppearanceOptionIds: nextIds,
+      cAppearanceSummary: summarizeTextResult(appearanceOptions.filter((option) => nextIds.includes(option.id)).map((option) => option.label)),
+    });
+  };
+
+  const toggleCCameraOption = (task: SamplingTask, optionId: number, checked: boolean) => {
+    const currentDraft = getDraft(task);
+    const nextIds = checked
+      ? normalizeIdList([...currentDraft.cCameraOptionIds, optionId])
+      : currentDraft.cCameraOptionIds.filter((value) => value !== optionId);
+    updateDraft(task, {
+      cCameraOptionIds: nextIds,
+      cCameraSummary: summarizeTextResult(cameraOptions.filter((option) => nextIds.includes(option.id)).map((option) => option.label)),
+    });
+  };
+
   const submitInspection = (task: SamplingTask, passed: boolean) => {
     const draft = getDraft(task);
-    const initial = createInitialDraft(task);
+    const initial = createInitialDraft(task, detailData);
     const applyInspectionChanges = (
       normalizeResultText(draft.batterySummary) !== initial.batterySummary
       || normalizeResultText(draft.bFaultSummary) !== initial.bFaultSummary
@@ -294,40 +438,76 @@ export default function SamplingPage() {
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div>
                         <p className="text-sm font-bold text-slate-900">B 站檢查結果</p>
-                        <p className="mt-1 text-xs leading-6 text-slate-500">先帶入 B 站文字結果；如需修正，可展開編輯後直接覆寫。</p>
+                        <p className="mt-1 text-xs leading-6 text-slate-500">先帶入 B 站的電池與功能結果；如需修正，可展開後以與原站點一致的點選方式調整。</p>
                       </div>
                       <Button
                         type="button"
                         variant="outline"
                         className="rounded-2xl"
+                        disabled={detailQuery.isLoading}
                         onClick={() => updateDraft(task, { isEditingPrevious: !draft.isEditingPrevious })}
                       >
-                        {draft.isEditingPrevious ? "收合修改" : "修改 B 站結果"}
+                        {detailQuery.isLoading ? "載入選項中..." : draft.isEditingPrevious ? "收合修改" : "修改 B 站結果"}
                       </Button>
                     </div>
                     <div className="grid gap-4 rounded-2xl bg-white p-5 shadow-sm md:grid-cols-2">
                       <div className="space-y-2">
                         <p className="text-xs font-semibold tracking-wide text-slate-500">電池檢測</p>
                         {draft.isEditingPrevious ? (
-                          <Textarea
-                            value={draft.batterySummary}
-                            onChange={(event) => updateDraft(task, { batterySummary: event.target.value })}
-                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
-                            placeholder="例如：88%、待更換、正常"
-                          />
+                          <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
+                            <label className="space-y-2 text-sm text-slate-600">
+                              <span>檢測回覆</span>
+                              <Input
+                                value={draft.batteryNote}
+                                onChange={(event) => updateBatteryNote(task, event.target.value)}
+                                className="editable-field h-12 rounded-2xl border-0 bg-white shadow-sm"
+                                placeholder="例如：88%、待更換"
+                              />
+                            </label>
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium text-slate-700">異常標記</p>
+                              <div className="flex flex-wrap gap-3">
+                                {B_BATTERY_ISSUE_OPTIONS.map((optionLabel) => (
+                                  <label key={optionLabel} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
+                                    <Checkbox
+                                      checked={draft.batteryIssueLabels.includes(optionLabel)}
+                                      onCheckedChange={(checked) => toggleBatteryIssueLabel(task, optionLabel, Boolean(checked))}
+                                    />
+                                    <span>{optionLabel}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{normalizeResultText(draft.batterySummary)}</div>
+                          </div>
                         ) : (
                           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{normalizeResultText(draft.batterySummary)}</div>
                         )}
                       </div>
                       <div className="space-y-2">
-                        <p className="text-xs font-semibold tracking-wide text-slate-500">故障狀態</p>
+                        <p className="text-xs font-semibold tracking-wide text-slate-500">功能故障</p>
                         {draft.isEditingPrevious ? (
-                          <Textarea
-                            value={draft.bFaultSummary}
-                            onChange={(event) => updateDraft(task, { bFaultSummary: event.target.value })}
-                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
-                            placeholder="例如：無法充電、Face ID 異常、正常"
-                          />
+                          <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium text-slate-700">故障選項</p>
+                              {bFaultOptions.length > 0 ? (
+                                <div className="flex flex-wrap gap-3">
+                                  {bFaultOptions.map((option) => (
+                                    <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
+                                      <Checkbox
+                                        checked={draft.bFaultOptionIds.includes(option.id)}
+                                        onCheckedChange={(checked) => toggleBFaultOption(task, option.id, Boolean(checked))}
+                                      />
+                                      <span>{option.label}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-500">目前沒有可用的 B 站功能故障選項。</div>
+                              )}
+                            </div>
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{normalizeResultText(draft.bFaultSummary)}</div>
+                          </div>
                         ) : (
                           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{normalizeResultText(draft.bFaultSummary)}</div>
                         )}
@@ -344,27 +524,40 @@ export default function SamplingPage() {
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div>
                         <p className="text-sm font-bold text-slate-900">C 站檢查結果</p>
-                        <p className="mt-1 text-xs leading-6 text-slate-500">先帶入 C 站文字結果；如需修正，可展開編輯後直接覆寫。</p>
+                        <p className="mt-1 text-xs leading-6 text-slate-500">先帶入 C 站的螢幕、機身與鏡頭結果；如需修正，可展開後以 Checkbox 點選方式調整。</p>
                       </div>
                       <Button
                         type="button"
                         variant="outline"
                         className="rounded-2xl"
+                        disabled={detailQuery.isLoading}
                         onClick={() => updateDraft(task, { isEditingCurrent: !draft.isEditingCurrent })}
                       >
-                        {draft.isEditingCurrent ? "收合修改" : "修改 C 站結果"}
+                        {detailQuery.isLoading ? "載入選項中..." : draft.isEditingCurrent ? "收合修改" : "修改 C 站結果"}
                       </Button>
                     </div>
                     <div className="grid gap-4 rounded-2xl bg-white p-5 shadow-sm md:grid-cols-2">
                       <div className="space-y-2">
                         <p className="text-xs font-semibold tracking-wide text-slate-500">螢幕狀態</p>
                         {draft.isEditingCurrent ? (
-                          <Textarea
-                            value={draft.cFaultSummary}
-                            onChange={(event) => updateDraft(task, { cFaultSummary: event.target.value })}
-                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
-                            placeholder="例如：破裂、亮點、正常"
-                          />
+                          <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
+                            {faultOptions.length > 0 ? (
+                              <div className="flex flex-wrap gap-3">
+                                {faultOptions.map((option) => (
+                                  <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
+                                    <Checkbox
+                                      checked={draft.cFaultOptionIds.includes(option.id)}
+                                      onCheckedChange={(checked) => toggleCFaultOption(task, option.id, Boolean(checked))}
+                                    />
+                                    <span>{option.label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-500">目前沒有可用的 C 站螢幕選項。</div>
+                            )}
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{normalizeResultText(draft.cFaultSummary)}</div>
+                          </div>
                         ) : (
                           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{normalizeResultText(draft.cFaultSummary)}</div>
                         )}
@@ -372,12 +565,24 @@ export default function SamplingPage() {
                       <div className="space-y-2">
                         <p className="text-xs font-semibold tracking-wide text-slate-500">機身狀態</p>
                         {draft.isEditingCurrent ? (
-                          <Textarea
-                            value={draft.cAppearanceSummary}
-                            onChange={(event) => updateDraft(task, { cAppearanceSummary: event.target.value })}
-                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
-                            placeholder="例如：刮傷、掉漆、正常"
-                          />
+                          <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
+                            {appearanceOptions.length > 0 ? (
+                              <div className="flex flex-wrap gap-3">
+                                {appearanceOptions.map((option) => (
+                                  <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
+                                    <Checkbox
+                                      checked={draft.cAppearanceOptionIds.includes(option.id)}
+                                      onCheckedChange={(checked) => toggleCAppearanceOption(task, option.id, Boolean(checked))}
+                                    />
+                                    <span>{option.label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-500">目前沒有可用的 C 站機身選項。</div>
+                            )}
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{normalizeResultText(draft.cAppearanceSummary)}</div>
+                          </div>
                         ) : (
                           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{normalizeResultText(draft.cAppearanceSummary)}</div>
                         )}
@@ -385,12 +590,24 @@ export default function SamplingPage() {
                       <div className="space-y-2">
                         <p className="text-xs font-semibold tracking-wide text-slate-500">鏡頭狀態</p>
                         {draft.isEditingCurrent ? (
-                          <Textarea
-                            value={draft.cCameraSummary}
-                            onChange={(event) => updateDraft(task, { cCameraSummary: event.target.value })}
-                            className="editable-textarea min-h-28 rounded-2xl border-0 bg-slate-50"
-                            placeholder="例如：破裂、刮傷、正常"
-                          />
+                          <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
+                            {cameraOptions.length > 0 ? (
+                              <div className="flex flex-wrap gap-3">
+                                {cameraOptions.map((option) => (
+                                  <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
+                                    <Checkbox
+                                      checked={draft.cCameraOptionIds.includes(option.id)}
+                                      onCheckedChange={(checked) => toggleCCameraOption(task, option.id, Boolean(checked))}
+                                    />
+                                    <span>{option.label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-500">目前沒有可用的 C 站鏡頭選項。</div>
+                            )}
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{normalizeResultText(draft.cCameraSummary)}</div>
+                          </div>
                         ) : (
                           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{normalizeResultText(draft.cCameraSummary)}</div>
                         )}
