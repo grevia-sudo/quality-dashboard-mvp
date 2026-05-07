@@ -172,32 +172,20 @@ export default function ImportPage() {
   }, [preparedRows, rows, vendorName]);
 
   const pendingPoSummary = useMemo(() => buildPendingPoSummary(pendingA1Query.data?.tasks ?? []), [pendingA1Query.data?.tasks]);
-  const purchaseOrderRows = useMemo(() => {
+  const purchaseOrderSections = useMemo(() => {
     const deletionLogs = pendingA1Query.data?.poDeletionLogs ?? [];
-    const latestDeletionByPo = deletionLogs.reduce((accumulator, log) => {
-      if (!log.poNumber || accumulator.has(log.poNumber)) {
-        return accumulator;
-      }
-      accumulator.set(log.poNumber, log);
-      return accumulator;
-    }, new Map<string, (typeof deletionLogs)[number]>());
 
-    const activeRows = pendingPoSummary.map((item) => {
-      const deletionLog = latestDeletionByPo.get(item.poNumber);
-      return {
-        key: `active-${item.key}`,
-        kind: "active" as const,
-        poNumber: item.poNumber,
-        categoryLabel: item.categoryLabel,
-        totalQuantity: item.totalQuantity,
-        deleteRecord: deletionLog
-          ? `${formatDeletionRecordTime(deletionLog.createdAt)} 已刪除 ${deletionLog.deletedProducts} 筆商品`
-          : "未刪除",
-        operatorName: deletionLog?.deletedByName ?? "—",
-        details: item.details,
-        itemKey: item.key,
-      };
-    });
+    const activeRows = pendingPoSummary.map((item) => ({
+      key: `active-${item.key}`,
+      kind: "active" as const,
+      poNumber: item.poNumber,
+      categoryLabel: item.categoryLabel,
+      totalQuantity: item.totalQuantity,
+      deleteRecord: "目前有效",
+      operatorName: "—",
+      details: item.details,
+      itemKey: item.key,
+    }));
 
     const activePoNumbers = new Set(activeRows.map((item) => item.poNumber));
     const deletedRows = deletionLogs
@@ -214,7 +202,11 @@ export default function ImportPage() {
         itemKey: `deleted-${log.id}`,
       }));
 
-    return [...activeRows, ...deletedRows];
+    return {
+      activeRows,
+      deletedRows,
+      hasAnyRows: activeRows.length > 0 || deletedRows.length > 0,
+    };
   }, [pendingA1Query.data?.poDeletionLogs, pendingPoSummary]);
   const visibleRows = useMemo(() => (showAllRows ? rows : rows.slice(0, LARGE_IMPORT_PREVIEW_LIMIT)), [rows, showAllRows]);
   const hiddenRowCount = Math.max(rows.length - visibleRows.length, 0);
@@ -475,7 +467,7 @@ export default function ImportPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊採購單列可展開查看尚未完成 A1 點貨的品項細項。列表也會保留最近刪除操作紀錄與操作者，方便追蹤誰刪除了哪一張採購單。</p>
+              <p className="text-sm leading-6 text-slate-600">同一次匯入會共用同一張採購單號；點擊有效採購單列可展開查看尚未完成 A1 點貨的品項細項。已刪除採購單會獨立列在下方，避免和目前仍有效的待點貨資料混在一起。</p>
               <Badge className="w-fit bg-slate-900 text-white">待點貨 {pendingPoSummary.reduce((total, item) => total + item.totalQuantity, 0)} 筆</Badge>
             </div>
 
@@ -489,89 +481,110 @@ export default function ImportPage() {
                 {canDeleteImportedPo ? <div className="text-right">操作</div> : null}
               </div>
 
-              {purchaseOrderRows.length > 0 ? (
-                <div className="divide-y divide-slate-100">
-                  {purchaseOrderRows.map((item) => {
-                    const isExpanded = item.kind === "active" && Boolean(expandedSummaryKeys[item.itemKey]);
-                    return (
-                      <div key={item.key} className="bg-white">
-                        <div className={`grid gap-3 px-4 py-4 transition hover:bg-slate-50 ${canDeleteImportedPo ? "md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px_96px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
-                          {item.kind === "active" ? (
-                            <button
-                              type="button"
-                              className={`grid min-w-0 gap-3 text-left ${canDeleteImportedPo ? "md:col-span-5 md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}
-                              onClick={() => toggleSummaryRow(item.itemKey)}
-                            >
-                              <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
-                                {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
-                                <span>{item.poNumber}</span>
-                              </div>
-                              <div className="text-sm text-slate-700">{item.categoryLabel}</div>
-                              <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
-                              <div className="text-sm text-slate-600">{item.deleteRecord}</div>
-                              <div className="text-sm text-slate-700">{item.operatorName}</div>
-                            </button>
-                          ) : (
-                            <div className={`grid min-w-0 gap-3 ${canDeleteImportedPo ? "md:col-span-5 md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
-                              <div className="text-sm font-semibold text-slate-500">{item.poNumber}</div>
-                              <div className="text-sm text-slate-500">{item.categoryLabel}</div>
-                              <div className="text-sm font-bold text-slate-500 md:text-right">{item.totalQuantity}</div>
-                              <div className="text-sm text-rose-700">{item.deleteRecord}</div>
-                              <div className="text-sm text-slate-600">{item.operatorName}</div>
-                            </div>
-                          )}
-                          {canDeleteImportedPo ? (
-                            <div className="flex justify-start md:justify-end">
-                              {item.kind === "active" ? (
-                                <Button
+              {purchaseOrderSections.hasAnyRows ? (
+                <div className="space-y-4">
+                  <div>
+                    <div className="border-b border-slate-100 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500">目前有效的待點貨採購單</div>
+                    {purchaseOrderSections.activeRows.length > 0 ? (
+                      <div className="divide-y divide-slate-100">
+                        {purchaseOrderSections.activeRows.map((item) => {
+                          const isExpanded = Boolean(expandedSummaryKeys[item.itemKey]);
+                          return (
+                            <div key={item.key} className="bg-white">
+                              <div className={`grid gap-3 px-4 py-4 transition hover:bg-slate-50 ${canDeleteImportedPo ? "md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px_96px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
+                                <button
                                   type="button"
-                                  variant="outline"
-                                  className="rounded-2xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
-                                  disabled={deletePoMutation.isPending}
-                                  onClick={() => handleDeletePo(item.poNumber)}
+                                  className={`grid min-w-0 gap-3 text-left ${canDeleteImportedPo ? "md:col-span-5 md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}
+                                  onClick={() => toggleSummaryRow(item.itemKey)}
                                 >
-                                  刪除
-                                </Button>
-                              ) : (
-                                <span className="text-xs font-semibold tracking-wide text-slate-400">已刪除</span>
-                              )}
-                            </div>
-                          ) : null}
-                        </div>
-
-                        {isExpanded ? (
-                          <div className="border-t border-slate-100 bg-slate-50 px-4 py-4">
-                            <div className="grid gap-3 text-xs font-semibold tracking-wide text-slate-500 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr]">
-                              <div>品項 / 品名</div>
-                              <div>商品類別</div>
-                              <div>品牌</div>
-                              <div>商品批號</div>
-                              <div>商品序號</div>
-                              <div>IMEI</div>
-                            </div>
-                            <div className="mt-3 space-y-2">
-                              {item.details.map((detail) => (
-                                <div key={detail.productId} className="grid gap-3 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr]">
-                                  <div>
-                                    <p className="font-semibold text-slate-900">{detail.productName || detail.productCode}</p>
-                                    <p className="mt-1 text-xs text-slate-500">產品代碼：{detail.productCode}</p>
+                                  <div className="flex items-center gap-2 text-sm font-semibold text-[#2563eb]">
+                                    {isExpanded ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
+                                    <span>{item.poNumber}</span>
                                   </div>
-                                  <div>{detail.categoryName || "—"}</div>
-                                  <div>{detail.brandName || "—"}</div>
-                                  <div>{detail.batchNo || "—"}</div>
-                                  <div>{detail.serialNumber || "—"}</div>
-                                  <div>{detail.imei || "—"}</div>
+                                  <div className="text-sm text-slate-700">{item.categoryLabel}</div>
+                                  <div className="text-sm font-bold text-slate-900 md:text-right">{item.totalQuantity}</div>
+                                  <div className="text-sm text-emerald-700">{item.deleteRecord}</div>
+                                  <div className="text-sm text-slate-500">{item.operatorName}</div>
+                                </button>
+                                {canDeleteImportedPo ? (
+                                  <div className="flex justify-start md:justify-end">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className="rounded-2xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                                      disabled={deletePoMutation.isPending}
+                                      onClick={() => handleDeletePo(item.poNumber)}
+                                    >
+                                      刪除
+                                    </Button>
+                                  </div>
+                                ) : null}
+                              </div>
+
+                              {isExpanded ? (
+                                <div className="border-t border-slate-100 bg-slate-50 px-4 py-4">
+                                  <div className="grid gap-3 text-xs font-semibold tracking-wide text-slate-500 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr]">
+                                    <div>品項 / 品名</div>
+                                    <div>商品類別</div>
+                                    <div>品牌</div>
+                                    <div>商品批號</div>
+                                    <div>商品序號</div>
+                                    <div>IMEI</div>
+                                  </div>
+                                  <div className="mt-3 space-y-2">
+                                    {item.details.map((detail) => (
+                                      <div key={detail.productId} className="grid gap-3 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr]">
+                                        <div>
+                                          <p className="font-semibold text-slate-900">{detail.productName || detail.productCode}</p>
+                                          <p className="mt-1 text-xs text-slate-500">產品代碼：{detail.productCode}</p>
+                                        </div>
+                                        <div>{detail.categoryName || "—"}</div>
+                                        <div>{detail.brandName || "—"}</div>
+                                        <div>{detail.batchNo || "—"}</div>
+                                        <div>{detail.serialNumber || "—"}</div>
+                                        <div>{detail.imei || "—"}</div>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              ))}
+                              ) : null}
                             </div>
-                          </div>
-                        ) : null}
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    ) : (
+                      <div className="px-4 py-6 text-sm text-slate-500">目前沒有有效的待點貨採購單。</div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-slate-200">
+                    <div className="border-b border-slate-100 px-4 py-3 text-xs font-semibold tracking-wide text-slate-500">最近已刪除的採購單紀錄</div>
+                    {purchaseOrderSections.deletedRows.length > 0 ? (
+                      <div className="divide-y divide-slate-100">
+                        {purchaseOrderSections.deletedRows.map((item) => (
+                          <div key={item.key} className={`grid gap-3 px-4 py-4 ${canDeleteImportedPo ? "md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px_96px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
+                            <div className={`grid min-w-0 gap-3 ${canDeleteImportedPo ? "md:col-span-5 md:grid-cols-[1.15fr_1fr_90px_1.4fr_120px] md:items-center" : "md:grid-cols-[1.2fr_1fr_90px_1.45fr_120px] md:items-center"}`}>
+                              <div className="text-sm font-semibold text-slate-500 line-through decoration-rose-300">{item.poNumber}</div>
+                              <div className="text-sm text-slate-500 line-through decoration-rose-300">{item.categoryLabel}</div>
+                              <div className="text-sm font-bold text-slate-500 md:text-right line-through decoration-rose-300">{item.totalQuantity}</div>
+                              <div className="text-sm text-rose-700 line-through decoration-rose-300">{item.deleteRecord}</div>
+                              <div className="text-sm text-slate-600 line-through decoration-rose-300">{item.operatorName}</div>
+                            </div>
+                            {canDeleteImportedPo ? (
+                              <div className="flex justify-start md:justify-end">
+                                <span className="text-xs font-semibold tracking-wide text-slate-400">已刪除</span>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="px-4 py-6 text-sm text-slate-500">目前沒有最近刪除的採購單紀錄。</div>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="px-4 py-8 text-sm text-slate-600">目前沒有待點貨採購單，也沒有最近刪除紀錄；完成匯入或執行刪除後，系統會在這裡整理採購單與刪除歷程。</div>
+                <div className="px-4 py-8 text-sm text-slate-600">目前沒有待點貨採購單，也沒有最近刪除紀錄；完成匯入或執行刪除後，系統會在這裡分開整理有效採購單與刪除歷程。</div>
               )}
             </div>
           </CardContent>

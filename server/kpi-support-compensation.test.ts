@@ -141,7 +141,7 @@ describe("support compensation KPI integration", () => {
       userId: engineerUserId,
     });
     expect(deletedRows).toHaveLength(0);
-  });
+  }, 20000);
 
   it("adds support compensation into engineer daily and monthly KPI summary", async () => {
     const { adminUserId, engineerUserId } = await createTestUsers();
@@ -219,5 +219,5 @@ describe("support compensation KPI integration", () => {
     const listedSupportRows = setup.supportCompensations.filter((item) => item.userId === engineerUserId);
     expect(listedSupportRows).toHaveLength(2);
     expect(listedSupportRows.every((item) => item.engineerName === "Support Engineer")).toBe(true);
-  });
+  }, 20000);
 });

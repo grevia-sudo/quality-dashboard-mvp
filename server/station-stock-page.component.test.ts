@@ -137,19 +137,35 @@ describe("StationPage stock detail component", () => {
             isOverdue: false,
           },
         ],
+        recentAutoRemovedStockItems: [
+          {
+            taskId: 802,
+            productId: 902,
+            productCode: "P-902",
+            productName: "iPhone 14",
+            batchNo: "BATCH-902",
+            serialNumber: "SN-902",
+            imei: "IMEI-902",
+            completedAt: "2026-05-07T09:00:00.000Z",
+            resultSummary: "外部進貨明細批號比對成功，自動移除待入庫",
+          },
+        ],
       },
       isLoading: false,
       error: null,
     });
   });
 
-  it("renders stock detail preview cards and csv export action", () => {
+  it("renders stock detail preview cards and keeps auto-removed items in a separate section", () => {
     render(React.createElement(StationPage));
 
     expect(screen.getByText("待入庫詳細清單")).toBeTruthy();
     expect(screen.getAllByText("iPhone 15 Pro").length).toBeGreaterThan(0);
     expect(screen.getByText("產品代碼：P-901")).toBeTruthy();
     expect(screen.getAllByText("匯出 CSV").length).toBeGreaterThan(0);
+    expect(screen.getByText("最近自動移除待入庫")).toBeTruthy();
+    expect(screen.getByText("iPhone 14")).toBeTruthy();
+    expect(screen.getByText("外部進貨明細批號比對成功，自動移除待入庫")).toBeTruthy();
     expect(screen.getByTestId("dashboard-nav").textContent).toContain("匯入作業");
     expect(screen.getByTestId("dashboard-nav").textContent).toContain("待入庫待比對");
   });

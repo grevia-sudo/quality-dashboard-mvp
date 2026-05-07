@@ -30,6 +30,7 @@ import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "
 import { markPurchaseOrderRowsDeletedInGoogleSheet } from "./purchase-sheet-delete-sync";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
+const PRODUCTIVITY_TRACKED_STATION_CODES = ["A1", "A2", "B", "C", "E"] as const;
 const SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR = 0.125;
 const DISPLAY_POINTS_MULTIPLIER = 100;
 type StationCode = (typeof STATION_CODES)[number];
@@ -63,6 +64,274 @@ function dateKeyToDate(dateKey: string) {
 
 function getSupportCompensationInternalPoints(hours: number) {
   return hours * SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR;
+}
+
+type ProductivityTrackedStationCode = (typeof PRODUCTIVITY_TRACKED_STATION_CODES)[number];
+
+function isProductivityTrackedStation(stationCode: StationCode): stationCode is ProductivityTrackedStationCode {
+  return PRODUCTIVITY_TRACKED_STATION_CODES.includes(stationCode as ProductivityTrackedStationCode);
+}
+
+async function findProductivityTargetConfig(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: {
+    stationCode: ProductivityTrackedStationCode;
+    categoryId: number | null;
+    subtypeCode?: string | null;
+    businessDateValue: Date;
+  },
+) {
+  if (!input.categoryId) {
+    return null;
+  }
+
+  const targetRows = await db
+    .select()
+    .from(productivityTargetConfigs)
+    .where(and(
+      eq(productivityTargetConfigs.stationCode, input.stationCode),
+      eq(productivityTargetConfigs.categoryId, input.categoryId),
+      eq(productivityTargetConfigs.active, true),
+      lte(productivityTargetConfigs.effectiveFrom, input.businessDateValue),
+      or(isNull(productivityTargetConfigs.effectiveTo), gte(productivityTargetConfigs.effectiveTo, input.businessDateValue)),
+    ))
+    .orderBy(desc(productivityTargetConfigs.effectiveFrom), desc(productivityTargetConfigs.id));
+
+  if (targetRows.length === 0) {
+    return null;
+  }
+
+  const normalizedSubtypeCode = normalizeOptionalText(input.subtypeCode);
+  const exactMatch = normalizedSubtypeCode
+    ? targetRows.find((row) => normalizeOptionalText(row.subtypeCode) === normalizedSubtypeCode)
+    : null;
+  const fallbackMatch = targetRows.find((row) => !normalizeOptionalText(row.subtypeCode));
+
+  return exactMatch ?? fallbackMatch ?? targetRows[0] ?? null;
+}
+
+async function syncEngineerDailyProductivityRecord(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: {
+    userId: number;
+    businessDateValue: Date;
+  },
+) {
+  const businessDate = toDateKey(input.businessDateValue);
+  const monthPrefix = businessDate.slice(0, 7);
+
+  const [detailRows, eventRows, samplingRows, supportRows] = await Promise.all([
+    db
+      .select({
+        businessDate: productivityScoreDetails.businessDate,
+        earnedPoints: productivityScoreDetails.earnedPoints,
+      })
+      .from(productivityScoreDetails)
+      .where(eq(productivityScoreDetails.userId, input.userId)),
+    db
+      .select({
+        productId: stationEvents.productId,
+        stationCode: stationEvents.stationCode,
+        eventType: stationEvents.eventType,
+        isRework: stationEvents.isRework,
+        businessDate: stationEvents.businessDate,
+      })
+      .from(stationEvents)
+      .where(eq(stationEvents.operatorUserId, input.userId)),
+    db
+      .select({
+        passed: samplingResults.passed,
+        sampleDate: samplingResults.sampleDate,
+      })
+      .from(samplingResults)
+      .where(eq(samplingResults.sampledByUserId, input.userId)),
+    db
+      .select({
+        businessDate: supportTaskCompensations.businessDate,
+        supportHours: supportTaskCompensations.supportHours,
+      })
+      .from(supportTaskCompensations)
+      .where(eq(supportTaskCompensations.userId, input.userId)),
+  ]);
+
+  const dailyDetails = detailRows.filter((row) => toDateKey(row.businessDate) === businessDate);
+  const monthDetails = detailRows.filter((row) => toDateKey(row.businessDate).startsWith(monthPrefix));
+  const dailyEvents = eventRows.filter((row) => toDateKey(row.businessDate) === businessDate);
+  const dailySampling = samplingRows.filter((row) => toDateKey(row.sampleDate) === businessDate);
+  const completedEvents = dailyEvents.filter((row) => row.eventType === "complete");
+  const reworkEvents = dailyEvents.filter((row) => row.isRework);
+  const dailySupportRows = supportRows.filter((row) => toDateKey(row.businessDate) === businessDate);
+  const monthSupportRows = supportRows.filter((row) => toDateKey(row.businessDate).startsWith(monthPrefix));
+
+  const completedProductIds = Array.from(new Set(completedEvents.map((row) => row.productId)));
+  const relatedTasks = completedProductIds.length > 0
+    ? await db
+        .select({
+          productId: stationTasks.productId,
+          stationCode: stationTasks.stationCode,
+          isOverdue: stationTasks.isOverdue,
+          createdAt: stationTasks.createdAt,
+          updatedAt: stationTasks.updatedAt,
+        })
+        .from(stationTasks)
+        .where(inArray(stationTasks.productId, completedProductIds))
+    : [];
+
+  const productivityPoints = dailyDetails.reduce((sum, row) => sum + Number(row.earnedPoints), 0);
+  const todaySupportHours = dailySupportRows.reduce((sum, row) => sum + Number(row.supportHours), 0);
+  const todaySupportPoints = getSupportCompensationInternalPoints(todaySupportHours);
+  const totalPoints = productivityPoints + todaySupportPoints;
+  const rawAchievementRate = toDisplayPoints(totalPoints);
+  const kpiAchievementRate = Math.min(rawAchievementRate, 100);
+  const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
+
+  const attendanceDateSet = new Set<string>([
+    ...monthDetails.map((row) => toDateKey(row.businessDate)),
+    ...monthSupportRows.map((row) => toDateKey(row.businessDate)),
+  ]);
+  const attendanceDays = attendanceDateSet.size;
+
+  const failedSamples = dailySampling.filter((row) => !row.passed).length;
+  const totalSamples = dailySampling.length;
+  const samplingFailRate = totalSamples > 0 ? failedSamples / totalSamples : 0;
+  const reworkRate = completedEvents.length > 0 ? reworkEvents.length / completedEvents.length : 0;
+
+  const taskMap = new Map(relatedTasks.map((task) => [`${task.productId}-${task.stationCode}`, task]));
+  const matchedTasks = completedEvents
+    .map((event) => taskMap.get(`${event.productId}-${event.stationCode}`))
+    .filter((task): task is (typeof relatedTasks)[number] => Boolean(task));
+  const overdueCount = matchedTasks.filter((task) => task.isOverdue).length;
+  const avgProcessHours = matchedTasks.length > 0
+    ? matchedTasks.reduce((sum, task) => sum + (task.updatedAt.getTime() - task.createdAt.getTime()) / 36e5, 0) / matchedTasks.length
+    : 0;
+  const attendanceFairnessFactor = attendanceDays > 0 ? 1 : 0;
+  const finalKpiScore = Math.max(0, kpiAchievementRate - avgProcessHours);
+
+  const payload = {
+    attendanceFlag: dailyDetails.length > 0 || dailySupportRows.length > 0,
+    totalPoints: totalPoints.toFixed(6),
+    rawAchievementRate: rawAchievementRate.toFixed(2),
+    kpiAchievementRate: kpiAchievementRate.toFixed(2),
+    overAchievementRate: overAchievementRate.toFixed(2),
+    samplingFailRate: samplingFailRate.toFixed(4),
+    reworkRate: reworkRate.toFixed(4),
+    overdueCount,
+    avgProcessHours: avgProcessHours.toFixed(2),
+    attendanceFairnessFactor: attendanceFairnessFactor.toFixed(4),
+    finalKpiScore: finalKpiScore.toFixed(6),
+  };
+
+  const existingRow = await db
+    .select({ id: engineerDailyProductivity.id })
+    .from(engineerDailyProductivity)
+    .where(and(
+      eq(engineerDailyProductivity.userId, input.userId),
+      eq(engineerDailyProductivity.businessDate, input.businessDateValue),
+    ))
+    .limit(1);
+
+  if (existingRow[0]) {
+    await db
+      .update(engineerDailyProductivity)
+      .set(payload)
+      .where(eq(engineerDailyProductivity.id, existingRow[0].id));
+    return;
+  }
+
+  await db.insert(engineerDailyProductivity).values({
+    businessDate: input.businessDateValue,
+    userId: input.userId,
+    ...payload,
+  });
+}
+
+async function backfillProductivityFromCompletedEvents(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input?: {
+    userId?: number;
+  },
+) {
+  const missingEvents = await db
+    .select({
+      stationEventId: stationEvents.id,
+      productId: stationEvents.productId,
+      stationCode: stationEvents.stationCode,
+      operatorUserId: stationEvents.operatorUserId,
+      businessDate: stationEvents.businessDate,
+      categoryId: stationEvents.categoryId,
+      subtypeCode: stationEvents.subtypeCode,
+      isRework: stationEvents.isRework,
+    })
+    .from(stationEvents)
+    .leftJoin(productivityScoreDetails, eq(productivityScoreDetails.stationEventId, stationEvents.id))
+    .where(and(
+      eq(stationEvents.eventType, "complete"),
+      eq(stationEvents.countForProductivity, true),
+      inArray(stationEvents.stationCode, PRODUCTIVITY_TRACKED_STATION_CODES as unknown as StationCode[]),
+      isNull(productivityScoreDetails.id),
+      input?.userId ? eq(stationEvents.operatorUserId, input.userId) : undefined,
+    ));
+
+  const affectedUserDateKeys = new Map<string, { userId: number; businessDateValue: Date }>();
+  const targetCache = new Map<string, Awaited<ReturnType<typeof findProductivityTargetConfig>>>();
+
+  for (const event of missingEvents) {
+    if (!event.operatorUserId || !isProductivityTrackedStation(event.stationCode)) {
+      continue;
+    }
+
+    const cacheKey = [
+      event.stationCode,
+      event.categoryId ?? "none",
+      normalizeOptionalText(event.subtypeCode) ?? "none",
+      toDateKey(event.businessDate),
+    ].join("__");
+
+    let targetConfig = targetCache.get(cacheKey);
+    if (typeof targetConfig === "undefined") {
+      targetConfig = await findProductivityTargetConfig(db, {
+        stationCode: event.stationCode,
+        categoryId: event.categoryId,
+        subtypeCode: event.subtypeCode,
+        businessDateValue: event.businessDate,
+      });
+      targetCache.set(cacheKey, targetConfig);
+    }
+
+    if (!targetConfig) {
+      continue;
+    }
+
+    const reworkFactor = event.isRework ? Number(targetConfig.reworkFactor ?? 1) : 1;
+    const qualityFactor = 1;
+    const earnedPoints = Number(targetConfig.baseUnitPoints) * reworkFactor * qualityFactor;
+
+    await db.insert(productivityScoreDetails).values({
+      businessDate: event.businessDate,
+      userId: event.operatorUserId,
+      stationEventId: event.stationEventId,
+      productId: event.productId,
+      stationCode: event.stationCode,
+      categoryId: event.categoryId,
+      subtypeCode: normalizeOptionalText(event.subtypeCode),
+      targetConfigId: targetConfig.id,
+      completedQty: 1,
+      baseUnitPoints: targetConfig.baseUnitPoints,
+      reworkFactor: reworkFactor.toFixed(4),
+      qualityFactor: qualityFactor.toFixed(4),
+      earnedPoints: earnedPoints.toFixed(6),
+    });
+
+    affectedUserDateKeys.set(`${event.operatorUserId}-${toDateKey(event.businessDate)}`, {
+      userId: event.operatorUserId,
+      businessDateValue: event.businessDate,
+    });
+  }
+
+  const affectedItems = Array.from(affectedUserDateKeys.values());
+  for (const item of affectedItems) {
+    await syncEngineerDailyProductivityRecord(db, item);
+  }
 }
 
 function normalizeProductNameLabel(value: unknown) {
@@ -2633,11 +2902,44 @@ export async function completeStationTask(input: {
       serialNumber: products.serialNumber,
       imei: products.imei,
       sheetRowNumber: products.sheetRowNumber,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      archivedAt: products.archivedAt,
     })
     .from(products)
     .where(eq(products.id, input.productId))
     .limit(1);
   const productRow = productRows[0] ?? null;
+  const taskRows = await db
+    .select({
+      id: stationTasks.id,
+      productId: stationTasks.productId,
+      stationCode: stationTasks.stationCode,
+      taskStatus: stationTasks.taskStatus,
+    })
+    .from(stationTasks)
+    .where(and(
+      eq(stationTasks.id, input.taskId),
+      eq(stationTasks.productId, input.productId),
+      eq(stationTasks.stationCode, input.stationCode),
+    ))
+    .limit(1);
+  const taskRow = taskRows[0] ?? null;
+  const activeTaskStatuses = ["pending", "in_progress", "overdue", "returned"] as const;
+
+  if (!productRow || productRow.archivedAt) {
+    return { success: false as const, message: "此作業已失效，商品已不存在或已封存，請重新整理頁面" };
+  }
+
+  if (!taskRow || !activeTaskStatuses.includes(taskRow.taskStatus as (typeof activeTaskStatuses)[number])) {
+    return { success: false as const, message: "此作業已失效，站點任務不存在或已完成，請重新整理頁面" };
+  }
+
+  const expectedCurrentStatus = statusForStation(input.stationCode);
+  if (productRow.currentStationCode !== input.stationCode || productRow.currentStatus !== expectedCurrentStatus) {
+    return { success: false as const, message: `此作業已失效，商品目前不在 ${stationToLabel(input.stationCode)}，請重新整理頁面` };
+  }
+
   const effectiveCategoryId = input.categoryId ?? productRow?.categoryId ?? null;
   const nextStation = await resolveNextStationByCategory(effectiveCategoryId, input.stationCode);
 
@@ -2758,7 +3060,7 @@ export async function completeStationTask(input: {
     })
     .where(eq(stationTasks.id, input.taskId));
 
-  await db.insert(stationEvents).values({
+  const stationEventResult = await db.insert(stationEvents).values({
     productId: input.productId,
     stationTaskId: input.taskId,
     stationCode: input.stationCode,
@@ -2767,32 +3069,63 @@ export async function completeStationTask(input: {
     businessDate: businessDateValue,
     categoryId: effectiveCategoryId,
     subtypeCode: input.subtypeCode ?? null,
-      payload: {
-        summary: input.summary ?? "已完成站點作業",
-        faultOptionIds: input.faultOptionIds ?? [],
-        appearanceOptionIds: input.appearanceOptionIds ?? [],
-        cameraOptionIds: input.cameraOptionIds ?? [],
-        bFaultOptionIds,
-        faultLabels,
-        appearanceLabels,
-        cameraLabels,
-        bFaultLabels,
-        batteryNote,
-        batteryIssueLabels,
-        batterySummary,
-        faultSummary,
-        cFaultSummary,
-        cAppearanceSummary,
-        cCameraSummary,
-        cInspectionSummary,
-        applyBChanges,
-        cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
-        cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
-        eFrontPhotoUrl,
-        eBackPhotoUrl,
-      },
+    payload: {
+      summary: input.summary ?? "已完成站點作業",
+      faultOptionIds: input.faultOptionIds ?? [],
+      appearanceOptionIds: input.appearanceOptionIds ?? [],
+      cameraOptionIds: input.cameraOptionIds ?? [],
+      bFaultOptionIds,
+      faultLabels,
+      appearanceLabels,
+      cameraLabels,
+      bFaultLabels,
+      batteryNote,
+      batteryIssueLabels,
+      batterySummary,
+      faultSummary,
+      cFaultSummary,
+      cAppearanceSummary,
+      cCameraSummary,
+      cInspectionSummary,
+      applyBChanges,
+      cModifiedBatterySummary: applyBChanges ? batterySummary : undefined,
+      cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
+      eFrontPhotoUrl,
+      eBackPhotoUrl,
+    },
+  }).$returningId();
 
-  });
+  if (isProductivityTrackedStation(input.stationCode)) {
+    const targetConfig = await findProductivityTargetConfig(db, {
+      stationCode: input.stationCode,
+      categoryId: effectiveCategoryId,
+      subtypeCode: input.subtypeCode ?? null,
+      businessDateValue,
+    });
+
+    if (targetConfig && stationEventResult[0]?.id) {
+      await db.insert(productivityScoreDetails).values({
+        businessDate: businessDateValue,
+        userId: input.operatorUserId,
+        stationEventId: stationEventResult[0].id,
+        productId: input.productId,
+        stationCode: input.stationCode,
+        categoryId: effectiveCategoryId,
+        subtypeCode: normalizeOptionalText(input.subtypeCode),
+        targetConfigId: targetConfig.id,
+        completedQty: 1,
+        baseUnitPoints: targetConfig.baseUnitPoints,
+        reworkFactor: "1.0000",
+        qualityFactor: "1.0000",
+        earnedPoints: Number(targetConfig.baseUnitPoints).toFixed(6),
+      });
+
+      await syncEngineerDailyProductivityRecord(db, {
+        userId: input.operatorUserId,
+        businessDateValue,
+      });
+    }
+  }
 
   await db.insert(sheetSyncJobs).values({
     jobType: "station_task_sync",
@@ -3069,13 +3402,20 @@ export async function createSupportCompensation(input: {
     throw new Error("Database is not available");
   }
 
+  const businessDateValue = dateKeyToDate(input.businessDate);
+
   await db.insert(supportTaskCompensations).values({
-    businessDate: dateKeyToDate(input.businessDate),
+    businessDate: businessDateValue,
     userId: input.userId,
     supportTask: input.supportTask.trim(),
     supportHours: input.supportHours.toFixed(2),
     notes: input.notes?.trim() || null,
     createdByUserId: input.createdByUserId,
+  });
+
+  await syncEngineerDailyProductivityRecord(db, {
+    userId: input.userId,
+    businessDateValue,
   });
 
   return { success: true };
@@ -3127,7 +3467,25 @@ export async function deleteSupportCompensation(id: number) {
     throw new Error("Database is not available");
   }
 
+  const existingRows = await db
+    .select({
+      businessDate: supportTaskCompensations.businessDate,
+      userId: supportTaskCompensations.userId,
+    })
+    .from(supportTaskCompensations)
+    .where(eq(supportTaskCompensations.id, id))
+    .limit(1);
+
   await db.delete(supportTaskCompensations).where(eq(supportTaskCompensations.id, id));
+
+  const deletedRow = existingRows[0];
+  if (deletedRow) {
+    await syncEngineerDailyProductivityRecord(db, {
+      userId: deletedRow.userId,
+      businessDateValue: deletedRow.businessDate,
+    });
+  }
+
   return { success: true };
 }
 
@@ -3168,6 +3526,7 @@ export async function getEngineerKpiSummary(userId: number) {
   }
 
   await ensureMvpSeedData();
+  await backfillProductivityFromCompletedEvents(db, { userId });
   const { businessDate, businessDateValue } = getOperationTimeContext();
   const monthPrefix = businessDate.slice(0, 7);
 
@@ -3564,6 +3923,7 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   }
 
   const range = normalizeAdminDateRange(input);
+  await backfillProductivityFromCompletedEvents(db);
   const [userRows, productivityRows, supportRows] = await Promise.all([
     db
       .select({

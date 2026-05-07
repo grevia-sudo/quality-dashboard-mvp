@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { and, eq, inArray } from "drizzle-orm";
-import { deleteImportedPurchaseOrder, getDb } from "./db";
+import { completeStationTask, deleteImportedPurchaseOrder, getDb } from "./db";
 import {
   products,
   productivityScoreDetails,
@@ -206,6 +206,108 @@ describe("deleteImportedPurchaseOrder integration", () => {
       deletedByUserId: actor.id,
       deletedByName: "Delete PO Admin",
     });
+
+    createdPoNumbers.delete(poNumber);
+    await db.delete(purchaseOrderDeletionLogs).where(eq(purchaseOrderDeletionLogs.poNumber, poNumber));
+    createdUserOpenIds.delete(openId);
+    await db.delete(users).where(eq(users.openId, openId));
+  }, 20000);
+
+  it("rejects stale station completion submissions after the purchase order has been deleted", async () => {
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const poNumber = `PO-DELETE-STALE-${uniqueSuffix}`;
+    const openId = `delete-po-stale-${uniqueSuffix}`;
+    createdPoNumbers.add(poNumber);
+    createdUserOpenIds.add(openId);
+
+    await db.insert(users).values({
+      openId,
+      username: `delete-po-stale-${uniqueSuffix}`,
+      name: "Delete PO Stale Admin",
+      loginMethod: "password",
+      role: "admin",
+    });
+
+    const actorRows = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.openId, openId))
+      .limit(1);
+    const actor = actorRows[0];
+    if (!actor) {
+      throw new Error("Failed to create actor user");
+    }
+
+    await db.insert(products).values({
+      productCode: `PO-DELETE-STALE-PRODUCT-${uniqueSuffix}`,
+      poNumber,
+      vendorName: "Delete Test Vendor",
+      productName: "Delete Stale Device",
+      currentStationCode: "A1",
+      currentStatus: "pending_a1",
+    });
+
+    const insertedProductRows = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.poNumber, poNumber))
+      .limit(1);
+    const insertedProduct = insertedProductRows[0];
+    if (!insertedProduct) {
+      throw new Error("Failed to create stale product row");
+    }
+
+    await db.insert(stationTasks).values({
+      productId: insertedProduct.id,
+      stationCode: "A1",
+      taskStatus: "pending",
+      dueDate: new Date("2026-05-04T00:00:00Z"),
+      resultSummary: "待處理",
+    });
+
+    const insertedTaskRows = await db
+      .select({ id: stationTasks.id })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.productId, insertedProduct.id), eq(stationTasks.stationCode, "A1")))
+      .limit(1);
+    const insertedTask = insertedTaskRows[0];
+    if (!insertedTask) {
+      throw new Error("Failed to create stale task row");
+    }
+
+    await deleteImportedPurchaseOrder({
+      poNumber,
+      deletedByUserId: actor.id,
+      deletedByName: "Delete PO Stale Admin",
+    });
+
+    const staleResult = await completeStationTask({
+      taskId: insertedTask.id,
+      stationCode: "A1",
+      operatorUserId: actor.id,
+      productId: insertedProduct.id,
+      summary: "使用舊分頁送出",
+    });
+
+    expect(staleResult).toMatchObject({
+      success: false,
+      message: "此作業已失效，商品已不存在或已封存，請重新整理頁面",
+    });
+
+    const [eventsAfterDelete, tasksAfterDelete, productsAfterDelete] = await Promise.all([
+      db.select({ id: stationEvents.id }).from(stationEvents).where(eq(stationEvents.productId, insertedProduct.id)),
+      db.select({ id: stationTasks.id }).from(stationTasks).where(eq(stationTasks.productId, insertedProduct.id)),
+      db.select({ id: products.id }).from(products).where(eq(products.id, insertedProduct.id)),
+    ]);
+
+    expect(eventsAfterDelete).toHaveLength(0);
+    expect(tasksAfterDelete).toHaveLength(0);
+    expect(productsAfterDelete).toHaveLength(0);
 
     createdPoNumbers.delete(poNumber);
     await db.delete(purchaseOrderDeletionLogs).where(eq(purchaseOrderDeletionLogs.poNumber, poNumber));

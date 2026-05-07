@@ -155,6 +155,7 @@ describe("ImportPage purchase-order delete access", () => {
     expect(screen.getByText("操作者")).toBeTruthy();
     expect(screen.getByText("佳珉")).toBeTruthy();
     expect(screen.getByText(/已刪除 12 筆商品／12 筆任務/)).toBeTruthy();
+    expect(screen.getByText("PO-20260429-09").className).toContain("line-through");
 
     const deleteButton = screen.getByRole("button", { name: "刪除" });
     expect(deleteButton).toBeTruthy();

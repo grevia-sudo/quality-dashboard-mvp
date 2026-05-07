@@ -1,0 +1,8 @@
+{
+  "query": "SELECT `stationCode`, COUNT(*) AS completed_events\nFROM `station_events`\nWHERE `eventType` = 'complete'\nGROUP BY `stationCode`\nORDER BY `stationCode`;\n\nSELECT COUNT(*) AS productivity_detail_rows FROM `productivity_score_details`;\n\nSELECT COUNT(*) AS daily_productivity_rows FROM `engineer_daily_productivity`;\n\nSELECT COUNT(*) AS support_compensation_rows FROM `support_task_compensations`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `stationCode`, COUNT(*) AS completed_events\nFROM `station_events`\nWHERE `eventType` = 'complete'\nGROUP BY `stationCode`\nORDER BY `stationCode`;\n\nSELECT COUNT(*) AS productivity_detail_rows FROM `productivity_score_details`;\n\nSELECT COUNT(*) AS daily_productivity_rows FROM `engineer_daily_productivity`;\n\nSELECT COUNT(*) AS support_compensation_rows FROM `support_task_compensations`;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'eventtype' in 'where clause'"
+  ]
+}
