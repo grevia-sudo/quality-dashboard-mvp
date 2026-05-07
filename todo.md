@@ -130,3 +130,6 @@
 - [x] 補上 STOCK 站頁 auto-removed 分區與匯入頁狀態分區的前端測試，驗證目前整理後的主要畫面不會混顯
 - [x] 在 STOCK 站頁前端補上狀態分層說明，明確告知上方只顯示有效待入庫任務，auto-removed 另列於下方
 - [x] 補上 STOCK 站頁狀態分層說明與 auto-removed 區塊的前端測試，驗證主要待入庫視圖不混顯
+- [x] 釐清 Google 採購單工作表中 MANUAL、BACKUP、TRACE、STOCK-BLOCK、AUTO-PO 等髒資料列的來源與保留規則
+- [x] 清理 Google 採購單工作表中不應保留的中間流程或測試列，讓正式採購單資料恢復乾淨
+- [x] 追查並收斂會把中間流程資料寫進 Google 採購單工作表的程式路徑，避免後續再次污染

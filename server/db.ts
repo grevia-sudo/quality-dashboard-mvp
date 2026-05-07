@@ -570,19 +570,6 @@ function triggerPurchaseSheetSyncInBackground() {
   const now = Date.now();
 
   if (process.env.NODE_ENV === "test" || process.env.VITEST) {
-    const command = "cd /home/ubuntu/quality-dashboard-mvp && pnpm sync:purchase-sheet >/tmp/quality-dashboard-purchase-sheet-sync.log 2>&1";
-    const child = spawn("bash", ["-lc", command], {
-      detached: true,
-      stdio: "ignore",
-      env: {
-        ...process.env,
-        HOME: process.env.HOME ?? "/home/ubuntu",
-        GOOGLE_WORKSPACE_CLI_TOKEN: process.env.GOOGLE_WORKSPACE_CLI_TOKEN,
-        GOOGLE_DRIVE_TOKEN: process.env.GOOGLE_DRIVE_TOKEN,
-      },
-    });
-
-    child.unref();
     return;
   }
 

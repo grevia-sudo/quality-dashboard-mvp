@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) AS remainingDirtyProducts FROM products WHERE poNumber REGEXP '^PO-BACKUP|^PO-TRACE|^PO-STOCK-BLOCK' OR vendorName IN ('手動指定 D 站跨站驗證','手動指定保留驗證','手動指定跨站驗證','追蹤驗證廠商','邊界驗證廠商','品牌大小寫驗證廠商','自動補號驗證廠商','待入庫前補匯入廠商','備份驗證廠商','差異驗證廠商');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COUNT(*) AS remainingDirtyProducts FROM products WHERE poNumber REGEXP '^PO-BACKUP|^PO-TRACE|^PO-STOCK-BLOCK' OR vendorName IN ('手動指定 D 站跨站驗證','手動指定保留驗證','手動指定跨站驗證','追蹤驗證廠商','邊界驗證廠商','品牌大小寫驗證廠商','自動補號驗證廠商','待入庫前補匯入廠商','備份驗證廠商','差異驗證廠商');",
+  "rows": [
+    {
+      "remainingDirtyProducts": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "remainingDirtyProducts\n0\n",
+  "stderr": "",
+  "execution_time_ms": 1592
+}

@@ -1,0 +1,85 @@
+{
+  "query": "SELECT poNumber, vendorName, COUNT(*) AS productCount FROM products WHERE poNumber REGEXP '^PO-BACKUP|^PO-TRACE|^PO-STOCK-BLOCK' OR vendorName IN ('手動指定 D 站跨站驗證','手動指定保留驗證','手動指定跨站驗證','追蹤驗證廠商','邊界驗證廠商','品牌大小寫驗證廠商','自動補號驗證廠商','待入庫前補匯入廠商','備份驗證廠商','差異驗證廠商') GROUP BY poNumber, vendorName ORDER BY poNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT poNumber, vendorName, COUNT(*) AS productCount FROM products WHERE poNumber REGEXP '^PO-BACKUP|^PO-TRACE|^PO-STOCK-BLOCK' OR vendorName IN ('手動指定 D 站跨站驗證','手動指定保留驗證','手動指定跨站驗證','追蹤驗證廠商','邊界驗證廠商','品牌大小寫驗證廠商','自動補號驗證廠商','待入庫前補匯入廠商','備份驗證廠商','差異驗證廠商') GROUP BY poNumber, vendorName ORDER BY poNumber;",
+  "rows": [
+    {
+      "poNumber": "PO-20260506-04",
+      "vendorName": "手動指定 D 站跨站驗證",
+      "productCount": "2"
+    },
+    {
+      "poNumber": "PO-20260506-05",
+      "vendorName": "品牌大小寫驗證廠商",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-20260506-06",
+      "vendorName": "自動補號驗證廠商",
+      "productCount": "3"
+    },
+    {
+      "poNumber": "PO-20260506-08",
+      "vendorName": "手動指定保留驗證",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-20260506-09",
+      "vendorName": "手動指定跨站驗證",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-20260507-01",
+      "vendorName": "品牌大小寫驗證廠商",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-20260507-02",
+      "vendorName": "自動補號驗證廠商",
+      "productCount": "3"
+    },
+    {
+      "poNumber": "PO-20260507-04",
+      "vendorName": "手動指定保留驗證",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-20260507-05",
+      "vendorName": "手動指定跨站驗證",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-BACKUP-1778162208567",
+      "vendorName": "備份驗證廠商",
+      "productCount": "2"
+    },
+    {
+      "poNumber": "PO-BACKUP-DIFF-1778162211886",
+      "vendorName": "差異驗證廠商",
+      "productCount": "6"
+    },
+    {
+      "poNumber": "PO-BACKUP-EDGE-1778040033439",
+      "vendorName": "邊界驗證廠商",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-BACKUP-EDGE-1778162217186",
+      "vendorName": "邊界驗證廠商",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-STOCK-BLOCK-1778040033229",
+      "vendorName": "待入庫前補匯入廠商",
+      "productCount": "1"
+    },
+    {
+      "poNumber": "PO-TRACE-1778162222279",
+      "vendorName": "追蹤驗證廠商",
+      "productCount": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "poNumber\tvendorName\tproductCount\nPO-20260506-04\t手動指定 D 站跨站驗證\t2\nPO-20260506-05\t品牌大小寫驗證廠商\t1\nPO-20260506-06\t自動補號驗證廠商\t3\nPO-20260506-08\t手動指定保留驗證\t1\nPO-20260506-09\t手動指定跨站驗證\t1\nPO-20260507-01\t品牌大小寫驗證廠商\t1\nPO-20260507-02\t自動補號驗證廠商\t3\nPO-20260507-04\t手動指定保留驗證\t1\nPO-20260507-05\t手動指定跨站驗證\t1\nPO-BACKUP-1778162208567\t備份驗證廠商\t2\nPO-BACKUP-DIFF-1778162211886\t差異驗證廠商\t6\nPO-BACKUP-EDGE-1778040033439\t邊界驗證廠商\t1\nPO-BACKUP-EDGE-1778162217186\t邊界驗證廠商\t1\nPO-STOCK-BLOCK-1778040033229\t待入庫前補匯入廠商\t1\nPO-TRACE-1778162222279\t追蹤驗證廠商\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1536
+}

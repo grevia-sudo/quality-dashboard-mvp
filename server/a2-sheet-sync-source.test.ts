@@ -49,6 +49,11 @@ describe("A2 completion and purchase sheet sync source coverage", () => {
     expect(syncScriptSource).toContain('export async function runPurchaseSheetSync()');
   });
 
+  it("does not trigger real purchase sheet sync commands in test environments", () => {
+    expect(dbSource).toContain('if (process.env.NODE_ENV === "test" || process.env.VITEST) {\n    return;\n  }');
+    expect(dbSource).not.toContain('pnpm sync:purchase-sheet >/tmp/quality-dashboard-purchase-sheet-sync.log 2>&1');
+  });
+
   it("retries queued job count queries when the database connection is reset", () => {
     expect(dbSource).toContain('const PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN = /ECONNRESET|PROTOCOL_CONNECTION_LOST|ETIMEDOUT|Connection lost|The server closed the connection/i;');
     expect(dbSource).toContain('async function countQueuedSheetSyncJobs(filters?: { jobType?: string; targetSheetName?: string }) {');
