@@ -1155,8 +1155,9 @@ export default function StationPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                待入庫改為表格明細檢視，方便直接比對批號、序號、IMEI 與目前站點狀態；命中外部進退貨明細後，後續會自動從這份清單移除。
+              <div className="space-y-2 rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                <p>待入庫改為表格明細檢視，方便直接比對批號、序號、IMEI 與目前站點狀態；命中外部進退貨明細後，後續會自動從這份清單移除。</p>
+                <p className="text-xs leading-6 text-slate-500">上方表格只顯示目前仍有效的待入庫任務；已自動移除、已完成或已失效的資料不會混在這份清單，若為最近自動移除案件會另外列在下方提示區塊。</p>
               </div>
               <div className="overflow-x-auto rounded-[24px] bg-slate-50">
                 <table className="min-w-full text-sm text-slate-700">

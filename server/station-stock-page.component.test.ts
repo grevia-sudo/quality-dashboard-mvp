@@ -163,6 +163,7 @@ describe("StationPage stock detail component", () => {
     expect(screen.getAllByText("iPhone 15 Pro").length).toBeGreaterThan(0);
     expect(screen.getByText("產品代碼：P-901")).toBeTruthy();
     expect(screen.getAllByText("匯出 CSV").length).toBeGreaterThan(0);
+    expect(screen.getByText("上方表格只顯示目前仍有效的待入庫任務；已自動移除、已完成或已失效的資料不會混在這份清單，若為最近自動移除案件會另外列在下方提示區塊。")).toBeTruthy();
     expect(screen.getByText("最近自動移除待入庫")).toBeTruthy();
     expect(screen.getByText("iPhone 14")).toBeTruthy();
     expect(screen.getByText("外部進貨明細批號比對成功，自動移除待入庫")).toBeTruthy();
