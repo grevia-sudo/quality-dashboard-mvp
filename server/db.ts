@@ -1169,6 +1169,17 @@ function mergeScannedIdentityField(fieldLabel: string, currentValue?: string | n
   throw new Error(`${fieldLabel} 與既有待點貨資料不一致，請確認掃碼內容是否正確`);
 }
 
+function resolveA1ProductName(currentValue?: string | null, incomingValue?: string | null) {
+  const normalizedCurrent = normalizeOptionalText(currentValue);
+  const normalizedIncoming = normalizeOptionalText(incomingValue);
+
+  if (normalizedIncoming) {
+    return normalizedIncoming;
+  }
+
+  return normalizedCurrent;
+}
+
 async function findOtherActiveProductByBatchNo(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: { batchNo?: string | null; excludeProductId?: number | null },
@@ -1294,7 +1305,7 @@ export async function completeA1ArrivalByScan(input: {
 
   const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, normalizedSerialNumber);
   const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, normalizedImei);
-  const nextProductName = mergeScannedIdentityField("品名", matchedProduct.productName, normalizedProductName);
+  const nextProductName = resolveA1ProductName(matchedProduct.productName, normalizedProductName);
   const pendingTaskId = matchedProduct.pendingTaskId ?? (await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
     source: matchedProduct.poNumber ? "a1_scan_receive" : "a1_scan_receive_without_import",
     awaitingImportMatch: matchedProduct.poNumber ? undefined : true,

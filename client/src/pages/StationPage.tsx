@@ -642,6 +642,27 @@ export default function StationPage() {
   const matchedA1CategoryName = matchedA1PendingTask?.categoryName ?? matchedA1PendingTask?.importedCategoryName ?? matchedA1PendingTask?.subtypeCode ?? null;
   const matchedA1BrandName = matchedA1PendingTask?.brandName ?? matchedA1PendingTask?.importedBrandName ?? null;
 
+  useEffect(() => {
+    if (stationCode !== "A1") {
+      return;
+    }
+
+    const matchedProductName = matchedA1PendingTask?.productName?.trim();
+    if (!matchedProductName) {
+      return;
+    }
+
+    setArrivalForm((prev) => {
+      if (prev.productName.trim()) {
+        return prev;
+      }
+      return {
+        ...prev,
+        productName: matchedProductName,
+      };
+    });
+  }, [matchedA1PendingTask?.productId, matchedA1PendingTask?.productName, stationCode]);
+
   const productNamePickerState = useMemo(() => resolveA1ProductNamePickerState({
     keyword: arrivalForm.productName,
     matchedCategoryName: matchedA1CategoryName,
