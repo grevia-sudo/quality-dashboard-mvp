@@ -2613,7 +2613,7 @@ export async function completeStationTask(input: {
   cameraOptionIds?: number[];
   bFaultOptionIds?: number[];
   batteryNote?: string;
-  batteryIssueLabels?: Array<"電池膨脹" | "副廠電池" | "電池異常">;
+  batteryIssueLabels?: Array<"電池膨脹" | "副廠電池" | "蓄電異常">;
   applyBChanges?: boolean;
   eFrontPhoto?: StationPhotoUploadInput;
   eBackPhoto?: StationPhotoUploadInput;

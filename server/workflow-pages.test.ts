@@ -117,7 +117,7 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("電池檢測");
     expect(stationPageSource).toContain("電池膨脹");
     expect(stationPageSource).toContain("副廠電池");
-    expect(stationPageSource).toContain("電池異常");
+    expect(stationPageSource).toContain("蓄電異常");
     expect(stationPageSource).toContain("例如：88、85%、待更換");
     expect(stationPageSource).toContain("完成軟體測試並推進下一站");
     expect(stationPageSource).toContain("B 站軟體測試完成");

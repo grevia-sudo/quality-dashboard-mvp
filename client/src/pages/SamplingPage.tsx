@@ -44,7 +44,7 @@ type SamplingTask = {
   inheritedCInspectionSummary?: string | null;
 };
 
-const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
+const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "蓄電異常"] as const;
 
 type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
 

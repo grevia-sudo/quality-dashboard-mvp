@@ -66,7 +66,7 @@ const defaultSelections = (): OptionSelections => ({
 const normalizeIdList = (values: number[]) => Array.from(new Set(values)).sort((left, right) => left - right);
 const normalizeTextList = (values: string[]) => Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((left, right) => left.localeCompare(right, "zh-Hant"));
 const summarizeTextResult = (values: string[]) => values.map((value) => value.trim()).filter(Boolean).join(", ") || "正常";
-const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "電池異常"] as const;
+const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "蓄電異常"] as const;
 
 const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
   const reader = new FileReader();

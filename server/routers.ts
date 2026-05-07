@@ -50,7 +50,7 @@ const stationPhotoInputSchema = z.object({
   mimeType: z.string().trim().min(1),
   fileName: z.string().trim().min(1),
 });
-const batteryIssueLabelSchema = z.enum(["電池膨脹", "副廠電池", "電池異常"]);
+const batteryIssueLabelSchema = z.enum(["電池膨脹", "副廠電池", "蓄電異常"]);
 const optionalTextSchema = z.string().trim().optional().transform((value) => value || undefined);
 const importRowSchema = z.object({
   batchNo: optionalTextSchema,

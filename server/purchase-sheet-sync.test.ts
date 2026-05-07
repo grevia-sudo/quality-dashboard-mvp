@@ -27,13 +27,13 @@ describe("purchase sheet sync helpers", () => {
         bCompletedAt: "2026-04-22T12:08:00.000Z",
         bOperatorName: "Mia",
         cCompletedAt: "2026-04-22T13:15:00.000Z",
-        bBatterySummary: "88, 電池異常",
+        bBatterySummary: "88, 蓄電異常",
         bFaultSummary: "正常",
         cFaultSummary: "破裂",
         cAppearanceSummary: "刮傷",
         cCameraSummary: "鏡頭刮傷",
       }),
-    ).toEqual(["PO-1", "綠途未來", "智慧型手機", "", "SN-1", "", "", "2026/04/22 18:30", "Yana", "2026/04/22 19:43", "Leo", "2026/04/22 20:08", "88, 電池異常", "正常", "Mia", "2026/04/22 21:15", "N", "破裂", "刮傷", "", "2026/04/22 21:15", "鏡頭刮傷", "N", "", "", "", ""]);
+    ).toEqual(["PO-1", "綠途未來", "智慧型手機", "", "SN-1", "", "", "2026/04/22 18:30", "Yana", "2026/04/22 19:43", "Leo", "2026/04/22 20:08", "88, 蓄電異常", "正常", "Mia", "2026/04/22 21:15", "N", "破裂", "刮傷", "", "2026/04/22 21:15", "鏡頭刮傷", "N", "", "", "", "", "", "", ""]);
   });
 
   it("formats Date objects for the sheet using YYYY/MM/DD HH:mm", () => {
@@ -56,13 +56,13 @@ describe("purchase sheet sync helpers", () => {
         bBatterySummary: "正常",
         bFaultSummary: "後標準相機故障, 鏡頭馬達故障/抖動",
         cModifiedPreviousStage: "Y",
-        cModifiedBatterySummary: "75, 電池異常",
+        cModifiedBatterySummary: "75, 蓄電異常",
         cModifiedBFaultSummary: "觸控異常",
         cFaultSummary: "破裂",
         cAppearanceSummary: "刮傷",
         cCameraSummary: "鏡頭模糊",
       }),
-    ).toEqual(["PO-2", "綠途未來", "平板", "BATCH-2", "SN-2", "IMEI-2", "iPad mini", "2026/04/22 09:05", "Amy", "2026/04/22 10:43", "Ben", "2026/04/22 11:15", "75, 電池異常", "觸控異常", "Cody", "2026/04/22 13:05", "Y", "破裂", "刮傷", "", "2026/04/22 13:05", "鏡頭模糊", "N", "", "", "", ""]);
+    ).toEqual(["PO-2", "綠途未來", "平板", "BATCH-2", "SN-2", "IMEI-2", "iPad mini", "2026/04/22 09:05", "Amy", "2026/04/22 10:43", "Ben", "2026/04/22 11:15", "75, 蓄電異常", "觸控異常", "Cody", "2026/04/22 13:05", "Y", "破裂", "刮傷", "", "2026/04/22 13:05", "鏡頭模糊", "N", "", "", "", "", "", "", ""]);
   });
 
   it("writes E stage completion time and operator into the tail sheet columns", () => {
@@ -83,7 +83,7 @@ describe("purchase sheet sync helpers", () => {
     expect(Array.from(getSheetRefreshIndexes({
       lastSheetSyncedAt: "2026-04-23T17:00:00.000Z",
       eCompletedAt: "2026-04-23T17:12:24.000Z",
-    }))).toEqual([7, 8, 9, 10, 11, 14, 15, 19, 20, 23, 24, 25, 26]);
+    }))).toEqual([7, 8, 9, 10, 11, 14, 15, 19, 20, 23, 24, 25, 26, 27, 28, 29]);
   });
 
   it("re-refreshes prior stage time columns when a later stage finishes", () => {
@@ -124,7 +124,7 @@ describe("purchase sheet sync helpers", () => {
 
   it("preserves downstream stage columns when only A1 has new changes", () => {
     const existingRow = ["PO-1", "綠途未來", "智慧型手機", "", "SN-1", "IMEI-1", "現場已填品名", "舊的 A1 時間", "舊的 A1 執行人", "舊的 A2 時間", "舊的 A2 執行人", "舊的 B 時間", "舊的電池資訊", "舊的故障資訊", "舊的 B 執行人", "舊的 C 時間", "舊的上一關修改標記", "舊的螢幕狀態", "舊的機身狀態", "舊的 C 站測試人員", "舊的 C 站完成時間", "舊的鏡頭狀態", "舊的 D 站修改標記", "舊的 D 站完成時間", "舊的 D 站檢測者", "舊的 E 站完成時間", "舊的 E 站測試人員"];
-    const generatedRow = ["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13", "2026/04/22 18:30", "Yana", "2026/04/22 19:43", "Leo", "2026/04/22 20:08", "88, 電池異常", "正常", "Mia", "2026/04/22 21:15", "N", "正常", "正常", "Cindy", "2026/04/22 21:15", "正常", "N", "", "", "", ""];
+    const generatedRow = ["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13", "2026/04/22 18:30", "Yana", "2026/04/22 19:43", "Leo", "2026/04/22 20:08", "88, 蓄電異常", "正常", "Mia", "2026/04/22 21:15", "N", "正常", "正常", "Cindy", "2026/04/22 21:15", "正常", "N", "", "", "", "", "", "", ""];
     const product = {
       updatedAt: "2026-04-22T10:30:00.000Z",
       lastSheetSyncedAt: "2026-04-22T10:00:00.000Z",
@@ -165,11 +165,14 @@ describe("purchase sheet sync helpers", () => {
       "舊的 D 站檢測者",
       "舊的 E 站完成時間",
       "舊的 E 站測試人員",
+      "",
+      "",
+      "",
     ]);
   });
 
   it("creates the standard header row when the sheet is still empty", () => {
-    expect(PURCHASE_SHEET_HEADER).toEqual(["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態", "D站是否修改檢查結果", "D站完成時間", "D站檢測者", "E站抹除完成時間", "E站測試人員"]);
+    expect(PURCHASE_SHEET_HEADER).toEqual(["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態", "D站是否修改檢查結果", "D站完成時間", "D站檢測者", "E站抹除完成時間", "E站測試人員", "E站照片同步狀態", "E站正面照片", "E站反面照片"]);
     expect(createInitialSheetValues(undefined)).toEqual([PURCHASE_SHEET_HEADER]);
     expect(createInitialSheetValues([])).toEqual([PURCHASE_SHEET_HEADER]);
   });
