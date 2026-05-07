@@ -41,11 +41,11 @@ const navItems: DashboardNavItem[] = [
     label: "管理後台",
     path: "/admin",
     icon: ShieldCheck,
-    allowedRoles: ["admin"],
+    allowedRoles: MANAGEMENT_VIEWER_ROLES,
     matchPaths: adminSections.map((section) => section.path),
     subItems: adminSections.map((section) => ({ label: section.label, path: section.path })),
   },
-  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
+  { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: MANAGEMENT_VIEWER_ROLES },
 ];
 
 const stationOptions = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
@@ -138,6 +138,8 @@ export default function AdminPage() {
     startDate: appliedKpiRange.startDate || undefined,
     endDate: appliedKpiRange.endDate || undefined,
   }, { retry: false });
+  const canViewAdminPage = Boolean(user?.role && MANAGEMENT_VIEWER_ROLES.includes(user.role));
+  const isAdmin = user?.role === "admin";
   const [ruleDrafts, setRuleDrafts] = useState<RuleDraft[]>([]);
   const [targetDrafts, setTargetDrafts] = useState<TargetDraft[]>([]);
   const [optionDrafts, setOptionDrafts] = useState<DefectOptionDraft[]>([]);
@@ -643,14 +645,14 @@ export default function AdminPage() {
     return <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}><div className="rounded-[28px] bg-white p-8 text-sm text-slate-500 shadow-sm">正在載入管理權限…</div></DashboardLayout>;
   }
 
-  if (user?.role !== "admin") {
+  if (user && !canViewAdminPage) {
     return (
       <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
         <Card className="rounded-[28px] border-0 bg-white shadow-sm">
           <CardContent className="space-y-3 p-8">
-            <Badge className="bg-[#f7e8ee] text-rose-700">僅限管理者</Badge>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">管理後台僅限 admin 查看</h1>
-            <p className="text-sm leading-7 text-slate-600">你目前沒有查看管理後台的權限。若需要調整站點規則、產能、品類流程或管理統計，請使用管理者帳號登入。</p>
+            <Badge className="bg-[#f7e8ee] text-rose-700">僅限主管以上</Badge>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">管理後台需主管、經理或 admin 權限</h1>
+            <p className="text-sm leading-7 text-slate-600">你目前沒有查看管理後台的權限。若需要調整站點規則、產能、品類流程或管理統計，請使用 supervisor、manager 或 admin 帳號登入。</p>
             <div className="flex gap-3">
               <Button className="rounded-2xl" onClick={() => setLocation("/operations")}>返回站點總覽</Button>
               <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/kpi")}>查看工程師 KPI</Button>
@@ -663,10 +665,14 @@ export default function AdminPage() {
 
   return (
     <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
-      <div className="space-y-6">
-        <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
-          <CardContent className="space-y-4 p-8">
-            <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
+      <div className="space-y-6">          <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
+            <CardContent className="space-y-6 p-8">
+              {!isAdmin ? (
+                <div className="rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-900">
+                  目前以 {user?.role ?? "viewer"} 身分查看管理後台。此頁面可供檢視站點規則、KPI 與設定資料；若需實際修改設定或執行管理操作，請改用 admin 帳號。
+                </div>
+              ) : null}
+         <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
             <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、匯入節奏與 B/C 功能表</h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
               這裡除了既有站點規則外，也可依 A1～E 各站點設定每個品類的每日產能，供後續換算每小時產能與工程師點數；同時保留匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。

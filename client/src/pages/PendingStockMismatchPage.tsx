@@ -25,8 +25,8 @@ const navItems: DashboardNavItem[] = [
   { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
-  { label: "已刷入未同步", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] },
+  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
+  { label: "已刷入未同步", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: MANAGEMENT_VIEWER_ROLES },
 ];
 
 function formatDateTime(value?: string | Date | null) {
@@ -59,7 +59,7 @@ export default function PendingStockMismatchPage() {
   const [arrivalDateEnd, setArrivalDateEnd] = useState("");
 
   useEffect(() => {
-    if (user && user.role !== "admin") {
+    if (user && !MANAGEMENT_VIEWER_ROLES.includes(user.role)) {
       setLocation("/operations");
     }
   }, [setLocation, user]);
@@ -108,7 +108,7 @@ export default function PendingStockMismatchPage() {
     setLocation(queryString ? `/import?${queryString}` : "/import");
   };
 
-  if (user && user.role !== "admin") {
+  if (user && !MANAGEMENT_VIEWER_ROLES.includes(user.role)) {
     return null;
   }
 

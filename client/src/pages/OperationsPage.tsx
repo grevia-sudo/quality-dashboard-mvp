@@ -16,7 +16,7 @@ const navItems: DashboardNavItem[] = [
   { label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "D 站抽樣", path: "/sampling", icon: ClipboardCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
   { label: "工程師 KPI", path: "/kpi", icon: Gauge },
-  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: ["admin"] },
+  { label: "管理後台", path: "/admin", icon: ShieldCheck, allowedRoles: MANAGEMENT_VIEWER_ROLES },
 ];
 
 export default function OperationsPage() {

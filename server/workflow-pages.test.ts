@@ -43,7 +43,7 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("toggleSummaryRow");
     expect(importPageSource).toContain("ChevronDown");
     expect(importPageSource).toContain("ChevronRight");
-    expect(importPageSource).toContain("目前沒有已匯入且尚未完成 A1 點貨的採購單");
+    expect(importPageSource).toContain("目前沒有待點貨採購單，也沒有最近刪除紀錄；完成匯入或執行刪除後，系統會在這裡整理採購單與刪除歷程。");
     expect(importPageSource).toContain("請先填寫廠商名稱後再匯入");
     expect(importPageSource).toContain("目前沒有可匯入的資料");
     expect(importPageSource).toContain("尚未補齊必要欄位");
@@ -139,14 +139,21 @@ describe("warehouse workflow pages", () => {
     expect(stationPageSource).toContain("是否修改電池／非螢幕功能狀態");
   });
 
-  it("keeps the pending stock mismatch admin nav entry consistent across management pages", () => {
-    const pendingMismatchNavEntry = '{ label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] }';
+  it("keeps the pending stock mismatch management nav entry consistent across management pages", () => {
+    const pendingMismatchPath = 'path: "/admin/pending-stock-mismatches"';
+    const pendingMismatchLabel = 'label: "待入庫待比對"';
 
-    expect(importPageSource).toContain(pendingMismatchNavEntry);
-    expect(samplingPageSource).toContain(pendingMismatchNavEntry);
-    expect(stationPageSource).toContain(pendingMismatchNavEntry);
-    expect(adminPageSource).toContain(pendingMismatchNavEntry);
-    expect(engineerKpiPageSource).toContain(pendingMismatchNavEntry);
+    expect(importPageSource).toContain(pendingMismatchPath);
+    expect(importPageSource).toContain(pendingMismatchLabel);
+    expect(importPageSource).toMatch(/allowedRoles: \[?\.\.\.?MANAGEMENT_VIEWER_ROLES\]?/);
+    expect(samplingPageSource).toContain(pendingMismatchPath);
+    expect(samplingPageSource).toContain(pendingMismatchLabel);
+    expect(stationPageSource).toContain(pendingMismatchPath);
+    expect(stationPageSource).toContain(pendingMismatchLabel);
+    expect(adminPageSource).toContain(pendingMismatchPath);
+    expect(adminPageSource).toContain(pendingMismatchLabel);
+    expect(engineerKpiPageSource).toContain(pendingMismatchPath);
+    expect(engineerKpiPageSource).toContain(pendingMismatchLabel);
     expect(engineerKpiPageSource).toContain('{ label: "匯入作業", path: "/import", icon: PackagePlus, allowedRoles: MANAGEMENT_VIEWER_ROLES }');
   });
 
@@ -195,13 +202,14 @@ describe("warehouse workflow pages", () => {
     expect(dbSource).toContain('let lastEnsureMvpSeedDataAt = 0');
     expect(dbSource).toContain('let lastArchiveExpiredDataAt = 0');
     expect(dbSource).toContain('recentAutoRemovedStockItems');
-    expect(dbSource).toContain('includes("自動移除待入庫")');
+    expect(dbSource).toContain('resultSummary: "外部進貨明細批號比對成功，自動移除待入庫"');
     expect(dbSource).toContain('Date.now() - lastEnsureMvpSeedDataAt < 60_000');
     expect(dbSource).toContain('Date.now() - lastArchiveExpiredDataAt < 60_000');
   });
 
-  it("includes admin-only analytics and category flow management on the admin page", () => {
-    expect(adminPageSource).toContain("管理後台僅限 admin 查看");
+  it("includes management viewer guidance plus admin-only analytics and category flow management on the admin page", () => {
+    expect(adminPageSource).toContain("管理後台需主管、經理或 admin 權限");
+    expect(adminPageSource).toContain("此頁面可供檢視站點規則、KPI 與設定資料；若需實際修改設定或執行管理操作，請改用 admin 帳號");
     expect(adminPageSource).toContain("全員 KPI 進度");
     expect(adminPageSource).toContain("目前查看區間");
     expect(adminPageSource).toContain("kpiFilterStartDate");

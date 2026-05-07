@@ -5,10 +5,11 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const useAuthMock = vi.fn(() => ({
+  loading: false,
   user: {
     id: 7,
-    name: "Admin User",
-    role: "admin",
+    name: "Supervisor User",
+    role: "supervisor",
   },
 }));
 
@@ -60,15 +61,16 @@ describe("PendingStockMismatchPage component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useAuthMock.mockReturnValue({
+      loading: false,
       user: {
         id: 7,
-        name: "Admin User",
-        role: "admin",
+        name: "Supervisor User",
+        role: "supervisor",
       },
     });
   });
 
-  it("renders admin nav entry and does not auto-redirect for admin users", () => {
+  it("renders management nav entry and does not auto-redirect for supervisor users", () => {
     pendingStockMismatchesUseQueryMock.mockReturnValue({
       data: [],
       isLoading: false,

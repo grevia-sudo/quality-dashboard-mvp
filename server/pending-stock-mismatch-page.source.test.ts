@@ -18,8 +18,8 @@ describe("pending stock mismatch management page source coverage", () => {
     expect(mismatchIndex).toBeLessThan(adminIndex);
   });
 
-  it("keeps an admin navigation entry for the mismatch query page", () => {
-    expect(adminPageSource).toContain('{ label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: ["admin"] }');
+  it("keeps a management-viewer navigation entry for the mismatch query page", () => {
+    expect(adminPageSource).toContain('{ label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: MANAGEMENT_VIEWER_ROLES }');
   });
 
   it("renders the page with the dedicated query and unsynced copy", () => {
@@ -30,8 +30,8 @@ describe("pending stock mismatch management page source coverage", () => {
     expect(pendingPageSource).toContain("目前沒有已刷入但尚未完成匯入比對或 Google 回寫的商品");
   });
 
-  it("exposes the admin query end to end from router to db helper", () => {
-    expect(routerSource).toContain("pendingStockMismatches: adminProcedure");
+  it("exposes the management query end to end from router to db helper", () => {
+    expect(routerSource).toContain("pendingStockMismatches: managementProcedure");
     expect(routerSource).toContain("return getPendingStockImportMismatchProducts();");
     expect(dbSource).toContain("export async function getPendingStockImportMismatchProducts()");
     expect(dbSource).toContain("sql`NOT (${products.currentStationCode} = 'A1' AND ${products.currentStatus} = 'pending_a1')`");

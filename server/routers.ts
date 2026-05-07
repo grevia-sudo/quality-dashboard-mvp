@@ -291,7 +291,7 @@ export const appRouter = router({
     }),
   }),
   admin: router({
-    setup: adminProcedure
+    setup: managementProcedure
       .input(
         z.object({
           startDate: optionalTextSchema.nullable().optional(),
@@ -306,7 +306,7 @@ export const appRouter = router({
           endDate: input?.endDate ?? undefined,
         });
       }),
-    pendingStockMismatches: adminProcedure
+    pendingStockMismatches: managementProcedure
       .query(async () => {
         await ensureMvpSeedData();
         return getPendingStockImportMismatchProducts();
