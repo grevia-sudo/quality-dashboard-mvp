@@ -126,8 +126,13 @@ describe("StationPage C 站承接 B 站故障點", () => {
             categoryName: "智慧手機",
             brandName: "Apple",
             subtypeCode: "iPhone",
-            taskStatus: "pending",
+            taskStatus: "returned",
             isOverdue: false,
+            taskMetadata: {
+              faultOptionIds: [40001],
+              appearanceOptionIds: [40002],
+              cameraOptionIds: [40003],
+            },
             inheritedBFaultOptionIds: [30001],
             inheritedBFaultLabels: ["螢幕顯示"],
             inheritedBFaultSummary: "螢幕顯示",
@@ -146,9 +151,36 @@ describe("StationPage C 站承接 B 站故障點", () => {
             sortOrder: 1,
           },
         ],
-        faultOptions: [],
-        appearanceOptions: [],
-        cameraOptions: [],
+        faultOptions: [
+          {
+            id: 40001,
+            stationCode: "C",
+            optionType: "fault",
+            label: "觸控異常",
+            active: true,
+            sortOrder: 1,
+          },
+        ],
+        appearanceOptions: [
+          {
+            id: 40002,
+            stationCode: "C",
+            optionType: "appearance",
+            label: "邊框刮傷",
+            active: true,
+            sortOrder: 1,
+          },
+        ],
+        cameraOptions: [
+          {
+            id: 40003,
+            stationCode: "C",
+            optionType: "camera",
+            label: "無法對焦",
+            active: true,
+            sortOrder: 1,
+          },
+        ],
       },
       isLoading: false,
       error: null,
@@ -167,5 +199,17 @@ describe("StationPage C 站承接 B 站故障點", () => {
 
     const checkbox = screen.getByRole("checkbox", { name: "螢幕顯示" });
     expect(checkbox.getAttribute("data-state")).toBe("checked");
+  });
+
+  it("D 站退回 C 站後，會保留上一次 C 站已勾選的故障、外觀與鏡頭狀態", () => {
+    render(React.createElement(StationPage));
+
+    fireEvent.change(screen.getByPlaceholderText("輸入商品批號後可快速定位 C 站待檢項目"), {
+      target: { value: "00500024970" },
+    });
+
+    expect(screen.getByRole("checkbox", { name: "觸控異常" }).getAttribute("data-state")).toBe("checked");
+    expect(screen.getByRole("checkbox", { name: "邊框刮傷" }).getAttribute("data-state")).toBe("checked");
+    expect(screen.getByRole("checkbox", { name: "無法對焦" }).getAttribute("data-state")).toBe("checked");
   });
 });

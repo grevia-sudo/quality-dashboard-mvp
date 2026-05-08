@@ -3698,6 +3698,20 @@ export async function submitSamplingResult(input: {
   const passNextStation = await resolveNextStationByCategory(effectiveCategoryId, "D");
   const failReturnStation = await resolveReworkStationByCategory(effectiveCategoryId, "D") ?? "C";
 
+  const latestCompletedCRows = await db
+    .select({
+      metadata: stationTasks.metadata,
+    })
+    .from(stationTasks)
+    .where(and(
+      eq(stationTasks.productId, input.productId),
+      eq(stationTasks.stationCode, "C"),
+      eq(stationTasks.taskStatus, "completed"),
+    ))
+    .orderBy(desc(stationTasks.completedAt))
+    .limit(1);
+  const latestCompletedCMetadata = (latestCompletedCRows[0]?.metadata ?? {}) as Record<string, unknown>;
+
   const { businessDateValue, now: completedAt } = getOperationTimeContext();
   const normalizedBatterySummary = normalizeOptionalText(input.batterySummary) ?? "正常";
   const normalizedBFaultSummary = normalizeOptionalText(input.bFaultSummary) ?? "正常";
@@ -3812,26 +3826,38 @@ export async function submitSamplingResult(input: {
       })
       .where(eq(products.id, input.productId));
 
-    await db.insert(stationTasks).values({
-      productId: input.productId,
-      stationCode: failReturnStation,
-      taskStatus: "returned",
-      dueDate: businessDateValue,
-      resultSummary: `D 站全檢失敗返工回 ${stationToLabel(failReturnStation)}`,
-      metadata: {
-        sourceStation: "D",
-        reason: input.defectReason ?? "全檢不通過",
-        dInspectionPassed: false,
-        dInspectionOperatorUserId: input.sampledByUserId,
-        dInspectionCompletedAt: completedAt,
-        dInspectionModified: applyInspectionChanges,
-        batterySummary: normalizedBatterySummary,
-        bFaultSummary: normalizedBFaultSummary,
-        cFaultSummary: normalizedCFaultSummary,
-        cAppearanceSummary: normalizedCAppearanceSummary,
-        cCameraSummary: normalizedCCameraSummary,
-      },
-    });
+      await db.insert(stationTasks).values({
+        productId: input.productId,
+        stationCode: failReturnStation,
+        taskStatus: "returned",
+        dueDate: businessDateValue,
+        resultSummary: `D 站全檢失敗返工回 ${stationToLabel(failReturnStation)}`,
+        metadata: {
+          sourceStation: "D",
+          reason: input.defectReason ?? "全檢不通過",
+          dInspectionPassed: false,
+          dInspectionOperatorUserId: input.sampledByUserId,
+          dInspectionCompletedAt: completedAt,
+          dInspectionModified: applyInspectionChanges,
+          batterySummary: normalizedBatterySummary,
+          bFaultSummary: normalizedBFaultSummary,
+          cFaultSummary: normalizedCFaultSummary,
+          cAppearanceSummary: normalizedCAppearanceSummary,
+          cCameraSummary: normalizedCCameraSummary,
+          bFaultOptionIds: normalizeNumberArray(latestCompletedCMetadata.bFaultOptionIds),
+          bFaultLabels: normalizeTextArray(latestCompletedCMetadata.bFaultLabels),
+          batteryNote: typeof latestCompletedCMetadata.batteryNote === "string" ? latestCompletedCMetadata.batteryNote.trim() : undefined,
+          batteryIssueLabels: normalizeTextArray(latestCompletedCMetadata.batteryIssueLabels),
+          faultOptionIds: normalizeNumberArray(latestCompletedCMetadata.faultOptionIds),
+          appearanceOptionIds: normalizeNumberArray(latestCompletedCMetadata.appearanceOptionIds),
+          cameraOptionIds: normalizeNumberArray(latestCompletedCMetadata.cameraOptionIds),
+          faultLabels: normalizeTextArray(latestCompletedCMetadata.faultLabels),
+          appearanceLabels: normalizeTextArray(latestCompletedCMetadata.appearanceLabels),
+          cameraLabels: normalizeTextArray(latestCompletedCMetadata.cameraLabels),
+          applyBChanges: latestCompletedCMetadata.applyBChanges === true,
+        },
+      });
+
   }
 
   return { success: true as const };

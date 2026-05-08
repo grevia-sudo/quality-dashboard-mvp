@@ -820,12 +820,18 @@ export default function StationPage() {
           inheritedBFaultOptionIds?: number[];
           inheritedBatteryNote?: string;
           inheritedBatteryIssueLabels?: BatteryIssueLabel[];
+          taskMetadata?: {
+            faultOptionIds?: number[];
+            appearanceOptionIds?: number[];
+            cameraOptionIds?: number[];
+          };
         };
+        const taskMetadataSelections = carryoverTask.taskMetadata ?? {};
 
         next[task.taskId] = {
-          faultOptionIds: [],
-          appearanceOptionIds: [],
-          cameraOptionIds: [],
+          faultOptionIds: normalizeIdList(taskMetadataSelections.faultOptionIds ?? []),
+          appearanceOptionIds: normalizeIdList(taskMetadataSelections.appearanceOptionIds ?? []),
+          cameraOptionIds: normalizeIdList(taskMetadataSelections.cameraOptionIds ?? []),
           bFaultOptionIds: carryoverTask.inheritedBFaultOptionIds ?? [],
           batteryNote: carryoverTask.inheritedBatteryNote ?? "",
           batteryIssueLabels: carryoverTask.inheritedBatteryIssueLabels ?? [],

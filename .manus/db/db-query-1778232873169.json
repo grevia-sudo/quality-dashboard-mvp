@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, username, name, role, loginMethod, updatedAt FROM users WHERE username = 'geng03' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, username, name, role, loginMethod, updatedAt FROM users WHERE username = 'geng03' LIMIT 1;",
+  "rows": [
+    {
+      "id": "750209",
+      "username": "geng03",
+      "name": "桔梗達曼",
+      "role": "engineer",
+      "loginMethod": "password",
+      "updatedAt": "2026-05-08 09:31:11"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tusername\tname\trole\tloginMethod\tupdatedAt\n750209\tgeng03\t桔梗達曼\tengineer\tpassword\t2026-05-08 09:31:11\n",
+  "stderr": "",
+  "execution_time_ms": 1802
+}
