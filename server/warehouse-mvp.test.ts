@@ -133,7 +133,7 @@ describe("warehouse MVP router", () => {
     expect(result.roleLanding).toBe("dashboard");
   });
 
-  it("allows only admins to fetch admin setup data and exposes analytics fields", async () => {
+  it("allows supervisors and admins to fetch admin setup data and exposes analytics fields", async () => {
     const adminCaller = appRouter.createCaller(createContext("admin"));
     const adminResult = await adminCaller.admin.setup();
 
@@ -142,6 +142,11 @@ describe("warehouse MVP router", () => {
     expect(adminResult.stationLeadTimes[0]?.stationCode).toBe("C");
     expect(adminResult.categoryStockCycleTimes[0]?.brandName).toBe("Apple");
     expect(adminResult.kpiRange.startDate).toBe("2026-04-01");
+
+    const supervisorCaller = appRouter.createCaller(createContext("supervisor"));
+    const supervisorResult = await supervisorCaller.admin.setup();
+
+    expect(supervisorResult.kpiProgress[0]?.role).toBe("user");
     expect(getAdminSetupData).toHaveBeenCalledWith({ startDate: undefined, endDate: undefined });
 
     const userCaller = appRouter.createCaller(createContext("user"));

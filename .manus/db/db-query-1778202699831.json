@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, username, name, role FROM users WHERE name = '巧克力' OR username = '巧克力' OR username = 'Qc.8' OR username = 'qc.8' OR name = 'Qc.8' OR name = 'qc.8';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, username, name, role FROM users WHERE name = '巧克力' OR username = '巧克力' OR username = 'Qc.8' OR username = 'qc.8' OR name = 'Qc.8' OR name = 'qc.8';",
+  "rows": [
+    {
+      "id": "750189",
+      "username": "Qc.8",
+      "name": "巧克力",
+      "role": "engineer"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tusername\tname\trole\n750189\tQc.8\t巧克力\tengineer\n",
+  "stderr": "",
+  "execution_time_ms": 1793
+}

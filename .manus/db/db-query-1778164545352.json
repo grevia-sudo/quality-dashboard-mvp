@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) AS pendingStockCount FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'STOCK' AND st.stationTaskStatus = 'pending' AND p.archivedAt IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COUNT(*) AS pendingStockCount FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'STOCK' AND st.stationTaskStatus = 'pending' AND p.archivedAt IS NULL;",
+  "rows": [
+    {
+      "pendingStockCount": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "pendingStockCount\n0\n",
+  "stderr": "",
+  "execution_time_ms": 1630
+}

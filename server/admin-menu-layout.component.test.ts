@@ -119,7 +119,23 @@ describe("admin menu settings layout component", () => {
           { id: 11, categoryName: "智慧型手機", brandName: "Apple", subtypeCode: "Apple" },
         ],
         kpiRange: { startDate: "2026-04-01", endDate: "2026-04-30" },
-        kpiProgress: [],
+        kpiProgress: [
+          {
+            userId: 9,
+            name: "巧克力",
+            username: "Qc.8",
+            role: "supervisor",
+            attendanceDays: 2,
+            todayPoints: 0,
+            todayDisplayPoints: 0,
+            monthTotalPoints: 0,
+            monthTotalDisplayPoints: 0,
+            monthAvgPoints: 0,
+            monthAvgDisplayPoints: 0,
+            avgKpiAchievementRate: 0,
+            finalKpiScore: 0,
+          },
+        ],
         supportCompensations: [],
         stationLeadTimes: [],
         categoryStockCycleTimes: [],
@@ -148,5 +164,30 @@ describe("admin menu settings layout component", () => {
     expect(screen.getByDisplayValue("觸控異常")).toBeTruthy();
     expect(screen.getByDisplayValue("邊框刮傷")).toBeTruthy();
     expect(screen.getByDisplayValue("無法對焦")).toBeTruthy();
+  });
+
+  it("shows supervisor roles in the KPI progress table without downgrading them to engineer", () => {
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByText("巧克力")).toBeTruthy();
+    expect(screen.getByText("Qc.8")).toBeTruthy();
+    expect(screen.getByText("supervisor")).toBeTruthy();
+  });
+
+  it("allows supervisor users to access the admin page content", () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: {
+        id: 9,
+        name: "巧克力",
+        role: "supervisor",
+      },
+    });
+
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByTestId("dashboard-nav").textContent).toContain("管理後台");
+    expect(screen.queryByText("管理後台需主管、經理或 admin 權限")).toBeNull();
+    expect(screen.getByText("全員 KPI 進度")).toBeTruthy();
   });
 });

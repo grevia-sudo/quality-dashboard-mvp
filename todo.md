@@ -133,3 +133,6 @@
 - [x] 釐清 Google 採購單工作表中 MANUAL、BACKUP、TRACE、STOCK-BLOCK、AUTO-PO 等髒資料列的來源與保留規則
 - [x] 清理 Google 採購單工作表中不應保留的中間流程或測試列，讓正式採購單資料恢復乾淨
 - [x] 追查並收斂會把中間流程資料寫進 Google 採購單工作表的程式路徑，避免後續再次污染
+- [x] 釐清 KPI 畫面中特定使用者目前顯示為 engineer 的來源，並改為 supervisor 權限與顯示
+- [x] 補上 supervisor 角色顯示與權限生效的測試，避免後續回歸
+- [x] 補上並執行 supervisor 角色權限生效的回歸測試，驗證角色改為 supervisor 後可實際通過管理頁或相關管理功能的前後端存取控制
