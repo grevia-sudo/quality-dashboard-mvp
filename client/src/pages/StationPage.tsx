@@ -706,7 +706,7 @@ export default function StationPage() {
   });
 
   const completeMutation = trpc.station.complete.useMutation({
-    onSuccess: (_result, variables) => {
+    onSuccess: (result, variables) => {
       setSelectedOptions({});
 
       if (variables.stationCode === "A2") {
@@ -742,7 +742,11 @@ export default function StationPage() {
       if (variables.stationCode === "E") {
         removeCompletedTaskFromCache("E", variables.productId);
         setKeyword("");
-        toast.success("E 站抹除已完成並推進下一站，請直接掃描下一筆");
+        if (result?.message) {
+          toast.warning(result.message);
+        } else {
+          toast.success("E 站抹除已完成並推進下一站，請直接掃描下一筆");
+        }
         focusQuickScanInput();
         refreshStationDataInBackground("E", "STOCK");
         return;

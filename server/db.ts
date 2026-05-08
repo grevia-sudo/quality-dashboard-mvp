@@ -28,6 +28,7 @@ import {
 import { ENV } from "./_core/env";
 import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "./pending-stock-mismatch";
 import { markPurchaseOrderRowsDeletedInGoogleSheet } from "./purchase-sheet-delete-sync";
+import { storagePut } from "./storage";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 const PRODUCTIVITY_TRACKED_STATION_CODES = ["A1", "A2", "B", "C", "E"] as const;
@@ -709,6 +710,25 @@ async function uploadStationPhotoToGoogleDrive(photo: StationPhotoUploadInput) {
   }
 
   return result.webViewLink ?? result.webContentLink ?? `https://drive.google.com/file/d/${result.id}/view`;
+}
+
+async function uploadStationPhotoWithFallback(photo: StationPhotoUploadInput) {
+  const { mimeType, buffer } = decodeStationPhotoDataUrl(photo);
+
+  try {
+    return {
+      url: await uploadStationPhotoToGoogleDrive(photo),
+      syncStatus: "google_drive",
+      syncMessage: undefined,
+    } as const;
+  } catch (error) {
+    const fallbackUpload = await storagePut(`station-e-photos/${photo.fileName}`, buffer, mimeType);
+    return {
+      url: fallbackUpload.url,
+      syncStatus: "storage_fallback",
+      syncMessage: error instanceof Error ? error.message : "Google Drive 同步失敗，已改存系統備援空間",
+    } as const;
+  }
 }
 
 function matchesPurchaseSheetIdentity(row: string[] | undefined, identity: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null }) {
@@ -3054,6 +3074,8 @@ export async function completeStationTask(input: {
   const applyBChanges = input.stationCode === "C" ? Boolean(input.applyBChanges) : false;
   let eFrontPhotoUrl: string | undefined;
   let eBackPhotoUrl: string | undefined;
+  let ePhotoSyncStatus: "google_drive" | "storage_fallback" | "sheet_write_failed" | undefined;
+  let ePhotoSyncMessage: string | undefined;
 
   if (input.stationCode === "E") {
     if (!input.eFrontPhoto || !input.eBackPhoto) {
@@ -3069,23 +3091,38 @@ export async function completeStationTask(input: {
       .replace(/\s+/g, "")
       .replace(/[\\/:*?"<>|#%{}]+/g, "-");
 
-    eFrontPhotoUrl = await uploadStationPhotoToGoogleDrive({
+    const frontPhotoUpload = await uploadStationPhotoWithFallback({
       ...input.eFrontPhoto,
       fileName: `${fileNameBase}-1.jpg`,
     });
-    eBackPhotoUrl = await uploadStationPhotoToGoogleDrive({
+    const backPhotoUpload = await uploadStationPhotoWithFallback({
       ...input.eBackPhoto,
       fileName: `${fileNameBase}-2.jpg`,
     });
 
-    await writeEStationPhotoLinksToSheet({
-      sheetRowNumber: productRow?.sheetRowNumber ?? null,
-      batchNo: productRow?.batchNo ?? null,
-      serialNumber: productRow?.serialNumber ?? null,
-      imei: productRow?.imei ?? null,
-      frontPhotoUrl: eFrontPhotoUrl,
-      backPhotoUrl: eBackPhotoUrl,
-    });
+    eFrontPhotoUrl = frontPhotoUpload.url;
+    eBackPhotoUrl = backPhotoUpload.url;
+    ePhotoSyncStatus = frontPhotoUpload.syncStatus === "google_drive" && backPhotoUpload.syncStatus === "google_drive"
+      ? "google_drive"
+      : "storage_fallback";
+    ePhotoSyncMessage = [frontPhotoUpload.syncMessage, backPhotoUpload.syncMessage].filter(Boolean).join("；") || undefined;
+
+    try {
+      await writeEStationPhotoLinksToSheet({
+        sheetRowNumber: productRow?.sheetRowNumber ?? null,
+        batchNo: productRow?.batchNo ?? null,
+        serialNumber: productRow?.serialNumber ?? null,
+        imei: productRow?.imei ?? null,
+        frontPhotoUrl: eFrontPhotoUrl,
+        backPhotoUrl: eBackPhotoUrl,
+      });
+    } catch (error) {
+      const writeSheetMessage = error instanceof Error ? error.message : "回寫 E 站照片連結到採購單失敗";
+      if (ePhotoSyncStatus === "google_drive") {
+        ePhotoSyncStatus = "sheet_write_failed";
+      }
+      ePhotoSyncMessage = [ePhotoSyncMessage, writeSheetMessage].filter(Boolean).join("；") || undefined;
+    }
   }
 
   await db
@@ -3117,6 +3154,8 @@ export async function completeStationTask(input: {
         cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
         eFrontPhotoUrl,
         eBackPhotoUrl,
+        ePhotoSyncStatus,
+        ePhotoSyncMessage,
       },
       updatedAt: completedAt,
     })
@@ -3154,6 +3193,8 @@ export async function completeStationTask(input: {
       cModifiedBFaultSummary: applyBChanges ? carriedBFaultSummary : undefined,
       eFrontPhotoUrl,
       eBackPhotoUrl,
+      ePhotoSyncStatus,
+      ePhotoSyncMessage,
     },
   }).$returningId();
 
@@ -3262,7 +3303,16 @@ export async function completeStationTask(input: {
       .where(eq(products.id, input.productId));
   }
 
-  return { success: true as const };
+  return {
+    success: true as const,
+    message: input.stationCode === "E"
+      ? ePhotoSyncStatus === "storage_fallback"
+        ? "E 站抹除已完成，照片已改存系統備援空間；Google Drive 同步稍後再處理"
+        : ePhotoSyncStatus === "sheet_write_failed"
+          ? "E 站抹除已完成，照片已上傳，但採購單照片連結回寫失敗；系統稍後再同步"
+          : undefined
+      : undefined,
+  };
 }
 
 export async function getSamplingQueue() {

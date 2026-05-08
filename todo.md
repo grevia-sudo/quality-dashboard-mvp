@@ -149,3 +149,8 @@
 - [x] 將 D 站下方清單拆成當日已完成與當日未完成兩段，且已完成清單顯示在未完成清單下方
 - [x] 在 D 站已完成清單顯示批號、序號、品類、品牌、B站檢測狀態與 C站檢測狀態，若有修改則顯示修改後結果
 - [x] 補上 D 站清單分段與 B/C 狀態顯示的前端回歸測試
+- [x] 排查並修正 E 站上傳時 Google Drive API 未啟用或無法存取導致的同步失敗問題
+- [x] 補上 E 站上傳同步失敗與降級處理的回歸測試，避免上傳流程再次被 Google 整合阻斷
+- [x] 區分 E 站 Google Drive 上傳失敗改存系統備援空間，與 Google Sheet 回寫失敗但照片仍已成功上傳兩種狀態，修正文案與 metadata
+- [x] 補上 completeStationTask 的整合測試：模擬 Google Drive upload 失敗時仍完成 E 站並保存 manus-storage URL
+- [x] 補上 completeStationTask 的整合測試：模擬 Google Sheet 回寫失敗時仍完成 E 站、保留原照片網址且回傳正確 warning

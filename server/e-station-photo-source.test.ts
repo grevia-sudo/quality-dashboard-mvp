@@ -42,13 +42,22 @@ describe("E 站照片上傳 source coverage", () => {
     expect(routersSource).toContain("eBackPhoto: stationPhotoInputSchema.optional()");
   });
 
-  it("uploads E station photos to Google Drive and writes links back to AC and AD", () => {
+  it("uploads E station photos to Google Drive and falls back to system storage when Drive is unavailable", () => {
     expect(dbSource).toContain('const E_STATION_PHOTO_DRIVE_FOLDER_ID = "1PPdt4swkmSav8G6k2Dfpk55OBPJk4srW"');
     expect(dbSource).toContain('uploadStationPhotoToGoogleDrive');
-    expect(dbSource).toContain('fileName: `${fileNameBase}-1.jpg`');
-    expect(dbSource).toContain('fileName: `${fileNameBase}-2.jpg`');
+    expect(dbSource).toContain('uploadStationPhotoWithFallback');
+    expect(dbSource).toContain('storagePut(`station-e-photos/${photo.fileName}`');
+    expect(dbSource).toContain('syncStatus: "storage_fallback"');
     expect(dbSource).toContain('AC${rowNumber}:AD${rowNumber}');
     expect(dbSource).toContain('eFrontPhotoUrl');
     expect(dbSource).toContain('eBackPhotoUrl');
+    expect(dbSource).toContain('ePhotoSyncStatus');
+    expect(dbSource).toContain('ePhotoSyncMessage');
+  });
+
+  it("shows a warning toast on the E station page when photo sync falls back from Google Drive", () => {
+    expect(stationPageSource).toContain('if (result?.message) {');
+    expect(stationPageSource).toContain('toast.warning(result.message);');
+    expect(dbSource).toContain('E 站抹除已完成，照片已改存系統備援空間；Google Drive 同步稍後再處理');
   });
 });
