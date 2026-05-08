@@ -81,7 +81,7 @@ describe("A1/A2 掃碼 UX source coverage", () => {
     expect(source).toContain("find((task) => (");
     expect(source).toContain("[task.batchNo, task.productCode, task.serialNumber, task.imei]");
     expect(source).toContain('toast.error("找不到符合的 A2 待處理商品");');
-    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}');
+    expect(source).toContain('placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描、拍照或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}');
     expect(source).toContain("A2 已改為掃碼快速完工模式");
     expect(source).toContain('removeCompletedTaskFromCache("A2", variables.productId);');
     expect(source).toContain('setKeyword("");');

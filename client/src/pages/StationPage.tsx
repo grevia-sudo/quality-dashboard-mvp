@@ -9,8 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
 import { createUtf8CsvBlob, exportStationStockRowsToCsv } from "./station-stock-export";
-import { Boxes, ClipboardCheck, Download, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Boxes, Camera, ClipboardCheck, Download, Gauge, LoaderCircle, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
 
@@ -34,6 +34,16 @@ type StationCapturedPhoto = {
   mimeType: string;
   fileName: string;
 };
+
+type DetectedBarcode = {
+  rawValue?: string;
+};
+
+type BarcodeDetectorInstance = {
+  detect: (source: ImageBitmapSource) => Promise<DetectedBarcode[]>;
+};
+
+type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => BarcodeDetectorInstance;
 
 type OptionSelections = {
   faultOptionIds: number[];
@@ -80,6 +90,37 @@ const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) 
   reader.onerror = () => reject(reader.error ?? new Error("照片讀取失敗"));
   reader.readAsDataURL(file);
 });
+
+const getBarcodeDetectorConstructor = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return (window as typeof window & { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector ?? null;
+};
+
+const detectQrCodeFromImageFile = async (file: File) => {
+  const BarcodeDetectorApi = getBarcodeDetectorConstructor();
+  if (!BarcodeDetectorApi) {
+    throw new Error("目前瀏覽器不支援拍照辨識 QR，請改用支援 Chromium 的手持裝置，或先以掃碼槍輸入批號");
+  }
+  if (typeof createImageBitmap !== "function") {
+    throw new Error("目前裝置不支援照片辨識 QR，請改用手動輸入批號");
+  }
+
+  const detector = new BarcodeDetectorApi({ formats: ["qr_code"] });
+  const bitmap = await createImageBitmap(file);
+  try {
+    const results = await detector.detect(bitmap);
+    const detectedValue = results.find((result) => typeof result.rawValue === "string" && result.rawValue.trim())?.rawValue?.trim();
+    if (!detectedValue) {
+      throw new Error("照片中找不到可辨識的 QR，請重新拍攝並讓 QR 置中清晰");
+    }
+    return detectedValue;
+  } finally {
+    bitmap.close?.();
+  }
+};
 
 const compressCapturedPhoto = async (file: File): Promise<StationCapturedPhoto> => {
   const sourceDataUrl = await readFileAsDataUrl(file);
@@ -176,11 +217,13 @@ export default function StationPage() {
     categoryLabel: string;
   } | null>(null);
   const [categoryDraftValue, setCategoryDraftValue] = useState("");
+  const [isProcessingEStationQrCapture, setIsProcessingEStationQrCapture] = useState(false);
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const serialNumberInputRef = useRef<HTMLInputElement | null>(null);
   const imeiInputRef = useRef<HTMLInputElement | null>(null);
   const productNameInputRef = useRef<HTMLInputElement | null>(null);
   const quickScanInputRef = useRef<HTMLInputElement | null>(null);
+  const eStationQrCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const utils = trpc.useUtils();
   const canEditCategory = stationCode === "A1" || stationCode === "C";
   const shouldLoadProductNameOptions = stationCode === "A1" && (productNamePickerOpen || Boolean(arrivalForm.productName.trim()));
@@ -200,6 +243,7 @@ export default function StationPage() {
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
   const productCategoryOptions = productCategoryOptionsQuery.data ?? [];
+  const eStationQrCaptureSupported = useMemo(() => stationCode === "E" && Boolean(getBarcodeDetectorConstructor()), [stationCode]);
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -274,6 +318,35 @@ export default function StationPage() {
       quickScanInputRef.current?.focus();
       quickScanInputRef.current?.select();
     });
+  };
+
+  const openEStationQrCapture = () => {
+    if (!eStationQrCaptureSupported) {
+      toast.error("目前裝置不支援拍照辨識 QR，請改用支援 Chromium 的手持裝置，或先以掃碼槍輸入批號");
+      return;
+    }
+
+    eStationQrCaptureInputRef.current?.click();
+  };
+
+  const handleEStationQrCaptureChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+
+    setIsProcessingEStationQrCapture(true);
+    try {
+      const detectedValue = await detectQrCodeFromImageFile(file);
+      setKeyword(detectedValue);
+      toast.success(`已從 QR 辨識到 ${detectedValue}，請確認抹除完成後再推進下一站`);
+      focusQuickScanInput();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "QR 辨識失敗，請重新拍攝或改用手動輸入");
+    } finally {
+      setIsProcessingEStationQrCapture(false);
+    }
   };
 
   const openCategoryEditor = (task: {
@@ -1095,10 +1168,32 @@ export default function StationPage() {
                     value={keyword}
                     onChange={(event) => setKeyword(event.target.value)}
                     onKeyDown={handleStationScanInputKey}
-                    placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}
+                    placeholder={stationCode === "A2" ? "掃描商品批號 QR 後可直接按 Enter 完成 A2" : stationCode === "B" ? "輸入商品批號後可快速定位 B 站待測項目" : stationCode === "C" ? "輸入商品批號後可快速定位 C 站待檢項目" : stationCode === "E" ? "掃描、拍照或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站" : "輸入產品代碼、批號、序號或 IMEI"}
                     className="editable-field h-12 rounded-2xl border-0 bg-slate-50 pl-11"
                   />
                 </div>
+                {stationCode === "E" ? (
+                  <div className="flex flex-col gap-3 rounded-[20px] bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="space-y-1 text-xs leading-6 text-slate-500">
+                      <p className="font-medium text-slate-700">手持裝置可直接用相機拍攝批號 QR，辨識後會自動帶入上方欄位。</p>
+                      <p>{eStationQrCaptureSupported ? "若現場不方便手打批號，可直接點下方按鈕開啟相機拍照辨識。" : "目前瀏覽器不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號。"}</p>
+                    </div>
+                    <>
+                      <input
+                        ref={eStationQrCaptureInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={handleEStationQrCaptureChange}
+                      />
+                      <Button type="button" variant="outline" className="rounded-2xl" onClick={openEStationQrCapture} disabled={isProcessingEStationQrCapture}>
+                        {isProcessingEStationQrCapture ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                        {isProcessingEStationQrCapture ? "辨識 QR 中..." : "拍照掃描 QR"}
+                      </Button>
+                    </>
+                  </div>
+                ) : null}
                 {stationCode === "A2" ? (
                   <p className="text-sm text-slate-500">A2 已改為掃碼快速完工模式。刷入商品批號 QR 後會立即完成 A2、推進到下一站，並在背景回寫安裝完成時間。</p>
                 ) : null}
@@ -1109,7 +1204,7 @@ export default function StationPage() {
                   <p className="text-sm text-slate-500">C 站會承接 B 站的電池檢測與故障狀態，完成品檢後立即推進下一站，並在背景回寫 C 站測試時間、螢幕狀態、機身狀態、鏡頭狀態與必要的上一站修正標記。</p>
                 ) : null}
                 {stationCode === "E" ? (
-                  <p className="text-sm text-slate-500">E 站支援掃碼／條碼快速定位待抹除商品。確認完成抹除後按下完成並推進下一站，系統會自動回到待輸入狀態，並在背景回寫抹除完成時間與執行人員。</p>
+                  <p className="text-sm text-slate-500">E 站支援掃碼、手動輸入與相機拍照辨識 QR 來快速定位待抹除商品。確認完成抹除後按下完成並推進下一站，系統會自動回到待輸入狀態，並在背景回寫抹除完成時間與執行人員。</p>
                 ) : null}
               </div>
             </CardContent>

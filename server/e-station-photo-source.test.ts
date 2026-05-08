@@ -24,6 +24,18 @@ describe("E 站照片上傳 source coverage", () => {
     expect(stationPageSource).toContain('eBackPhoto: selections.eBackPhoto');
   });
 
+  it("supports taking a photo of the QR code to fill the E station scan input", () => {
+    expect(stationPageSource).toContain('const eStationQrCaptureInputRef = useRef<HTMLInputElement | null>(null);');
+    expect(stationPageSource).toContain('const [isProcessingEStationQrCapture, setIsProcessingEStationQrCapture] = useState(false);');
+    expect(stationPageSource).toContain('const detectQrCodeFromImageFile = async (file: File) => {');
+    expect(stationPageSource).toContain('capture="environment"');
+    expect(stationPageSource).toContain('accept="image/*"');
+    expect(stationPageSource).toContain('onChange={handleEStationQrCaptureChange}');
+    expect(stationPageSource).toContain('拍照掃描 QR');
+    expect(stationPageSource).toContain('已從 QR 辨識到 ${detectedValue}，請確認抹除完成後再推進下一站');
+    expect(stationPageSource).toContain('掃描、拍照或輸入商品批號、序號或 IMEI 後，確認抹除完成即可推進下一站');
+  });
+
   it("extends station completion router input with E station photo payloads", () => {
     expect(routersSource).toContain("const stationPhotoInputSchema = z.object({");
     expect(routersSource).toContain("eFrontPhoto: stationPhotoInputSchema.optional()");

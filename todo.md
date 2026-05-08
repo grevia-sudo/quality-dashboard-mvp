@@ -112,10 +112,10 @@
 - [x] 將 B 站介面與相關顯示中的「電池異常」文案改為「蓄電異常」
 - [x] 檢查 B 站摘要、帶入結果與匯出是否仍使用舊文案，確保前後一致
 - [ ] 修正待入庫頁面未正確顯示 B／C 站檢測結果的問題
-- [ ] 修正待入庫匯出未包含 B／C 站檢測結果的問題
+- [x] 修正待入庫匯出未包含 B／C 站檢測結果的問題
 - [x] 排查全員 KPI 進度未顯示數字的原因並完成修正
 - [ ] 修正站點作業的待入庫頁（STOCK 作業頁）未顯示 B／C 站檢測結果的問題
-- [ ] 確認 STOCK 作業頁匯出與畫面是否共用同一份 B／C 檢測結果資料來源
+- [x] 確認 STOCK 作業頁匯出與畫面是否共用同一份 B／C 檢測結果資料來源
 - [x] 釐清全員 KPI 進度目前為 0 是否因尚未產生 engineerDailyProductivity／supportTaskCompensations 資料，並決定是否需要補寫入流程
 - [x] 追查管理後台產能設定已存在時，站點完成流程為何仍未寫入 productivity_score_details、engineerDailyProductivity 與 supportTaskCompensations
 - [x] 補上歷史 station_events／已完成站點資料回補成 productivity_score_details 與 engineer_daily_productivity 的流程，或明確驗證目前環境已有新資料使管理後台 KPI 顯示非 0 數字
@@ -136,3 +136,6 @@
 - [x] 釐清 KPI 畫面中特定使用者目前顯示為 engineer 的來源，並改為 supervisor 權限與顯示
 - [x] 補上 supervisor 角色顯示與權限生效的測試，避免後續回歸
 - [x] 補上並執行 supervisor 角色權限生效的回歸測試，驗證角色改為 supervisor 後可實際通過管理頁或相關管理功能的前後端存取控制
+- [x] 讓 E 站的條碼／批號輸入支援用相機拍攝 QR 掃碼，改善手持裝置無法手動輸入批號的操作問題
+- [x] 盤點 E 站現有輸入元件與手持裝置相容性，決定相機掃碼的 UI 與失敗備援流程
+- [x] 補上 E 站相機掃碼輸入的前端測試與必要的流程回歸測試
