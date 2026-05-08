@@ -17,6 +17,15 @@ const setLocationMock = vi.fn();
 const stationDetailUseQueryMock = vi.fn();
 const productNameOptionsUseQueryMock = vi.fn();
 const productCategoryOptionsUseQueryMock = vi.fn();
+const uploadEPhotoMutateAsyncMock = vi.fn().mockResolvedValue({
+  success: true,
+  reference: {
+    mimeType: "image/jpeg",
+    fileName: "test-1.jpg",
+    driveFileId: "fake-drive-id",
+    driveUrl: "https://drive.google.com/file/d/fake-drive-id/view",
+  },
+});
 const useUtilsMock = vi.fn(() => ({
   station: {
     detail: {
@@ -76,6 +85,12 @@ vi.mock("@/lib/trpc", () => ({
       },
       assignCategory: {
         useMutation: () => mutationMockFactory(),
+      },
+      uploadEPhoto: {
+        useMutation: () => ({
+          isPending: false,
+          mutateAsync: uploadEPhotoMutateAsyncMock,
+        }),
       },
       complete: {
         useMutation: () => mutationMockFactory(),
