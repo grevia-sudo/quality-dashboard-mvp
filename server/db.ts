@@ -2154,6 +2154,7 @@ export async function getStationPageData(stationCode: StationCode) {
       appearanceOptions: [],
       cameraOptions: [],
       bFaultOptions: [],
+      dTodayCompletedTasks: [],
       recentAutoRemovedStockItems: [],
       poDeletionLogs: [],
     };
@@ -2396,6 +2397,79 @@ export async function getStationPageData(stationCode: StationCode) {
           })()
         : rows;
 
+  const dTodayCompletedTasks = stationCode === "D"
+    ? await (async () => {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const completedRows = await db
+          .select({
+            taskId: stationTasks.id,
+            taskStatus: stationTasks.taskStatus,
+            isOverdue: stationTasks.isOverdue,
+            productId: products.id,
+            productCode: products.productCode,
+            poNumber: products.poNumber,
+            batchNo: products.batchNo,
+            serialNumber: products.serialNumber,
+            imei: products.imei,
+            productName: products.productName,
+            importedCategoryName: products.importedCategoryName,
+            importedBrandName: products.importedBrandName,
+            categoryId: products.categoryId,
+            currentStationCode: products.currentStationCode,
+            subtypeCode: productCategories.subtypeCode,
+            categoryName: productCategories.categoryName,
+            brandName: productCategories.brandName,
+            taskMetadata: stationTasks.metadata,
+            completedAt: stationTasks.completedAt,
+          })
+          .from(stationTasks)
+          .innerJoin(products, eq(stationTasks.productId, products.id))
+          .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+          .where(and(
+            eq(stationTasks.stationCode, "D"),
+            eq(stationTasks.taskStatus, "completed"),
+            gte(stationTasks.completedAt, startOfToday),
+          ))
+          .orderBy(desc(stationTasks.completedAt), desc(stationTasks.id));
+
+        return completedRows.map((row) => {
+          const taskMetadata = (row.taskMetadata ?? {}) as Record<string, unknown>;
+          const inheritedBatterySummary = typeof taskMetadata.batterySummary === "string" && taskMetadata.batterySummary.trim()
+            ? taskMetadata.batterySummary.trim()
+            : "正常";
+          const inheritedBFaultSummary = typeof taskMetadata.bFaultSummary === "string" && taskMetadata.bFaultSummary.trim()
+            ? taskMetadata.bFaultSummary.trim()
+            : typeof taskMetadata.faultSummary === "string" && taskMetadata.faultSummary.trim()
+              ? taskMetadata.faultSummary.trim()
+              : "正常";
+          const inheritedCFaultSummary = typeof taskMetadata.cFaultSummary === "string" && taskMetadata.cFaultSummary.trim()
+            ? taskMetadata.cFaultSummary.trim()
+            : "正常";
+          const inheritedCAppearanceSummary = typeof taskMetadata.cAppearanceSummary === "string" && taskMetadata.cAppearanceSummary.trim()
+            ? taskMetadata.cAppearanceSummary.trim()
+            : "正常";
+          const inheritedCCameraSummary = typeof taskMetadata.cCameraSummary === "string" && taskMetadata.cCameraSummary.trim()
+            ? taskMetadata.cCameraSummary.trim()
+            : "正常";
+          const inheritedCInspectionSummary = [inheritedCFaultSummary, inheritedCAppearanceSummary, inheritedCCameraSummary]
+            .filter((value) => value !== "正常")
+            .join(", ") || "正常";
+
+          return {
+            ...row,
+            inheritedBatterySummary,
+            inheritedBFaultSummary,
+            inheritedCFaultSummary,
+            inheritedCAppearanceSummary,
+            inheritedCCameraSummary,
+            inheritedCInspectionSummary,
+          };
+        });
+      })()
+    : [];
+
   const recentAutoRemovedStockItems = stationCode === "STOCK"
     ? (await db
         .select({
@@ -2444,6 +2518,7 @@ export async function getStationPageData(stationCode: StationCode) {
     appearanceOptions,
     cameraOptions,
     bFaultOptions,
+    dTodayCompletedTasks,
     recentAutoRemovedStockItems,
     poDeletionLogs,
   };

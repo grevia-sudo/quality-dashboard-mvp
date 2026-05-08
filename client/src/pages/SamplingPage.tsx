@@ -60,6 +60,7 @@ type StationDetailData = {
   appearanceOptions?: DefectOption[];
   cameraOptions?: DefectOption[];
   bFaultOptions?: DefectOption[];
+  dTodayCompletedTasks?: SamplingTask[];
 };
 
 type InspectionDraft = {
@@ -111,6 +112,14 @@ function mapSummaryToBatteryInputs(summary: string | null | undefined) {
     batteryNote: batteryNotes.join(", "),
     batteryIssueLabels,
   };
+}
+
+function buildSamplingBStatus(task: SamplingTask) {
+  return `電池：${normalizeResultText(task.inheritedBatterySummary)}｜功能：${normalizeResultText(task.inheritedBFaultSummary)}`;
+}
+
+function buildSamplingCStatus(task: SamplingTask) {
+  return `功能：${normalizeResultText(task.inheritedCFaultSummary)}｜外觀：${normalizeResultText(task.inheritedCAppearanceSummary)}｜相機：${normalizeResultText(task.inheritedCCameraSummary)}`;
 }
 
 function createInitialDraft(task: SamplingTask, detailData?: StationDetailData): InspectionDraft {
@@ -206,6 +215,10 @@ export default function SamplingPage() {
       return haystacks.some((value) => value.includes(keyword));
     });
   }, [searchTerm, tasks]);
+  const hasSearchTerm = searchTerm.trim().length > 0;
+  const matchedTasks = hasSearchTerm ? filteredTasks : [];
+  const todayPendingTasks = tasks;
+  const todayCompletedTasks = detailData?.dTodayCompletedTasks ?? [];
 
   const getDraft = (task: SamplingTask) => drafts[task.taskId] ?? createInitialDraft(task, detailData);
 
@@ -383,7 +396,7 @@ export default function SamplingPage() {
         </Card>
 
         <div className="space-y-6">
-          {filteredTasks.map((task) => {
+          {matchedTasks.map((task) => {
             const draft = getDraft(task);
             const cInspectionSummary = [
               normalizeResultText(draft.cFaultSummary),
@@ -654,15 +667,87 @@ export default function SamplingPage() {
             );
           })}
 
-          {filteredTasks.length === 0 ? (
+          {hasSearchTerm && matchedTasks.length === 0 ? (
             <Card className="rounded-[26px] border-0 bg-white shadow-sm">
-              <CardContent className="p-8 text-sm leading-7 text-slate-600">
-                {tasks.length === 0
-                  ? "目前沒有待 D 站全檢案件。你可以返回站點總覽，切換到其他站點支援作業。"
-                  : "目前沒有符合搜尋條件的案件，請改用其他商品批號或商品序號再試一次。"}
-              </CardContent>
+              <CardContent className="p-8 text-sm leading-7 text-slate-600">目前沒有符合搜尋條件的案件，請改用其他商品批號或商品序號再試一次。</CardContent>
             </Card>
           ) : null}
+
+          <Card className="rounded-[26px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">當日未完成清單</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="rounded-[20px] bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-600">下方先列出目前仍在 D 站等待全檢的案件；搜尋命中的案件會維持上方原本的詳細卡片顯示，不會被這份清單取代。</p>
+              <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                <table className="min-w-full text-sm text-slate-700">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <th className="px-4 py-3">批號</th>
+                      <th className="px-4 py-3">序號</th>
+                      <th className="px-4 py-3">品類</th>
+                      <th className="px-4 py-3">品牌</th>
+                      <th className="px-4 py-3">B站檢測狀態</th>
+                      <th className="px-4 py-3">C站檢測狀態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {todayPendingTasks.map((task) => (
+                      <tr key={`pending-${task.taskId}`} className="border-b border-slate-200/80 last:border-b-0">
+                        <td className="px-4 py-3 font-medium text-slate-900">{task.batchNo ?? "-"}</td>
+                        <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
+                        <td className="px-4 py-3">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</td>
+                        <td className="px-4 py-3">{task.brandName ?? task.importedBrandName ?? "-"}</td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">{buildSamplingBStatus(task)}</td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">{buildSamplingCStatus(task)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {todayPendingTasks.length === 0 ? (
+                <div className="rounded-[20px] bg-slate-50 px-4 py-6 text-sm leading-7 text-slate-600">目前沒有待 D 站全檢案件。你可以返回站點總覽，切換到其他站點支援作業。</div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-[26px] border-0 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">當日已完成清單</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="rounded-[20px] bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-600">已完成清單會優先顯示 D 站當次完成後實際寫入的 B／C 狀態；若 D 站有做修改，這裡顯示的就是修改後結果。</p>
+              <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                <table className="min-w-full text-sm text-slate-700">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <th className="px-4 py-3">批號</th>
+                      <th className="px-4 py-3">序號</th>
+                      <th className="px-4 py-3">品類</th>
+                      <th className="px-4 py-3">品牌</th>
+                      <th className="px-4 py-3">B站檢測狀態</th>
+                      <th className="px-4 py-3">C站檢測狀態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {todayCompletedTasks.map((task) => (
+                      <tr key={`completed-${task.taskId}`} className="border-b border-slate-200/80 last:border-b-0">
+                        <td className="px-4 py-3 font-medium text-slate-900">{task.batchNo ?? "-"}</td>
+                        <td className="px-4 py-3">{task.serialNumber ?? "-"}</td>
+                        <td className="px-4 py-3">{task.categoryName ?? task.importedCategoryName ?? task.subtypeCode ?? "-"}</td>
+                        <td className="px-4 py-3">{task.brandName ?? task.importedBrandName ?? "-"}</td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">{buildSamplingBStatus(task)}</td>
+                        <td className="px-4 py-3 text-xs leading-6 text-slate-600">{buildSamplingCStatus(task)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {todayCompletedTasks.length === 0 ? (
+                <div className="rounded-[20px] bg-slate-50 px-4 py-6 text-sm leading-7 text-slate-600">今日尚無已完成的 D 站案件。</div>
+              ) : null}
+            </CardContent>
+          </Card>
         </div>
         <Dialog open={Boolean(categoryDialogTask)} onOpenChange={(open) => {
           if (!open) {
