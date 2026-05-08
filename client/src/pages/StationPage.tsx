@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
 import { createUtf8CsvBlob, exportStationStockRowsToCsv } from "./station-stock-export";
-import { Boxes, Camera, ClipboardCheck, Download, Gauge, LoaderCircle, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
+import { Boxes, Camera, ClipboardCheck, Download, Gauge, LoaderCircle, PackagePlus, RefreshCw, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
 import jsQR from "jsqr";
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
@@ -1062,6 +1062,66 @@ export default function StationPage() {
     });
   };
 
+  const uploadExistingEPhoto = async (taskId: number, productId: number, key: "eFrontPhoto" | "eBackPhoto", photo: StationCapturedPhoto) => {
+    const photoLabel = key === "eFrontPhoto" ? "正面照片" : "反面照片";
+
+    updateStationPhoto(taskId, key, {
+      ...photo,
+      isUploading: true,
+      uploadedRef: null,
+      uploadError: null,
+    });
+
+    try {
+      const uploadResult = await uploadEPhotoMutation.mutateAsync({
+        taskId,
+        productId,
+        side: key === "eFrontPhoto" ? "front" : "back",
+        photo: {
+          dataUrl: photo.dataUrl,
+          mimeType: photo.mimeType,
+          fileName: photo.fileName,
+        },
+      });
+
+      if (!uploadResult.success || !uploadResult.reference) {
+        throw new Error(uploadResult.message || `${photoLabel}預上傳失敗`);
+      }
+
+      updateStationPhoto(taskId, key, {
+        ...photo,
+        isUploading: false,
+        uploadedRef: uploadResult.reference,
+        uploadError: null,
+      });
+      toast.success(`${photoLabel}已同步到 Google Drive`, {
+        position: "top-center",
+      });
+      return;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : `${photoLabel}預上傳失敗`;
+      const clearMessage = `${photoLabel}尚未同步到 Google Drive：${reason}。請點「重試上傳」後再完成；若仍失敗，請重新拍照。`;
+      updateStationPhoto(taskId, key, {
+        ...photo,
+        isUploading: false,
+        uploadedRef: null,
+        uploadError: clearMessage,
+      });
+      toast.error(clearMessage, {
+        position: "top-center",
+      });
+    }
+  };
+
+  const handleRetryEPhotoUpload = async (taskId: number, productId: number, key: "eFrontPhoto" | "eBackPhoto") => {
+    const currentPhoto = getTaskSelections(taskId)[key];
+    if (!currentPhoto || currentPhoto.isUploading) {
+      return;
+    }
+
+    await uploadExistingEPhoto(taskId, productId, key, currentPhoto);
+  };
+
   const handleStationPhotoChange = async (taskId: number, productId: number, key: "eFrontPhoto" | "eBackPhoto", fileList: FileList | null) => {
     const selectedFile = fileList?.[0];
     if (!selectedFile) {
@@ -1071,56 +1131,13 @@ export default function StationPage() {
 
     try {
       const compressedPhoto = await compressCapturedPhoto(selectedFile);
-      updateStationPhoto(taskId, key, {
-        ...compressedPhoto,
-        isUploading: true,
-        uploadedRef: null,
-        uploadError: null,
-      });
-      toast.success(key === "eFrontPhoto" ? "已更新正面照片" : "已更新反面照片", {
+      toast.success(key === "eFrontPhoto" ? "已更新正面照片，系統正在預上傳到 Google Drive" : "已更新反面照片，系統正在預上傳到 Google Drive", {
         position: "top-center",
       });
-
-      const uploadResult = await uploadEPhotoMutation.mutateAsync({
-        taskId,
-        productId,
-        side: key === "eFrontPhoto" ? "front" : "back",
-        photo: compressedPhoto,
-      });
-
-      if (!uploadResult.success || !uploadResult.reference) {
-        throw new Error(uploadResult.message || "照片上傳 Google Drive 失敗");
-      }
-
-      updateStationPhoto(taskId, key, {
-        ...compressedPhoto,
-        isUploading: false,
-        uploadedRef: uploadResult.reference,
-        uploadError: null,
-      });
-      toast.success(key === "eFrontPhoto" ? "正面照片已同步到 Google Drive" : "反面照片已同步到 Google Drive", {
-        position: "top-center",
-      });
+      await uploadExistingEPhoto(taskId, productId, key, compressedPhoto);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "照片處理失敗，請重新拍照";
-      setSelectedOptions((prev) => {
-        const current = prev[taskId] ?? defaultSelections();
-        const existingPhoto = current[key];
-        if (!existingPhoto) {
-          return prev;
-        }
-        return {
-          ...prev,
-          [taskId]: {
-            ...current,
-            [key]: {
-              ...existingPhoto,
-              isUploading: false,
-              uploadError: message,
-            },
-          },
-        };
-      });
+      const message = error instanceof Error ? error.message : "照片處理失敗，請重新拍照後再試";
+      updateStationPhoto(taskId, key, null);
       toast.error(message, {
         position: "top-center",
       });
@@ -1185,12 +1202,28 @@ export default function StationPage() {
 
     if (stationCode === "E") {
       if (!selections.eFrontPhoto || !selections.eBackPhoto) {
-        toast.error("請先拍攝正面與反面照片，再完成 E 站抹除");
+        toast.error("請先拍攝正面與反面照片，再完成 E 站抹除", {
+          position: "top-center",
+        });
         return;
       }
 
       if (selections.eFrontPhoto.isUploading || selections.eBackPhoto.isUploading) {
-        toast.error("照片仍在同步到 Google Drive，請稍候再按完成", {
+        toast.error("照片仍在同步到 Google Drive。請等兩張照片都顯示「已同步」後，再按完成。", {
+          position: "top-center",
+        });
+        return;
+      }
+
+      if (selections.eFrontPhoto.uploadError || !selections.eFrontPhoto.uploadedRef) {
+        toast.error("正面照片尚未成功同步到 Google Drive，請先點「重試上傳」或重新拍照後再完成。", {
+          position: "top-center",
+        });
+        return;
+      }
+
+      if (selections.eBackPhoto.uploadError || !selections.eBackPhoto.uploadedRef) {
+        toast.error("反面照片尚未成功同步到 Google Drive，請先點「重試上傳」或重新拍照後再完成。", {
           position: "top-center",
         });
         return;
@@ -1198,10 +1231,8 @@ export default function StationPage() {
 
       completeMutation.mutate({
         ...basePayload,
-        eFrontPhoto: selections.eFrontPhoto.uploadedRef ? undefined : selections.eFrontPhoto,
-        eBackPhoto: selections.eBackPhoto.uploadedRef ? undefined : selections.eBackPhoto,
-        eFrontPhotoRef: selections.eFrontPhoto.uploadedRef ?? undefined,
-        eBackPhotoRef: selections.eBackPhoto.uploadedRef ?? undefined,
+        eFrontPhotoRef: selections.eFrontPhoto.uploadedRef,
+        eBackPhotoRef: selections.eBackPhoto.uploadedRef,
       });
       return;
     }
@@ -1873,15 +1904,27 @@ export default function StationPage() {
                             {currentPhoto ? (
                               <div className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">
                                 <img src={currentPhoto.dataUrl} alt={photoField.title} className="h-48 w-full rounded-2xl object-cover" />
-                                <p className="text-xs text-slate-500">
+                                <p className={`text-xs ${currentPhoto.uploadError ? "text-rose-600" : "text-slate-500"}`}>
                                   {currentPhoto.isUploading
-                                    ? "照片同步到 Google Drive 中，完成後就不必再重新上傳。"
+                                    ? "照片同步到 Google Drive 中。同步完成後，按完成就不必再重新上傳。"
                                     : currentPhoto.uploadedRef
                                       ? "照片已同步到 Google Drive；按完成時只會送照片參照，採購單連結稍後回寫。"
                                       : currentPhoto.uploadError
-                                        ? `Google Drive 上傳失敗：${currentPhoto.uploadError}`
-                                        : "已準備上傳；完成 E 站後會在背景同步到 Google Drive 與採購單試算表。"}
+                                        ? currentPhoto.uploadError
+                                        : "照片已保留在目前頁面，但尚未開始同步；請重新拍照或稍後再試。"}
                                 </p>
+                                {currentPhoto.uploadError ? (
+                                  <div className="flex flex-wrap gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className="rounded-2xl border-rose-200 text-rose-700"
+                                      onClick={() => void handleRetryEPhotoUpload(task.taskId, task.productId, photoField.key)}
+                                    >
+                                      <RefreshCw className="mr-2 h-4 w-4" /> 重試上傳
+                                    </Button>
+                                  </div>
+                                ) : null}
                               </div>
                             ) : (
                               <div className="rounded-2xl bg-white px-4 py-6 text-sm text-slate-500 shadow-sm">尚未拍攝 {photoField.title}</div>
