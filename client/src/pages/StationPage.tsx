@@ -11,7 +11,7 @@ import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
 import { createUtf8CsvBlob, exportStationStockRowsToCsv } from "./station-stock-export";
 import { Boxes, Camera, ClipboardCheck, Download, Gauge, LoaderCircle, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
 import jsQR from "jsqr";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
 
@@ -150,6 +150,35 @@ const detectQrCodeFromImageFile = async (file: File) => {
   return decodeQrWithJsQr(file);
 };
 
+const detectQrCodeFromVideoFrame = async (video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
+  if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth || !video.videoHeight) {
+    return null;
+  }
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    throw new Error("瀏覽器不支援相機畫面處理，請改用手動輸入批號");
+  }
+
+  context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+  const BarcodeDetectorApi = getBarcodeDetectorConstructor();
+  if (BarcodeDetectorApi) {
+    const detector = new BarcodeDetectorApi({ formats: ["qr_code"] });
+    const results = await detector.detect(canvas);
+    const detectedValue = results.find((result) => typeof result.rawValue === "string" && result.rawValue.trim())?.rawValue?.trim();
+    if (detectedValue) {
+      return detectedValue;
+    }
+  }
+
+  const imageData = context.getImageData(0, 0, video.videoWidth, video.videoHeight);
+  return jsQR(imageData.data, video.videoWidth, video.videoHeight, {
+    inversionAttempts: "attemptBoth",
+  })?.data?.trim() ?? null;
+};
+
 const compressCapturedPhoto = async (file: File): Promise<StationCapturedPhoto> => {
   const sourceDataUrl = await readFileAsDataUrl(file);
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -246,12 +275,19 @@ export default function StationPage() {
   } | null>(null);
   const [categoryDraftValue, setCategoryDraftValue] = useState("");
   const [isProcessingEStationQrCapture, setIsProcessingEStationQrCapture] = useState(false);
+  const [isEStationQrScannerOpen, setIsEStationQrScannerOpen] = useState(false);
+  const [isStartingEStationQrScanner, setIsStartingEStationQrScanner] = useState(false);
+  const [eStationQrScannerError, setEStationQrScannerError] = useState("");
   const batchNoInputRef = useRef<HTMLInputElement | null>(null);
   const serialNumberInputRef = useRef<HTMLInputElement | null>(null);
   const imeiInputRef = useRef<HTMLInputElement | null>(null);
   const productNameInputRef = useRef<HTMLInputElement | null>(null);
   const quickScanInputRef = useRef<HTMLInputElement | null>(null);
   const eStationQrCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const eStationQrScannerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const eStationQrScannerCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const eStationQrScannerFrameRef = useRef<number | null>(null);
+  const eStationQrScannerStreamRef = useRef<MediaStream | null>(null);
   const utils = trpc.useUtils();
   const canEditCategory = stationCode === "A1" || stationCode === "C";
   const shouldLoadProductNameOptions = stationCode === "A1" && (productNamePickerOpen || Boolean(arrivalForm.productName.trim()));
@@ -271,6 +307,13 @@ export default function StationPage() {
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
   const productCategoryOptions = productCategoryOptionsQuery.data ?? [];
+  const eStationLiveQrCaptureSupported = useMemo(() => {
+    if (stationCode !== "E" || typeof navigator === "undefined") {
+      return false;
+    }
+
+    return typeof navigator.mediaDevices?.getUserMedia === "function";
+  }, [stationCode]);
   const eStationQrCaptureSupported = useMemo(() => stationCode === "E", [stationCode]);
 
   const invalidateStationData = async () => {
@@ -348,9 +391,36 @@ export default function StationPage() {
     });
   };
 
+  const applyDetectedEStationQrValue = useCallback((detectedValue: string) => {
+    setKeyword(detectedValue);
+    setIsEStationQrScannerOpen(false);
+    toast.success(`已從 QR 辨識到 ${detectedValue}，請確認抹除完成後再推進下一站`);
+    focusQuickScanInput();
+  }, []);
+
+  const stopEStationQrScanner = useCallback(() => {
+    if (eStationQrScannerFrameRef.current !== null && typeof window !== "undefined") {
+      window.cancelAnimationFrame?.(eStationQrScannerFrameRef.current);
+      eStationQrScannerFrameRef.current = null;
+    }
+
+    eStationQrScannerStreamRef.current?.getTracks().forEach((track) => track.stop());
+    eStationQrScannerStreamRef.current = null;
+
+    if (eStationQrScannerVideoRef.current) {
+      eStationQrScannerVideoRef.current.srcObject = null;
+    }
+  }, []);
+
   const openEStationQrCapture = () => {
     if (!eStationQrCaptureSupported) {
       toast.error("目前裝置不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號");
+      return;
+    }
+
+    if (eStationLiveQrCaptureSupported) {
+      setEStationQrScannerError("");
+      setIsEStationQrScannerOpen(true);
       return;
     }
 
@@ -367,15 +437,102 @@ export default function StationPage() {
     setIsProcessingEStationQrCapture(true);
     try {
       const detectedValue = await detectQrCodeFromImageFile(file);
-      setKeyword(detectedValue);
-      toast.success(`已從 QR 辨識到 ${detectedValue}，請確認抹除完成後再推進下一站`);
-      focusQuickScanInput();
+      applyDetectedEStationQrValue(detectedValue);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "QR 辨識失敗，請重新拍攝或改用手動輸入");
     } finally {
       setIsProcessingEStationQrCapture(false);
     }
   };
+
+  useEffect(() => {
+    if (!isEStationQrScannerOpen || !eStationLiveQrCaptureSupported) {
+      stopEStationQrScanner();
+      return;
+    }
+
+    let cancelled = false;
+    let isDetecting = false;
+
+    const scanNextFrame = async () => {
+      if (cancelled || isDetecting) {
+        return;
+      }
+
+      const video = eStationQrScannerVideoRef.current;
+      const canvas = eStationQrScannerCanvasRef.current;
+      if (!video || !canvas) {
+        eStationQrScannerFrameRef.current = window.requestAnimationFrame(scanNextFrame);
+        return;
+      }
+
+      isDetecting = true;
+      try {
+        const detectedValue = await detectQrCodeFromVideoFrame(video, canvas);
+        if (detectedValue) {
+          applyDetectedEStationQrValue(detectedValue);
+          return;
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "QR 辨識失敗，請重新拍攝或改用手動輸入";
+        setEStationQrScannerError(message);
+      } finally {
+        isDetecting = false;
+      }
+
+      if (!cancelled) {
+        eStationQrScannerFrameRef.current = window.requestAnimationFrame(scanNextFrame);
+      }
+    };
+
+    const startScanner = async () => {
+      if (typeof navigator === "undefined" || typeof navigator.mediaDevices?.getUserMedia !== "function") {
+        setEStationQrScannerError("目前裝置無法直接開啟即時掃碼，請改用拍照或手動輸入批號");
+        return;
+      }
+
+      setIsStartingEStationQrScanner(true);
+      setEStationQrScannerError("");
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: { ideal: "environment" },
+          },
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        eStationQrScannerStreamRef.current = stream;
+        const video = eStationQrScannerVideoRef.current;
+        if (!video) {
+          throw new Error("相機畫面初始化失敗，請重新開啟一次");
+        }
+
+        video.srcObject = stream;
+        await video.play();
+        eStationQrScannerFrameRef.current = window.requestAnimationFrame(scanNextFrame);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "無法開啟相機，請確認相機權限後再試";
+        setEStationQrScannerError(message);
+        toast.error(message);
+      } finally {
+        if (!cancelled) {
+          setIsStartingEStationQrScanner(false);
+        }
+      }
+    };
+
+    void startScanner();
+
+    return () => {
+      cancelled = true;
+      stopEStationQrScanner();
+      setIsStartingEStationQrScanner(false);
+    };
+  }, [applyDetectedEStationQrValue, eStationLiveQrCaptureSupported, isEStationQrScannerOpen, stopEStationQrScanner]);
 
   const openCategoryEditor = (task: {
     taskId: number;
@@ -1203,8 +1360,8 @@ export default function StationPage() {
                 {stationCode === "E" ? (
                   <div className="flex flex-col gap-3 rounded-[20px] bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-1 text-xs leading-6 text-slate-500">
-                      <p className="font-medium text-slate-700">手持裝置可直接用相機拍攝批號 QR，辨識後會自動帶入上方欄位。</p>
-                      <p>{eStationQrCaptureSupported ? "若現場不方便手打批號，可直接點下方按鈕開啟相機拍照辨識；Safari 也可使用拍照後辨識。" : "目前裝置不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號。"}</p>
+                      <p className="font-medium text-slate-700">手持裝置可直接開啟相機掃描批號 QR，抓到後會自動返回 E 站並帶入上方欄位。</p>
+                      <p>{eStationQrCaptureSupported ? (eStationLiveQrCaptureSupported ? "Safari 與一般手機瀏覽器都可直接開啟相機即時辨識，抓到 QR 後會立即回到 E 站。" : "若現場裝置不支援即時掃描，仍可改用拍照辨識。") : "目前裝置不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號。"}</p>
                     </div>
                     <>
                       <input
@@ -1215,9 +1372,9 @@ export default function StationPage() {
                         className="hidden"
                         onChange={handleEStationQrCaptureChange}
                       />
-                      <Button type="button" variant="outline" className="rounded-2xl" onClick={openEStationQrCapture} disabled={isProcessingEStationQrCapture}>
-                        {isProcessingEStationQrCapture ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                        {isProcessingEStationQrCapture ? "辨識 QR 中..." : "拍照掃描 QR"}
+                      <Button type="button" variant="outline" className="rounded-2xl" onClick={openEStationQrCapture} disabled={isProcessingEStationQrCapture || isStartingEStationQrScanner}>
+                        {isProcessingEStationQrCapture || isStartingEStationQrScanner ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                        {isProcessingEStationQrCapture ? "辨識 QR 中..." : isStartingEStationQrScanner ? "開啟相機中..." : eStationLiveQrCaptureSupported ? "開啟相機掃描 QR" : "拍照掃描 QR"}
                       </Button>
                     </>
                   </div>
@@ -1762,6 +1919,35 @@ export default function StationPage() {
               ) : null}
             </CardContent>
           </Card>
+        ) : null}
+        {stationCode === "E" ? (
+          <Dialog open={isEStationQrScannerOpen} onOpenChange={(open) => {
+            setIsEStationQrScannerOpen(open);
+            if (!open) {
+              setEStationQrScannerError("");
+            }
+          }}>
+            <DialogContent className="rounded-[28px] border-0 p-0 sm:max-w-lg">
+              <div className="space-y-6 p-6">
+                <DialogHeader>
+                  <DialogTitle>相機掃描批號 QR</DialogTitle>
+                  <DialogDescription>請將 QR 置中。系統一旦辨識成功，就會自動關閉相機並返回 E 站帶入批號。</DialogDescription>
+                </DialogHeader>
+                <div className="overflow-hidden rounded-[28px] bg-slate-950">
+                  <video ref={eStationQrScannerVideoRef} autoPlay playsInline muted className="aspect-[3/4] w-full object-cover" />
+                </div>
+                <canvas ref={eStationQrScannerCanvasRef} className="hidden" aria-hidden="true" />
+                <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  {eStationQrScannerError || (isStartingEStationQrScanner ? "正在啟動相機，請稍候..." : "相機開啟後會持續偵測 QR；抓到後會立即跳回 E 站。")}
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" className="rounded-2xl" onClick={() => setIsEStationQrScannerOpen(false)}>
+                    關閉相機
+                  </Button>
+                </DialogFooter>
+              </div>
+            </DialogContent>
+          </Dialog>
         ) : null}
         {canEditCategory ? (
         <Dialog open={Boolean(categoryDialogTask)} onOpenChange={(open) => {
