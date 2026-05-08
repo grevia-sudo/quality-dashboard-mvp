@@ -742,11 +742,7 @@ export default function StationPage() {
       if (variables.stationCode === "E") {
         removeCompletedTaskFromCache("E", variables.productId);
         setKeyword("");
-        if (result?.message) {
-          toast.warning(result.message);
-        } else {
-          toast.success("E 站抹除已完成並推進下一站，請直接掃描下一筆");
-        }
+        toast.success(result?.message ?? "E 站抹除已完成並推進下一站，請直接掃描下一筆");
         focusQuickScanInput();
         refreshStationDataInBackground("E", "STOCK");
         return;
@@ -1787,8 +1783,8 @@ export default function StationPage() {
                   {stationCode === "E" ? (
                     <div className="grid gap-4 lg:grid-cols-2">
                       {[
-                        { key: "eFrontPhoto" as const, title: "正面照片", helper: "上傳後會寫入 Google 試算表 AC 欄，檔名為商品批號-1" },
-                        { key: "eBackPhoto" as const, title: "反面照片", helper: "上傳後會寫入 Google 試算表 AD 欄，檔名為商品批號-2" },
+                        { key: "eFrontPhoto" as const, title: "正面照片", helper: "完成 E 站後會先快速保存，並在背景同步到採購單 AC 欄，檔名為商品批號-1" },
+                        { key: "eBackPhoto" as const, title: "反面照片", helper: "完成 E 站後會先快速保存，並在背景同步到採購單 AD 欄，檔名為商品批號-2" },
                       ].map((photoField) => {
                         const currentPhoto = photoField.key === "eFrontPhoto" ? selections.eFrontPhoto : selections.eBackPhoto;
                         return (

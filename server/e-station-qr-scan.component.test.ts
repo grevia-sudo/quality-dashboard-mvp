@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+/** @vitest-environment jsdom */
 import React from "react";
 (globalThis as any).React = React;
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";

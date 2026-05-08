@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { productArchives, products, stationTasks } from "../drizzle/schema";
+import { productArchives, products, sheetSyncJobs, stationTasks } from "../drizzle/schema";
 
 const { spawnMock } = vi.hoisted(() => ({
   spawnMock: vi.fn(() => ({
@@ -12,14 +12,6 @@ vi.mock("node:child_process", () => ({
   spawn: spawnMock,
 }));
 
-vi.mock("node:crypto", () => ({
-  createSign: () => ({
-    update: vi.fn(),
-    end: vi.fn(),
-    sign: vi.fn(() => "signed-test-token=="),
-  }),
-}));
-
 const { storagePutMock } = vi.hoisted(() => ({
   storagePutMock: vi.fn(),
 }));
@@ -28,19 +20,9 @@ vi.mock("./storage", () => ({
   storagePut: storagePutMock,
 }));
 
-import { completeStationTask, ensureMvpSeedData, getDb } from "./db";
+import { completeStationTask, ensureMvpSeedData, getDb, runEStationPhotoSyncInProcess } from "./db";
 
 const createdProductIds = new Set<number>();
-const originalGoogleCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-
-function createJsonResponse(payload: unknown, ok = true, status = ok ? 200 : 500) {
-  return {
-    ok,
-    status,
-    json: async () => payload,
-    text: async () => JSON.stringify(payload),
-  } as Response;
-}
 
 function uniqueDigits(seed: number, length: number) {
   return `${seed}`.padStart(length, "0").slice(-length);
@@ -93,19 +75,19 @@ async function createPendingEStationTask(seed: number) {
     throw new Error("Database is not available");
   }
 
-  const productCode = `E-FALLBACK-${seed}`;
-  const batchNo = `E-FALLBACK-BATCH-${seed}`;
-  const serialNumber = `E-FALLBACK-SN-${seed}`;
+  const productCode = `E-BG-${seed}`;
+  const batchNo = `E-BG-BATCH-${seed}`;
+  const serialNumber = `E-BG-SN-${seed}`;
   const imei = `95${uniqueDigits(seed + 1, 13)}`;
 
   const productInsert = await db.insert(products).values({
     productCode,
-    poNumber: `PO-E-FALLBACK-${seed}`,
-    vendorName: "E站整合測試廠商",
+    poNumber: `PO-E-BG-${seed}`,
+    vendorName: "E站背景同步測試廠商",
     batchNo,
     serialNumber,
     imei,
-    productName: "E站同步備援測試手機",
+    productName: "E站背景同步測試手機",
     currentStationCode: "E",
     currentStatus: "pending_e",
     sheetRowNumber: 2,
@@ -144,57 +126,26 @@ function createTestPhoto(fileName: string) {
   };
 }
 
-describe("E 站照片同步備援整合", () => {
+describe("E 站照片背景同步整合", () => {
   beforeAll(async () => {
     await ensureMvpSeedData();
   });
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.stubGlobal("fetch", vi.fn());
+    vi.stubGlobal("fetch", vi.fn(() => {
+      throw new Error("E 站完成流程不應同步呼叫 Google API");
+    }));
     storagePutMock.mockReset();
-    process.env.GOOGLE_SERVICE_ACCOUNT_JSON = JSON.stringify({
-      client_email: "sheet-sync-test@example.com",
-      private_key: "-----BEGIN PRIVATE KEY-----\nTEST\n-----END PRIVATE KEY-----\n",
-      token_uri: "https://oauth2.googleapis.com/token",
-    });
   });
 
   afterEach(async () => {
     vi.unstubAllGlobals();
     await archiveCreatedTestRows();
     createdProductIds.clear();
-    if (originalGoogleCredentials === undefined) {
-      delete process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-    } else {
-      process.env.GOOGLE_SERVICE_ACCOUNT_JSON = originalGoogleCredentials;
-    }
   });
 
-  it("在 Google Drive upload 失敗時仍完成 E 站並改存 manus-storage 網址", async () => {
-    storagePutMock
-      .mockResolvedValueOnce({ key: "station/front.jpg", url: "/manus-storage/station/front.jpg" })
-      .mockResolvedValueOnce({ key: "station/back.jpg", url: "/manus-storage/station/back.jpg" });
-
-    const fetchMock = vi.mocked(fetch);
-    fetchMock.mockImplementation(async (input, init) => {
-      const url = String(input);
-
-      if (url.includes("oauth2.googleapis.com/token")) {
-        return createJsonResponse({ access_token: "google-token" });
-      }
-
-      if (url.includes("googleapis.com/upload/drive/v3/files")) {
-        return createJsonResponse({ error: { message: "Google Drive API has not been used in project before or it is disabled." } }, false, 403);
-      }
-
-      if (url.includes("sheets.googleapis.com") && init?.method === "PUT") {
-        return createJsonResponse({ updatedRange: "採購單!AC2:AD2" });
-      }
-
-      throw new Error(`Unexpected fetch call: ${url}`);
-    });
-
+  it("完成 E 站時會先返回成功並建立 STOCK 任務，照片改由背景工作稍後處理", async () => {
     const { productId, taskId } = await createPendingEStationTask(Date.now());
     const result = await completeStationTask({
       taskId,
@@ -207,66 +158,7 @@ describe("E 站照片同步備援整合", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(result.message).toContain("改存系統備援空間");
-    expect(storagePutMock).toHaveBeenCalledTimes(2);
-
-    const db = await getDb();
-    if (!db) {
-      throw new Error("Database is not available");
-    }
-
-    const completedTask = await db
-      .select({ metadata: stationTasks.metadata })
-      .from(stationTasks)
-      .where(and(eq(stationTasks.productId, productId), eq(stationTasks.stationCode, "E"), eq(stationTasks.taskStatus, "completed")))
-      .limit(1);
-
-    const metadata = completedTask[0]?.metadata as Record<string, unknown>;
-    expect(metadata.ePhotoSyncStatus).toBe("storage_fallback");
-    expect(String(metadata.eFrontPhotoUrl)).toContain("/manus-storage/");
-    expect(String(metadata.eBackPhotoUrl)).toContain("/manus-storage/");
-  }, 20000);
-
-  it("在 Google Sheet 回寫失敗時仍完成 E 站且保留原本 Drive 網址", async () => {
-    let driveUploadCount = 0;
-    const fetchMock = vi.mocked(fetch);
-    fetchMock.mockImplementation(async (input, init) => {
-      const url = String(input);
-
-      if (url.includes("oauth2.googleapis.com/token")) {
-        return createJsonResponse({ access_token: "google-token" });
-      }
-
-      if (url.includes("googleapis.com/upload/drive/v3/files")) {
-        driveUploadCount += 1;
-        return createJsonResponse({
-          id: driveUploadCount === 1 ? "front-id" : "back-id",
-          webViewLink: driveUploadCount === 1
-            ? "https://drive.google.com/file/d/front-id/view"
-            : "https://drive.google.com/file/d/back-id/view",
-        });
-      }
-
-      if (url.includes("sheets.googleapis.com") && init?.method === "PUT") {
-        return createJsonResponse({ error: { message: "回寫 E 站照片連結到採購單失敗" } }, false, 500);
-      }
-
-      throw new Error(`Unexpected fetch call: ${url}`);
-    });
-
-    const { productId, taskId } = await createPendingEStationTask(Date.now() + 1000);
-    const result = await completeStationTask({
-      taskId,
-      stationCode: "E",
-      operatorUserId: 1,
-      productId,
-      summary: "E 測試完成",
-      eFrontPhoto: createTestPhoto("front.jpg"),
-      eBackPhoto: createTestPhoto("back.jpg"),
-    });
-
-    expect(result.success).toBe(true);
-    expect(result.message).toContain("採購單照片連結回寫失敗");
+    expect(result.message).toContain("照片已排入背景同步");
     expect(storagePutMock).not.toHaveBeenCalled();
 
     const db = await getDb();
@@ -280,9 +172,110 @@ describe("E 站照片同步備援整合", () => {
       .where(and(eq(stationTasks.productId, productId), eq(stationTasks.stationCode, "E"), eq(stationTasks.taskStatus, "completed")))
       .limit(1);
 
+    const nextTask = await db
+      .select({ stationCode: stationTasks.stationCode, taskStatus: stationTasks.taskStatus })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.productId, productId), eq(stationTasks.stationCode, "STOCK"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1);
+
+    const queuedJobs = await db
+      .select({ jobType: sheetSyncJobs.jobType, status: sheetSyncJobs.status })
+      .from(sheetSyncJobs)
+      .where(eq(sheetSyncJobs.jobType, "e_station_photo_sync"));
+
+    const productRow = await db
+      .select({ currentStationCode: products.currentStationCode, currentStatus: products.currentStatus })
+      .from(products)
+      .where(eq(products.id, productId))
+      .limit(1);
+
     const metadata = completedTask[0]?.metadata as Record<string, unknown>;
-    expect(metadata.ePhotoSyncStatus).toBe("sheet_write_failed");
-    expect(String(metadata.eFrontPhotoUrl)).toContain("drive.google.com");
-    expect(String(metadata.eBackPhotoUrl)).toContain("drive.google.com");
+    expect(metadata.ePhotoSyncStatus).toBe("queued_background");
+    expect(metadata.ePhotoSyncMessage).toBe("E 站照片已排入背景同步佇列");
+    expect(metadata.eFrontPhotoUrl).toBeUndefined();
+    expect(metadata.eBackPhotoUrl).toBeUndefined();
+    expect(metadata.ePhotoPendingUploads).toBeTruthy();
+    expect(nextTask[0]?.stationCode).toBe("STOCK");
+    expect(nextTask[0]?.taskStatus).toBe("pending");
+    expect(queuedJobs.some((job) => job.jobType === "e_station_photo_sync" && job.status === "queued")).toBe(true);
+    expect(productRow[0]?.currentStationCode).toBe("STOCK");
+    expect(productRow[0]?.currentStatus).toBe("pending_stock");
+  }, 20000);
+
+  it("背景 worker 會消化 E 站照片同步 job 並更新同步狀態", async () => {
+    storagePutMock
+      .mockResolvedValueOnce({ key: "station/front.jpg", url: "/manus-storage/station/front.jpg" })
+      .mockResolvedValueOnce({ key: "station/back.jpg", url: "/manus-storage/station/back.jpg" });
+
+    const { productId, taskId } = await createPendingEStationTask(Date.now() + 1000);
+    await completeStationTask({
+      taskId,
+      stationCode: "E",
+      operatorUserId: 1,
+      productId,
+      summary: "E 測試完成",
+      eFrontPhoto: createTestPhoto("front.jpg"),
+      eBackPhoto: createTestPhoto("back.jpg"),
+    });
+
+    await runEStationPhotoSyncInProcess();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const completedTask = await db
+      .select({ metadata: stationTasks.metadata })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.productId, productId), eq(stationTasks.stationCode, "E"), eq(stationTasks.taskStatus, "completed")))
+      .limit(1);
+
+    const metadata = completedTask[0]?.metadata as Record<string, unknown>;
+    expect(storagePutMock).toHaveBeenCalledTimes(2);
+    expect(metadata.ePhotoSyncStatus).toBe("background_completed");
+    expect(metadata.ePhotoPendingUploads).toBeUndefined();
+    expect(String(metadata.eFrontPhotoUrl)).toContain("/manus-storage/");
+    expect(String(metadata.eBackPhotoUrl)).toContain("/manus-storage/");
+  }, 20000);
+
+  it("若背景 worker 持續寫入系統儲存失敗，最終會標記背景同步失敗但不阻斷已建立的下一站任務", async () => {
+    storagePutMock.mockRejectedValueOnce(new Error("storage unavailable"));
+
+    const { productId, taskId } = await createPendingEStationTask(Date.now() + 2000);
+    await completeStationTask({
+      taskId,
+      stationCode: "E",
+      operatorUserId: 1,
+      productId,
+      summary: "E 測試完成",
+      eFrontPhoto: createTestPhoto("front.jpg"),
+      eBackPhoto: createTestPhoto("back.jpg"),
+    });
+
+    await runEStationPhotoSyncInProcess();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const completedTask = await db
+      .select({ metadata: stationTasks.metadata })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.id, taskId), eq(stationTasks.stationCode, "E")))
+      .limit(1);
+
+    const nextTask = await db
+      .select({ id: stationTasks.id })
+      .from(stationTasks)
+      .where(and(eq(stationTasks.productId, productId), eq(stationTasks.stationCode, "STOCK"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1);
+
+    const metadata = completedTask[0]?.metadata as Record<string, unknown>;
+    expect(metadata.ePhotoSyncStatus).toBe("background_failed");
+    expect(String(metadata.ePhotoSyncMessage)).toContain("請手動補傳");
+    expect(metadata.ePhotoSyncAttempts).toBe(3);
+    expect(nextTask).toHaveLength(1);
   }, 20000);
 });
