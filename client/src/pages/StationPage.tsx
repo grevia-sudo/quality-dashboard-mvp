@@ -30,10 +30,20 @@ const stationCodes = ["A1", "A2", "B", "C", "E", "STOCK"] as const;
 type StationCode = (typeof stationCodes)[number];
 
 type BatteryIssueLabel = (typeof B_BATTERY_ISSUE_OPTIONS)[number];
+type StationUploadedPhotoReference = {
+  mimeType: string;
+  fileName: string;
+  driveFileId: string;
+  driveUrl: string;
+};
+
 type StationCapturedPhoto = {
   dataUrl: string;
   mimeType: string;
   fileName: string;
+  uploadedRef?: StationUploadedPhotoReference | null;
+  isUploading?: boolean;
+  uploadError?: string | null;
 };
 
 type DetectedBarcode = {
@@ -188,7 +198,7 @@ const compressCapturedPhoto = async (file: File): Promise<StationCapturedPhoto> 
     nextImage.src = sourceDataUrl;
   });
 
-  const maxSide = 1600;
+  const maxSide = 1280;
   const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
   const targetWidth = Math.max(1, Math.round(image.width * scale));
   const targetHeight = Math.max(1, Math.round(image.height * scale));
@@ -201,7 +211,7 @@ const compressCapturedPhoto = async (file: File): Promise<StationCapturedPhoto> 
   }
 
   context.drawImage(image, 0, 0, targetWidth, targetHeight);
-  const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.72);
   const normalizedBaseName = (file.name || "capture")
     .replace(/\.[^.]+$/, "")
     .trim()
@@ -705,6 +715,8 @@ export default function StationPage() {
     },
   });
 
+  const uploadEPhotoMutation = trpc.station.uploadEPhoto.useMutation();
+
   const completeMutation = trpc.station.complete.useMutation({
     onSuccess: (result, variables) => {
       setSelectedOptions({});
@@ -1050,7 +1062,7 @@ export default function StationPage() {
     });
   };
 
-  const handleStationPhotoChange = async (taskId: number, key: "eFrontPhoto" | "eBackPhoto", fileList: FileList | null) => {
+  const handleStationPhotoChange = async (taskId: number, productId: number, key: "eFrontPhoto" | "eBackPhoto", fileList: FileList | null) => {
     const selectedFile = fileList?.[0];
     if (!selectedFile) {
       updateStationPhoto(taskId, key, null);
@@ -1059,10 +1071,59 @@ export default function StationPage() {
 
     try {
       const compressedPhoto = await compressCapturedPhoto(selectedFile);
-      updateStationPhoto(taskId, key, compressedPhoto);
-      toast.success(key === "eFrontPhoto" ? "已更新正面照片" : "已更新反面照片");
+      updateStationPhoto(taskId, key, {
+        ...compressedPhoto,
+        isUploading: true,
+        uploadedRef: null,
+        uploadError: null,
+      });
+      toast.success(key === "eFrontPhoto" ? "已更新正面照片" : "已更新反面照片", {
+        position: "top-center",
+      });
+
+      const uploadResult = await uploadEPhotoMutation.mutateAsync({
+        taskId,
+        productId,
+        side: key === "eFrontPhoto" ? "front" : "back",
+        photo: compressedPhoto,
+      });
+
+      if (!uploadResult.success || !uploadResult.reference) {
+        throw new Error(uploadResult.message || "照片上傳 Google Drive 失敗");
+      }
+
+      updateStationPhoto(taskId, key, {
+        ...compressedPhoto,
+        isUploading: false,
+        uploadedRef: uploadResult.reference,
+        uploadError: null,
+      });
+      toast.success(key === "eFrontPhoto" ? "正面照片已同步到 Google Drive" : "反面照片已同步到 Google Drive", {
+        position: "top-center",
+      });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "照片處理失敗，請重新拍照");
+      const message = error instanceof Error ? error.message : "照片處理失敗，請重新拍照";
+      setSelectedOptions((prev) => {
+        const current = prev[taskId] ?? defaultSelections();
+        const existingPhoto = current[key];
+        if (!existingPhoto) {
+          return prev;
+        }
+        return {
+          ...prev,
+          [taskId]: {
+            ...current,
+            [key]: {
+              ...existingPhoto,
+              isUploading: false,
+              uploadError: message,
+            },
+          },
+        };
+      });
+      toast.error(message, {
+        position: "top-center",
+      });
     }
   };
 
@@ -1128,10 +1189,19 @@ export default function StationPage() {
         return;
       }
 
+      if (selections.eFrontPhoto.isUploading || selections.eBackPhoto.isUploading) {
+        toast.error("照片仍在同步到 Google Drive，請稍候再按完成", {
+          position: "top-center",
+        });
+        return;
+      }
+
       completeMutation.mutate({
         ...basePayload,
-        eFrontPhoto: selections.eFrontPhoto,
-        eBackPhoto: selections.eBackPhoto,
+        eFrontPhoto: selections.eFrontPhoto.uploadedRef ? undefined : selections.eFrontPhoto,
+        eBackPhoto: selections.eBackPhoto.uploadedRef ? undefined : selections.eBackPhoto,
+        eFrontPhotoRef: selections.eFrontPhoto.uploadedRef ?? undefined,
+        eBackPhotoRef: selections.eBackPhoto.uploadedRef ?? undefined,
       });
       return;
     }
@@ -1798,12 +1868,20 @@ export default function StationPage() {
                               accept="image/*"
                               capture="environment"
                               className="editable-field h-12 rounded-2xl border-0 bg-white shadow-sm file:mr-4 file:rounded-xl file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium"
-                              onChange={(event) => void handleStationPhotoChange(task.taskId, photoField.key, event.target.files)}
+                              onChange={(event) => void handleStationPhotoChange(task.taskId, task.productId, photoField.key, event.target.files)}
                             />
                             {currentPhoto ? (
                               <div className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">
                                 <img src={currentPhoto.dataUrl} alt={photoField.title} className="h-48 w-full rounded-2xl object-cover" />
-                                <p className="text-xs text-slate-500">已準備上傳，完成 E 站時會同步寫入 Drive 與採購單試算表。</p>
+                                <p className="text-xs text-slate-500">
+                                  {currentPhoto.isUploading
+                                    ? "照片同步到 Google Drive 中，完成後就不必再重新上傳。"
+                                    : currentPhoto.uploadedRef
+                                      ? "照片已同步到 Google Drive；按完成時只會送照片參照，採購單連結稍後回寫。"
+                                      : currentPhoto.uploadError
+                                        ? `Google Drive 上傳失敗：${currentPhoto.uploadError}`
+                                        : "已準備上傳；完成 E 站後會在背景同步到 Google Drive 與採購單試算表。"}
+                                </p>
                               </div>
                             ) : (
                               <div className="rounded-2xl bg-white px-4 py-6 text-sm text-slate-500 shadow-sm">尚未拍攝 {photoField.title}</div>

@@ -12,14 +12,6 @@ vi.mock("node:child_process", () => ({
   spawn: spawnMock,
 }));
 
-const { storagePutMock } = vi.hoisted(() => ({
-  storagePutMock: vi.fn(),
-}));
-
-vi.mock("./storage", () => ({
-  storagePut: storagePutMock,
-}));
-
 import { completeStationTask, ensureMvpSeedData, getDb, runEStationPhotoSyncInProcess } from "./db";
 
 const createdProductIds = new Set<number>();
@@ -136,7 +128,6 @@ describe("E 站照片背景同步整合", () => {
     vi.stubGlobal("fetch", vi.fn(() => {
       throw new Error("E 站完成流程不應同步呼叫 Google API");
     }));
-    storagePutMock.mockReset();
   });
 
   afterEach(async () => {
@@ -159,7 +150,6 @@ describe("E 站照片背景同步整合", () => {
 
     expect(result.success).toBe(true);
     expect(result.message).toContain("照片已排入背景同步");
-    expect(storagePutMock).not.toHaveBeenCalled();
 
     const db = await getDb();
     if (!db) {
@@ -203,9 +193,23 @@ describe("E 站照片背景同步整合", () => {
   }, 20000);
 
   it("背景 worker 會消化 E 站照片同步 job 並更新同步狀態", async () => {
-    storagePutMock
-      .mockResolvedValueOnce({ key: "station/front.jpg", url: "/manus-storage/station/front.jpg" })
-      .mockResolvedValueOnce({ key: "station/back.jpg", url: "/manus-storage/station/back.jpg" });
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("oauth2.googleapis.com/token")) {
+        return new Response(JSON.stringify({ access_token: "drive-token" }), { status: 200 });
+      }
+      if (url.includes("upload/drive/v3/files")) {
+        return new Response(JSON.stringify({
+          id: `file-${fetchMock.mock.calls.length}`,
+          webViewLink: `https://drive.google.com/file/d/file-${fetchMock.mock.calls.length}/view`,
+        }), { status: 200 });
+      }
+      if (url.includes("sheets.googleapis.com")) {
+        return new Response(JSON.stringify({ updatedRange: "採購單!AC2:AD2" }), { status: 200 });
+      }
+      throw new Error(`Unexpected fetch url: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     const { productId, taskId } = await createPendingEStationTask(Date.now() + 1000);
     await completeStationTask({
@@ -232,15 +236,25 @@ describe("E 站照片背景同步整合", () => {
       .limit(1);
 
     const metadata = completedTask[0]?.metadata as Record<string, unknown>;
-    expect(storagePutMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalled();
     expect(metadata.ePhotoSyncStatus).toBe("background_completed");
     expect(metadata.ePhotoPendingUploads).toBeUndefined();
-    expect(String(metadata.eFrontPhotoUrl)).toContain("/manus-storage/");
-    expect(String(metadata.eBackPhotoUrl)).toContain("/manus-storage/");
+    expect(String(metadata.eFrontPhotoUrl)).toContain("https://drive.google.com/file/d/");
+    expect(String(metadata.eBackPhotoUrl)).toContain("https://drive.google.com/file/d/");
   }, 20000);
 
-  it("若背景 worker 持續寫入系統儲存失敗，最終會標記背景同步失敗但不阻斷已建立的下一站任務", async () => {
-    storagePutMock.mockRejectedValueOnce(new Error("storage unavailable"));
+  it("若背景 worker 持續寫入 Google Drive 失敗，最終會標記背景同步失敗但不阻斷已建立的下一站任務", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("oauth2.googleapis.com/token")) {
+        return new Response(JSON.stringify({ access_token: "drive-token" }), { status: 200 });
+      }
+      if (url.includes("upload/drive/v3/files")) {
+        return new Response(JSON.stringify({ error: { message: "drive unavailable" } }), { status: 503 });
+      }
+      throw new Error(`Unexpected fetch url: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     const { productId, taskId } = await createPendingEStationTask(Date.now() + 2000);
     await completeStationTask({

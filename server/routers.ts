@@ -10,6 +10,7 @@ import {
   clearProductCategoryOptions,
   completeA1ArrivalByScan,
   completeStationTask,
+  uploadEStationPhotoReference,
   createProductCategoryOption,
   createProductNameOption,
   createImportBatchBackup,
@@ -49,6 +50,12 @@ const stationPhotoInputSchema = z.object({
   dataUrl: z.string().trim().min(1),
   mimeType: z.string().trim().min(1),
   fileName: z.string().trim().min(1),
+});
+const stationPhotoReferenceSchema = z.object({
+  mimeType: z.string().trim().min(1),
+  fileName: z.string().trim().min(1),
+  driveFileId: z.string().trim().min(1),
+  driveUrl: z.string().trim().min(1),
 });
 const batteryIssueLabelSchema = z.enum(["電池膨脹", "副廠電池", "蓄電異常"]);
 const optionalTextSchema = z.string().trim().optional().transform((value) => value || undefined);
@@ -157,6 +164,23 @@ export const appRouter = router({
           categoryId: input.categoryId,
         });
       }),
+    uploadEPhoto: protectedProcedure
+      .input(
+        z.object({
+          taskId: z.number().int().positive(),
+          productId: z.number().int().positive(),
+          side: z.enum(["front", "back"]),
+          photo: stationPhotoInputSchema,
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return uploadEStationPhotoReference({
+          taskId: input.taskId,
+          productId: input.productId,
+          side: input.side,
+          photo: input.photo,
+        });
+      }),
     complete: protectedProcedure
       .input(
         z.object({
@@ -175,6 +199,8 @@ export const appRouter = router({
           applyBChanges: z.boolean().optional(),
           eFrontPhoto: stationPhotoInputSchema.optional(),
           eBackPhoto: stationPhotoInputSchema.optional(),
+          eFrontPhotoRef: stationPhotoReferenceSchema.optional(),
+          eBackPhotoRef: stationPhotoReferenceSchema.optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -195,6 +221,8 @@ export const appRouter = router({
           applyBChanges: input.applyBChanges,
           eFrontPhoto: input.eFrontPhoto,
           eBackPhoto: input.eBackPhoto,
+          eFrontPhotoRef: input.eFrontPhotoRef,
+          eBackPhotoRef: input.eBackPhotoRef,
         });
       }),
     receive: protectedProcedure

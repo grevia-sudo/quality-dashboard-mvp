@@ -28,7 +28,6 @@ import {
 import { ENV } from "./_core/env";
 import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "./pending-stock-mismatch";
 import { markPurchaseOrderRowsDeletedInGoogleSheet } from "./purchase-sheet-delete-sync";
-import { storagePut } from "./storage";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 const PRODUCTIVITY_TRACKED_STATION_CODES = ["A1", "A2", "B", "C", "E"] as const;
@@ -709,14 +708,16 @@ async function processNextQueuedEStationPhotoSyncJob() {
   }
 
   try {
-    const frontPhotoUrl = await uploadStationPhotoToStorage(parsed.front);
-    const backPhotoUrl = await uploadStationPhotoToStorage(parsed.back);
+    const frontUpload = await uploadStationPhotoToGoogleDrive(parsed.front);
+    const backUpload = await uploadStationPhotoToGoogleDrive(parsed.back);
+    const frontPhotoUrl = frontUpload.driveUrl;
+    const backPhotoUrl = backUpload.driveUrl;
     const nextMetadata = {
       ...parsed.metadata,
       eFrontPhotoUrl: frontPhotoUrl,
       eBackPhotoUrl: backPhotoUrl,
       ePhotoSyncStatus: "background_completed",
-      ePhotoSyncMessage: "E 站照片已完成背景同步，採購單連結將由背景程序回寫",
+      ePhotoSyncMessage: "E 站照片已完成背景同步到 Google Drive，採購單連結將由背景程序回寫",
       ePhotoSyncAttempts: parsed.attempts + 1,
     } as Record<string, unknown>;
     delete nextMetadata.ePhotoPendingUploads;
@@ -752,8 +753,8 @@ async function processNextQueuedEStationPhotoSyncJob() {
       ...parsed.metadata,
       ePhotoSyncStatus: shouldRetry ? "queued_background" : "background_failed",
       ePhotoSyncMessage: shouldRetry
-        ? `E 站照片背景同步失敗，系統將重試：${errorMessage}`
-        : `E 站照片背景同步失敗，請手動補傳：${errorMessage}`,
+        ? `E 站照片同步到 Google Drive 失敗，系統將重試：${errorMessage}`
+        : `E 站照片同步到 Google Drive 失敗，請手動補傳：${errorMessage}`,
       ePhotoSyncAttempts: parsed.attempts + 1,
     };
 
@@ -894,6 +895,13 @@ type StationPhotoUploadInput = {
   fileName: string;
 };
 
+type StationPhotoUploadReference = {
+  mimeType: string;
+  fileName: string;
+  driveFileId: string;
+  driveUrl: string;
+};
+
 async function getGoogleAccessToken(scopes: string | string[]) {
   const credentials = getGoogleServiceAccountCredentials();
   const nowInSeconds = Math.floor(Date.now() / 1000);
@@ -936,6 +944,10 @@ async function getGoogleSheetsAccessToken() {
   return getGoogleAccessToken("https://www.googleapis.com/auth/spreadsheets");
 }
 
+async function getGoogleDriveAccessToken() {
+  return getGoogleAccessToken("https://www.googleapis.com/auth/drive");
+}
+
 function decodeStationPhotoDataUrl(photo: StationPhotoUploadInput) {
   const matched = photo.dataUrl.match(/^data:(.+?);base64,(.+)$/);
   if (!matched) {
@@ -949,10 +961,92 @@ function decodeStationPhotoDataUrl(photo: StationPhotoUploadInput) {
   };
 }
 
-async function uploadStationPhotoToStorage(photo: StationPhotoUploadInput) {
+async function uploadStationPhotoToGoogleDrive(photo: StationPhotoUploadInput) {
   const { mimeType, buffer } = decodeStationPhotoDataUrl(photo);
-  const fallbackUpload = await storagePut(`station-e-photos/${photo.fileName}`, buffer, mimeType);
-  return fallbackUpload.url;
+  const accessToken = await getGoogleDriveAccessToken();
+  const boundary = `manus-e-station-${Date.now()}`;
+  const metadata = JSON.stringify({
+    name: photo.fileName,
+    parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID],
+  });
+
+  const body = Buffer.concat([
+    Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n`, "utf8"),
+    Buffer.from(`--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`, "utf8"),
+    buffer,
+    Buffer.from(`\r\n--${boundary}--`, "utf8"),
+  ]);
+
+  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink,webContentLink", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`,
+    },
+    body,
+  });
+  const result = await response.json() as { id?: string; webViewLink?: string; webContentLink?: string; error?: { message?: string } };
+
+  if (!response.ok || !result.id) {
+    throw new Error(result.error?.message || "上傳 E 站照片到 Google Drive 失敗");
+  }
+
+  return {
+    driveFileId: result.id,
+    driveUrl: result.webViewLink ?? result.webContentLink ?? `https://drive.google.com/file/d/${result.id}/view`,
+    mimeType,
+    fileName: photo.fileName,
+  } satisfies StationPhotoUploadReference;
+}
+
+function buildEStationPhotoFileNameBase(batchNo: string) {
+  return String(batchNo ?? "")
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/[\\/:*?"<>|#%{}]+/g, "-");
+}
+
+export async function uploadEStationPhotoReference(input: {
+  taskId: number;
+  productId: number;
+  side: "front" | "back";
+  photo: StationPhotoUploadInput;
+}) {
+  const db = await getDb();
+  if (!db) {
+    return { success: false as const, message: "Database unavailable" };
+  }
+
+  const taskRow = await db
+    .select({
+      stationCode: stationTasks.stationCode,
+      productId: stationTasks.productId,
+      batchNo: products.batchNo,
+    })
+    .from(stationTasks)
+    .innerJoin(products, eq(products.id, stationTasks.productId))
+    .where(eq(stationTasks.id, input.taskId))
+    .limit(1);
+
+  const targetTask = taskRow[0];
+  if (!targetTask || targetTask.stationCode !== "E" || targetTask.productId !== input.productId) {
+    return { success: false as const, message: "找不到可上傳照片的 E 站任務" };
+  }
+
+  const fileNameBase = buildEStationPhotoFileNameBase(targetTask.batchNo ?? "");
+  if (!fileNameBase) {
+    return { success: false as const, message: "此商品缺少商品批號，無法建立 E 站照片檔名" };
+  }
+
+  const uploaded = await uploadStationPhotoToGoogleDrive({
+    ...input.photo,
+    fileName: `${fileNameBase}-${input.side === "front" ? "1" : "2"}.jpg`,
+  });
+
+  return {
+    success: true as const,
+    reference: uploaded,
+  };
 }
 
 function matchesPurchaseSheetIdentity(row: string[] | undefined, identity: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null }) {
@@ -3192,6 +3286,8 @@ export async function completeStationTask(input: {
   applyBChanges?: boolean;
   eFrontPhoto?: StationPhotoUploadInput;
   eBackPhoto?: StationPhotoUploadInput;
+  eFrontPhotoRef?: StationPhotoUploadReference;
+  eBackPhotoRef?: StationPhotoUploadReference;
 }) {
   const db = await getDb();
   if (!db) {
@@ -3304,31 +3400,39 @@ export async function completeStationTask(input: {
   let ePhotoSyncAttempts = 0;
 
   if (input.stationCode === "E") {
-    if (!input.eFrontPhoto || !input.eBackPhoto) {
-      return { success: false as const, message: "請先拍攝正面與反面照片，再完成 E 站抹除" };
+    if (input.eFrontPhotoRef && input.eBackPhotoRef) {
+      eFrontPhotoUrl = input.eFrontPhotoRef.driveUrl;
+      eBackPhotoUrl = input.eBackPhotoRef.driveUrl;
+      ePhotoSyncStatus = "background_completed";
+      ePhotoSyncMessage = "E 站照片已同步到 Google Drive，採購單連結將由背景程序回寫";
+    } else {
+      if (!input.eFrontPhoto || !input.eBackPhoto) {
+        return { success: false as const, message: "請先拍攝正面與反面照片，再完成 E 站抹除" };
+      }
+
+      const batchNoForPhoto = String(productRow?.batchNo ?? "").trim();
+      if (!batchNoForPhoto) {
+        return { success: false as const, message: "此商品缺少商品批號，無法依規則建立 E 站照片檔名，請先補齊批號" };
+      }
+
+      const fileNameBase = buildEStationPhotoFileNameBase(batchNoForPhoto);
+      if (!fileNameBase) {
+        return { success: false as const, message: "此商品缺少商品批號，無法依規則建立 E 站照片檔名，請先補齊批號" };
+      }
+
+      ePhotoPendingUploads = {
+        front: {
+          ...input.eFrontPhoto,
+          fileName: `${fileNameBase}-1.jpg`,
+        },
+        back: {
+          ...input.eBackPhoto,
+          fileName: `${fileNameBase}-2.jpg`,
+        },
+      };
+      ePhotoSyncStatus = "queued_background";
+      ePhotoSyncMessage = "E 站照片已排入背景同步佇列";
     }
-
-    const batchNoForPhoto = String(productRow?.batchNo ?? "").trim();
-    if (!batchNoForPhoto) {
-      return { success: false as const, message: "此商品缺少商品批號，無法依規則建立 E 站照片檔名，請先補齊批號" };
-    }
-
-    const fileNameBase = batchNoForPhoto
-      .replace(/\s+/g, "")
-      .replace(/[\\/:*?"<>|#%{}]+/g, "-");
-
-    ePhotoPendingUploads = {
-      front: {
-        ...input.eFrontPhoto,
-        fileName: `${fileNameBase}-1.jpg`,
-      },
-      back: {
-        ...input.eBackPhoto,
-        fileName: `${fileNameBase}-2.jpg`,
-      },
-    };
-    ePhotoSyncStatus = "queued_background";
-    ePhotoSyncMessage = "E 站照片已排入背景同步佇列";
   }
 
   await db
@@ -3455,7 +3559,7 @@ export async function completeStationTask(input: {
     triggerPurchaseSheetSyncInBackground();
   }
 
-  if (input.stationCode === "E") {
+  if (input.stationCode === "E" && ePhotoPendingUploads) {
     await db.insert(sheetSyncJobs).values({
       jobType: "e_station_photo_sync",
       targetSheetName: "採購單",
@@ -3527,11 +3631,13 @@ export async function completeStationTask(input: {
     message: input.stationCode === "E"
       ? ePhotoSyncStatus === "queued_background"
         ? "E 站抹除已完成並推進下一站，照片已排入背景同步"
-        : ePhotoSyncStatus === "storage_fallback"
-          ? "E 站抹除已完成，照片已改存系統備援空間；Google Drive 同步稍後再處理"
-          : ePhotoSyncStatus === "sheet_write_failed"
-            ? "E 站抹除已完成，照片已上傳，但採購單照片連結回寫失敗；系統稍後再同步"
-            : undefined
+        : ePhotoSyncStatus === "background_completed"
+          ? "E 站抹除已完成並推進下一站，照片已同步到 Google Drive"
+          : ePhotoSyncStatus === "storage_fallback"
+            ? "E 站抹除已完成，照片已改存系統備援空間；Google Drive 同步稍後再處理"
+            : ePhotoSyncStatus === "sheet_write_failed"
+              ? "E 站抹除已完成，照片已上傳，但採購單照片連結回寫失敗；系統稍後再同步"
+              : undefined
       : undefined,
   };
 }

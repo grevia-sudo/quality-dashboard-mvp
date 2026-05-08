@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+const appSource = readFileSync(
+  new URL("../client/src/App.tsx", import.meta.url),
+  "utf8",
+);
 const stationPageSource = readFileSync(
   new URL("../client/src/pages/StationPage.tsx", import.meta.url),
   "utf8",
@@ -42,9 +46,10 @@ describe("E 站照片上傳 source coverage", () => {
     expect(routersSource).toContain("eBackPhoto: stationPhotoInputSchema.optional()");
   });
 
-  it("queues E station photos for true background sync and defers storage upload until the worker runs", () => {
-    expect(dbSource).toContain('uploadStationPhotoToStorage');
-    expect(dbSource).toContain('storagePut(`station-e-photos/${photo.fileName}`');
+  it("queues E station photos for true background sync and uploads them to the configured Google Drive folder in the worker", () => {
+    expect(dbSource).toContain('uploadStationPhotoToGoogleDrive');
+    expect(dbSource).toContain('getGoogleDriveAccessToken()');
+    expect(dbSource).toContain('parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID]');
     expect(dbSource).toContain('ePhotoPendingUploads');
     expect(dbSource).toContain('ePhotoSyncStatus = "queued_background"');
     expect(dbSource).toContain('ePhotoSyncMessage = "E 站照片已排入背景同步佇列"');
@@ -54,9 +59,15 @@ describe("E 站照片上傳 source coverage", () => {
     expect(dbSource).toContain('ePhotoSyncAttempts');
   });
 
-  it("shows a success toast on the E station page when photo sync is queued in background", () => {
+  it("shows the global toast at the top so the E station complete button is not blocked", () => {
+    expect(appSource).toContain('<Toaster position="top-center" richColors />');
     expect(stationPageSource).toContain('toast.success(result?.message ?? "E 站抹除已完成並推進下一站，請直接掃描下一筆")');
-    expect(stationPageSource).toContain('完成 E 站後會先快速保存，並在背景同步到採購單 AC 欄，檔名為商品批號-1');
+    expect(stationPageSource).toContain('完成 E 站後會在背景同步到 Google Drive 與採購單試算表');
     expect(dbSource).toContain('E 站抹除已完成並推進下一站，照片已排入背景同步');
+  });
+
+  it("compresses E station photos before submit to reduce the mobile completion wait", () => {
+    expect(stationPageSource).toContain('const maxSide = 1280');
+    expect(stationPageSource).toContain('canvas.toDataURL("image/jpeg", 0.72)');
   });
 });
