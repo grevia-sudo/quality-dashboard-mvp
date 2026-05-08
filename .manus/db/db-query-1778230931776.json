@@ -1,0 +1,61 @@
+{
+  "query": "SELECT p.id AS product_id,\n       p.productCode,\n       p.batchNo,\n       p.serialNumber,\n       p.imei,\n       p.stationCode,\n       p.productStatus,\n       b.id AS b_task_id,\n       b.stationTaskStatus AS b_task_status,\n       b.completedAt AS b_completed_at,\n       b.metadata AS b_metadata,\n       c.id AS c_task_id,\n       c.stationTaskStatus AS c_task_status,\n       c.completedAt AS c_completed_at,\n       c.metadata AS c_metadata\nFROM products p\nLEFT JOIN station_tasks b ON b.productId = p.id AND b.stationCode = 'B'\nLEFT JOIN station_tasks c ON c.productId = p.id AND c.stationCode = 'C'\nWHERE p.batchNo = '00500024970' AND p.archivedAt IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id AS product_id,\n       p.productCode,\n       p.batchNo,\n       p.serialNumber,\n       p.imei,\n       p.stationCode,\n       p.productStatus,\n       b.id AS b_task_id,\n       b.stationTaskStatus AS b_task_status,\n       b.completedAt AS b_completed_at,\n       b.metadata AS b_metadata,\n       c.id AS c_task_id,\n       c.stationTaskStatus AS c_task_status,\n       c.completedAt AS c_completed_at,\n       c.metadata AS c_metadata\nFROM products p\nLEFT JOIN station_tasks b ON b.productId = p.id AND b.stationCode = 'B'\nLEFT JOIN station_tasks c ON c.productId = p.id AND c.stationCode = 'C'\nWHERE p.batchNo = '00500024970' AND p.archivedAt IS NULL;",
+  "rows": [
+    {
+      "product_id": "390001",
+      "productCode": "P-1778118377731-750193",
+      "batchNo": "00500024970",
+      "serialNumber": "C6KZLKJTN73D",
+      "imei": "353999107381929",
+      "stationCode": "C",
+      "productStatus": "pending_c",
+      "b_task_id": "420094",
+      "b_task_status": "completed",
+      "b_completed_at": "2026-05-07 08:10:12",
+      "b_metadata": "{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"97%\", \"batterySummary\": \"97%\", \"cameraLabels\": [], \"cameraOptionIds\": [], \"faultLabels\": [\"螢幕顯示\"], \"faultOptionIds\": [30001], \"faultSummary\": \"螢幕顯示\", \"summary\": \"B 站軟體測試完成\"}",
+      "c_task_id": "450225",
+      "c_task_status": "pending",
+      "c_completed_at": "NULL",
+      "c_metadata": "{\"appearanceLabels\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"97%\", \"batterySummary\": \"97%\", \"faultLabels\": [\"螢幕顯示\"], \"sourceStation\": \"B\"}"
+    },
+    {
+      "product_id": "390002",
+      "productCode": "P-1778118656272-750193",
+      "batchNo": "00500024970",
+      "serialNumber": "C6KZLKJTN73D",
+      "imei": "353999107381929",
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "b_task_id": "450188",
+      "b_task_status": "pending",
+      "b_completed_at": "NULL",
+      "b_metadata": "{\"appearanceLabels\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"faultLabels\": [], \"sourceStation\": \"A2\"}",
+      "c_task_id": "NULL",
+      "c_task_status": "NULL",
+      "c_completed_at": "NULL",
+      "c_metadata": "NULL"
+    },
+    {
+      "product_id": "390003",
+      "productCode": "P-1778118672063-750193",
+      "batchNo": "00500024970",
+      "serialNumber": "C6KZLKJTN73D",
+      "imei": "353999107381929",
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "b_task_id": "450191",
+      "b_task_status": "pending",
+      "b_completed_at": "NULL",
+      "b_metadata": "{\"appearanceLabels\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"faultLabels\": [], \"sourceStation\": \"A2\"}",
+      "c_task_id": "NULL",
+      "c_task_status": "NULL",
+      "c_completed_at": "NULL",
+      "c_metadata": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "product_id\tproductCode\tbatchNo\tserialNumber\timei\tstationCode\tproductStatus\tb_task_id\tb_task_status\tb_completed_at\tb_metadata\tc_task_id\tc_task_status\tc_completed_at\tc_metadata\n390001\tP-1778118377731-750193\t00500024970\tC6KZLKJTN73D\t353999107381929\tC\tpending_c\t420094\tcompleted\t2026-05-07 08:10:12\t{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"97%\", \"batterySummary\": \"97%\", \"cameraLabels\": [], \"cameraOptionIds\": [], \"faultLabels\": [\"螢幕顯示\"], \"faultOptionIds\": [30001], \"faultSummary\": \"螢幕顯示\", \"summary\": \"B 站軟體測試完成\"}\t450225\tpending\tNULL\t{\"appearanceLabels\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"97%\", \"batterySummary\": \"97%\", \"faultLabels\": [\"螢幕顯示\"], \"sourceStation\": \"B\"}\n390002\tP-1778118656272-750193\t00500024970\tC6KZLKJTN73D\t353999107381929\tB\tpending_b\t450188\tpending\tNULL\t{\"appearanceLabels\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"faultLabels\": [], \"sourceStation\": \"A2\"}\tNULL\tNULL\tNULL\tNULL\n390003\tP-1778118672063-750193\t00500024970\tC6KZLKJTN73D\t353999107381929\tB\tpending_b\t450191\tpending\tNULL\t{\"appearanceLabels\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"faultLabels\": [], \"sourceStation\": \"A2\"}\tNULL\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1820
+}

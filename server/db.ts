@@ -2590,8 +2590,17 @@ export async function getStationPageData(stationCode: StationCode) {
         return rows.map((row) => {
           const taskMetadata = (row.taskMetadata ?? {}) as Record<string, unknown>;
           const latestBMetadata = latestBMetaByProductId.get(row.productId) ?? {};
-          const inheritedBFaultOptionIds = normalizeNumberArray(taskMetadata.bFaultOptionIds ?? latestBMetadata.faultOptionIds);
-          const inheritedBFaultLabels = normalizeTextArray(taskMetadata.bFaultLabels ?? latestBMetadata.faultLabels);
+          const taskBFaultOptionIds = normalizeNumberArray(taskMetadata.bFaultOptionIds);
+          const taskBFaultLabels = normalizeTextArray(taskMetadata.bFaultLabels);
+          const shouldFallbackToLatestBFaults = taskMetadata.applyBChanges !== true
+            && taskBFaultOptionIds.length === 0
+            && taskBFaultLabels.length === 0;
+          const inheritedBFaultOptionIds = shouldFallbackToLatestBFaults
+            ? normalizeNumberArray(latestBMetadata.faultOptionIds)
+            : taskBFaultOptionIds;
+          const inheritedBFaultLabels = shouldFallbackToLatestBFaults
+            ? normalizeTextArray(latestBMetadata.faultLabels)
+            : taskBFaultLabels;
           const inheritedBatteryIssueLabels = normalizeTextArray(taskMetadata.batteryIssueLabels ?? latestBMetadata.batteryIssueLabels);
           const inheritedBatteryNote = typeof (taskMetadata.batteryNote ?? latestBMetadata.batteryNote) === "string"
             ? String(taskMetadata.batteryNote ?? latestBMetadata.batteryNote).trim()

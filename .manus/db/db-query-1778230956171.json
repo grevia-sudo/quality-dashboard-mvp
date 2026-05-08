@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) AS affected_count\nFROM products p\nJOIN station_tasks b ON b.productId = p.id AND b.stationCode = 'B' AND b.stationTaskStatus = 'completed'\nJOIN station_tasks c ON c.productId = p.id AND c.stationCode = 'C' AND c.stationTaskStatus = 'pending'\nWHERE p.archivedAt IS NULL\n  AND JSON_LENGTH(JSON_EXTRACT(b.metadata, '$.faultOptionIds')) > 0\n  AND COALESCE(JSON_LENGTH(JSON_EXTRACT(c.metadata, '$.bFaultOptionIds')), 0) = 0\n  AND COALESCE(JSON_LENGTH(JSON_EXTRACT(c.metadata, '$.bFaultLabels')), 0) = 0;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COUNT(*) AS affected_count\nFROM products p\nJOIN station_tasks b ON b.productId = p.id AND b.stationCode = 'B' AND b.stationTaskStatus = 'completed'\nJOIN station_tasks c ON c.productId = p.id AND c.stationCode = 'C' AND c.stationTaskStatus = 'pending'\nWHERE p.archivedAt IS NULL\n  AND JSON_LENGTH(JSON_EXTRACT(b.metadata, '$.faultOptionIds')) > 0\n  AND COALESCE(JSON_LENGTH(JSON_EXTRACT(c.metadata, '$.bFaultOptionIds')), 0) = 0\n  AND COALESCE(JSON_LENGTH(JSON_EXTRACT(c.metadata, '$.bFaultLabels')), 0) = 0;",
+  "rows": [
+    {
+      "affected_count": "61"
+    }
+  ],
+  "messages": [],
+  "stdout": "affected_count\n61\n",
+  "stderr": "",
+  "execution_time_ms": 1735
+}
