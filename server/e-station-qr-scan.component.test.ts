@@ -4,6 +4,8 @@ import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const jsQrMock = vi.fn();
+
 type MockBarcodeDetectorInstance = {
   detect: ReturnType<typeof vi.fn>;
 };
@@ -56,6 +58,10 @@ vi.mock("@/_core/hooks/useAuth", () => ({
 vi.mock("wouter", () => ({
   useLocation: () => ["/station/E", setLocationMock],
   useRoute: () => useRouteMock(),
+}));
+
+vi.mock("jsqr", () => ({
+  default: (...args: unknown[]) => jsQrMock(...args),
 }));
 
 vi.mock("sonner", () => ({
@@ -120,13 +126,20 @@ describe("StationPage E 站 QR camera scan", () => {
     BarcodeDetector?: new (options?: { formats?: string[] }) => MockBarcodeDetectorInstance;
     requestAnimationFrame?: (callback: FrameRequestCallback) => number;
   };
+  let originalImage: typeof Image;
+  let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
+    globalThis.Image = originalImage;
+    HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 
   beforeEach(() => {
     vi.clearAllMocks();
+    originalImage = globalThis.Image;
+    originalGetContext = HTMLCanvasElement.prototype.getContext;
     productNameOptionsUseQueryMock.mockReturnValue({ data: [], isLoading: false });
     productCategoryOptionsUseQueryMock.mockReturnValue({ data: [], isLoading: false });
     stationDetailUseQueryMock.mockReturnValue({
@@ -173,9 +186,28 @@ describe("StationPage E 站 QR camera scan", () => {
 
     vi.stubGlobal("window", browserGlobal);
     vi.stubGlobal("createImageBitmap", createImageBitmapMock);
+    vi.stubGlobal("Image", class MockImage {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      width = 480;
+      height = 480;
+
+      set src(_value: string) {
+        setTimeout(() => {
+          this.onload?.();
+        }, 0);
+      }
+    });
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+      drawImage: vi.fn(),
+      getImageData: vi.fn(() => ({
+        data: new Uint8ClampedArray(480 * 480 * 4),
+      })),
+    } as unknown as CanvasRenderingContext2D));
     browserGlobal.BarcodeDetector = vi.fn(() => ({
       detect: detectMock,
     }));
+    jsQrMock.mockReset();
   });
 
   it("fills the E station scan input after taking a QR photo", async () => {
@@ -200,6 +232,7 @@ describe("StationPage E 站 QR camera scan", () => {
 
   it("shows a clear error when the QR photo cannot be recognized", async () => {
     detectMock.mockResolvedValueOnce([]);
+    jsQrMock.mockReturnValueOnce(null);
     const { container } = render(React.createElement(StationPage));
     const captureInput = container.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement | null;
     expect(captureInput).toBeTruthy();
@@ -213,12 +246,38 @@ describe("StationPage E 站 QR camera scan", () => {
     });
   });
 
-  it("falls back to manual input guidance when the browser does not support BarcodeDetector", () => {
+  it("falls back to jsQR decoding when the browser does not support BarcodeDetector", async () => {
     delete browserGlobal.BarcodeDetector;
-    render(React.createElement(StationPage));
+    jsQrMock.mockReturnValue({ data: "E-BATCH-001" });
+    const { container } = render(React.createElement(StationPage));
+    const captureInput = container.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement | null;
+    expect(screen.getByText("若現場不方便手打批號，可直接點下方按鈕開啟相機拍照辨識；Safari 也可使用拍照後辨識。")).toBeTruthy();
+    expect(captureInput).toBeTruthy();
 
-    expect(screen.getByText("目前瀏覽器不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號。")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "拍照掃描 QR" }));
-    expect(toastErrorMock).toHaveBeenCalledWith("目前裝置不支援拍照辨識 QR，請改用支援 Chromium 的手持裝置，或先以掃碼槍輸入批號");
+    fireEvent.change(captureInput!, {
+      target: { files: [new File(["mock-image"], "safari-qr.jpg", { type: "image/jpeg" })] },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("E-BATCH-001")).toBeTruthy();
+    });
+    expect(jsQrMock).toHaveBeenCalled();
+    expect(toastSuccessMock).toHaveBeenCalledWith("已從 QR 辨識到 E-BATCH-001，請確認抹除完成後再推進下一站");
+  });
+
+  it("shows a clear error when both BarcodeDetector and jsQR cannot recognize the photo", async () => {
+    delete browserGlobal.BarcodeDetector;
+    jsQrMock.mockReturnValue(null);
+    const { container } = render(React.createElement(StationPage));
+    const captureInput = container.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement | null;
+    expect(captureInput).toBeTruthy();
+
+    fireEvent.change(captureInput!, {
+      target: { files: [new File(["mock-image"], "safari-blurred-qr.jpg", { type: "image/jpeg" })] },
+    });
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith("照片中找不到可辨識的 QR，請重新拍攝並讓 QR 置中清晰");
+    });
   });
 });

@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { resolveA1ProductNamePickerState } from "./station-product-name-picker";
 import { createUtf8CsvBlob, exportStationStockRowsToCsv } from "./station-stock-export";
 import { Boxes, Camera, ClipboardCheck, Download, Gauge, LoaderCircle, PackagePlus, Search, ShieldAlert, ShieldCheck, Undo2 } from "lucide-react";
+import jsQR from "jsqr";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
@@ -99,27 +100,54 @@ const getBarcodeDetectorConstructor = () => {
   return (window as typeof window & { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector ?? null;
 };
 
-const detectQrCodeFromImageFile = async (file: File) => {
-  const BarcodeDetectorApi = getBarcodeDetectorConstructor();
-  if (!BarcodeDetectorApi) {
-    throw new Error("目前瀏覽器不支援拍照辨識 QR，請改用支援 Chromium 的手持裝置，或先以掃碼槍輸入批號");
-  }
-  if (typeof createImageBitmap !== "function") {
-    throw new Error("目前裝置不支援照片辨識 QR，請改用手動輸入批號");
+const decodeQrWithJsQr = async (file: File) => {
+  const sourceDataUrl = await readFileAsDataUrl(file);
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const nextImage = new Image();
+    nextImage.onload = () => resolve(nextImage);
+    nextImage.onerror = () => reject(new Error("照片載入失敗"));
+    nextImage.src = sourceDataUrl;
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    throw new Error("瀏覽器不支援照片處理，請改用其他裝置或重新整理後再試");
   }
 
-  const detector = new BarcodeDetectorApi({ formats: ["qr_code"] });
-  const bitmap = await createImageBitmap(file);
-  try {
-    const results = await detector.detect(bitmap);
-    const detectedValue = results.find((result) => typeof result.rawValue === "string" && result.rawValue.trim())?.rawValue?.trim();
-    if (!detectedValue) {
-      throw new Error("照片中找不到可辨識的 QR，請重新拍攝並讓 QR 置中清晰");
-    }
-    return detectedValue;
-  } finally {
-    bitmap.close?.();
+  context.drawImage(image, 0, 0, image.width, image.height);
+  const imageData = context.getImageData(0, 0, image.width, image.height);
+  const result = jsQR(imageData.data, image.width, image.height, {
+    inversionAttempts: "attemptBoth",
+  });
+
+  const detectedValue = result?.data?.trim();
+  if (!detectedValue) {
+    throw new Error("照片中找不到可辨識的 QR，請重新拍攝並讓 QR 置中清晰");
   }
+
+  return detectedValue;
+};
+
+const detectQrCodeFromImageFile = async (file: File) => {
+  const BarcodeDetectorApi = getBarcodeDetectorConstructor();
+  if (BarcodeDetectorApi && typeof createImageBitmap === "function") {
+    const detector = new BarcodeDetectorApi({ formats: ["qr_code"] });
+    const bitmap = await createImageBitmap(file);
+    try {
+      const results = await detector.detect(bitmap);
+      const detectedValue = results.find((result) => typeof result.rawValue === "string" && result.rawValue.trim())?.rawValue?.trim();
+      if (detectedValue) {
+        return detectedValue;
+      }
+    } finally {
+      bitmap.close?.();
+    }
+  }
+
+  return decodeQrWithJsQr(file);
 };
 
 const compressCapturedPhoto = async (file: File): Promise<StationCapturedPhoto> => {
@@ -243,7 +271,7 @@ export default function StationPage() {
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
   const productCategoryOptions = productCategoryOptionsQuery.data ?? [];
-  const eStationQrCaptureSupported = useMemo(() => stationCode === "E" && Boolean(getBarcodeDetectorConstructor()), [stationCode]);
+  const eStationQrCaptureSupported = useMemo(() => stationCode === "E", [stationCode]);
 
   const invalidateStationData = async () => {
     await utils.station.detail.invalidate({ stationCode });
@@ -322,7 +350,7 @@ export default function StationPage() {
 
   const openEStationQrCapture = () => {
     if (!eStationQrCaptureSupported) {
-      toast.error("目前裝置不支援拍照辨識 QR，請改用支援 Chromium 的手持裝置，或先以掃碼槍輸入批號");
+      toast.error("目前裝置不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號");
       return;
     }
 
@@ -1176,7 +1204,7 @@ export default function StationPage() {
                   <div className="flex flex-col gap-3 rounded-[20px] bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-1 text-xs leading-6 text-slate-500">
                       <p className="font-medium text-slate-700">手持裝置可直接用相機拍攝批號 QR，辨識後會自動帶入上方欄位。</p>
-                      <p>{eStationQrCaptureSupported ? "若現場不方便手打批號，可直接點下方按鈕開啟相機拍照辨識。" : "目前瀏覽器不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號。"}</p>
+                      <p>{eStationQrCaptureSupported ? "若現場不方便手打批號，可直接點下方按鈕開啟相機拍照辨識；Safari 也可使用拍照後辨識。" : "目前裝置不支援拍照辨識 QR，請改用掃碼槍或手動輸入批號。"}</p>
                     </div>
                     <>
                       <input
