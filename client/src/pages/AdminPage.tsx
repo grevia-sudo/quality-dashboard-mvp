@@ -14,17 +14,19 @@ import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, Search, ShieldAler
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 
-type AdminSectionId = "rules" | "targets" | "menus" | "tools" | "inventory-history" | "support" | "users" | "categories";
+type AdminSectionId = "rules" | "targets" | "menus" | "tools" | "product-trace" | "inventory-history" | "support" | "users" | "categories" | "product-names";
 
 const adminSections: Array<{ id: AdminSectionId; label: string; path: string; description: string }> = [
   { id: "rules", label: "站點規則", path: "/admin/rules", description: "設定各站流程、下一站與返工規則。" },
   { id: "targets", label: "產能設定", path: "/admin/targets", description: "維護各站點在不同品類與品牌下的每日產能。" },
   { id: "menus", label: "功能表設定", path: "/admin/menus", description: "管理 B、C 站使用的故障與外觀選項。" },
-  { id: "tools", label: "資料工具", path: "/admin/tools", description: "集中處理備份還原、商品追蹤與資料同步工具。" },
+  { id: "tools", label: "資料工具", path: "/admin/tools", description: "集中處理備份還原、資料回寫與同步工具。" },
+  { id: "product-trace", label: "商品批號／序號追蹤", path: "/admin/product-trace", description: "查詢單筆商品在各站點的任務狀態、耗時與事件紀錄。" },
   { id: "inventory-history", label: "庫存異動紀錄", path: "/admin/inventory-history", description: "查詢商品從匯入到待入庫與入庫的完整異動時間軸。" },
   { id: "support", label: "支援補償", path: "/admin/support", description: "登記跨站支援時數並檢視補償紀錄。" },
   { id: "users", label: "帳號管理", path: "/admin/users", description: "建立本地帳號並檢視現有登入資訊。" },
-  { id: "categories", label: "品類設定", path: "/admin/categories", description: "維護品類流程與品名來源資料。" },
+  { id: "categories", label: "品類設定", path: "/admin/categories", description: "維護品類流程與站點設定來源。" },
+  { id: "product-names", label: "品名管理", path: "/admin/product-names", description: "維護匯入作業與 A1 點到貨使用的品名清單。" },
 ];
 
 function resolveAdminSectionId(pathname: string): AdminSectionId {
@@ -1362,83 +1364,86 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base font-bold">商品批號／序號追蹤</CardTitle>
-                  <p className="text-sm leading-7 text-slate-500">可直接查詢單筆商品在各站點的任務狀態、完成時間、事件紀錄，並顯示各站耗時與異常高亮，方便判斷卡關站點。</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-3">
-                    <Input value={productTraceKeyword} onChange={(event) => setProductTraceKeyword(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="輸入商品批號、商品序號或 IMEI" />
-                    <Button className="rounded-2xl" disabled={productTraceQuery.isFetching} onClick={handleProductTraceSearch}>查詢商品</Button>
-                  </div>
-                  <div className="space-y-3">
-                    {submittedProductTraceKeyword && !productTraceQuery.isFetching && analyzedProductTraceResults.length === 0 ? <div className="rounded-[20px] bg-slate-50 p-4 text-sm text-slate-500">查無符合「{submittedProductTraceKeyword}」的商品。</div> : null}
-                    {analyzedProductTraceResults.map((product) => (
-                      <div key={product.id} className="space-y-4 rounded-[20px] bg-slate-50 p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-slate-900">{product.productName ?? product.batchNo ?? product.serialNumber ?? `商品 #${product.id}`}</p>
-                            <p className="mt-1 text-xs text-slate-500">PO：{product.poNumber ?? "-"}・批號：{product.batchNo ?? "-"}・序號：{product.serialNumber ?? "-"}・目前狀態：{product.currentStatus}</p>
-                          </div>
-                          <Badge className="bg-slate-100 text-slate-700">目前站點 {product.currentStationCode ?? "-"}</Badge>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="product-trace">
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-bold">商品批號／序號追蹤</CardTitle>
+                <p className="text-sm leading-7 text-slate-500">可直接查詢單筆商品在各站點的任務狀態、完成時間、事件紀錄，並顯示各站耗時與異常高亮，方便判斷卡關站點。</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-3">
+                  <Input value={productTraceKeyword} onChange={(event) => setProductTraceKeyword(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="輸入商品批號、商品序號或 IMEI" />
+                  <Button className="rounded-2xl" disabled={productTraceQuery.isFetching} onClick={handleProductTraceSearch}>查詢商品</Button>
+                </div>
+                <div className="space-y-3">
+                  {submittedProductTraceKeyword && !productTraceQuery.isFetching && analyzedProductTraceResults.length === 0 ? <div className="rounded-[20px] bg-slate-50 p-4 text-sm text-slate-500">查無符合「{submittedProductTraceKeyword}」的商品。</div> : null}
+                  {analyzedProductTraceResults.map((product) => (
+                    <div key={product.id} className="space-y-4 rounded-[20px] bg-slate-50 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-slate-900">{product.productName ?? product.batchNo ?? product.serialNumber ?? `商品 #${product.id}`}</p>
+                          <p className="mt-1 text-xs text-slate-500">PO：{product.poNumber ?? "-"}・批號：{product.batchNo ?? "-"}・序號：{product.serialNumber ?? "-"}・目前狀態：{product.currentStatus}</p>
                         </div>
-                        <div className="grid gap-3 md:grid-cols-4">
-                          <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
-                            <p className="text-xs text-slate-400">已完成站點</p>
-                            <p className="mt-2 text-xl font-black text-slate-900">{product.stats.completedStations}/{product.stats.totalStations}</p>
-                          </div>
-                          <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
-                            <p className="text-xs text-slate-400">平均單站耗時</p>
-                            <p className="mt-2 text-xl font-black text-slate-900">{product.stats.averageDurationLabel}</p>
-                          </div>
-                          <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
-                            <p className="text-xs text-slate-400">最久站點耗時</p>
-                            <p className="mt-2 text-xl font-black text-slate-900">{product.stats.longestDurationLabel}</p>
-                          </div>
-                          <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
-                            <p className="text-xs text-slate-400">異常站點</p>
-                            <p className={`mt-2 text-xl font-black ${product.stats.anomalyCount > 0 ? "text-rose-600" : "text-slate-900"}`}>{product.stats.anomalyCount}</p>
-                            <p className="mt-1 text-xs text-slate-500">逾期 {product.stats.overdueCount} 站</p>
+                        <Badge className="bg-slate-100 text-slate-700">目前站點 {product.currentStationCode ?? "-"}</Badge>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-4">
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">已完成站點</p>
+                          <p className="mt-2 text-xl font-black text-slate-900">{product.stats.completedStations}/{product.stats.totalStations}</p>
+                        </div>
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">平均單站耗時</p>
+                          <p className="mt-2 text-xl font-black text-slate-900">{product.stats.averageDurationLabel}</p>
+                        </div>
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">最久站點耗時</p>
+                          <p className="mt-2 text-xl font-black text-slate-900">{product.stats.longestDurationLabel}</p>
+                        </div>
+                        <div className="rounded-[18px] bg-white p-3 text-sm text-slate-600">
+                          <p className="text-xs text-slate-400">異常站點</p>
+                          <p className={`mt-2 text-xl font-black ${product.stats.anomalyCount > 0 ? "text-rose-600" : "text-slate-900"}`}>{product.stats.anomalyCount}</p>
+                          <p className="mt-1 text-xs text-slate-500">逾期 {product.stats.overdueCount} 站</p>
+                        </div>
+                      </div>
+                      {product.stats.anomalyCount > 0 ? <div className="rounded-[18px] bg-rose-50 px-4 py-3 text-sm text-rose-700">異常高亮：{product.stats.anomalyStations.join("、")} 需要優先確認；已用紅色卡片標示長工時或逾期站點。</div> : null}
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="rounded-[18px] bg-white p-3">
+                          <p className="text-xs text-slate-400">任務時間軸</p>
+                          <div className="mt-3 space-y-2">
+                            {product.analyzedTimeline.map((task) => (
+                              <div key={task.id} className={`rounded-2xl px-3 py-2 text-sm ${task.isAnomaly ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200" : "bg-slate-50 text-slate-600"}`}>
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className={`font-medium ${task.isAnomaly ? "text-rose-700" : "text-slate-900"}`}>{task.stationCode}・{task.taskStatus}</p>
+                                  <Badge className={task.isAnomaly ? "bg-rose-100 text-rose-700" : "bg-white text-slate-700"}>耗時 {task.durationLabel}</Badge>
+                                </div>
+                                <p className="mt-1 text-xs">完成：{task.completedAt ? new Date(task.completedAt).toLocaleString("zh-TW", { hour12: false }) : "尚未完成"}</p>
+                                <p className="mt-1 text-xs">摘要：{task.resultSummary ?? "-"}</p>
+                                {task.isOverdue ? <p className="mt-1 text-xs font-medium">此站已超過預定期限，請優先確認。</p> : null}
+                              </div>
+                            ))}
                           </div>
                         </div>
-                        {product.stats.anomalyCount > 0 ? <div className="rounded-[18px] bg-rose-50 px-4 py-3 text-sm text-rose-700">異常高亮：{product.stats.anomalyStations.join("、")} 需要優先確認；已用紅色卡片標示長工時或逾期站點。</div> : null}
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <div className="rounded-[18px] bg-white p-3">
-                            <p className="text-xs text-slate-400">任務時間軸</p>
-                            <div className="mt-3 space-y-2">
-                              {product.analyzedTimeline.map((task) => (
-                                <div key={task.id} className={`rounded-2xl px-3 py-2 text-sm ${task.isAnomaly ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200" : "bg-slate-50 text-slate-600"}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    <p className={`font-medium ${task.isAnomaly ? "text-rose-700" : "text-slate-900"}`}>{task.stationCode}・{task.taskStatus}</p>
-                                    <Badge className={task.isAnomaly ? "bg-rose-100 text-rose-700" : "bg-white text-slate-700"}>耗時 {task.durationLabel}</Badge>
-                                  </div>
-                                  <p className="mt-1 text-xs">完成：{task.completedAt ? new Date(task.completedAt).toLocaleString("zh-TW", { hour12: false }) : "尚未完成"}</p>
-                                  <p className="mt-1 text-xs">摘要：{task.resultSummary ?? "-"}</p>
-                                  {task.isOverdue ? <p className="mt-1 text-xs font-medium">此站已超過預定期限，請優先確認。</p> : null}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="rounded-[18px] bg-white p-3">
-                            <p className="text-xs text-slate-400">事件紀錄</p>
-                            <div className="mt-3 space-y-2">
-                              {product.events.map((event) => (
-                                <div key={event.id} className="rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                                  <p className="font-medium text-slate-900">{event.stationCode}・{event.eventType}</p>
-                                  <p className="mt-1 text-xs text-slate-500">時間：{event.createdAt ? new Date(event.createdAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・執行人：{event.operatorName ?? "-"}</p>
-                                  <p className="mt-1 text-xs text-slate-500">摘要：{event.summary ?? "-"}</p>
-                                </div>
-                              ))}
-                            </div>
+                        <div className="rounded-[18px] bg-white p-3">
+                          <p className="text-xs text-slate-400">事件紀錄</p>
+                          <div className="mt-3 space-y-2">
+                            {product.events.map((event) => (
+                              <div key={event.id} className="rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                                <p className="font-medium text-slate-900">{event.stationCode}・{event.eventType}</p>
+                                <p className="mt-1 text-xs text-slate-500">時間：{event.createdAt ? new Date(event.createdAt).toLocaleString("zh-TW", { hour12: false }) : "-"}・執行人：{event.operatorName ?? "-"}</p>
+                                <p className="mt-1 text-xs text-slate-500">摘要：{event.summary ?? "-"}</p>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="inventory-history">
@@ -1509,173 +1514,173 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="categories">
-            <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base font-bold">品類設定</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="rounded-[24px] bg-slate-50 p-4">
-                    <p className="text-sm leading-7 text-slate-600">匯入作業改為分開選擇「商品類別」與「品牌」。這裡新增或刪除的組合，會同步提供給匯入作業頁與 A1 點到貨頁使用。</p>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                    <Input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="商品類別，例如 智慧手機" />
-                    <Input value={newBrandName} onChange={(event) => setNewBrandName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="品牌，例如 Apple" />
-                    <Button
-                      className="rounded-2xl"
-                      disabled={createCategoryMutation.isPending || !newCategoryName.trim() || !newBrandName.trim()}
-                      onClick={() => createCategoryMutation.mutate({ categoryName: newCategoryName.trim(), brandName: newBrandName.trim() })}
-                    >
-                      新增品類
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      variant="outline"
-                      className="rounded-2xl border-red-200 text-red-600 hover:bg-red-50"
-                      disabled={clearCategoriesMutation.isPending}
-                      onClick={() => clearCategoriesMutation.mutate()}
-                    >
-                      清空所有品類設定
-                    </Button>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
-                    <Input value={categoryFlowBrandSearch} onChange={(event) => setCategoryFlowBrandSearch(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="搜尋品牌，例如 Apple" />
-                  </div>
-                  <div className="rounded-[24px] bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">快速複製現有品類流程</p>
-                    <p className="mt-2 text-sm leading-7 text-slate-600">若新品類與既有品類流程接近，可先新增新品類，再使用下方每張卡片的「複製到目標品類」快速套用節點設定。</p>
-                  </div>
-                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
-                    你可以先用「商品類別」與「品牌」縮小範圍，再調整流程節點；所有修改會由上方的「儲存全部設定」一次提交。
-                  </div>
-                  <div className="space-y-3">
-                    {categories.length > 0 ? filteredFlowCategories.map((category) => {
-                      const selectedStations = categoryFlowDrafts[category.id] ?? [...stationOptions];
-                      return (
-                        <div key={category.id} className="space-y-4 rounded-[24px] bg-slate-50 p-4">
-                          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-center">
-                            <div>
-                              <p className="text-xs text-slate-400">商品類別</p>
-                              <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-slate-400">品牌</p>
-                              <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? category.subtypeCode ?? "-"}</p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              className="rounded-2xl"
-                              disabled={deleteCategoryMutation.isPending}
-                              onClick={() => deleteCategoryMutation.mutate({ id: category.id })}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> 刪除
-                            </Button>
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-bold">品類設定</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-sm leading-7 text-slate-600">匯入作業改為分開選擇「商品類別」與「品牌」。這裡新增或刪除的組合，會同步提供給匯入作業頁與 A1 點到貨頁使用。</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                  <Input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="商品類別，例如 智慧手機" />
+                  <Input value={newBrandName} onChange={(event) => setNewBrandName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="品牌，例如 Apple" />
+                  <Button
+                    className="rounded-2xl"
+                    disabled={createCategoryMutation.isPending || !newCategoryName.trim() || !newBrandName.trim()}
+                    onClick={() => createCategoryMutation.mutate({ categoryName: newCategoryName.trim(), brandName: newBrandName.trim() })}
+                  >
+                    新增品類
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="outline"
+                    className="rounded-2xl border-red-200 text-red-600 hover:bg-red-50"
+                    disabled={clearCategoriesMutation.isPending}
+                    onClick={() => clearCategoriesMutation.mutate()}
+                  >
+                    清空所有品類設定
+                  </Button>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Input value={categoryFlowCategorySearch} onChange={(event) => setCategoryFlowCategorySearch(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="搜尋商品類別，例如 智慧手機" />
+                  <Input value={categoryFlowBrandSearch} onChange={(event) => setCategoryFlowBrandSearch(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="搜尋品牌，例如 Apple" />
+                </div>
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-900">快速複製現有品類流程</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">若新品類與既有品類流程接近，可先新增新品類，再使用下方每張卡片的「複製到目標品類」快速套用節點設定。</p>
+                </div>
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">
+                  你可以先用「商品類別」與「品牌」縮小範圍，再調整流程節點；所有修改會由上方的「儲存全部設定」一次提交。
+                </div>
+                <div className="space-y-3">
+                  {categories.length > 0 ? filteredFlowCategories.map((category) => {
+                    const selectedStations = categoryFlowDrafts[category.id] ?? [...stationOptions];
+                    return (
+                      <div key={category.id} className="space-y-4 rounded-[24px] bg-slate-50 p-4">
+                        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-center">
+                          <div>
+                            <p className="text-xs text-slate-400">商品類別</p>
+                            <p className="mt-1 font-semibold text-slate-900">{category.categoryName}</p>
                           </div>
-                          <div className="grid gap-3 md:grid-cols-[1fr_260px_auto] md:items-end">
-                            <div className="rounded-[20px] bg-white/70 p-4 text-sm text-slate-600 md:col-span-1">
-                              <p className="font-semibold text-slate-900">複製流程到目標品類</p>
-                              <p className="mt-2 leading-7">可將目前這個品類的節點設定直接複製到另一個已建立的品類／品牌組合，再由上方「儲存全部設定」一次提交。</p>
-                            </div>
-                            <label className="space-y-2 text-sm text-slate-600">
-                              <span>目標品類</span>
-                              <select value={categoryFlowCopyTargets[category.id] ?? ""} onChange={(event) => setCategoryFlowCopyTargets((prev) => ({ ...prev, [category.id]: event.target.value }))} className="editable-select h-10 w-full rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
-                                <option value="">選擇要套用的品類／品牌</option>
-                                {categories.filter((item) => item.id !== category.id).map((item) => (
-                                  <option key={`copy-target-${category.id}-${item.id}`} value={String(item.id)}>{item.categoryName} × {item.brandName ?? item.subtypeCode ?? "-"}</option>
-                                ))}
-                              </select>
-                            </label>
-                            <Button variant="outline" className="rounded-2xl" onClick={() => handleCopyCategoryFlow(category.id)}>複製到目標品類</Button>
+                          <div>
+                            <p className="text-xs text-slate-400">品牌</p>
+                            <p className="mt-1 font-semibold text-slate-900">{category.brandName ?? category.subtypeCode ?? "-"}</p>
                           </div>
-                          <div className="space-y-3 rounded-[20px] bg-white/70 p-4">
-                            <div>
-                              <p className="text-xs text-slate-400">此品類需要經過的節點</p>
-                              <p className="mt-1 text-sm text-slate-600">固定從 A1 開始、以待入庫結束；中間節點可依品類勾選，例如智慧手錶可略過 A2、B。</p>
-                            </div>
-                            <div className="grid gap-3 md:grid-cols-4">
-                              {stationOptions.map((stationCode) => {
-                                const checked = selectedStations.includes(stationCode);
-                                const locked = stationCode === "A1" || stationCode === "STOCK";
-                                return (
-                                  <label key={`${category.id}-${stationCode}`} className={`flex items-center gap-3 rounded-2xl border px-3 py-2 text-sm ${checked ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"}`}>
-                                    <input
-                                      type="checkbox"
-                                      className="h-4 w-4"
-                                      checked={checked}
-                                      disabled={locked}
-                                      onChange={() => toggleCategoryFlowStation(category.id, stationCode)}
-                                    />
-                                    <span>{stationCode === "STOCK" ? "待入庫" : stationCode}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                              <p className="text-xs text-slate-500">目前流程：{selectedStations.map((stationCode) => stationCode === "STOCK" ? "待入庫" : stationCode).join(" → ")}</p>
-                              <Badge className="bg-slate-100 text-slate-700">納入全部儲存</Badge>
-                            </div>
+                          <Button
+                            variant="outline"
+                            className="rounded-2xl"
+                            disabled={deleteCategoryMutation.isPending}
+                            onClick={() => deleteCategoryMutation.mutate({ id: category.id })}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> 刪除
+                          </Button>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-[1fr_260px_auto] md:items-end">
+                          <div className="rounded-[20px] bg-white/70 p-4 text-sm text-slate-600 md:col-span-1">
+                            <p className="font-semibold text-slate-900">複製流程到目標品類</p>
+                            <p className="mt-2 leading-7">可將目前這個品類的節點設定直接複製到另一個已建立的品類／品牌組合，再由上方「儲存全部設定」一次提交。</p>
+                          </div>
+                          <label className="space-y-2 text-sm text-slate-600">
+                            <span>目標品類</span>
+                            <select value={categoryFlowCopyTargets[category.id] ?? ""} onChange={(event) => setCategoryFlowCopyTargets((prev) => ({ ...prev, [category.id]: event.target.value }))} className="editable-select h-10 w-full rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                              <option value="">選擇要套用的品類／品牌</option>
+                              {categories.filter((item) => item.id !== category.id).map((item) => (
+                                <option key={`copy-target-${category.id}-${item.id}`} value={String(item.id)}>{item.categoryName} × {item.brandName ?? item.subtypeCode ?? "-"}</option>
+                              ))}
+                            </select>
+                          </label>
+                          <Button variant="outline" className="rounded-2xl" onClick={() => handleCopyCategoryFlow(category.id)}>複製到目標品類</Button>
+                        </div>
+                        <div className="space-y-3 rounded-[20px] bg-white/70 p-4">
+                          <div>
+                            <p className="text-xs text-slate-400">此品類需要經過的節點</p>
+                            <p className="mt-1 text-sm text-slate-600">固定從 A1 開始、以待入庫結束；中間節點可依品類勾選，例如智慧手錶可略過 A2、B。</p>
+                          </div>
+                          <div className="grid gap-3 md:grid-cols-4">
+                            {stationOptions.map((stationCode) => {
+                              const checked = selectedStations.includes(stationCode);
+                              const locked = stationCode === "A1" || stationCode === "STOCK";
+                              return (
+                                <label key={`${category.id}-${stationCode}`} className={`flex items-center gap-3 rounded-2xl border px-3 py-2 text-sm ${checked ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"}`}>
+                                  <input
+                                    type="checkbox"
+                                    className="h-4 w-4"
+                                    checked={checked}
+                                    disabled={locked}
+                                    onChange={() => toggleCategoryFlowStation(category.id, stationCode)}
+                                  />
+                                  <span>{stationCode === "STOCK" ? "待入庫" : stationCode}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-xs text-slate-500">目前流程：{selectedStations.map((stationCode) => stationCode === "STOCK" ? "待入庫" : stationCode).join(" → ")}</p>
+                            <Badge className="bg-slate-100 text-slate-700">納入全部儲存</Badge>
                           </div>
                         </div>
-                      );
-                    }) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先新增商品類別與品牌組合。</div>}
-                    {categories.length > 0 && filteredFlowCategories.length === 0 ? <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-500">查無符合目前商品類別與品牌搜尋條件的品類設定。</div> : null}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base font-bold">品名管理</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="rounded-[24px] bg-slate-50 p-4">
-                    <p className="text-sm leading-7 text-slate-600">這裡新增或刪除的品名，會同步提供給匯入作業頁與 A1 點到貨頁的下拉式選單使用。</p>
-                    <p className="mt-2 text-xs text-slate-500">也可直接從 Google 試算表「商品編碼列表」工作表的 H 欄重新同步，系統會以試算表資料全量覆蓋目前品名清單。</p>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-2xl"
-                      disabled={syncProductNamesFromSheetMutation.isPending}
-                      onClick={() => syncProductNamesFromSheetMutation.mutate()}
-                    >
-                      {syncProductNamesFromSheetMutation.isPending ? "同步中…" : "從 Google 試算表同步 H 欄"}
-                    </Button>
-                  </div>
-                  <div className="flex gap-3">
-                    <Input value={newProductName} onChange={(event) => setNewProductName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 14 Pro" />
-                    <Button
-                      className="rounded-2xl"
-                      disabled={createProductNameMutation.isPending || !newProductName.trim()}
-                      onClick={() => createProductNameMutation.mutate({ label: newProductName.trim() })}
-                    >
-                      新增品名
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {(query.data?.productNameOptions ?? []).map((option) => (
-                      <div key={option.id} className="flex items-center justify-between gap-3 rounded-[24px] bg-slate-50 p-4">
-                        <div>
-                          <p className="font-semibold text-slate-900">{option.label}</p>
-                          <p className="text-xs text-slate-500">排序 {option.sortOrder}</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="rounded-2xl"
-                          disabled={deleteProductNameMutation.isPending}
-                          onClick={() => deleteProductNameMutation.mutate({ id: option.id })}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> 刪除
-                        </Button>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    );
+                  }) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先新增商品類別與品牌組合。</div>}
+                  {categories.length > 0 && filteredFlowCategories.length === 0 ? <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-500">查無符合目前商品類別與品牌搜尋條件的品類設定。</div> : null}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="product-names">
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-bold">品名管理</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-[24px] bg-slate-50 p-4">
+                  <p className="text-sm leading-7 text-slate-600">這裡新增或刪除的品名，會同步提供給匯入作業頁與 A1 點到貨頁的下拉式選單使用。</p>
+                  <p className="mt-2 text-xs text-slate-500">也可直接從 Google 試算表「商品編碼列表」工作表的 H 欄重新同步，系統會以試算表資料全量覆蓋目前品名清單。</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-2xl"
+                    disabled={syncProductNamesFromSheetMutation.isPending}
+                    onClick={() => syncProductNamesFromSheetMutation.mutate()}
+                  >
+                    {syncProductNamesFromSheetMutation.isPending ? "同步中…" : "從 Google 試算表同步 H 欄"}
+                  </Button>
+                </div>
+                <div className="flex gap-3">
+                  <Input value={newProductName} onChange={(event) => setNewProductName(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" placeholder="例如 iPhone 14 Pro" />
+                  <Button
+                    className="rounded-2xl"
+                    disabled={createProductNameMutation.isPending || !newProductName.trim()}
+                    onClick={() => createProductNameMutation.mutate({ label: newProductName.trim() })}
+                  >
+                    新增品名
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {(query.data?.productNameOptions ?? []).map((option) => (
+                    <div key={option.id} className="flex items-center justify-between gap-3 rounded-[24px] bg-slate-50 p-4">
+                      <div>
+                        <p className="font-semibold text-slate-900">{option.label}</p>
+                        <p className="text-xs text-slate-500">排序 {option.sortOrder}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="rounded-2xl"
+                        disabled={deleteProductNameMutation.isPending}
+                        onClick={() => deleteProductNameMutation.mutate({ id: option.id })}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> 刪除
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

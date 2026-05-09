@@ -201,6 +201,44 @@ describe("admin menu settings layout component", () => {
     expect(screen.queryByText("依照 ERD 管理站點流程、匯入節奏與 B/C 功能表")).toBeNull();
   });
 
+  it("shows product trace as a dedicated subpage without backup tools content", () => {
+    currentLocation = "/admin/product-trace";
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByRole("heading", { name: "商品批號／序號追蹤" })).toBeTruthy();
+    expect(screen.getByText("查詢商品")).toBeTruthy();
+    expect(screen.queryByText("Google Sheet 非同步回寫")).toBeNull();
+    expect(screen.queryByText("六個月資料歸檔")).toBeNull();
+  });
+
+  it("keeps categories and product names on separate dedicated subpages", () => {
+    currentLocation = "/admin/categories";
+    const { rerender } = render(React.createElement(AdminPage));
+
+    expect(screen.getByRole("heading", { name: "品類設定" })).toBeTruthy();
+    expect(screen.getByText("新增品類")).toBeTruthy();
+    expect(screen.queryByText("品名管理")).toBeNull();
+    expect(screen.queryByText("從 Google 試算表同步 H 欄")).toBeNull();
+
+    currentLocation = "/admin/product-names";
+    rerender(React.createElement(AdminPage));
+
+    expect(screen.getByRole("heading", { name: "品名管理" })).toBeTruthy();
+    expect(screen.getByText("從 Google 試算表同步 H 欄")).toBeTruthy();
+    expect(screen.queryByText("新增品類")).toBeNull();
+    expect(screen.queryByText("快速複製現有品類流程")).toBeNull();
+  });
+
+  it("keeps data tools focused on backup and sync utilities only", () => {
+    currentLocation = "/admin/tools";
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByRole("heading", { name: "資料工具" })).toBeTruthy();
+    expect(screen.getByText("匯入批次備份／還原")).toBeTruthy();
+    expect(screen.queryByText("商品批號／序號追蹤")).toBeNull();
+    expect(screen.queryByText("查詢商品")).toBeNull();
+  });
+
   it("allows supervisor users to access the admin page content", () => {
     currentLocation = "/admin";
     useAuthMock.mockReturnValue({
