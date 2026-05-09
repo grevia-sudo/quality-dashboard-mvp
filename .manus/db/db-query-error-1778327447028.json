@@ -1,0 +1,8 @@
+{
+  "query": "SELECT u.id, u.username, u.name, u.role,\n       edp.businessDate, edp.totalPoints, edp.kpiAchievementRate, edp.finalKpiScore, edp.attendanceFlag,\n       COALESCE((SELECT SUM(stc.points) FROM support_task_compensations stc WHERE stc.userId = u.id AND stc.businessDate = edp.businessDate), 0) AS supportPoints\nFROM users u\nLEFT JOIN engineer_daily_productivity edp ON edp.userId = u.id\nWHERE u.name IN ('佳穎','桔梗達曼') OR u.username IN ('佳穎','桔梗達曼','geng03')\nORDER BY u.id, edp.businessDate DESC\nLIMIT 100;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.id, u.username, u.name, u.role,\n       edp.businessDate, edp.totalPoints, edp.kpiAchievementRate, edp.finalKpiScore, edp.attendanceFlag,\n       COALESCE((SELECT SUM(stc.points) FROM support_task_compensations stc WHERE stc.userId = u.id AND stc.businessDate = edp.businessDate), 0) AS supportPoints\nFROM users u\nLEFT JOIN engineer_daily_productivity edp ON edp.userId = u.id\nWHERE u.name IN ('佳穎','桔梗達曼') OR u.username IN ('佳穎','桔梗達曼','geng03')\nORDER BY u.id, edp.businessDate DESC\nLIMIT 100;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'stc.points' in 'where clause'"
+  ]
+}

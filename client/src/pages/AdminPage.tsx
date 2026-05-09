@@ -691,6 +691,8 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
+        {activeAdminSection === "rules" ? (
+          <>
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="rounded-[26px] border-0 bg-white shadow-sm">
             <CardHeader>
@@ -873,6 +875,8 @@ export default function AdminPage() {
             </Button>
           </CardContent>
         </Card>
+          </>
+        ) : null}
 
         <Card className="rounded-[28px] border-0 bg-white shadow-sm">
           <CardContent className="flex flex-col gap-3 p-6 md:flex-row md:items-start md:justify-between">

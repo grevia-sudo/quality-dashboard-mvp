@@ -43,7 +43,7 @@ describe("warehouse workflow pages", () => {
     expect(importPageSource).toContain("toggleSummaryRow");
     expect(importPageSource).toContain("ChevronDown");
     expect(importPageSource).toContain("ChevronRight");
-    expect(importPageSource).toContain("目前沒有待點貨採購單，也沒有最近刪除紀錄；完成匯入或執行刪除後，系統會在這裡整理採購單與刪除歷程。");
+    expect(importPageSource).toContain("目前沒有待點貨採購單，也沒有最近刪除紀錄；完成匯入或執行刪除後，系統會在這裡分開整理有效採購單與刪除歷程。");
     expect(importPageSource).toContain("請先填寫廠商名稱後再匯入");
     expect(importPageSource).toContain("目前沒有可匯入的資料");
     expect(importPageSource).toContain("尚未補齊必要欄位");

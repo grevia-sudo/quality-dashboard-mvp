@@ -9,9 +9,10 @@ const useAuthMock = vi.fn();
 const setupUseQueryMock = vi.fn();
 const importBackupsUseQueryMock = vi.fn();
 const productTraceUseQueryMock = vi.fn();
+let currentLocation = "/admin/menus";
 
 vi.mock("wouter", () => ({
-  useLocation: () => ["/admin/menus", setLocationMock],
+  useLocation: () => [currentLocation, setLocationMock],
 }));
 
 vi.mock("@/_core/hooks/useAuth", () => ({
@@ -95,6 +96,7 @@ import AdminPage from "../client/src/pages/AdminPage";
 describe("admin menu settings layout component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    currentLocation = "/admin/menus";
     useAuthMock.mockReturnValue({
       loading: false,
       user: {
@@ -167,6 +169,7 @@ describe("admin menu settings layout component", () => {
   });
 
   it("shows supervisor roles in the KPI progress table without downgrading them to engineer", () => {
+    currentLocation = "/admin";
     render(React.createElement(AdminPage));
 
     expect(screen.getByText("巧克力")).toBeTruthy();
@@ -174,7 +177,17 @@ describe("admin menu settings layout component", () => {
     expect(screen.getByText("supervisor")).toBeTruthy();
   });
 
+  it("keeps the menus route focused on menu settings only without rendering KPI or capacity sections", () => {
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByText("目前功能：功能表設定")).toBeTruthy();
+    expect(screen.queryByText("全員 KPI 進度")).toBeNull();
+    expect(screen.queryByText("產能設定")).toBeNull();
+    expect(screen.getByText("功能表設定改成與 C 站作業相同的寬版編輯節奏。每個項目會以橫向列呈現，方便直接調整名稱、排序與啟用狀態，不需要在狹長卡片中反覆上下捲動。")).toBeTruthy();
+  });
+
   it("allows supervisor users to access the admin page content", () => {
+    currentLocation = "/admin";
     useAuthMock.mockReturnValue({
       loading: false,
       user: {

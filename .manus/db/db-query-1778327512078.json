@@ -1,0 +1,28 @@
+{
+  "query": "SELECT u.name, u.username, edp.businessDate,\n       edp.totalPoints AS dailyTotalPoints,\n       COALESCE(SUM(psd.earnedPoints), 0) AS detailTotalPoints,\n       COUNT(psd.id) AS detailCount,\n       ROUND((edp.totalPoints - COALESCE(SUM(psd.earnedPoints), 0)), 6) AS diffPoints\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nLEFT JOIN productivity_score_details psd\n  ON psd.userId = edp.userId AND psd.businessDate = edp.businessDate\nWHERE edp.businessDate = '2026-05-08'\n  AND (u.username IN ('geng03','ying43') OR u.name IN ('桔梗達曼','佳穎'))\nGROUP BY u.name, u.username, edp.businessDate, edp.totalPoints\nORDER BY u.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name, u.username, edp.businessDate,\n       edp.totalPoints AS dailyTotalPoints,\n       COALESCE(SUM(psd.earnedPoints), 0) AS detailTotalPoints,\n       COUNT(psd.id) AS detailCount,\n       ROUND((edp.totalPoints - COALESCE(SUM(psd.earnedPoints), 0)), 6) AS diffPoints\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nLEFT JOIN productivity_score_details psd\n  ON psd.userId = edp.userId AND psd.businessDate = edp.businessDate\nWHERE edp.businessDate = '2026-05-08'\n  AND (u.username IN ('geng03','ying43') OR u.name IN ('桔梗達曼','佳穎'))\nGROUP BY u.name, u.username, edp.businessDate, edp.totalPoints\nORDER BY u.name;",
+  "rows": [
+    {
+      "name": "佳穎",
+      "username": "ying43",
+      "businessDate": "2026-05-08",
+      "dailyTotalPoints": "0.037695",
+      "detailTotalPoints": "0.037695",
+      "detailCount": "6",
+      "diffPoints": "0.000000"
+    },
+    {
+      "name": "桔梗達曼",
+      "username": "geng03",
+      "businessDate": "2026-05-08",
+      "dailyTotalPoints": "0.037500",
+      "detailTotalPoints": "0.037500",
+      "detailCount": "6",
+      "diffPoints": "0.000000"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tusername\tbusinessDate\tdailyTotalPoints\tdetailTotalPoints\tdetailCount\tdiffPoints\n佳穎\tying43\t2026-05-08\t0.037695\t0.037695\t6\t0.000000\n桔梗達曼\tgeng03\t2026-05-08\t0.037500\t0.037500\t6\t0.000000\n",
+  "stderr": "",
+  "execution_time_ms": 1801
+}
