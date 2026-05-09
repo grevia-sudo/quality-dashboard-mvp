@@ -665,31 +665,57 @@ export default function AdminPage() {
 
   return (
     <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
-      <div className="space-y-6">          <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
+      <div className="space-y-6">
+        {activeAdminSection === "rules" ? (
+          <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
             <CardContent className="space-y-6 p-8">
               {!isAdmin ? (
                 <div className="rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-900">
                   目前以 {user?.role ?? "viewer"} 身分查看管理後台。此頁面可供檢視站點規則、KPI 與設定資料；若需實際修改設定或執行管理操作，請改用 admin 帳號。
                 </div>
               ) : null}
-         <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、匯入節奏與 B/C 功能表</h1>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              這裡除了既有站點規則外，也可依 A1～E 各站點設定每個品類的每日產能，供後續換算每小時產能與工程師點數；同時保留匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。
-            </p>
-            <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>站點總覽</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/import")}>匯入作業</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/A1")}>A1 點到貨</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/A2")}>A2 安裝</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/B")}>B 站軟測</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/C")}>C 站品檢</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/sampling")}>D 站抽樣</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/E")}>E 站抹除</Button>
-              <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/STOCK")}>待入庫</Button>
-            </div>
-          </CardContent>
-        </Card>
+              <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、匯入節奏與 B/C 功能表</h1>
+              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+                這裡除了既有站點規則外，也可依 A1～E 各站點設定每個品類的每日產能，供後續換算每小時產能與工程師點數；同時保留匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。
+              </p>
+              <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>站點總覽</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/import")}>匯入作業</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/A1")}>A1 點到貨</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/A2")}>A2 安裝</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/B")}>B 站軟測</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/C")}>C 站品檢</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/sampling")}>D 站抽樣</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/E")}>E 站抹除</Button>
+                <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/station/STOCK")}>待入庫</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardContent className="space-y-4 p-6 md:p-7">
+              {!isAdmin ? (
+                <div className="rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-900">
+                  目前以 {user?.role ?? "viewer"} 身分查看管理後台；若需實際修改設定或執行管理操作，請改用 admin 帳號。
+                </div>
+              ) : null}
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="space-y-2">
+                  <Badge className="bg-slate-100 text-slate-700">管理後台子功能</Badge>
+                  <div className="space-y-1">
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900">{activeAdminSectionMeta.label}</h1>
+                    <p className="max-w-2xl text-sm leading-7 text-slate-600">{activeAdminSectionMeta.description}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/admin")}>返回管理首頁</Button>
+                  <Button className="rounded-2xl" disabled={configMutationPending || query.isLoading} onClick={handleSaveAllSettings}>儲存全部設定</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {activeAdminSection === "rules" ? (
           <>
@@ -878,17 +904,19 @@ export default function AdminPage() {
           </>
         ) : null}
 
-        <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-          <CardContent className="flex flex-col gap-3 p-6 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900">目前功能：{activeAdminSectionMeta.label}</p>
-              <p className="text-sm leading-7 text-slate-600">{activeAdminSectionMeta.description}</p>
-            </div>
-            <div className="rounded-[20px] bg-slate-50 px-4 py-3 text-sm text-slate-500">
-              功能入口已移到左側管理後台子列表，請直接從側邊欄切換各功能。
-            </div>
-          </CardContent>
-        </Card>
+        {activeAdminSection === "rules" ? (
+          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+            <CardContent className="flex flex-col gap-3 p-6 md:flex-row md:items-start md:justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-slate-900">目前功能：{activeAdminSectionMeta.label}</p>
+                <p className="text-sm leading-7 text-slate-600">{activeAdminSectionMeta.description}</p>
+              </div>
+              <div className="rounded-[20px] bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                功能入口已移到左側管理後台子列表，請直接從側邊欄切換各功能。
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Tabs value={activeAdminSection} className="space-y-4">
           <TabsContent value="rules">

@@ -180,7 +180,10 @@ describe("admin menu settings layout component", () => {
   it("keeps the menus route focused on menu settings only without rendering KPI or capacity sections", () => {
     render(React.createElement(AdminPage));
 
-    expect(screen.getByText("目前功能：功能表設定")).toBeTruthy();
+    expect(screen.getByText("管理後台子功能")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "功能表設定" })).toBeTruthy();
+    expect(screen.getByText("返回管理首頁")).toBeTruthy();
+    expect(screen.queryByText("依照 ERD 管理站點流程、匯入節奏與 B/C 功能表")).toBeNull();
     expect(screen.queryByText("全員 KPI 進度")).toBeNull();
     expect(screen.queryByText("產能設定")).toBeNull();
     expect(screen.getByText("功能表設定改成與 C 站作業相同的寬版編輯節奏。每個項目會以橫向列呈現，方便直接調整名稱、排序與啟用狀態，不需要在狹長卡片中反覆上下捲動。")).toBeTruthy();
