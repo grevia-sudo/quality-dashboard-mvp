@@ -189,6 +189,18 @@ describe("admin menu settings layout component", () => {
     expect(screen.getByText("功能表設定改成與 C 站作業相同的寬版編輯節奏。每個項目會以橫向列呈現，方便直接調整名稱、排序與啟用狀態，不需要在狹長卡片中反覆上下捲動。")).toBeTruthy();
   });
 
+  it("shows station rules as a dedicated subpage on the rules route", () => {
+    currentLocation = "/admin/rules";
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByText("管理後台子功能")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "站點規則" })).toBeTruthy();
+    expect(screen.getByText("站點規則設定")).toBeTruthy();
+    expect(screen.queryByText("全員 KPI 進度")).toBeNull();
+    expect(screen.queryByText("Google Sheet 非同步回寫")).toBeNull();
+    expect(screen.queryByText("依照 ERD 管理站點流程、匯入節奏與 B/C 功能表")).toBeNull();
+  });
+
   it("allows supervisor users to access the admin page content", () => {
     currentLocation = "/admin";
     useAuthMock.mockReturnValue({

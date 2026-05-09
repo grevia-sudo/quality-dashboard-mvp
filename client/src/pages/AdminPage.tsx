@@ -17,7 +17,7 @@ const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 type AdminSectionId = "rules" | "targets" | "menus" | "tools" | "inventory-history" | "support" | "users" | "categories";
 
 const adminSections: Array<{ id: AdminSectionId; label: string; path: string; description: string }> = [
-  { id: "rules", label: "站點規則", path: "/admin", description: "設定各站流程、下一站與返工規則。" },
+  { id: "rules", label: "站點規則", path: "/admin/rules", description: "設定各站流程、下一站與返工規則。" },
   { id: "targets", label: "產能設定", path: "/admin/targets", description: "維護各站點在不同品類與品牌下的每日產能。" },
   { id: "menus", label: "功能表設定", path: "/admin/menus", description: "管理 B、C 站使用的故障與外觀選項。" },
   { id: "tools", label: "資料工具", path: "/admin/tools", description: "集中處理備份還原、商品追蹤與資料同步工具。" },
@@ -28,7 +28,11 @@ const adminSections: Array<{ id: AdminSectionId; label: string; path: string; de
 ];
 
 function resolveAdminSectionId(pathname: string): AdminSectionId {
-  const matchedSection = adminSections.find((section) => section.path === pathname || (section.path !== "/admin" && pathname.startsWith(`${section.path}/`)));
+  if (pathname === "/admin") {
+    return "rules";
+  }
+
+  const matchedSection = adminSections.find((section) => section.path === pathname || pathname.startsWith(`${section.path}/`));
   return matchedSection?.id ?? "rules";
 }
 
@@ -130,6 +134,7 @@ function formatSupportHours(value?: number | null) {
 export default function AdminPage() {
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [location, setLocation] = useLocation();
+  const isAdminHome = location === "/admin";
   const activeAdminSection = resolveAdminSectionId(location);
   const activeAdminSectionMeta = adminSections.find((section) => section.id === activeAdminSection) ?? adminSections[0];
   const utils = trpc.useUtils();
@@ -666,7 +671,7 @@ export default function AdminPage() {
   return (
     <DashboardLayout title="KPI 儀表板與管理後台" navItems={navItems}>
       <div className="space-y-6">
-        {activeAdminSection === "rules" ? (
+        {isAdminHome ? (
           <Card className="rounded-[28px] border-0 bg-[#eef2f7] shadow-sm">
             <CardContent className="space-y-6 p-8">
               {!isAdmin ? (
@@ -717,7 +722,7 @@ export default function AdminPage() {
           </Card>
         )}
 
-        {activeAdminSection === "rules" ? (
+        {isAdminHome ? (
           <>
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="rounded-[26px] border-0 bg-white shadow-sm">
@@ -904,7 +909,7 @@ export default function AdminPage() {
           </>
         ) : null}
 
-        {activeAdminSection === "rules" ? (
+        {isAdminHome ? (
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
             <CardContent className="flex flex-col gap-3 p-6 md:flex-row md:items-start md:justify-between">
               <div className="space-y-1">
