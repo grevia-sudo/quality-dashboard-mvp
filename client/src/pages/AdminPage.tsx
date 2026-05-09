@@ -122,7 +122,7 @@ function formatBaseUnitPoints(dailyTargetQty: number) {
     return "-";
   }
 
-  return (1 / dailyTargetQty).toFixed(6);
+  return `${(100 / dailyTargetQty).toFixed(3)} 點/件`;
 }
 
 function formatDisplayPoints(value?: number | null) {
@@ -987,7 +987,7 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="rounded-[24px] bg-slate-50 p-4">
-                  <p className="text-sm leading-7 text-slate-600">可依 A1、A2、B、C、D、E 各站點，為每個品類／品牌組合輸入每日產能。系統會同步換算每小時產能與單件點數，供後續工程師點數與 KPI 邏輯使用。</p>
+                  <p className="text-sm leading-7 text-slate-600">可依 A1、A2、B、C、D、E 各站點，為每個品類／品牌組合輸入每日產能。系統會同步換算每小時產能與前台 100 點制的單件點數，供後續工程師點數與 KPI 邏輯使用。</p>
                   <p className="mt-2 text-xs text-slate-500">產能調整完成後，請使用上方統一按鈕一次儲存，避免各分頁分開送出造成設定不同步。</p>
                 </div>
                 {(query.data?.categories ?? []).length > 0 ? capacityStationOptions.map((stationCode) => {
@@ -997,7 +997,7 @@ export default function AdminPage() {
                     <div key={stationCode} className="space-y-3 rounded-[24px] bg-slate-50 p-5">
                       <div>
                         <p className="text-lg font-bold text-slate-900">{stationCode} 站每日產能</p>
-                        <p className="text-xs text-slate-500">例如可設定「A1 × 智慧手機 × Apple = 350」，系統會同步換算為每小時產能與點數。</p>
+                        <p className="text-xs text-slate-500">例如可設定「A1 × 智慧手機 × Apple = 350」，系統會同步換算為每小時產能與前台 100 點制單件點數。</p>
                       </div>
                       <div className="overflow-x-auto rounded-[24px] bg-white">
                         <table className="min-w-full text-sm text-slate-700">
@@ -1007,7 +1007,7 @@ export default function AdminPage() {
                               <th className="px-4 py-3">品牌</th>
                               <th className="px-4 py-3">每日產能</th>
                               <th className="px-4 py-3">每小時產能</th>
-                              <th className="px-4 py-3">單件點數</th>
+                              <th className="px-4 py-3">單件點數（100點制）</th>
                               <th className="px-4 py-3">啟用</th>
                             </tr>
                           </thead>
