@@ -25,6 +25,9 @@ import {
   getPendingStockImportMismatchProducts,
   getImportBatchBackups,
   getProductTraceByIdentity,
+  searchProductsForA1Rename,
+  updateProductNameByA1Search,
+  restoreEProductToD,
   listSupportCompensations,
   getDefectOptions,
   getEngineerKpiSummary,
@@ -151,6 +154,36 @@ export const appRouter = router({
       await ensureMvpSeedData();
       return getProductCategoryOptions();
     }),
+    searchProductForRename: protectedProcedure
+      .input(z.object({ keyword: z.string().trim().min(1, "請輸入序號或品號") }))
+      .query(async ({ input }) => {
+        await ensureMvpSeedData();
+        return searchProductsForA1Rename(input.keyword);
+      }),
+    updateProductName: protectedProcedure
+      .input(z.object({
+        productId: z.number().int().positive(),
+        productName: z.string().trim().min(1, "請輸入品名"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return updateProductNameByA1Search({
+          productId: input.productId,
+          productName: input.productName,
+          operatorUserId: ctx.user.id,
+        });
+      }),
+    restoreToD: protectedProcedure
+      .input(z.object({
+        taskId: z.number().int().positive(),
+        productId: z.number().int().positive(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return restoreEProductToD({
+          taskId: input.taskId,
+          productId: input.productId,
+          operatorUserId: ctx.user.id,
+        });
+      }),
     assignCategory: protectedProcedure
       .input(
         z.object({
@@ -233,11 +266,25 @@ export const appRouter = router({
           imei: optionalTextSchema,
           productName: optionalTextSchema,
         }).superRefine((value, ctx) => {
-          if (!value.batchNo && !value.serialNumber && !value.imei) {
+          if (!value.batchNo) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               path: ["batchNo"],
-              message: "商品批號、商品序號、IMEI 至少要填一項",
+              message: "A1 必須填寫商品批號",
+            });
+          }
+          if (!value.serialNumber) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["serialNumber"],
+              message: "A1 必須填寫商品序號",
+            });
+          }
+          if (!value.productName) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["productName"],
+              message: "A1 必須填寫品名",
             });
           }
         }),

@@ -273,6 +273,8 @@ export default function StationPage() {
     imei: "",
     productName: "",
   });
+  const [a1RenameKeyword, setA1RenameKeyword] = useState("");
+  const [a1RenameDrafts, setA1RenameDrafts] = useState<Record<number, string>>({});
   const [selectedOptions, setSelectedOptions] = useState<Record<number, OptionSelections>>({});
   const [productNamePickerOpen, setProductNamePickerOpen] = useState(false);
   const [batteryDialogTaskId, setBatteryDialogTaskId] = useState<number | null>(null);
@@ -313,6 +315,13 @@ export default function StationPage() {
     { stationCode },
     {
       retry: false,
+    },
+  );
+  const a1RenameQuery = trpc.station.searchProductForRename.useQuery(
+    { keyword: a1RenameKeyword.trim() },
+    {
+      retry: false,
+      enabled: stationCode === "A1" && Boolean(a1RenameKeyword.trim()),
     },
   );
   const productNameOptions = productNameOptionsQuery.data ?? [];
@@ -786,6 +795,53 @@ export default function StationPage() {
       toast.error(error.message || "A1 點到貨處理失敗");
       setProductNamePickerOpen(false);
       focusBatchInput();
+    },
+  });
+
+  const updateProductNameMutation = trpc.station.updateProductName.useMutation({
+    onSuccess: (result) => {
+      if (!result.success) {
+        toast.error(result.message || "品名更新失敗");
+        return;
+      }
+
+      toast.success(`${result.productCode} 的品名已更新為 ${result.productName}`);
+      setA1RenameDrafts((prev) => ({
+        ...prev,
+        [result.productId]: result.productName,
+      }));
+      void utils.station.searchProductForRename.invalidate({ keyword: a1RenameKeyword.trim() });
+      void utils.station.detail.invalidate({ stationCode: "A1" });
+      if (result.currentStationCode === "A2" || result.currentStationCode === "B" || result.currentStationCode === "C" || result.currentStationCode === "E" || result.currentStationCode === "STOCK") {
+        void utils.station.detail.invalidate({ stationCode: result.currentStationCode });
+      }
+      if (result.currentStationCode === "D") {
+        void utils.sampling.queue.invalidate();
+      }
+      void utils.station.list.invalidate();
+      void utils.dashboard.home.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "品名更新失敗");
+    },
+  });
+
+  const restoreToDMutation = trpc.station.restoreToD.useMutation({
+    onSuccess: (result) => {
+      if (!result.success) {
+        toast.error(result.message || "還原到 D 站失敗");
+        return;
+      }
+
+      removeCompletedTaskFromCache("E", result.productId);
+      setKeyword("");
+      toast.success(`${result.productCode ?? "商品"} 已還原到 D 站`);
+      focusQuickScanInput();
+      refreshStationDataInBackground("E", "D");
+      void utils.sampling.queue.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "還原到 D 站失敗");
     },
   });
 
@@ -1443,6 +1499,84 @@ export default function StationPage() {
                 </form>
               </CardContent>
             </Card>
+
+            <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-bold">A1 依序號／品號修改品名</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-[24px] bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                  這裡可用<strong>商品序號</strong>或<strong>產品代碼（品號）</strong>搜尋既有商品並直接修改品名；即使商品已經流轉到 A2 之後站點，也能在這裡修正，更新後會排入正式採購單同步。
+                </div>
+                <div className="relative max-w-xl">
+                  <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <Input
+                    value={a1RenameKeyword}
+                    onChange={(event) => setA1RenameKeyword(event.target.value)}
+                    className="editable-field h-12 rounded-2xl border-0 bg-slate-50 pl-11"
+                    placeholder="輸入商品序號或產品代碼（品號）"
+                  />
+                </div>
+                {a1RenameQuery.isLoading ? (
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-500">搜尋中...</div>
+                ) : null}
+                {a1RenameQuery.error ? (
+                  <div className="rounded-[24px] bg-rose-50 p-4 text-sm leading-7 text-rose-700">搜尋失敗：{a1RenameQuery.error.message || "請稍後再試一次"}</div>
+                ) : null}
+                {a1RenameKeyword.trim() && !a1RenameQuery.isLoading && !a1RenameQuery.error && (a1RenameQuery.data?.length ?? 0) === 0 ? (
+                  <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-500">找不到符合的商品，請確認輸入的是序號或產品代碼。</div>
+                ) : null}
+                <div className="space-y-4">
+                  {(a1RenameQuery.data ?? []).map((item) => {
+                    const draftValue = a1RenameDrafts[item.productId] ?? item.productName ?? "";
+                    return (
+                      <div key={`a1-rename-${item.productId}`} className="space-y-4 rounded-[24px] bg-[#eef2f7] p-5">
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 text-sm text-slate-600">
+                          <div>
+                            <p className="text-xs text-slate-400">產品代碼</p>
+                            <p className="mt-1 font-semibold text-slate-900">{item.productCode}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-400">序號</p>
+                            <p className="mt-1 font-semibold text-slate-900">{item.serialNumber ?? "-"}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-400">目前站點</p>
+                            <p className="mt-1 font-semibold text-slate-900">{item.currentStationCode}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-400">品類 / 品牌</p>
+                            <p className="mt-1 font-semibold text-slate-900">{[item.categoryName ?? item.importedCategoryName ?? "未分類", item.brandName ?? item.importedBrandName ?? ""].filter(Boolean).join(" × ")}</p>
+                          </div>
+                        </div>
+                        <label className="space-y-2 text-sm text-slate-600">
+                          <span>品名</span>
+                          <Input
+                            value={draftValue}
+                            onChange={(event) => setA1RenameDrafts((prev) => ({ ...prev, [item.productId]: event.target.value }))}
+                            className="editable-field h-12 rounded-2xl border-0 bg-white"
+                            placeholder="請輸入新的品名"
+                          />
+                        </label>
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            className="rounded-2xl"
+                            disabled={updateProductNameMutation.isPending || !draftValue.trim()}
+                            onClick={() => updateProductNameMutation.mutate({
+                              productId: item.productId,
+                              productName: draftValue.trim(),
+                            })}
+                          >
+                            {updateProductNameMutation.isPending ? "更新中..." : "更新品名"}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : null}
 
@@ -1708,6 +1842,32 @@ export default function StationPage() {
                       </div>
                       <Button type="button" variant="outline" className="rounded-2xl" onClick={() => openCategoryEditor(task)}>
                         編輯
+                      </Button>
+                    </div>
+                  ) : null}
+
+                  {stationCode === "E" ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                      <div className="space-y-1">
+                        <p className="font-semibold">單一案件還原到 D 站</p>
+                        <p className="text-xs leading-6 text-amber-800">若此案件需要退回 D 站重新確認，可直接在 E 站依序號或品號搜尋後，對該筆按下還原。</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-2xl border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                        disabled={restoreToDMutation.isPending}
+                        onClick={() => {
+                          if (!window.confirm(`確定要將 ${task.productCode} 還原到 D 站嗎？`)) {
+                            return;
+                          }
+                          restoreToDMutation.mutate({
+                            taskId: task.taskId,
+                            productId: task.productId,
+                          });
+                        }}
+                      >
+                        {restoreToDMutation.isPending ? "還原中..." : "還原到 D 站"}
                       </Button>
                     </div>
                   ) : null}

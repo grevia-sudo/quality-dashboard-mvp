@@ -2032,6 +2032,60 @@ async function findOtherActiveProductByBatchNo(
   return rows[0] ?? null;
 }
 
+async function findGooglePurchaseSheetBatchConflict(input: {
+  batchNo?: string | null;
+  serialNumber?: string | null;
+  imei?: string | null;
+}) {
+  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
+  const normalizedSerialNumber = normalizeOptionalText(input.serialNumber);
+  const normalizedImei = normalizeOptionalText(input.imei);
+  if (!normalizedBatchNo) {
+    return null;
+  }
+
+  const accessToken = await getGoogleSheetsAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodeURIComponent(`${PURCHASE_SHEET_NAME}!A:G`)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const result = await response.json() as { values?: string[][]; error?: { message?: string } };
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "讀取採購單資料列失敗");
+  }
+
+  const rows = result.values ?? [];
+  for (let index = 1; index < rows.length; index += 1) {
+    const row = rows[index] ?? [];
+    const rowBatchNo = normalizeOptionalText(row[3]);
+    if (rowBatchNo !== normalizedBatchNo) {
+      continue;
+    }
+
+    const rowSerialNumber = normalizeOptionalText(row[4]);
+    const rowImei = normalizeOptionalText(row[5]);
+    const sameIdentity = Boolean(
+      (normalizedSerialNumber && rowSerialNumber && normalizedSerialNumber === rowSerialNumber)
+      || (normalizedImei && rowImei && normalizedImei === rowImei),
+    );
+
+    if (sameIdentity) {
+      continue;
+    }
+
+    return {
+      rowNumber: index + 1,
+      serialNumber: rowSerialNumber,
+      imei: rowImei,
+      productName: normalizeOptionalText(row[6]),
+    };
+  }
+
+  return null;
+}
+
 async function findConflictingActiveProductByIdentity(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null; excludeProductId?: number | null },
@@ -2094,8 +2148,8 @@ export async function completeA1ArrivalByScan(input: {
     return { success: false as const, message: "Database unavailable" };
   }
 
-  if (!hasImportIdentity(input)) {
-    return { success: false as const, message: "商品批號、商品序號、IMEI 至少要填一項" };
+  if (!input.batchNo?.trim() || !input.serialNumber?.trim() || !input.productName?.trim()) {
+    return { success: false as const, message: "A1 需填寫商品批號、商品序號與品名；IMEI 可選填" };
   }
 
   const normalizedBatchNo = normalizeOptionalText(input.batchNo);
@@ -2114,6 +2168,19 @@ export async function completeA1ArrivalByScan(input: {
     return {
       success: false as const,
       message: `商品批號 ${normalizedBatchNo} 已存在於 ${duplicatedBatchProduct.productCode ?? "其他商品"}，請確認後再刷入`,
+    };
+  }
+
+  const duplicatedGoogleBatch = await findGooglePurchaseSheetBatchConflict({
+    batchNo: normalizedBatchNo,
+    serialNumber: normalizedSerialNumber,
+    imei: normalizedImei,
+  });
+
+  if (duplicatedGoogleBatch) {
+    return {
+      success: false as const,
+      message: `商品批號 ${normalizedBatchNo} 已存在於 Google 採購單第 ${duplicatedGoogleBatch.rowNumber} 列，請先確認是否為重複批號`,
     };
   }
 
@@ -2234,6 +2301,201 @@ export async function completeA1ArrivalByScan(input: {
     poNumber: matchedProduct.poNumber,
     vendorName: matchedProduct.vendorName,
     categoryName: matchedProduct.importedCategoryName,
+  };
+}
+
+export async function searchProductsForA1Rename(keyword: string) {
+  const db = await getDb();
+  const normalizedKeyword = normalizeOptionalText(keyword);
+  if (!db || !normalizedKeyword) {
+    return [];
+  }
+
+  return db
+    .select({
+      productId: products.id,
+      productCode: products.productCode,
+      productName: products.productName,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+    })
+    .from(products)
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .where(and(
+      isNull(products.archivedAt),
+      or(
+        eq(products.productCode, normalizedKeyword),
+        eq(products.serialNumber, normalizedKeyword),
+      ),
+    ))
+    .orderBy(desc(products.updatedAt), desc(products.id))
+    .limit(20);
+}
+
+export async function updateProductNameByA1Search(input: {
+  productId: number;
+  productName: string;
+  operatorUserId: number;
+}) {
+  const db = await getDb();
+  const normalizedProductName = normalizeOptionalText(input.productName);
+  if (!db || !normalizedProductName) {
+    return { success: false as const, message: "請輸入品名" };
+  }
+
+  const productRows = await db
+    .select({
+      productId: products.id,
+      productCode: products.productCode,
+      currentStationCode: products.currentStationCode,
+    })
+    .from(products)
+    .where(and(eq(products.id, input.productId), isNull(products.archivedAt)))
+    .limit(1);
+
+  const product = productRows[0];
+  if (!product) {
+    return { success: false as const, message: "找不到可更新的商品" };
+  }
+
+  await db
+    .update(products)
+    .set({
+      productName: normalizedProductName,
+      updatedAt: new Date(),
+    })
+    .where(eq(products.id, input.productId));
+
+  await db.insert(sheetSyncJobs).values({
+    jobType: "purchase_sheet_sync",
+    targetSheetName: "採購單",
+    status: "queued",
+  });
+  triggerPurchaseSheetSyncInBackground();
+
+  return {
+    success: true as const,
+    productId: product.productId,
+    productCode: product.productCode,
+    currentStationCode: product.currentStationCode,
+    productName: normalizedProductName,
+  };
+}
+
+export async function restoreEProductToD(input: {
+  taskId: number;
+  productId: number;
+  operatorUserId: number;
+}) {
+  const db = await getDb();
+  if (!db) {
+    return { success: false as const, message: "Database unavailable" };
+  }
+
+  const rows = await db
+    .select({
+      productId: products.id,
+      productCode: products.productCode,
+      categoryId: products.categoryId,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      taskId: stationTasks.id,
+      taskStatus: stationTasks.taskStatus,
+      taskMetadata: stationTasks.metadata,
+    })
+    .from(products)
+    .innerJoin(stationTasks, and(eq(stationTasks.productId, products.id), eq(stationTasks.id, input.taskId)))
+    .where(and(eq(products.id, input.productId), isNull(products.archivedAt)))
+    .limit(1);
+
+  const current = rows[0];
+  if (!current) {
+    return { success: false as const, message: "找不到可還原的 E 站案件" };
+  }
+
+  if (current.currentStationCode !== "E" || current.currentStatus !== "pending_e") {
+    return { success: false as const, message: "目前僅能將仍停留在 E 站待處理的案件還原到 D 站" };
+  }
+
+  if (!["pending", "in_progress", "overdue", "returned"].includes(current.taskStatus)) {
+    return { success: false as const, message: "此 E 站任務已失效，請重新整理後再試" };
+  }
+
+  const { businessDateValue, now } = getOperationTimeContext();
+
+  await db
+    .update(stationTasks)
+    .set({
+      taskStatus: "archived",
+      completedAt: now,
+      resultSummary: "E 站人工還原到 D 站",
+      metadata: {
+        ...((current.taskMetadata ?? {}) as Record<string, unknown>),
+        manuallyRestoredToD: true,
+        restoredByUserId: input.operatorUserId,
+        restoredAt: now.toISOString(),
+      },
+      updatedAt: now,
+    })
+    .where(eq(stationTasks.id, input.taskId));
+
+  await db
+    .update(products)
+    .set({
+      currentStationCode: "D",
+      currentStatus: "pending_d",
+      updatedAt: now,
+    })
+    .where(eq(products.id, input.productId));
+
+  await db.insert(stationTasks).values({
+    productId: input.productId,
+    stationCode: "D",
+    taskStatus: "returned",
+    dueDate: businessDateValue,
+    resultSummary: "由 E 站人工還原回 D 站",
+    metadata: {
+      sourceStation: "E",
+      restoredFromTaskId: input.taskId,
+      restoredByUserId: input.operatorUserId,
+      restoredAt: now.toISOString(),
+    },
+  });
+
+  await db.insert(stationEvents).values({
+    productId: input.productId,
+    stationTaskId: input.taskId,
+    stationCode: "E",
+    eventType: "rework",
+    operatorUserId: input.operatorUserId,
+    businessDate: businessDateValue,
+    categoryId: current.categoryId,
+    isRework: true,
+    payload: {
+      restoredToStation: "D",
+      restoredFromStation: "E",
+      restoredFromTaskId: input.taskId,
+    },
+  });
+
+  await db.insert(sheetSyncJobs).values({
+    jobType: "purchase_sheet_sync",
+    targetSheetName: "採購單",
+    status: "queued",
+  });
+  triggerPurchaseSheetSyncInBackground();
+
+  return {
+    success: true as const,
+    productId: current.productId,
+    productCode: current.productCode,
   };
 }
 

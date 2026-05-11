@@ -24,7 +24,10 @@ const setLocationMock = vi.fn();
 const stationDetailUseQueryMock = vi.fn();
 const productNameOptionsUseQueryMock = vi.fn();
 const productCategoryOptionsUseQueryMock = vi.fn();
+const searchProductForRenameUseQueryMock = vi.fn(() => ({ data: [], isLoading: false }));
 const completeMutateMock = vi.fn();
+const updateProductNameMutateMock = vi.fn();
+const restoreToDMutateMock = vi.fn();
 const uploadEPhotoMutateAsyncMock = vi.fn().mockResolvedValue({
   success: true,
   reference: {
@@ -92,6 +95,9 @@ vi.mock("@/lib/trpc", () => ({
       productCategoryOptions: {
         useQuery: (...args: unknown[]) => productCategoryOptionsUseQueryMock(...args),
       },
+      searchProductForRename: {
+        useQuery: (...args: unknown[]) => searchProductForRenameUseQueryMock(...args),
+      },
       detail: {
         useQuery: (...args: unknown[]) => stationDetailUseQueryMock(...args),
       },
@@ -112,6 +118,18 @@ vi.mock("@/lib/trpc", () => ({
       },
       receive: {
         useMutation: () => mutationMockFactory(),
+      },
+      updateProductName: {
+        useMutation: () => ({
+          isPending: false,
+          mutate: updateProductNameMutateMock,
+        }),
+      },
+      restoreToD: {
+        useMutation: () => ({
+          isPending: false,
+          mutate: restoreToDMutateMock,
+        }),
       },
     },
   },
@@ -402,12 +420,12 @@ describe("StationPage E 站 QR camera scan", () => {
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "重試上傳" })).toBeTruthy();
     });
-    expect(screen.getByText("正面照片尚未同步到 Google Drive：網路連線逾時。請點「重試上傳」後再完成；若仍失敗，請重新拍照。")).toBeTruthy();
+    expect(screen.getByText("正面照片尚未成功上傳：網路連線逾時。請點「重試上傳」後再完成；若仍失敗，請重新拍照。")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "重試上傳" }));
 
     await waitFor(() => {
-      expect(toastSuccessMock).toHaveBeenCalledWith("正面照片已同步到 Google Drive", {
+      expect(toastSuccessMock).toHaveBeenCalledWith("正面照片已完成上傳", {
         position: "top-center",
       });
     });
@@ -445,7 +463,7 @@ describe("StationPage E 站 QR camera scan", () => {
       expect(screen.getByRole("button", { name: "重試上傳" })).toBeTruthy();
     });
     await waitFor(() => {
-      expect(toastSuccessMock).toHaveBeenCalledWith("反面照片已同步到 Google Drive", {
+      expect(toastSuccessMock).toHaveBeenCalledWith("反面照片已完成上傳", {
         position: "top-center",
       });
     });
@@ -453,7 +471,7 @@ describe("StationPage E 站 QR camera scan", () => {
     fireEvent.click(screen.getByRole("button", { name: "完成抹除並推進下一站" }));
 
     await waitFor(() => {
-      expect(toastErrorMock).toHaveBeenCalledWith("正面照片尚未成功同步到 Google Drive，請先點「重試上傳」或重新拍照後再完成。", {
+      expect(toastErrorMock).toHaveBeenCalledWith("正面照片尚未成功上傳，請先點「重試上傳」或重新拍照後再完成。", {
         position: "top-center",
       });
     });
