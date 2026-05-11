@@ -1,0 +1,20 @@
+{
+  "query": "UPDATE products\nSET sheetRowNumber = 922,\n    updatedAt = NOW()\nWHERE batchNo = '01900000012';\n\nUPDATE station_tasks st\nJOIN products p ON p.id = st.productId\nSET st.metadata = JSON_SET(\n      JSON_SET(\n        JSON_SET(\n          JSON_SET(\n            st.metadata,\n            '$.ePhotoSyncStatus', 'background_completed'\n          ),\n          '$.ePhotoSyncMessage', 'E 站照片已透過 API 補同步到 Google Drive，採購單連結已回寫'\n        ),\n        '$.eFrontPhotoUrl', 'https://drive.google.com/file/d/1lGRoztNS60ToidzaTB8ZwW07TdN8V6kd/view'\n      ),\n      '$.eBackPhotoUrl', 'https://drive.google.com/file/d/1gf9QVEkpto_Z_f8CzIBGWBm3vKDTigyj/view'\n    ),\n    st.updatedAt = NOW()\nWHERE st.stationCode = 'E'\n  AND st.stationTaskStatus = 'completed'\n  AND p.batchNo = '01900000012';\n\nSELECT p.batchNo,\n       p.sheetRowNumber,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage')) AS e_photo_sync_message\nFROM station_tasks st\nJOIN products p ON p.id = st.productId\nWHERE st.stationCode = 'E'\n  AND st.stationTaskStatus = 'completed'\n  AND p.batchNo = '01900000012';\n\nSELECT JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       COUNT(*) AS row_count\nFROM station_tasks\nWHERE stationCode = 'E'\n  AND stationTaskStatus = 'completed'\n  AND JSON_EXTRACT(metadata, '$.ePhotoSyncStatus') IS NOT NULL\nGROUP BY JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus'))\nORDER BY row_count DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute UPDATE products\nSET sheetRowNumber = 922,\n    updatedAt = NOW()\nWHERE batchNo = '01900000012';\n\nUPDATE station_tasks st\nJOIN products p ON p.id = st.productId\nSET st.metadata = JSON_SET(\n      JSON_SET(\n        JSON_SET(\n          JSON_SET(\n            st.metadata,\n            '$.ePhotoSyncStatus', 'background_completed'\n          ),\n          '$.ePhotoSyncMessage', 'E 站照片已透過 API 補同步到 Google Drive，採購單連結已回寫'\n        ),\n        '$.eFrontPhotoUrl', 'https://drive.google.com/file/d/1lGRoztNS60ToidzaTB8ZwW07TdN8V6kd/view'\n      ),\n      '$.eBackPhotoUrl', 'https://drive.google.com/file/d/1gf9QVEkpto_Z_f8CzIBGWBm3vKDTigyj/view'\n    ),\n    st.updatedAt = NOW()\nWHERE st.stationCode = 'E'\n  AND st.stationTaskStatus = 'completed'\n  AND p.batchNo = '01900000012';\n\nSELECT p.batchNo,\n       p.sheetRowNumber,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage')) AS e_photo_sync_message\nFROM station_tasks st\nJOIN products p ON p.id = st.productId\nWHERE st.stationCode = 'E'\n  AND st.stationTaskStatus = 'completed'\n  AND p.batchNo = '01900000012';\n\nSELECT JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       COUNT(*) AS row_count\nFROM station_tasks\nWHERE stationCode = 'E'\n  AND stationTaskStatus = 'completed'\n  AND JSON_EXTRACT(metadata, '$.ePhotoSyncStatus') IS NOT NULL\nGROUP BY JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus'))\nORDER BY row_count DESC;",
+  "rows": [
+    {
+      "batchNo": "01900000012",
+      "sheetRowNumber": "922",
+      "e_photo_sync_status": "background_completed",
+      "e_photo_sync_message": "E 站照片已透過 API 補同步到 Google Drive，採購單連結已回寫"
+    }
+  ],
+  "messages": [
+    "e_photo_sync_status\trow_count",
+    "background_completed\t46",
+    "background_failed\t18"
+  ],
+  "stdout": "batchNo\tsheetRowNumber\te_photo_sync_status\te_photo_sync_message\n01900000012\t922\tbackground_completed\tE 站照片已透過 API 補同步到 Google Drive，採購單連結已回寫\ne_photo_sync_status\trow_count\nbackground_completed\t46\nbackground_failed\t18\n",
+  "stderr": "",
+  "execution_time_ms": 2573
+}
