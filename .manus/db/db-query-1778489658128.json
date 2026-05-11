@@ -1,0 +1,16 @@
+{
+  "query": "SELECT p.`poNumber`, COUNT(*) AS `productCount`, SUM(CASE WHEN p.`stationCode` = 'A1' AND p.`productStatus` = 'pending_a1' THEN 1 ELSE 0 END) AS `pendingA1Products`, (SELECT COUNT(*) FROM `station_tasks` st INNER JOIN `products` p2 ON p2.`id` = st.`productId` WHERE p2.`poNumber` = 'PO-20260508-01' AND p2.`archivedAt` IS NULL AND st.`stationCode` = 'A1' AND st.`stationTaskStatus` = 'pending') AS `pendingA1Tasks` FROM `products` p WHERE p.`poNumber` = 'PO-20260508-01' AND p.`archivedAt` IS NULL GROUP BY p.`poNumber`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.`poNumber`, COUNT(*) AS `productCount`, SUM(CASE WHEN p.`stationCode` = 'A1' AND p.`productStatus` = 'pending_a1' THEN 1 ELSE 0 END) AS `pendingA1Products`, (SELECT COUNT(*) FROM `station_tasks` st INNER JOIN `products` p2 ON p2.`id` = st.`productId` WHERE p2.`poNumber` = 'PO-20260508-01' AND p2.`archivedAt` IS NULL AND st.`stationCode` = 'A1' AND st.`stationTaskStatus` = 'pending') AS `pendingA1Tasks` FROM `products` p WHERE p.`poNumber` = 'PO-20260508-01' AND p.`archivedAt` IS NULL GROUP BY p.`poNumber`;",
+  "rows": [
+    {
+      "poNumber": "PO-20260508-01",
+      "productCount": "91",
+      "pendingA1Products": "91",
+      "pendingA1Tasks": "91"
+    }
+  ],
+  "messages": [],
+  "stdout": "poNumber\tproductCount\tpendingA1Products\tpendingA1Tasks\nPO-20260508-01\t91\t91\t91\n",
+  "stderr": "",
+  "execution_time_ms": 1772
+}

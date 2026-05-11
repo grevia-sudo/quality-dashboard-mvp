@@ -1,0 +1,22 @@
+{
+  "query": "SELECT 'products' AS source_table, COUNT(*) AS row_count FROM `products` WHERE `poNumber` = 'PO-20260508-01' AND `archivedAt` IS NULL;\nSELECT 'import_batch_backups' AS source_table, `id`, `poNumber`, `vendorName`, `backupLabel`, `productCount`, `restoredAt`, `createdAt` FROM `import_batch_backups` WHERE `poNumber` = 'PO-20260508-01' ORDER BY `id` DESC LIMIT 5;\nSELECT 'product_archives' AS source_table, COUNT(*) AS row_count FROM `product_archives` WHERE JSON_UNQUOTE(JSON_EXTRACT(`productSnapshot`, '$.poNumber')) = 'PO-20260508-01';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS source_table, COUNT(*) AS row_count FROM `products` WHERE `poNumber` = 'PO-20260508-01' AND `archivedAt` IS NULL;\nSELECT 'import_batch_backups' AS source_table, `id`, `poNumber`, `vendorName`, `backupLabel`, `productCount`, `restoredAt`, `createdAt` FROM `import_batch_backups` WHERE `poNumber` = 'PO-20260508-01' ORDER BY `id` DESC LIMIT 5;\nSELECT 'product_archives' AS source_table, COUNT(*) AS row_count FROM `product_archives` WHERE JSON_UNQUOTE(JSON_EXTRACT(`productSnapshot`, '$.poNumber')) = 'PO-20260508-01';",
+  "rows": [
+    {
+      "source_table": "products",
+      "row_count": "0"
+    },
+    {
+      "source_table": "source_table",
+      "row_count": "row_count"
+    },
+    {
+      "source_table": "product_archives",
+      "row_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "source_table\trow_count\nproducts\t0\nsource_table\trow_count\nproduct_archives\t0\n",
+  "stderr": "",
+  "execution_time_ms": 2167
+}

@@ -1,0 +1,20 @@
+{
+  "query": "SELECT `id`, `poNumber`, `vendorName`, `deletedProducts`, `deletedTasks`, `deletedByUserId`, `deletedByName`, `createdAt` FROM `purchase_order_deletion_logs` WHERE `poNumber` = 'PO-20260508-01' ORDER BY `id` DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `poNumber`, `vendorName`, `deletedProducts`, `deletedTasks`, `deletedByUserId`, `deletedByName`, `createdAt` FROM `purchase_order_deletion_logs` WHERE `poNumber` = 'PO-20260508-01' ORDER BY `id` DESC;",
+  "rows": [
+    {
+      "id": "180029",
+      "poNumber": "PO-20260508-01",
+      "vendorName": "譯通",
+      "deletedProducts": "58",
+      "deletedTasks": "263",
+      "deletedByUserId": "10",
+      "deletedByName": "Kiddliao",
+      "createdAt": "2026-05-11 08:43:30"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpoNumber\tvendorName\tdeletedProducts\tdeletedTasks\tdeletedByUserId\tdeletedByName\tcreatedAt\n180029\tPO-20260508-01\t譯通\t58\t263\t10\tKiddliao\t2026-05-11 08:43:30\n",
+  "stderr": "",
+  "execution_time_ms": 1799
+}

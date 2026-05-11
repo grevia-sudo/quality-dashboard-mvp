@@ -1,0 +1,8 @@
+{
+  "query": "SELECT 'products' AS source_table, COUNT(*) AS row_count FROM `products` WHERE `poNumber` = 'PO-20260508-01' AND `archivedAt` IS NULL\nUNION ALL\nSELECT 'product_archives' AS source_table, COUNT(*) AS row_count FROM `product_archives` WHERE JSON_UNQUOTE(JSON_EXTRACT(`productSnapshot`, '$.poNumber')) = 'PO-20260508-01'\nUNION ALL\nSELECT 'import_batch_backups' AS source_table, COUNT(*) AS row_count FROM `import_batch_backups` WHERE JSON_UNQUOTE(JSON_EXTRACT(`backupPayload`, '$.poNumber')) = 'PO-20260508-01' OR JSON_SEARCH(`backupPayload`, 'one', 'PO-20260508-01') IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS source_table, COUNT(*) AS row_count FROM `products` WHERE `poNumber` = 'PO-20260508-01' AND `archivedAt` IS NULL\nUNION ALL\nSELECT 'product_archives' AS source_table, COUNT(*) AS row_count FROM `product_archives` WHERE JSON_UNQUOTE(JSON_EXTRACT(`productSnapshot`, '$.poNumber')) = 'PO-20260508-01'\nUNION ALL\nSELECT 'import_batch_backups' AS source_table, COUNT(*) AS row_count FROM `import_batch_backups` WHERE JSON_UNQUOTE(JSON_EXTRACT(`backupPayload`, '$.poNumber')) = 'PO-20260508-01' OR JSON_SEARCH(`backupPayload`, 'one', 'PO-20260508-01') IS NOT NULL;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'backuppayload' in 'where clause'"
+  ]
+}

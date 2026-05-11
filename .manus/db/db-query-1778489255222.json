@@ -1,0 +1,9 @@
+{
+  "query": "SELECT `id`, `poNumber`, `vendorName`, `backupLabel`, `productCount`, `restoredAt`, `restoredByUserId`, `createdAt` FROM `import_batch_backups` WHERE `poNumber` = 'PO-20260508-01' ORDER BY `id` DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `poNumber`, `vendorName`, `backupLabel`, `productCount`, `restoredAt`, `restoredByUserId`, `createdAt` FROM `import_batch_backups` WHERE `poNumber` = 'PO-20260508-01' ORDER BY `id` DESC;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1754
+}

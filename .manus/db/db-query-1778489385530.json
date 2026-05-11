@@ -1,0 +1,18 @@
+{
+  "query": "SELECT DISTINCT `categoryName`, `brandName` FROM `product_categories` WHERE `categoryName` = '智慧型手機' AND (`brandName` LIKE '%小米%' OR `brandName` LIKE '%Xiaomi%' OR `brandName` LIKE '%紅米%' OR `brandName` LIKE '%Redmi%') ORDER BY `brandName`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT DISTINCT `categoryName`, `brandName` FROM `product_categories` WHERE `categoryName` = '智慧型手機' AND (`brandName` LIKE '%小米%' OR `brandName` LIKE '%Xiaomi%' OR `brandName` LIKE '%紅米%' OR `brandName` LIKE '%Redmi%') ORDER BY `brandName`;",
+  "rows": [
+    {
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi"
+    },
+    {
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi"
+    }
+  ],
+  "messages": [],
+  "stdout": "categoryName\tbrandName\n智慧型手機\tRedmi\n智慧型手機\tXiaomi\n",
+  "stderr": "",
+  "execution_time_ms": 1753
+}
