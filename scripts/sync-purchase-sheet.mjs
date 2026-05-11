@@ -225,6 +225,21 @@ export async function runPurchaseSheetSync() {
     throw new Error("DATABASE_URL 不存在，無法執行採購單同步");
   }
 
+  const forceFullSync = process.argv.includes("--all") || process.env.FULL_PURCHASE_SHEET_SYNC === "1";
+  const syncScopeCondition = forceFullSync
+    ? "1 = 1"
+    : `
+            p.lastSheetSyncedAt IS NULL
+            OR p.updatedAt > p.lastSheetSyncedAt
+            OR p.sheetRowNumber IS NULL
+            OR (a1.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a1.completedAt > p.lastSheetSyncedAt))
+            OR (a2.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a2.completedAt > p.lastSheetSyncedAt))
+            OR (b.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR b.completedAt > p.lastSheetSyncedAt))
+            OR (cTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR cTask.completedAt > p.lastSheetSyncedAt))
+            OR (dTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR dTask.completedAt > p.lastSheetSyncedAt))
+            OR (eTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR eTask.completedAt > p.lastSheetSyncedAt))
+          `;
+
   const accessToken = await getGoogleAccessToken();
   const connection = await createUtcMysqlConnection(process.env.DATABASE_URL);
 
@@ -457,15 +472,7 @@ export async function runPurchaseSheetSync() {
           AND (p.importedCategoryName IS NOT NULL OR c.categoryName IS NOT NULL)
           AND (p.batchNo IS NOT NULL OR p.serialNumber IS NOT NULL OR p.imei IS NOT NULL)
           AND (
-            p.lastSheetSyncedAt IS NULL
-            OR p.updatedAt > p.lastSheetSyncedAt
-            OR p.sheetRowNumber IS NULL
-            OR (a1.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a1.completedAt > p.lastSheetSyncedAt))
-            OR (a2.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR a2.completedAt > p.lastSheetSyncedAt))
-            OR (b.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR b.completedAt > p.lastSheetSyncedAt))
-            OR (cTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR cTask.completedAt > p.lastSheetSyncedAt))
-            OR (dTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR dTask.completedAt > p.lastSheetSyncedAt))
-            OR (eTask.completedAt IS NOT NULL AND (p.lastSheetSyncedAt IS NULL OR eTask.completedAt > p.lastSheetSyncedAt))
+            ${syncScopeCondition}
           )
         ORDER BY p.id ASC
       `,
@@ -521,6 +528,7 @@ export async function runPurchaseSheetSync() {
         processedCount: products.length,
         appendedCount,
         updatedCount,
+        forceFullSync,
       }),
     );
   } finally {
