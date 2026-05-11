@@ -1,0 +1,620 @@
+{
+  "query": "SELECT sheetRowNumber, productCode, poNumber, vendorName, batchNo, serialNumber, imei, productName FROM products WHERE sheetRowNumber BETWEEN 2 AND 10 ORDER BY sheetRowNumber ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT sheetRowNumber, productCode, poNumber, vendorName, batchNo, serialNumber, imei, productName FROM products WHERE sheetRowNumber BETWEEN 2 AND 10 ORDER BY sheetRowNumber ASC;",
+  "rows": [
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219460785",
+      "poNumber": "PO-E-BG-1778219460785",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219460785",
+      "serialNumber": "E-BG-SN-1778219460785",
+      "imei": "951778219460786",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220582359",
+      "poNumber": "PO-E-BG-1778220582359",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220582359",
+      "serialNumber": "E-BG-SN-1778220582359",
+      "imei": "951778220582360",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-FALLBACK-1778217608569",
+      "poNumber": "PO-E-FALLBACK-1778217608569",
+      "vendorName": "E站整合測試廠商",
+      "batchNo": "E-FALLBACK-BATCH-1778217608569",
+      "serialNumber": "E-FALLBACK-SN-1778217608569",
+      "imei": "951778217608570",
+      "productName": "E站同步備援測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-FALLBACK-1778217613200",
+      "poNumber": "PO-E-FALLBACK-1778217613200",
+      "vendorName": "E站整合測試廠商",
+      "batchNo": "E-FALLBACK-BATCH-1778217613200",
+      "serialNumber": "E-FALLBACK-SN-1778217613200",
+      "imei": "951778217613201",
+      "productName": "E站同步備援測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218454378",
+      "poNumber": "PO-E-BG-1778218454378",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218454378",
+      "serialNumber": "E-BG-SN-1778218454378",
+      "imei": "951778218454379",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218459328",
+      "poNumber": "PO-E-BG-1778218459328",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218459328",
+      "serialNumber": "E-BG-SN-1778218459328",
+      "imei": "951778218459329",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778471387614",
+      "poNumber": "PO-E-BG-1778471387614",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778471387614",
+      "serialNumber": "E-BG-SN-1778471387614",
+      "imei": "951778471387615",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778471377413",
+      "poNumber": "PO-E-BG-1778471377413",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778471377413",
+      "serialNumber": "E-BG-SN-1778471377413",
+      "imei": "951778471377414",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778471371999",
+      "poNumber": "PO-E-BG-1778471371999",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778471371999",
+      "serialNumber": "E-BG-SN-1778471371999",
+      "imei": "951778471372000",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218487730",
+      "poNumber": "PO-E-BG-1778218487730",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218487730",
+      "serialNumber": "E-BG-SN-1778218487730",
+      "imei": "951778218487731",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218492861",
+      "poNumber": "PO-E-BG-1778218492861",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218492861",
+      "serialNumber": "E-BG-SN-1778218492861",
+      "imei": "951778218492862",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218828497",
+      "poNumber": "PO-E-BG-1778218828497",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218828497",
+      "serialNumber": "E-BG-SN-1778218828497",
+      "imei": "951778218828498",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218833207",
+      "poNumber": "PO-E-BG-1778218833207",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218833207",
+      "serialNumber": "E-BG-SN-1778218833207",
+      "imei": "951778218833208",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218897396",
+      "poNumber": "PO-E-BG-1778218897396",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218897396",
+      "serialNumber": "E-BG-SN-1778218897396",
+      "imei": "951778218897397",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218901840",
+      "poNumber": "PO-E-BG-1778218901840",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218901840",
+      "serialNumber": "E-BG-SN-1778218901840",
+      "imei": "951778218901841",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218963683",
+      "poNumber": "PO-E-BG-1778218963683",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218963683",
+      "serialNumber": "E-BG-SN-1778218963683",
+      "imei": "951778218963684",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778218968315",
+      "poNumber": "PO-E-BG-1778218968315",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778218968315",
+      "serialNumber": "E-BG-SN-1778218968315",
+      "imei": "951778218968316",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219153427",
+      "poNumber": "PO-E-BG-1778219153427",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219153427",
+      "serialNumber": "E-BG-SN-1778219153427",
+      "imei": "951778219153428",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219158689",
+      "poNumber": "PO-E-BG-1778219158689",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219158689",
+      "serialNumber": "E-BG-SN-1778219158689",
+      "imei": "951778219158690",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219164799",
+      "poNumber": "PO-E-BG-1778219164799",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219164799",
+      "serialNumber": "E-BG-SN-1778219164799",
+      "imei": "951778219164800",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219220143",
+      "poNumber": "PO-E-BG-1778219220143",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219220143",
+      "serialNumber": "E-BG-SN-1778219220143",
+      "imei": "951778219220144",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219225628",
+      "poNumber": "PO-E-BG-1778219225628",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219225628",
+      "serialNumber": "E-BG-SN-1778219225628",
+      "imei": "951778219225629",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219232883",
+      "poNumber": "PO-E-BG-1778219232883",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219232883",
+      "serialNumber": "E-BG-SN-1778219232883",
+      "imei": "951778219232884",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219324107",
+      "poNumber": "PO-E-BG-1778219324107",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219324107",
+      "serialNumber": "E-BG-SN-1778219324107",
+      "imei": "951778219324108",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219329747",
+      "poNumber": "PO-E-BG-1778219329747",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219329747",
+      "serialNumber": "E-BG-SN-1778219329747",
+      "imei": "951778219329748",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219336316",
+      "poNumber": "PO-E-BG-1778219336316",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219336316",
+      "serialNumber": "E-BG-SN-1778219336316",
+      "imei": "951778219336317",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219396854",
+      "poNumber": "PO-E-BG-1778219396854",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219396854",
+      "serialNumber": "E-BG-SN-1778219396854",
+      "imei": "951778219396855",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219402201",
+      "poNumber": "PO-E-BG-1778219402201",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219402201",
+      "serialNumber": "E-BG-SN-1778219402201",
+      "imei": "951778219402202",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219409243",
+      "poNumber": "PO-E-BG-1778219409243",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219409243",
+      "serialNumber": "E-BG-SN-1778219409243",
+      "imei": "951778219409244",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220461374",
+      "poNumber": "PO-E-BG-1778220461374",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220461374",
+      "serialNumber": "E-BG-SN-1778220461374",
+      "imei": "951778220461375",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "P-1778217435409-001",
+      "poNumber": "PO-E-FALLBACK-1778217436409",
+      "vendorName": "E站整合測試廠商",
+      "batchNo": "E-FALLBACK-BATCH-1778217436409",
+      "serialNumber": "E-FALLBACK-SN-1778217436409",
+      "imei": "951778217436410",
+      "productName": "E站同步備援測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "RESTORED-PO-20260505-01-2",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024813",
+      "serialNumber": "FY7GG9PQQW",
+      "imei": "350367276759965",
+      "productName": "IPhone 13 pro 128G 銀"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219455148",
+      "poNumber": "PO-E-BG-1778219455148",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219455148",
+      "serialNumber": "E-BG-SN-1778219455148",
+      "imei": "951778219455149",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220466889",
+      "poNumber": "PO-E-BG-1778220466889",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220466889",
+      "serialNumber": "E-BG-SN-1778220466889",
+      "imei": "951778220466890",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220476245",
+      "poNumber": "PO-E-BG-1778220476245",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220476245",
+      "serialNumber": "E-BG-SN-1778220476245",
+      "imei": "951778220476246",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778219468253",
+      "poNumber": "PO-E-BG-1778219468253",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778219468253",
+      "serialNumber": "E-BG-SN-1778219468253",
+      "imei": "951778219468254",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220587879",
+      "poNumber": "PO-E-BG-1778220587879",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220587879",
+      "serialNumber": "E-BG-SN-1778220587879",
+      "imei": "951778220587880",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220595259",
+      "poNumber": "PO-E-BG-1778220595259",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220595259",
+      "serialNumber": "E-BG-SN-1778220595259",
+      "imei": "951778220595260",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220756258",
+      "poNumber": "PO-E-BG-1778220756258",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220756258",
+      "serialNumber": "E-BG-SN-1778220756258",
+      "imei": "951778220756259",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220761881",
+      "poNumber": "PO-E-BG-1778220761881",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220761881",
+      "serialNumber": "E-BG-SN-1778220761881",
+      "imei": "951778220761882",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778220769369",
+      "poNumber": "PO-E-BG-1778220769369",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778220769369",
+      "serialNumber": "E-BG-SN-1778220769369",
+      "imei": "951778220769370",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778221383298",
+      "poNumber": "PO-E-BG-1778221383298",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778221383298",
+      "serialNumber": "E-BG-SN-1778221383298",
+      "imei": "951778221383299",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778221388710",
+      "poNumber": "PO-E-BG-1778221388710",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778221388710",
+      "serialNumber": "E-BG-SN-1778221388710",
+      "imei": "951778221388711",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778221395916",
+      "poNumber": "PO-E-BG-1778221395916",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778221395916",
+      "serialNumber": "E-BG-SN-1778221395916",
+      "imei": "951778221395917",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778221491905",
+      "poNumber": "PO-E-BG-1778221491905",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778221491905",
+      "serialNumber": "E-BG-SN-1778221491905",
+      "imei": "951778221491906",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778221497299",
+      "poNumber": "PO-E-BG-1778221497299",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778221497299",
+      "serialNumber": "E-BG-SN-1778221497299",
+      "imei": "951778221497300",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778221503612",
+      "poNumber": "PO-E-BG-1778221503612",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778221503612",
+      "serialNumber": "E-BG-SN-1778221503612",
+      "imei": "951778221503613",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778336836053",
+      "poNumber": "PO-E-BG-1778336836053",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778336836053",
+      "serialNumber": "E-BG-SN-1778336836053",
+      "imei": "951778336836054",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778336841678",
+      "poNumber": "PO-E-BG-1778336841678",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778336841678",
+      "serialNumber": "E-BG-SN-1778336841678",
+      "imei": "951778336841679",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778336852182",
+      "poNumber": "PO-E-BG-1778336852182",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778336852182",
+      "serialNumber": "E-BG-SN-1778336852182",
+      "imei": "951778336852183",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778469710297",
+      "poNumber": "PO-E-BG-1778469710297",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778469710297",
+      "serialNumber": "E-BG-SN-1778469710297",
+      "imei": "951778469710298",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778469715752",
+      "poNumber": "PO-E-BG-1778469715752",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778469715752",
+      "serialNumber": "E-BG-SN-1778469715752",
+      "imei": "951778469715753",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "2",
+      "productCode": "E-BG-1778469726020",
+      "poNumber": "PO-E-BG-1778469726020",
+      "vendorName": "E站背景同步測試廠商",
+      "batchNo": "E-BG-BATCH-1778469726020",
+      "serialNumber": "E-BG-SN-1778469726020",
+      "imei": "951778469726021",
+      "productName": "E站背景同步測試手機"
+    },
+    {
+      "sheetRowNumber": "3",
+      "productCode": "RESTORED-PO-20260505-01-3",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024814",
+      "serialNumber": "G6TFR08X0D51",
+      "imei": "354692273159653",
+      "productName": "Apple iPhone 12 Pro 128GB 金色"
+    },
+    {
+      "sheetRowNumber": "4",
+      "productCode": "RESTORED-PO-20260505-01-4",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024827",
+      "serialNumber": "WTV4QF9MGC",
+      "imei": "356646223033465",
+      "productName": "Apple iPhone 13 128GB 藍色"
+    },
+    {
+      "sheetRowNumber": "5",
+      "productCode": "RESTORED-PO-20260505-01-5",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024828",
+      "serialNumber": "FFMDWH8K0F0V",
+      "imei": "359708824714096",
+      "productName": "Apple iPhone 12 64GB 藍色"
+    },
+    {
+      "sheetRowNumber": "6",
+      "productCode": "RESTORED-PO-20260505-01-6",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024829",
+      "serialNumber": "F7092WY6N0",
+      "imei": "351020622631011",
+      "productName": "Apple iPhone 14 Pro 256GB 銀色"
+    },
+    {
+      "sheetRowNumber": "7",
+      "productCode": "RESTORED-PO-20260505-01-7",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024829",
+      "serialNumber": "F7092WY6N0",
+      "imei": "351020622631011",
+      "productName": "Apple iPhone 14 Pro 256GB 銀色"
+    },
+    {
+      "sheetRowNumber": "8",
+      "productCode": "RESTORED-PO-20260505-01-8",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024830",
+      "serialNumber": "C7CZ71H3N73D",
+      "imei": "353987101651017",
+      "productName": "Apple iPhone 11 128GB 黑色"
+    },
+    {
+      "sheetRowNumber": "9",
+      "productCode": "RESTORED-PO-20260505-01-9",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024830",
+      "serialNumber": "C7CZ71H3N73D",
+      "imei": "353987101651017",
+      "productName": "Apple iPhone 11 128GB 黑色"
+    },
+    {
+      "sheetRowNumber": "10",
+      "productCode": "RESTORED-PO-20260505-01-10",
+      "poNumber": "PO-20260505-01",
+      "vendorName": "悠優",
+      "batchNo": "00500024831",
+      "serialNumber": "QTP2656QG5",
+      "imei": "352544477533096",
+      "productName": "Apple iPhone 13 Pro 128GB 天峰藍色"
+    }
+  ],
+  "messages": [],
+  "stdout": "sheetRowNumber\tproductCode\tpoNumber\tvendorName\tbatchNo\tserialNumber\timei\tproductName\n2\tE-BG-1778219460785\tPO-E-BG-1778219460785\tE站背景同步測試廠商\tE-BG-BATCH-1778219460785\tE-BG-SN-1778219460785\t951778219460786\tE站背景同步測試手機\n2\tE-BG-1778220582359\tPO-E-BG-1778220582359\tE站背景同步測試廠商\tE-BG-BATCH-1778220582359\tE-BG-SN-1778220582359\t951778220582360\tE站背景同步測試手機\n2\tE-FALLBACK-1778217608569\tPO-E-FALLBACK-1778217608569\tE站整合測試廠商\tE-FALLBACK-BATCH-1778217608569\tE-FALLBACK-SN-1778217608569\t951778217608570\tE站同步備援測試手機\n2\tE-FALLBACK-1778217613200\tPO-E-FALLBACK-1778217613200\tE站整合測試廠商\tE-FALLBACK-BATCH-1778217613200\tE-FALLBACK-SN-1778217613200\t951778217613201\tE站同步備援測試手機\n2\tE-BG-1778218454378\tPO-E-BG-1778218454378\tE站背景同步測試廠商\tE-BG-BATCH-1778218454378\tE-BG-SN-1778218454378\t951778218454379\tE站背景同步測試手機\n2\tE-BG-1778218459328\tPO-E-BG-1778218459328\tE站背景同步測試廠商\tE-BG-BATCH-1778218459328\tE-BG-SN-1778218459328\t951778218459329\tE站背景同步測試手機\n2\tE-BG-1778471387614\tPO-E-BG-1778471387614\tE站背景同步測試廠商\tE-BG-BATCH-1778471387614\tE-BG-SN-1778471387614\t951778471387615\tE站背景同步測試手機\n2\tE-BG-1778471377413\tPO-E-BG-1778471377413\tE站背景同步測試廠商\tE-BG-BATCH-1778471377413\tE-BG-SN-1778471377413\t951778471377414\tE站背景同步測試手機\n2\tE-BG-1778471371999\tPO-E-BG-1778471371999\tE站背景同步測試廠商\tE-BG-BATCH-1778471371999\tE-BG-SN-1778471371999\t951778471372000\tE站背景同步測試手機\n2\tE-BG-1778218487730\tPO-E-BG-1778218487730\tE站背景同步測試廠商\tE-BG-BATCH-1778218487730\tE-BG-SN-1778218487730\t951778218487731\tE站背景同步測試手機\n2\tE-BG-1778218492861\tPO-E-BG-1778218492861\tE站背景同步測試廠商\tE-BG-BATCH-1778218492861\tE-BG-SN-1778218492861\t951778218492862\tE站背景同步測試手機\n2\tE-BG-1778218828497\tPO-E-BG-1778218828497\tE站背景同步測試廠商\tE-BG-BATCH-1778218828497\tE-BG-SN-1778218828497\t951778218828498\tE站背景同步測試手機\n2\tE-BG-1778218833207\tPO-E-BG-1778218833207\tE站背景同步測試廠商\tE-BG-BATCH-1778218833207\tE-BG-SN-1778218833207\t951778218833208\tE站背景同步測試手機\n2\tE-BG-1778218897396\tPO-E-BG-1778218897396\tE站背景同步測試廠商\tE-BG-BATCH-1778218897396\tE-BG-SN-1778218897396\t951778218897397\tE站背景同步測試手機\n2\tE-BG-1778218901840\tPO-E-BG-1778218901840\tE站背景同步測試廠商\tE-BG-BATCH-1778218901840\tE-BG-SN-1778218901840\t951778218901841\tE站背景同步測試手機\n2\tE-BG-1778218963683\tPO-E-BG-1778218963683\tE站背景同步測試廠商\tE-BG-BATCH-1778218963683\tE-BG-SN-1778218963683\t951778218963684\tE站背景同步測試手機\n2\tE-BG-1778218968315\tPO-E-BG-1778218968315\tE站背景同步測試廠商\tE-BG-BATCH-1778218968315\tE-BG-SN-1778218968315\t951778218968316\tE站背景同步測試手機\n2\tE-BG-1778219153427\tPO-E-BG-1778219153427\tE站背景同步測試廠商\tE-BG-BATCH-1778219153427\tE-BG-SN-1778219153427\t951778219153428\tE站背景同步測試手機\n2\tE-BG-1778219158689\tPO-E-BG-1778219158689\tE站背景同步測試廠商\tE-BG-BATCH-1778219158689\tE-BG-SN-1778219158689\t951778219158690\tE站背景同步測試手機\n2\tE-BG-1778219164799\tPO-E-BG-1778219164799\tE站背景同步測試廠商\tE-BG-BATCH-1778219164799\tE-BG-SN-1778219164799\t951778219164800\tE站背景同步測試手機\n2\tE-BG-1778219220143\tPO-E-BG-1778219220143\tE站背景同步測試廠商\tE-BG-BATCH-1778219220143\tE-BG-SN-1778219220143\t951778219220144\tE站背景同步測試手機\n2\tE-BG-1778219225628\tPO-E-BG-1778219225628\tE站背景同步測試廠商\tE-BG-BATCH-1778219225628\tE-BG-SN-1778219225628\t951778219225629\tE站背景同步測試手機\n2\tE-BG-1778219232883\tPO-E-BG-1778219232883\tE站背景同步測試廠商\tE-BG-BATCH-1778219232883\tE-BG-SN-1778219232883\t951778219232884\tE站背景同步測試手機\n2\tE-BG-1778219324107\tPO-E-BG-1778219324107\tE站背景同步測試廠商\tE-BG-BATCH-1778219324107\tE-BG-SN-1778219324107\t951778219324108\tE站背景同步測試手機\n2\tE-BG-1778219329747\tPO-E-BG-1778219329747\tE站背景同步測試廠商\tE-BG-BATCH-1778219329747\tE-BG-SN-1778219329747\t951778219329748\tE站背景同步測試手機\n2\tE-BG-1778219336316\tPO-E-BG-1778219336316\tE站背景同步測試廠商\tE-BG-BATCH-1778219336316\tE-BG-SN-1778219336316\t951778219336317\tE站背景同步測試手機\n2\tE-BG-1778219396854\tPO-E-BG-1778219396854\tE站背景同步測試廠商\tE-BG-BATCH-1778219396854\tE-BG-SN-1778219396854\t951778219396855\tE站背景同步測試手機\n2\tE-BG-1778219402201\tPO-E-BG-1778219402201\tE站背景同步測試廠商\tE-BG-BATCH-1778219402201\tE-BG-SN-1778219402201\t951778219402202\tE站背景同步測試手機\n2\tE-BG-1778219409243\tPO-E-BG-1778219409243\tE站背景同步測試廠商\tE-BG-BATCH-1778219409243\tE-BG-SN-1778219409243\t951778219409244\tE站背景同步測試手機\n2\tE-BG-1778220461374\tPO-E-BG-1778220461374\tE站背景同步測試廠商\tE-BG-BATCH-1778220461374\tE-BG-SN-1778220461374\t951778220461375\tE站背景同步測試手機\n2\tP-1778217435409-001\tPO-E-FALLBACK-1778217436409\tE站整合測試廠商\tE-FALLBACK-BATCH-1778217436409\tE-FALLBACK-SN-1778217436409\t951778217436410\tE站同步備援測試手機\n2\tRESTORED-PO-20260505-01-2\tPO-20260505-01\t悠優\t00500024813\tFY7GG9PQQW\t350367276759965\tIPhone 13 pro 128G 銀\n2\tE-BG-1778219455148\tPO-E-BG-1778219455148\tE站背景同步測試廠商\tE-BG-BATCH-1778219455148\tE-BG-SN-1778219455148\t951778219455149\tE站背景同步測試手機\n2\tE-BG-1778220466889\tPO-E-BG-1778220466889\tE站背景同步測試廠商\tE-BG-BATCH-1778220466889\tE-BG-SN-1778220466889\t951778220466890\tE站背景同步測試手機\n2\tE-BG-1778220476245\tPO-E-BG-1778220476245\tE站背景同步測試廠商\tE-BG-BATCH-1778220476245\tE-BG-SN-1778220476245\t951778220476246\tE站背景同步測試手機\n2\tE-BG-1778219468253\tPO-E-BG-1778219468253\tE站背景同步測試廠商\tE-BG-BATCH-1778219468253\tE-BG-SN-1778219468253\t951778219468254\tE站背景同步測試手機\n2\tE-BG-1778220587879\tPO-E-BG-1778220587879\tE站背景同步測試廠商\tE-BG-BATCH-1778220587879\tE-BG-SN-1778220587879\t951778220587880\tE站背景同步測試手機\n2\tE-BG-1778220595259\tPO-E-BG-1778220595259\tE站背景同步測試廠商\tE-BG-BATCH-1778220595259\tE-BG-SN-1778220595259\t951778220595260\tE站背景同步測試手機\n2\tE-BG-1778220756258\tPO-E-BG-1778220756258\tE站背景同步測試廠商\tE-BG-BATCH-1778220756258\tE-BG-SN-1778220756258\t951778220756259\tE站背景同步測試手機\n2\tE-BG-1778220761881\tPO-E-BG-1778220761881\tE站背景同步測試廠商\tE-BG-BATCH-1778220761881\tE-BG-SN-1778220761881\t951778220761882\tE站背景同步測試手機\n2\tE-BG-1778220769369\tPO-E-BG-1778220769369\tE站背景同步測試廠商\tE-BG-BATCH-1778220769369\tE-BG-SN-1778220769369\t951778220769370\tE站背景同步測試手機\n2\tE-BG-1778221383298\tPO-E-BG-1778221383298\tE站背景同步測試廠商\tE-BG-BATCH-1778221383298\tE-BG-SN-1778221383298\t951778221383299\tE站背景同步測試手機\n2\tE-BG-1778221388710\tPO-E-BG-1778221388710\tE站背景同步測試廠商\tE-BG-BATCH-1778221388710\tE-BG-SN-1778221388710\t951778221388711\tE站背景同步測試手機\n2\tE-BG-1778221395916\tPO-E-BG-1778221395916\tE站背景同步測試廠商\tE-BG-BATCH-1778221395916\tE-BG-SN-1778221395916\t951778221395917\tE站背景同步測試手機\n2\tE-BG-1778221491905\tPO-E-BG-1778221491905\tE站背景同步測試廠商\tE-BG-BATCH-1778221491905\tE-BG-SN-1778221491905\t951778221491906\tE站背景同步測試手機\n2\tE-BG-1778221497299\tPO-E-BG-1778221497299\tE站背景同步測試廠商\tE-BG-BATCH-1778221497299\tE-BG-SN-1778221497299\t951778221497300\tE站背景同步測試手機\n2\tE-BG-1778221503612\tPO-E-BG-1778221503612\tE站背景同步測試廠商\tE-BG-BATCH-1778221503612\tE-BG-SN-1778221503612\t951778221503613\tE站背景同步測試手機\n2\tE-BG-1778336836053\tPO-E-BG-1778336836053\tE站背景同步測試廠商\tE-BG-BATCH-1778336836053\tE-BG-SN-1778336836053\t951778336836054\tE站背景同步測試手機\n2\tE-BG-1778336841678\tPO-E-BG-1778336841678\tE站背景同步測試廠商\tE-BG-BATCH-1778336841678\tE-BG-SN-1778336841678\t951778336841679\tE站背景同步測試手機\n2\tE-BG-1778336852182\tPO-E-BG-1778336852182\tE站背景同步測試廠商\tE-BG-BATCH-1778336852182\tE-BG-SN-1778336852182\t951778336852183\tE站背景同步測試手機\n2\tE-BG-1778469710297\tPO-E-BG-1778469710297\tE站背景同步測試廠商\tE-BG-BATCH-1778469710297\tE-BG-SN-1778469710297\t951778469710298\tE站背景同步測試手機\n2\tE-BG-1778469715752\tPO-E-BG-1778469715752\tE站背景同步測試廠商\tE-BG-BATCH-1778469715752\tE-BG-SN-1778469715752\t951778469715753\tE站背景同步測試手機\n2\tE-BG-1778469726020\tPO-E-BG-1778469726020\tE站背景同步測試廠商\tE-BG-BATCH-1778469726020\tE-BG-SN-1778469726020\t951778469726021\tE站背景同步測試手機\n3\tRESTORED-PO-20260505-01-3\tPO-20260505-01\t悠優\t00500024814\tG6TFR08X0D51\t354692273159653\tApple iPhone 12 Pro 128GB 金色\n4\tRESTORED-PO-20260505-01-4\tPO-20260505-01\t悠優\t00500024827\tWTV4QF9MGC\t356646223033465\tApple iPhone 13 128GB 藍色\n5\tRESTORED-PO-20260505-01-5\tPO-20260505-01\t悠優\t00500024828\tFFMDWH8K0F0V\t359708824714096\tApple iPhone 12 64GB 藍色\n6\tRESTORED-PO-20260505-01-6\tPO-20260505-01\t悠優\t00500024829\tF7092WY6N0\t351020622631011\tApple iPhone 14 Pro 256GB 銀色\n7\tRESTORED-PO-20260505-01-7\tPO-20260505-01\t悠優\t00500024829\tF7092WY6N0\t351020622631011\tApple iPhone 14 Pro 256GB 銀色\n8\tRESTORED-PO-20260505-01-8\tPO-20260505-01\t悠優\t00500024830\tC7CZ71H3N73D\t353987101651017\tApple iPhone 11 128GB 黑色\n9\tRESTORED-PO-20260505-01-9\tPO-20260505-01\t悠優\t00500024830\tC7CZ71H3N73D\t353987101651017\tApple iPhone 11 128GB 黑色\n10\tRESTORED-PO-20260505-01-10\tPO-20260505-01\t悠優\t00500024831\tQTP2656QG5\t352544477533096\tApple iPhone 13 Pro 128GB 天峰藍色\n",
+  "stderr": "",
+  "execution_time_ms": 1728
+}

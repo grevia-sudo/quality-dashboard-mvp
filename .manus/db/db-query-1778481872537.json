@@ -1,0 +1,1260 @@
+{
+  "query": "SELECT 'serialNumber' AS identity_type, serialNumber AS identity_value, COUNT(*) AS duplicate_count FROM products WHERE serialNumber IS NOT NULL AND TRIM(serialNumber) <> '' GROUP BY serialNumber HAVING COUNT(*) > 1 UNION ALL SELECT 'imei' AS identity_type, imei AS identity_value, COUNT(*) AS duplicate_count FROM products WHERE imei IS NOT NULL AND TRIM(imei) <> '' GROUP BY imei HAVING COUNT(*) > 1 ORDER BY identity_type, duplicate_count DESC, identity_value;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'serialNumber' AS identity_type, serialNumber AS identity_value, COUNT(*) AS duplicate_count FROM products WHERE serialNumber IS NOT NULL AND TRIM(serialNumber) <> '' GROUP BY serialNumber HAVING COUNT(*) > 1 UNION ALL SELECT 'imei' AS identity_type, imei AS identity_value, COUNT(*) AS duplicate_count FROM products WHERE imei IS NOT NULL AND TRIM(imei) <> '' GROUP BY imei HAVING COUNT(*) > 1 ORDER BY identity_type, duplicate_count DESC, identity_value;",
+  "rows": [
+    {
+      "identity_type": "imei",
+      "identity_value": "352985118832852",
+      "duplicate_count": "3"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353999107381929",
+      "duplicate_count": "3"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350038448413597",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350060427650122",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350110766794047",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350153130887592",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350165057869478",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350225620534155",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350320095640288",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350448736321479",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350636273548401",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350666972241842",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350738809273908",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350742130407565",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350852695065607",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351020622631011",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351055826469842",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351055828271659",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351066256291721",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351339416367016",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351601285223491",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351740762414072",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351740767373968",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351843198365452",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352213570963572",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352292932676817",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352292939883069",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352301456174115",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352391577024893",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352544477533096",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352556601096758",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352681233399360",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352831577693064",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352835986020884",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352913115792192",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352920114994471",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352922115693912",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352927113267379",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352927113861114",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352988118207760",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353018111666421",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353052112421858",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353052117678874",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353053111612893",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353053118001686",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353053118469784",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353054113510218",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353073107055014",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353084302503583",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353092103209946",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353103648793748",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353120100183713",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353187653154276",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353187654191244",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353187655709606",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353240585079754",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353357675861543",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353361734612178",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353490237449257",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353652733631544",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353713132006082",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353829102423410",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353843100724380",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353908100151809",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353987101651017",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354004102326612",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354049340634541",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354196929376471",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354208271559883",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354208279889001",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354228672310025",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354228674768329",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354256832335483",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354300903537559",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "354419335629493",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "355908662748776",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "355908669109303",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356103500375078",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356266764361470",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356388245253694",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356485104627784",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356486103593555",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356557846219003",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356578107354255",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356646226218402",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356649158526941",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356692119829962",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356695115351618",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356732114564618",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356753567865054",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356762823140400",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356901458809182",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356913121045219",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357353092525494",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357362093912999",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357362096689867",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357363092742486",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357363093758101",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357364098806051",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357573878109110",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357588206561006",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357592310393231",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357627947472592",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357677122600962",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357688116892705",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357711911761808",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358070203636726",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358244954577237",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358267716013381",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358275380300117",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358763464299560",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358849706984224",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359265383816887",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359406085331805",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359412089656411",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359451189109327",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359513550764806",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359663608117380",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359663608237311",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359676580770232",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359844761235652",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "862492089507632",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "862836060783077",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "868674059173065",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "W47HW7D2W4",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G0NCX7JVN735",
+      "duplicate_count": "4"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C6KZLKJTN73D",
+      "duplicate_count": "3"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "10AFAS1NEZ002GL",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "30653793550060V",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "add33c0b",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C29FDQNCJW",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C39VTAK9JCL8",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C39ZD16FN6Y2",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C39ZJRD8N6Y9",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C6KCD1QHN73J",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C6KCG1M6N73D",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C6KXQ5J5KXK9",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C7CCH60ZN736",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C7CZ71H3N73D",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C7YG67WLQ0",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C8PXM47DKXK9",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "CX9H2Q0YK3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "D63XM6RN22",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DHJ7GHC0V6",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPCF3CHN73J",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPD315FN739",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPDN0PX0D94",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPF38BD0F0X",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPFGAYT0D91",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPZ39VWKXK6",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DX3DQ555N73K",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DX3GG5CD0F0Y",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DX3GN459N739",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DX3HFCJKWT",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F17DT4MG0D93",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F17YL1Y4KXK6",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F2LY2EY4KXK3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F2LZC0NSKPH3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F4GXLDNUKXK1",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F4GXQH6EKXK8",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F4GZ86ASN73F",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F4HCHDKQN735",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F4RHQYJV9C",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F66LDXCR6T",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F7092WY6N0",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "F71XR1JSKXKH",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "FFMCN29TPLK3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "FFMCQA7YPLK2",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "FFWDM6KS0GPT",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "FFXG50EL0F11",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "FK1C178PN73F",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "FPWCXT77R3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G0NF6DFW0D52",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G3Q0QYY2VM",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDF21N0F11",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDG5JB0F0X",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDH2EB0F0V",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDH4H70F17",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDK1DX0F16",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDK45F0F12",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDP7AQ0D52",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDQBJT0D8Y",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDV9BA0D53",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDVKPJ0D91",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDW0K70D4Y",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TF21Q10F11",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TF439J0D52",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TZFREVN711",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6WVPRLPJCLH",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G7QLYFGYN0",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "GF3VMXJKN4",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "GG9T9D2YWF",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "GMXVNXG74G",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "H12PPF6JVC",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "H4Y67CV7KP",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "H57J4W195R",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "H73L6557W1",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "HKCWN6216Y",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "HQR3XYMCQ5",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "J6PR66P4WJ",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "J6WWT27031",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "J70997KVC6",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "JD7FPMVXW0",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "K667F7P3JX",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "K7QHK26P07",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "KH4Q3766WJ",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "L72FDQFGW4",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "LK4G6N9GJK",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "LVXCDGX5CQ",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "LY6Q9WH2J0",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "MC6XPM9MFP",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "MGJTHX0XHK",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "MGXJR2HVQG",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "ML9QPT2T67",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "MW2F2LM72F",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "MY3L7DF9T3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "N6TJX9HDHH",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "NHC573063W",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "NHWR02HVK1",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "NM70WVMVTW",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "NMPVGKQHHD",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "PG45KX79C4",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "PXX03NXTG7",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "PYHH0C9KP3",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "Q6LY40163P",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "Q6MG96D4TF",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "QGFK34W3C9",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "QMH7Q0706R",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "QQLJ436HL7",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "QTP2656QG5",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "R2XLT49XX1",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "R5CT2123RQJ",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "R5CT4132R9W",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "R9D2F2JV41",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "RFCW10M1BJV",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "RFCW31BF4TD",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "RFCX60J70JW",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "T6QQR3FY49",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "T9312VKTP6",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "TN93V7G91C",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "V37645YKN7",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "VLQXW097TG",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "VR9V2YTXR1",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "W47HW7D2W4",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "X6WP7X1N2X",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "XLG9NF6WGP",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "XLK764L9NT",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "XQNQQHW9N2",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "Y63KYQ0Q52",
+      "duplicate_count": "2"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "YWY425C2T7",
+      "duplicate_count": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "identity_type\tidentity_value\tduplicate_count\nimei\t352985118832852\t3\nimei\t353999107381929\t3\nimei\t350038448413597\t2\nimei\t350060427650122\t2\nimei\t350110766794047\t2\nimei\t350153130887592\t2\nimei\t350165057869478\t2\nimei\t350225620534155\t2\nimei\t350320095640288\t2\nimei\t350448736321479\t2\nimei\t350636273548401\t2\nimei\t350666972241842\t2\nimei\t350738809273908\t2\nimei\t350742130407565\t2\nimei\t350852695065607\t2\nimei\t351020622631011\t2\nimei\t351055826469842\t2\nimei\t351055828271659\t2\nimei\t351066256291721\t2\nimei\t351339416367016\t2\nimei\t351601285223491\t2\nimei\t351740762414072\t2\nimei\t351740767373968\t2\nimei\t351843198365452\t2\nimei\t352213570963572\t2\nimei\t352292932676817\t2\nimei\t352292939883069\t2\nimei\t352301456174115\t2\nimei\t352391577024893\t2\nimei\t352544477533096\t2\nimei\t352556601096758\t2\nimei\t352681233399360\t2\nimei\t352831577693064\t2\nimei\t352835986020884\t2\nimei\t352913115792192\t2\nimei\t352920114994471\t2\nimei\t352922115693912\t2\nimei\t352927113267379\t2\nimei\t352927113861114\t2\nimei\t352988118207760\t2\nimei\t353018111666421\t2\nimei\t353052112421858\t2\nimei\t353052117678874\t2\nimei\t353053111612893\t2\nimei\t353053118001686\t2\nimei\t353053118469784\t2\nimei\t353054113510218\t2\nimei\t353073107055014\t2\nimei\t353084302503583\t2\nimei\t353092103209946\t2\nimei\t353103648793748\t2\nimei\t353120100183713\t2\nimei\t353187653154276\t2\nimei\t353187654191244\t2\nimei\t353187655709606\t2\nimei\t353240585079754\t2\nimei\t353357675861543\t2\nimei\t353361734612178\t2\nimei\t353490237449257\t2\nimei\t353652733631544\t2\nimei\t353713132006082\t2\nimei\t353829102423410\t2\nimei\t353843100724380\t2\nimei\t353908100151809\t2\nimei\t353987101651017\t2\nimei\t354004102326612\t2\nimei\t354049340634541\t2\nimei\t354196929376471\t2\nimei\t354208271559883\t2\nimei\t354208279889001\t2\nimei\t354228672310025\t2\nimei\t354228674768329\t2\nimei\t354256832335483\t2\nimei\t354300903537559\t2\nimei\t354419335629493\t2\nimei\t355908662748776\t2\nimei\t355908669109303\t2\nimei\t356103500375078\t2\nimei\t356266764361470\t2\nimei\t356388245253694\t2\nimei\t356485104627784\t2\nimei\t356486103593555\t2\nimei\t356557846219003\t2\nimei\t356578107354255\t2\nimei\t356646226218402\t2\nimei\t356649158526941\t2\nimei\t356692119829962\t2\nimei\t356695115351618\t2\nimei\t356732114564618\t2\nimei\t356753567865054\t2\nimei\t356762823140400\t2\nimei\t356901458809182\t2\nimei\t356913121045219\t2\nimei\t357353092525494\t2\nimei\t357362093912999\t2\nimei\t357362096689867\t2\nimei\t357363092742486\t2\nimei\t357363093758101\t2\nimei\t357364098806051\t2\nimei\t357573878109110\t2\nimei\t357588206561006\t2\nimei\t357592310393231\t2\nimei\t357627947472592\t2\nimei\t357677122600962\t2\nimei\t357688116892705\t2\nimei\t357711911761808\t2\nimei\t358070203636726\t2\nimei\t358244954577237\t2\nimei\t358267716013381\t2\nimei\t358275380300117\t2\nimei\t358763464299560\t2\nimei\t358849706984224\t2\nimei\t359265383816887\t2\nimei\t359406085331805\t2\nimei\t359412089656411\t2\nimei\t359451189109327\t2\nimei\t359513550764806\t2\nimei\t359663608117380\t2\nimei\t359663608237311\t2\nimei\t359676580770232\t2\nimei\t359844761235652\t2\nimei\t862492089507632\t2\nimei\t862836060783077\t2\nimei\t868674059173065\t2\nimei\tW47HW7D2W4\t2\nserialNumber\tG0NCX7JVN735\t4\nserialNumber\tC6KZLKJTN73D\t3\nserialNumber\t10AFAS1NEZ002GL\t2\nserialNumber\t30653793550060V\t2\nserialNumber\tadd33c0b\t2\nserialNumber\tC29FDQNCJW\t2\nserialNumber\tC39VTAK9JCL8\t2\nserialNumber\tC39ZD16FN6Y2\t2\nserialNumber\tC39ZJRD8N6Y9\t2\nserialNumber\tC6KCD1QHN73J\t2\nserialNumber\tC6KCG1M6N73D\t2\nserialNumber\tC6KXQ5J5KXK9\t2\nserialNumber\tC7CCH60ZN736\t2\nserialNumber\tC7CZ71H3N73D\t2\nserialNumber\tC7YG67WLQ0\t2\nserialNumber\tC8PXM47DKXK9\t2\nserialNumber\tCX9H2Q0YK3\t2\nserialNumber\tD63XM6RN22\t2\nserialNumber\tDHJ7GHC0V6\t2\nserialNumber\tDNPCF3CHN73J\t2\nserialNumber\tDNPD315FN739\t2\nserialNumber\tDNPDN0PX0D94\t2\nserialNumber\tDNPF38BD0F0X\t2\nserialNumber\tDNPFGAYT0D91\t2\nserialNumber\tDNPZ39VWKXK6\t2\nserialNumber\tDX3DQ555N73K\t2\nserialNumber\tDX3GG5CD0F0Y\t2\nserialNumber\tDX3GN459N739\t2\nserialNumber\tDX3HFCJKWT\t2\nserialNumber\tF17DT4MG0D93\t2\nserialNumber\tF17YL1Y4KXK6\t2\nserialNumber\tF2LY2EY4KXK3\t2\nserialNumber\tF2LZC0NSKPH3\t2\nserialNumber\tF4GXLDNUKXK1\t2\nserialNumber\tF4GXQH6EKXK8\t2\nserialNumber\tF4GZ86ASN73F\t2\nserialNumber\tF4HCHDKQN735\t2\nserialNumber\tF4RHQYJV9C\t2\nserialNumber\tF66LDXCR6T\t2\nserialNumber\tF7092WY6N0\t2\nserialNumber\tF71XR1JSKXKH\t2\nserialNumber\tFFMCN29TPLK3\t2\nserialNumber\tFFMCQA7YPLK2\t2\nserialNumber\tFFWDM6KS0GPT\t2\nserialNumber\tFFXG50EL0F11\t2\nserialNumber\tFK1C178PN73F\t2\nserialNumber\tFPWCXT77R3\t2\nserialNumber\tG0NF6DFW0D52\t2\nserialNumber\tG3Q0QYY2VM\t2\nserialNumber\tG6TDF21N0F11\t2\nserialNumber\tG6TDG5JB0F0X\t2\nserialNumber\tG6TDH2EB0F0V\t2\nserialNumber\tG6TDH4H70F17\t2\nserialNumber\tG6TDK1DX0F16\t2\nserialNumber\tG6TDK45F0F12\t2\nserialNumber\tG6TDP7AQ0D52\t2\nserialNumber\tG6TDQBJT0D8Y\t2\nserialNumber\tG6TDV9BA0D53\t2\nserialNumber\tG6TDVKPJ0D91\t2\nserialNumber\tG6TDW0K70D4Y\t2\nserialNumber\tG6TF21Q10F11\t2\nserialNumber\tG6TF439J0D52\t2\nserialNumber\tG6TZFREVN711\t2\nserialNumber\tG6WVPRLPJCLH\t2\nserialNumber\tG7QLYFGYN0\t2\nserialNumber\tGF3VMXJKN4\t2\nserialNumber\tGG9T9D2YWF\t2\nserialNumber\tGMXVNXG74G\t2\nserialNumber\tH12PPF6JVC\t2\nserialNumber\tH4Y67CV7KP\t2\nserialNumber\tH57J4W195R\t2\nserialNumber\tH73L6557W1\t2\nserialNumber\tHKCWN6216Y\t2\nserialNumber\tHQR3XYMCQ5\t2\nserialNumber\tJ6PR66P4WJ\t2\nserialNumber\tJ6WWT27031\t2\nserialNumber\tJ70997KVC6\t2\nserialNumber\tJD7FPMVXW0\t2\nserialNumber\tK667F7P3JX\t2\nserialNumber\tK7QHK26P07\t2\nserialNumber\tKH4Q3766WJ\t2\nserialNumber\tL72FDQFGW4\t2\nserialNumber\tLK4G6N9GJK\t2\nserialNumber\tLVXCDGX5CQ\t2\nserialNumber\tLY6Q9WH2J0\t2\nserialNumber\tMC6XPM9MFP\t2\nserialNumber\tMGJTHX0XHK\t2\nserialNumber\tMGXJR2HVQG\t2\nserialNumber\tML9QPT2T67\t2\nserialNumber\tMW2F2LM72F\t2\nserialNumber\tMY3L7DF9T3\t2\nserialNumber\tN6TJX9HDHH\t2\nserialNumber\tNHC573063W\t2\nserialNumber\tNHWR02HVK1\t2\nserialNumber\tNM70WVMVTW\t2\nserialNumber\tNMPVGKQHHD\t2\nserialNumber\tPG45KX79C4\t2\nserialNumber\tPXX03NXTG7\t2\nserialNumber\tPYHH0C9KP3\t2\nserialNumber\tQ6LY40163P\t2\nserialNumber\tQ6MG96D4TF\t2\nserialNumber\tQGFK34W3C9\t2\nserialNumber\tQMH7Q0706R\t2\nserialNumber\tQQLJ436HL7\t2\nserialNumber\tQTP2656QG5\t2\nserialNumber\tR2XLT49XX1\t2\nserialNumber\tR5CT2123RQJ\t2\nserialNumber\tR5CT4132R9W\t2\nserialNumber\tR9D2F2JV41\t2\nserialNumber\tRFCW10M1BJV\t2\nserialNumber\tRFCW31BF4TD\t2\nserialNumber\tRFCX60J70JW\t2\nserialNumber\tT6QQR3FY49\t2\nserialNumber\tT9312VKTP6\t2\nserialNumber\tTN93V7G91C\t2\nserialNumber\tV37645YKN7\t2\nserialNumber\tVLQXW097TG\t2\nserialNumber\tVR9V2YTXR1\t2\nserialNumber\tW47HW7D2W4\t2\nserialNumber\tX6WP7X1N2X\t2\nserialNumber\tXLG9NF6WGP\t2\nserialNumber\tXLK764L9NT\t2\nserialNumber\tXQNQQHW9N2\t2\nserialNumber\tY63KYQ0Q52\t2\nserialNumber\tYWY425C2T7\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1729
+}
