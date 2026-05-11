@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, productCode, batchNo, serialNumber, imei, productName, productStatus FROM products WHERE batchNo = '01400003000' AND archivedAt IS NULL ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, productCode, batchNo, serialNumber, imei, productName, productStatus FROM products WHERE batchNo = '01400003000' AND archivedAt IS NULL ORDER BY id;",
+  "rows": [
+    {
+      "id": "540643",
+      "productCode": "RESTORED-PO-20260508-01-0509",
+      "batchNo": "01400003000",
+      "serialNumber": "b27ccb16",
+      "imei": "867872075978621",
+      "productName": "Redmi Note 13 8GB 256GB 4G 薄荷綠",
+      "productStatus": "pending_a1"
+    },
+    {
+      "id": "540663",
+      "productCode": "RESTORED-PO-20260508-01-0529",
+      "batchNo": "01400003000",
+      "serialNumber": "b27ccb16",
+      "imei": "867872075978621",
+      "productName": "Redmi Note 13 8GB 256GB 4G 薄荷綠",
+      "productStatus": "pending_a1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductCode\tbatchNo\tserialNumber\timei\tproductName\tproductStatus\n540643\tRESTORED-PO-20260508-01-0509\t01400003000\tb27ccb16\t867872075978621\tRedmi Note 13 8GB 256GB 4G 薄荷綠\tpending_a1\n540663\tRESTORED-PO-20260508-01-0529\t01400003000\tb27ccb16\t867872075978621\tRedmi Note 13 8GB 256GB 4G 薄荷綠\tpending_a1\n",
+  "stderr": "",
+  "execution_time_ms": 1759
+}
