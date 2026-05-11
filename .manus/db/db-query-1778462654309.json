@@ -1,0 +1,25 @@
+{
+  "query": "SELECT JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       COUNT(*) AS row_count\nFROM station_tasks\nWHERE stationCode = 'E'\n  AND stationTaskStatus = 'completed'\n  AND JSON_EXTRACT(metadata, '$.ePhotoSyncStatus') IS NOT NULL\nGROUP BY JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus'))\nORDER BY row_count DESC;\n\nSELECT st.id AS task_id,\n       p.batchNo AS batch_no,\n       p.serialNumber AS serial_number,\n       p.imei AS imei,\n       p.sheetRowNumber AS sheet_row_number,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage')) AS e_photo_sync_message,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.eFrontPhotoUrl')) AS e_front_photo_url,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.eBackPhotoUrl')) AS e_back_photo_url\nFROM station_tasks st\nJOIN products p ON p.id = st.productId\nWHERE st.stationCode = 'E'\n  AND st.stationTaskStatus = 'completed'\n  AND JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) = 'sheet_write_failed'\nORDER BY st.completedAt ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       COUNT(*) AS row_count\nFROM station_tasks\nWHERE stationCode = 'E'\n  AND stationTaskStatus = 'completed'\n  AND JSON_EXTRACT(metadata, '$.ePhotoSyncStatus') IS NOT NULL\nGROUP BY JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.ePhotoSyncStatus'))\nORDER BY row_count DESC;\n\nSELECT st.id AS task_id,\n       p.batchNo AS batch_no,\n       p.serialNumber AS serial_number,\n       p.imei AS imei,\n       p.sheetRowNumber AS sheet_row_number,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) AS e_photo_sync_status,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage')) AS e_photo_sync_message,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.eFrontPhotoUrl')) AS e_front_photo_url,\n       JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.eBackPhotoUrl')) AS e_back_photo_url\nFROM station_tasks st\nJOIN products p ON p.id = st.productId\nWHERE st.stationCode = 'E'\n  AND st.stationTaskStatus = 'completed'\n  AND JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) = 'sheet_write_failed'\nORDER BY st.completedAt ASC;",
+  "rows": [
+    {
+      "e_photo_sync_status": "background_completed",
+      "row_count": "45"
+    },
+    {
+      "e_photo_sync_status": "background_failed",
+      "row_count": "18"
+    },
+    {
+      "e_photo_sync_status": "sheet_write_failed",
+      "row_count": "1"
+    }
+  ],
+  "messages": [
+    "task_id\tbatch_no\tserial_number\timei\tsheet_row_number\te_photo_sync_status\te_photo_sync_message\te_front_photo_url\te_back_photo_url",
+    "510323\t01900000012\t30653793550060V\t868674059173065\tNULL\tsheet_write_failed\tE 站照片已補上傳到 Google Drive，但採購單回寫失敗：找不到對應的採購單資料列，無法回寫 E 站照片連結\thttps://drive.google.com/file/d/1lGRoztNS60ToidzaTB8ZwW07TdN8V6kd/view\thttps://drive.google.com/file/d/1gf9QVEkpto_Z_f8CzIBGWBm3vKDTigyj/view"
+  ],
+  "stdout": "e_photo_sync_status\trow_count\nbackground_completed\t45\nbackground_failed\t18\nsheet_write_failed\t1\ntask_id\tbatch_no\tserial_number\timei\tsheet_row_number\te_photo_sync_status\te_photo_sync_message\te_front_photo_url\te_back_photo_url\n510323\t01900000012\t30653793550060V\t868674059173065\tNULL\tsheet_write_failed\tE 站照片已補上傳到 Google Drive，但採購單回寫失敗：找不到對應的採購單資料列，無法回寫 E 站照片連結\thttps://drive.google.com/file/d/1lGRoztNS60ToidzaTB8ZwW07TdN8V6kd/view\thttps://drive.google.com/file/d/1gf9QVEkpto_Z_f8CzIBGWBm3vKDTigyj/view\n",
+  "stderr": "",
+  "execution_time_ms": 2155
+}
