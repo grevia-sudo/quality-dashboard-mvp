@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, sourceSpreadsheetId, sourceSheetName, createdAt FROM import_batch_backups WHERE backupJson LIKE '%1.01300001569%' ORDER BY id DESC LIMIT 10;\n\nSELECT se.id, se.productId, se.stationCode, se.eventType, se.createdAt FROM station_events se WHERE CAST(se.payload AS CHAR) LIKE '%1.01300001569%' ORDER BY se.id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, sourceSpreadsheetId, sourceSheetName, createdAt FROM import_batch_backups WHERE backupJson LIKE '%1.01300001569%' ORDER BY id DESC LIMIT 10;\n\nSELECT se.id, se.productId, se.stationCode, se.eventType, se.createdAt FROM station_events se WHERE CAST(se.payload AS CHAR) LIKE '%1.01300001569%' ORDER BY se.id DESC LIMIT 20;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'backupjson' in 'where clause'"
+  ]
+}

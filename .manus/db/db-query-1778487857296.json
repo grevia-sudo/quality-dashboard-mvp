@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, categoryId, stationCode, stepOrder, active, createdAt, updatedAt FROM category_station_flows WHERE categoryId = 11 ORDER BY stepOrder ASC, id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, categoryId, stationCode, stepOrder, active, createdAt, updatedAt FROM category_station_flows WHERE categoryId = 11 ORDER BY stepOrder ASC, id ASC;",
+  "rows": [
+    {
+      "id": "300749",
+      "categoryId": "11",
+      "stationCode": "A1",
+      "stepOrder": "1",
+      "active": "1",
+      "createdAt": "2026-05-11 08:08:00",
+      "updatedAt": "2026-05-11 08:08:00"
+    },
+    {
+      "id": "300750",
+      "categoryId": "11",
+      "stationCode": "C",
+      "stepOrder": "2",
+      "active": "1",
+      "createdAt": "2026-05-11 08:08:00",
+      "updatedAt": "2026-05-11 08:08:00"
+    },
+    {
+      "id": "300751",
+      "categoryId": "11",
+      "stationCode": "D",
+      "stepOrder": "3",
+      "active": "1",
+      "createdAt": "2026-05-11 08:08:00",
+      "updatedAt": "2026-05-11 08:08:00"
+    },
+    {
+      "id": "300752",
+      "categoryId": "11",
+      "stationCode": "STOCK",
+      "stepOrder": "4",
+      "active": "1",
+      "createdAt": "2026-05-11 08:08:00",
+      "updatedAt": "2026-05-11 08:08:00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcategoryId\tstationCode\tstepOrder\tactive\tcreatedAt\tupdatedAt\n300749\t11\tA1\t1\t1\t2026-05-11 08:08:00\t2026-05-11 08:08:00\n300750\t11\tC\t2\t1\t2026-05-11 08:08:00\t2026-05-11 08:08:00\n300751\t11\tD\t3\t1\t2026-05-11 08:08:00\t2026-05-11 08:08:00\n300752\t11\tSTOCK\t4\t1\t2026-05-11 08:08:00\t2026-05-11 08:08:00\n",
+  "stderr": "",
+  "execution_time_ms": 1776
+}

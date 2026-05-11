@@ -1,0 +1,70 @@
+{
+  "query": "SELECT se.id, se.productId, se.stationCode, se.stationEventType, se.categoryId, pc.categoryName, pc.brandName, se.businessDate, se.createdAt, se.payload FROM station_events se LEFT JOIN product_categories pc ON pc.id = se.categoryId WHERE se.productId = 480063 ORDER BY se.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT se.id, se.productId, se.stationCode, se.stationEventType, se.categoryId, pc.categoryName, pc.brandName, se.businessDate, se.createdAt, se.payload FROM station_events se LEFT JOIN product_categories pc ON pc.id = se.categoryId WHERE se.productId = 480063 ORDER BY se.id ASC;",
+  "rows": [
+    {
+      "id": "510087",
+      "productId": "480063",
+      "stationCode": "A1",
+      "stationEventType": "enter",
+      "categoryId": "11",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "businessDate": "2026-05-08",
+      "createdAt": "2026-05-08 01:45:08",
+      "payload": "{\"source\": \"import\", \"summary\": \"匯入建立，PO：PO-20260508-02\", \"vendorName\": \"點子\"}"
+    },
+    {
+      "id": "570883",
+      "productId": "480063",
+      "stationCode": "A1",
+      "stationEventType": "complete",
+      "categoryId": "11",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "businessDate": "2026-05-11",
+      "createdAt": "2026-05-11 06:52:11",
+      "payload": "{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"faultLabels\": [], \"faultOptionIds\": [], \"summary\": \"A1 掃碼點到貨完成\"}"
+    },
+    {
+      "id": "570896",
+      "productId": "480063",
+      "stationCode": "A2",
+      "stationEventType": "complete",
+      "categoryId": "11",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "businessDate": "2026-05-11",
+      "createdAt": "2026-05-11 07:00:33",
+      "payload": "{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"cameraLabels\": [], \"cameraOptionIds\": [], \"ePhotoSyncAttempts\": 0, \"faultLabels\": [], \"faultOptionIds\": [], \"summary\": \"A2 安裝 掃碼完成\"}"
+    },
+    {
+      "id": "571141",
+      "productId": "480063",
+      "stationCode": "B",
+      "stationEventType": "complete",
+      "categoryId": "11",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "businessDate": "2026-05-11",
+      "createdAt": "2026-05-11 07:53:08",
+      "payload": "{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"74\", \"batterySummary\": \"74\", \"cameraLabels\": [], \"cameraOptionIds\": [], \"ePhotoSyncAttempts\": 0, \"faultLabels\": [], \"faultOptionIds\": [], \"faultSummary\": \"正常\", \"summary\": \"B 站軟體測試完成\"}"
+    },
+    {
+      "id": "571150",
+      "productId": "480063",
+      "stationCode": "C",
+      "stationEventType": "complete",
+      "categoryId": "11",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "businessDate": "2026-05-11",
+      "createdAt": "2026-05-11 08:02:03",
+      "payload": "{\"appearanceLabels\": [\"使用痕跡(重)\", \"刮痕(重)\"], \"appearanceOptionIds\": [30024, 30025], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"74\", \"batterySummary\": \"74\", \"cAppearanceSummary\": \"使用痕跡(重), 刮痕(重)\", \"cCameraSummary\": \"正常\", \"cFaultSummary\": \"刮痕(重), 刮痕(中), 使用痕跡(重)\", \"cInspectionSummary\": \"刮痕(重), 刮痕(中), 使用痕跡(重), 使用痕跡(重), 刮痕(重)\", \"cameraLabels\": [], \"cameraOptionIds\": [], \"ePhotoSyncAttempts\": 0, \"faultLabels\": [\"刮痕(重)\", \"刮痕(中)\", \"使用痕跡(重)\"], \"faultOptionIds\": [30009, 30008, 30011], \"summary\": \"C 站品檢完成\"}"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductId\tstationCode\tstationEventType\tcategoryId\tcategoryName\tbrandName\tbusinessDate\tcreatedAt\tpayload\n510087\t480063\tA1\tenter\t11\t穿戴型設備\tApple\t2026-05-08\t2026-05-08 01:45:08\t{\"source\": \"import\", \"summary\": \"匯入建立，PO：PO-20260508-02\", \"vendorName\": \"點子\"}\n570883\t480063\tA1\tcomplete\t11\t穿戴型設備\tApple\t2026-05-11\t2026-05-11 06:52:11\t{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"faultLabels\": [], \"faultOptionIds\": [], \"summary\": \"A1 掃碼點到貨完成\"}\n570896\t480063\tA2\tcomplete\t11\t穿戴型設備\tApple\t2026-05-11\t2026-05-11 07:00:33\t{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"cameraLabels\": [], \"cameraOptionIds\": [], \"ePhotoSyncAttempts\": 0, \"faultLabels\": [], \"faultOptionIds\": [], \"summary\": \"A2 安裝 掃碼完成\"}\n571141\t480063\tB\tcomplete\t11\t穿戴型設備\tApple\t2026-05-11\t2026-05-11 07:53:08\t{\"appearanceLabels\": [], \"appearanceOptionIds\": [], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"74\", \"batterySummary\": \"74\", \"cameraLabels\": [], \"cameraOptionIds\": [], \"ePhotoSyncAttempts\": 0, \"faultLabels\": [], \"faultOptionIds\": [], \"faultSummary\": \"正常\", \"summary\": \"B 站軟體測試完成\"}\n571150\t480063\tC\tcomplete\t11\t穿戴型設備\tApple\t2026-05-11\t2026-05-11 08:02:03\t{\"appearanceLabels\": [\"使用痕跡(重)\", \"刮痕(重)\"], \"appearanceOptionIds\": [30024, 30025], \"applyBChanges\": false, \"bFaultLabels\": [], \"bFaultOptionIds\": [], \"batteryIssueLabels\": [], \"batteryNote\": \"74\", \"batterySummary\": \"74\", \"cAppearanceSummary\": \"使用痕跡(重), 刮痕(重)\", \"cCameraSummary\": \"正常\", \"cFaultSummary\": \"刮痕(重), 刮痕(中), 使用痕跡(重)\", \"cInspectionSummary\": \"刮痕(重), 刮痕(中), 使用痕跡(重), 使用痕跡(重), 刮痕(重)\", \"cameraLabels\": [], \"cameraOptionIds\": [], \"ePhotoSyncAttempts\": 0, \"faultLabels\": [\"刮痕(重)\", \"刮痕(中)\", \"使用痕跡(重)\"], \"faultOptionIds\": [30009, 30008, 30011], \"summary\": \"C 站品檢完成\"}\n",
+  "stderr": "",
+  "execution_time_ms": 1815
+}

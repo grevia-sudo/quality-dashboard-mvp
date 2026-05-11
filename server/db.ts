@@ -1456,6 +1456,109 @@ async function ensureDefaultCategoryStationFlows(db: NonNullable<Awaited<ReturnT
   }
 }
 
+const ACTIVE_STATION_TASK_STATUSES = ["pending", "in_progress", "overdue", "returned"] as const;
+
+function getDesiredPendingStationFromFlow(flowCodes: StationCode[], completedStationCodes: StationCode[]) {
+  const anchorStation = [...completedStationCodes].reverse().find((stationCode) => flowCodes.includes(stationCode)) ?? null;
+  if (!anchorStation) {
+    return flowCodes[0] ?? null;
+  }
+
+  const anchorIndex = flowCodes.indexOf(anchorStation);
+  return anchorIndex === -1 ? flowCodes[0] ?? null : flowCodes[anchorIndex + 1] ?? null;
+}
+
+async function reorderPendingStationTasksForCategory(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: { categoryId: number; flowCodes: StationCode[] },
+) {
+  const productRows = await db
+    .select({
+      id: products.id,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      stockStatus: products.stockStatus,
+    })
+    .from(products)
+    .where(and(eq(products.categoryId, input.categoryId), isNull(products.archivedAt)));
+
+  const now = new Date();
+
+  for (const product of productRows) {
+    const taskRows = await db
+      .select({
+        id: stationTasks.id,
+        stationCode: stationTasks.stationCode,
+        taskStatus: stationTasks.taskStatus,
+      })
+      .from(stationTasks)
+      .where(eq(stationTasks.productId, product.id))
+      .orderBy(asc(stationTasks.id));
+
+    const completedStationCodes = taskRows
+      .filter((task) => task.taskStatus === "completed")
+      .map((task) => task.stationCode as StationCode);
+    const activeTasks = taskRows.filter((task) => ACTIVE_STATION_TASK_STATUSES.includes(task.taskStatus as (typeof ACTIVE_STATION_TASK_STATUSES)[number]));
+    const desiredStation = getDesiredPendingStationFromFlow(input.flowCodes, completedStationCodes);
+    const matchingActiveTask = desiredStation
+      ? activeTasks.find((task) => task.stationCode === desiredStation) ?? null
+      : null;
+    const archiveTaskIds = activeTasks
+      .filter((task) => (matchingActiveTask ? task.id !== matchingActiveTask.id : true))
+      .map((task) => task.id);
+
+    if (archiveTaskIds.length > 0) {
+      await db
+        .update(stationTasks)
+        .set({
+          taskStatus: "archived",
+          updatedAt: now,
+        })
+        .where(inArray(stationTasks.id, archiveTaskIds));
+    }
+
+    if (!desiredStation) {
+      if (product.currentStatus !== "completed" || product.stockStatus !== "stocked") {
+        await db
+          .update(products)
+          .set({
+            currentStatus: "completed",
+            stockStatus: "stocked",
+            updatedAt: now,
+          })
+          .where(eq(products.id, product.id));
+      }
+      continue;
+    }
+
+    if (!matchingActiveTask) {
+      await db.insert(stationTasks).values({
+        productId: product.id,
+        stationCode: desiredStation,
+        taskStatus: "pending",
+        dueDate: now,
+        resultSummary: `${stationToLabel(desiredStation)} 待處理`,
+        metadata: {
+          source: "category_flow_reorder",
+          reorderedAt: now.toISOString(),
+        },
+      });
+    }
+
+    if (product.currentStationCode !== desiredStation || product.currentStatus !== statusForStation(desiredStation)) {
+      await db
+        .update(products)
+        .set({
+          currentStationCode: desiredStation,
+          currentStatus: statusForStation(desiredStation),
+          stockStatus: desiredStation === "STOCK" ? "pending" : product.stockStatus,
+          updatedAt: now,
+        })
+        .where(eq(products.id, product.id));
+    }
+  }
+}
+
 function statusForStation(code: StationCode) {
   return {
     A1: "pending_a1",
@@ -4868,6 +4971,11 @@ export async function replaceCategoryStationFlow(input: { categoryId: number; st
     stepOrder: index + 1,
     active: true,
   })));
+
+  await reorderPendingStationTasksForCategory(db, {
+    categoryId: input.categoryId,
+    flowCodes: uniqueCodes,
+  });
 
   return getCategoryStationFlowConfigs();
 }

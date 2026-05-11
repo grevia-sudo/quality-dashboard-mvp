@@ -1,0 +1,8 @@
+{
+  "query": "SELECT se.id, se.productId, se.stationCode, se.eventType, se.categoryId, pc.categoryName, pc.brandName, se.createdAt, se.payload FROM station_events se LEFT JOIN product_categories pc ON pc.id = se.categoryId WHERE se.productId = 480063 ORDER BY se.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT se.id, se.productId, se.stationCode, se.eventType, se.categoryId, pc.categoryName, pc.brandName, se.createdAt, se.payload FROM station_events se LEFT JOIN product_categories pc ON pc.id = se.categoryId WHERE se.productId = 480063 ORDER BY se.id ASC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'se.eventtype' in 'field list'"
+  ]
+}

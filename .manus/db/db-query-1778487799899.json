@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, productCode, batchNo, serialNumber, imei, productName, categoryId, stationCode, productStatus, createdAt FROM products WHERE batchNo LIKE '%1569%' OR productCode LIKE '%1569%' OR serialNumber LIKE '%1569%' OR imei LIKE '%1569%' ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, productCode, batchNo, serialNumber, imei, productName, categoryId, stationCode, productStatus, createdAt FROM products WHERE batchNo LIKE '%1569%' OR productCode LIKE '%1569%' OR serialNumber LIKE '%1569%' OR imei LIKE '%1569%' ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "480063",
+      "productCode": "P-1778204708311-002",
+      "batchNo": "01300001569",
+      "serialNumber": "V56X72XXVK",
+      "imei": "NULL",
+      "productName": "Apple Watch S7 41mm GPS+Cell SS 石墨色",
+      "categoryId": "11",
+      "stationCode": "D",
+      "productStatus": "pending_d",
+      "createdAt": "2026-05-08 01:45:08"
+    },
+    {
+      "id": "331209",
+      "productCode": "RESTORED-PO-20260505-01-204",
+      "batchNo": "NULL",
+      "serialNumber": "C7CCH60ZN736",
+      "imei": "352922115693912",
+      "productName": "iPhone 11 64 白",
+      "categoryId": "NULL",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-06 03:20:04"
+    },
+    {
+      "id": "331145",
+      "productCode": "RESTORED-PO-20260505-01-140",
+      "batchNo": "NULL",
+      "serialNumber": "C7CCH60ZN736",
+      "imei": "352922115693912",
+      "productName": "iPhone 11 64 白",
+      "categoryId": "NULL",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-06 03:20:04"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductCode\tbatchNo\tserialNumber\timei\tproductName\tcategoryId\tstationCode\tproductStatus\tcreatedAt\n480063\tP-1778204708311-002\t01300001569\tV56X72XXVK\tNULL\tApple Watch S7 41mm GPS+Cell SS 石墨色\t11\tD\tpending_d\t2026-05-08 01:45:08\n331209\tRESTORED-PO-20260505-01-204\tNULL\tC7CCH60ZN736\t352922115693912\tiPhone 11 64 白\tNULL\tA1\tpending_a1\t2026-05-06 03:20:04\n331145\tRESTORED-PO-20260505-01-140\tNULL\tC7CCH60ZN736\t352922115693912\tiPhone 11 64 白\tNULL\tA1\tpending_a1\t2026-05-06 03:20:04\n",
+  "stderr": "",
+  "execution_time_ms": 1729
+}

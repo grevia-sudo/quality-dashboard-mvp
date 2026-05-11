@@ -1,0 +1,35 @@
+{
+  "query": "SELECT p.id, p.batchNo, p.productName, p.categoryId, pc.categoryName, pc.brandName, pc.subtypeCode, p.stationCode, p.productStatus, p.createdAt, p.updatedAt FROM products p LEFT JOIN product_categories pc ON pc.id = p.categoryId WHERE p.id = 480063;\n\nSELECT st.id, st.productId, st.stationCode, st.stationTaskStatus, st.createdAt, st.updatedAt, st.completedAt, st.resultSummary FROM station_tasks st WHERE st.productId = 480063 ORDER BY st.id ASC;\n\nSELECT csf.id, csf.categoryId, csf.stationCode, csf.stepOrder, csf.active FROM category_station_flows csf WHERE csf.categoryId = 11 ORDER BY csf.stepOrder ASC, csf.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id, p.batchNo, p.productName, p.categoryId, pc.categoryName, pc.brandName, pc.subtypeCode, p.stationCode, p.productStatus, p.createdAt, p.updatedAt FROM products p LEFT JOIN product_categories pc ON pc.id = p.categoryId WHERE p.id = 480063;\n\nSELECT st.id, st.productId, st.stationCode, st.stationTaskStatus, st.createdAt, st.updatedAt, st.completedAt, st.resultSummary FROM station_tasks st WHERE st.productId = 480063 ORDER BY st.id ASC;\n\nSELECT csf.id, csf.categoryId, csf.stationCode, csf.stepOrder, csf.active FROM category_station_flows csf WHERE csf.categoryId = 11 ORDER BY csf.stepOrder ASC, csf.id ASC;",
+  "rows": [
+    {
+      "id": "480063",
+      "batchNo": "01300001569",
+      "productName": "Apple Watch S7 41mm GPS+Cell SS 石墨色",
+      "categoryId": "11",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "stationCode": "D",
+      "productStatus": "pending_d",
+      "createdAt": "2026-05-08 01:45:08",
+      "updatedAt": "2026-05-11 08:02:06"
+    }
+  ],
+  "messages": [
+    "id\tproductId\tstationCode\tstationTaskStatus\tcreatedAt\tupdatedAt\tcompletedAt\tresultSummary",
+    "510093\t480063\tA1\tcompleted\t2026-05-08 01:45:08\t2026-05-11 06:52:11\t2026-05-11 06:52:11\tA1 掃碼點到貨完成",
+    "570846\t480063\tA2\tcompleted\t2026-05-11 06:52:11\t2026-05-11 07:00:33\t2026-05-11 07:00:33\tA2 安裝 掃碼完成",
+    "570859\t480063\tB\tcompleted\t2026-05-11 07:00:33\t2026-05-11 07:53:08\t2026-05-11 07:53:08\tB 站軟體測試完成",
+    "571112\t480063\tC\tcompleted\t2026-05-11 07:53:08\t2026-05-11 08:02:03\t2026-05-11 08:02:03\tC 站品檢完成",
+    "571121\t480063\tD\tpending\t2026-05-11 08:02:03\t2026-05-11 08:02:03\tNULL\tD 站抽樣 待處理",
+    "id\tcategoryId\tstationCode\tstepOrder\tactive",
+    "300749\t11\tA1\t1\t1",
+    "300750\t11\tC\t2\t1",
+    "300751\t11\tD\t3\t1",
+    "300752\t11\tSTOCK\t4\t1"
+  ],
+  "stdout": "id\tbatchNo\tproductName\tcategoryId\tcategoryName\tbrandName\tsubtypeCode\tstationCode\tproductStatus\tcreatedAt\tupdatedAt\n480063\t01300001569\tApple Watch S7 41mm GPS+Cell SS 石墨色\t11\t穿戴型設備\tApple\tApple\tD\tpending_d\t2026-05-08 01:45:08\t2026-05-11 08:02:06\nid\tproductId\tstationCode\tstationTaskStatus\tcreatedAt\tupdatedAt\tcompletedAt\tresultSummary\n510093\t480063\tA1\tcompleted\t2026-05-08 01:45:08\t2026-05-11 06:52:11\t2026-05-11 06:52:11\tA1 掃碼點到貨完成\n570846\t480063\tA2\tcompleted\t2026-05-11 06:52:11\t2026-05-11 07:00:33\t2026-05-11 07:00:33\tA2 安裝 掃碼完成\n570859\t480063\tB\tcompleted\t2026-05-11 07:00:33\t2026-05-11 07:53:08\t2026-05-11 07:53:08\tB 站軟體測試完成\n571112\t480063\tC\tcompleted\t2026-05-11 07:53:08\t2026-05-11 08:02:03\t2026-05-11 08:02:03\tC 站品檢完成\n571121\t480063\tD\tpending\t2026-05-11 08:02:03\t2026-05-11 08:02:03\tNULL\tD 站抽樣 待處理\nid\tcategoryId\tstationCode\tstepOrder\tactive\n300749\t11\tA1\t1\t1\n300750\t11\tC\t2\t1\n300751\t11\tD\t3\t1\n300752\t11\tSTOCK\t4\t1\n",
+  "stderr": "",
+  "execution_time_ms": 2279
+}

@@ -71,7 +71,7 @@ describe("manual category assignment integration", () => {
           serialNumber: `FLOW-SN-${uniqueSuffix}`,
           imei: `95${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
           productName: "Watch Flow Device",
-          categoryName: "智慧手錶",
+          categoryName: "穿戴型設備",
           brandName: "Apple",
         },
       ],
@@ -82,6 +82,18 @@ describe("manual category assignment integration", () => {
     if (!db) {
       throw new Error("Database is not available");
     }
+
+    const importedProducts = await db
+      .select({
+        id: products.id,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)));
+
+    await assignProductCategoryToProduct({
+      productId: importedProducts[0]?.id ?? 0,
+      categoryId: watchCategory?.id ?? null,
+    });
 
     const a1Task = await db
       .select({
@@ -115,6 +127,127 @@ describe("manual category assignment integration", () => {
     expect(bStationData.tasks.some((task) => task.batchNo === `FLOW-${uniqueSuffix}`)).toBe(false);
   }, 20000);
 
+  it("reorders unfinished tasks after a category flow changes while preserving completed history", async () => {
+    const uniqueSuffix = `${Date.now()}-reorder`;
+    const watchCategory = await createProductCategoryOption({ categoryName: "流程重排手錶", brandName: "Apple" });
+    await replaceCategoryStationFlow({
+      categoryId: watchCategory?.id ?? 0,
+      stationCodes: ["A1", "A2", "B", "C", "D", "STOCK"],
+    });
+
+    const importResult = await importProducts({
+      vendorName: "流程重排整合驗證",
+      rows: [
+        {
+          batchNo: `REORDER-${uniqueSuffix}`,
+          serialNumber: `REORDER-SN-${uniqueSuffix}`,
+          imei: `96${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+          productName: "Watch Reorder Device",
+          categoryName: "穿戴型設備",
+          brandName: "Apple",
+        },
+      ],
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const importedProducts = await db
+      .select({
+        id: products.id,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)));
+
+    await assignProductCategoryToProduct({
+      productId: importedProducts[0]?.id ?? 0,
+      categoryId: watchCategory?.id ?? null,
+    });
+
+    const a1TaskRows = await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(eq(products.poNumber, importResult.poNumber), eq(stationTasks.stationCode, "A1"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1);
+
+    const a1Task = a1TaskRows[0];
+    await completeStationTask({
+      taskId: a1Task?.taskId ?? 0,
+      stationCode: "A1",
+      operatorUserId: 1,
+      productId: a1Task?.productId ?? 0,
+      categoryId: a1Task?.categoryId ?? null,
+      subtypeCode: a1Task?.subtypeCode ?? null,
+      summary: "A1 完成，推進到舊流程 A2",
+    });
+
+    const a2TaskRows = await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(eq(products.poNumber, importResult.poNumber), eq(stationTasks.stationCode, "A2"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1);
+
+    const a2Task = a2TaskRows[0];
+    await completeStationTask({
+      taskId: a2Task?.taskId ?? 0,
+      stationCode: "A2",
+      operatorUserId: 1,
+      productId: a2Task?.productId ?? 0,
+      categoryId: a2Task?.categoryId ?? null,
+      subtypeCode: a2Task?.subtypeCode ?? null,
+      summary: "A2 完成，舊流程待進 B",
+    });
+
+    await replaceCategoryStationFlow({
+      categoryId: watchCategory?.id ?? 0,
+      stationCodes: ["A1", "C", "D", "STOCK"],
+    });
+
+    const productRows = await db
+      .select({
+        id: products.id,
+        currentStationCode: products.currentStationCode,
+        currentStatus: products.currentStatus,
+      })
+      .from(products)
+      .where(eq(products.poNumber, importResult.poNumber))
+      .limit(1);
+
+    const reorderedTaskRows = await db
+      .select({
+        stationCode: stationTasks.stationCode,
+        taskStatus: stationTasks.taskStatus,
+      })
+      .from(stationTasks)
+      .where(eq(stationTasks.productId, a1Task?.productId ?? 0))
+      .orderBy(stationTasks.id);
+
+    expect(reorderedTaskRows.filter((task) => task.taskStatus === "completed").map((task) => task.stationCode)).toEqual(["A1", "A2"]);
+    expect(reorderedTaskRows.some((task) => task.stationCode === "B" && task.taskStatus === "archived")).toBe(true);
+    expect(reorderedTaskRows.some((task) => task.stationCode === "C" && task.taskStatus === "pending")).toBe(true);
+    expect(productRows[0]).toMatchObject({
+      currentStationCode: "C",
+      currentStatus: "pending_c",
+    });
+  }, 25000);
+
   it("carries manually assigned category settings from D to E and back to C", async () => {
     const uniqueSuffix = `${Date.now()}`;
     const manualCategory = await createProductCategoryOption({ categoryName: "智慧手機", brandName: "Apple" });
@@ -124,16 +257,16 @@ describe("manual category assignment integration", () => {
         serialNumber: `MANUAL-D-SN-${uniqueSuffix}-PASS`,
         imei: `94${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
         productName: "Manual D Pass Device",
-        categoryName: "原始手機",
-        brandName: "OriginalBrand",
+        categoryName: "穿戴型設備",
+        brandName: "Apple",
       },
       {
         batchNo: `MANUAL-D-${uniqueSuffix}-FAIL`,
         serialNumber: `MANUAL-D-SN-${uniqueSuffix}-FAIL`,
         imei: `94${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
         productName: "Manual D Fail Device",
-        categoryName: "原始手機",
-        brandName: "OriginalBrand",
+        categoryName: "穿戴型設備",
+        brandName: "Apple",
       },
     ];
 
@@ -245,12 +378,12 @@ describe("manual category assignment integration", () => {
 
     expect(movedToE?.categoryName).toBe("智慧手機");
     expect(movedToE?.brandName).toBe("Apple");
-    expect(movedToE?.importedCategoryName).toBe("原始手機");
-    expect(movedToE?.importedBrandName).toBe("OriginalBrand");
+    expect(movedToE?.importedCategoryName).toBe("穿戴型設備");
+    expect(movedToE?.importedBrandName).toBe("Apple");
     expect(reworkedToC?.categoryName).toBe("智慧手機");
     expect(reworkedToC?.brandName).toBe("Apple");
-    expect(reworkedToC?.importedCategoryName).toBe("原始手機");
-    expect(reworkedToC?.importedBrandName).toBe("OriginalBrand");
+    expect(reworkedToC?.importedCategoryName).toBe("穿戴型設備");
+    expect(reworkedToC?.importedBrandName).toBe("Apple");
 
     const dEvents = await db
       .select({

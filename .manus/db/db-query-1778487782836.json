@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, poNumber, vendorName, backupLabel, productCount, createdAt FROM import_batch_backups WHERE CAST(snapshot AS CHAR) LIKE '%1.01300001569%' ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, poNumber, vendorName, backupLabel, productCount, createdAt FROM import_batch_backups WHERE CAST(snapshot AS CHAR) LIKE '%1.01300001569%' ORDER BY id DESC LIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1711
+}
