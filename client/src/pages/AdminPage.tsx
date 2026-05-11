@@ -48,7 +48,7 @@ const navItems: DashboardNavItem[] = [
     path: "/admin",
     icon: ShieldCheck,
     allowedRoles: MANAGEMENT_VIEWER_ROLES,
-    matchPaths: adminSections.map((section) => section.path),
+    matchPaths: ["/admin", ...adminSections.map((section) => section.path)],
     subItems: adminSections.map((section) => ({ label: section.label, path: section.path })),
   },
   { label: "待入庫待比對", path: "/admin/pending-stock-mismatches", icon: ShieldAlert, allowedRoles: MANAGEMENT_VIEWER_ROLES },
