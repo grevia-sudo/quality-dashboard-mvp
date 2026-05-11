@@ -1,0 +1,153 @@
+{
+  "query": "WITH month_daily AS (\n  SELECT\n    edp.userId,\n    SUM(CAST(edp.totalPoints AS DECIMAL(12,6))) AS month_daily_points,\n    SUM(CAST(edp.finalKpiScore AS DECIMAL(12,6))) AS month_final_kpi_score,\n    SUM(CASE WHEN edp.attendanceFlag = 1 THEN 1 ELSE 0 END) AS attendance_days,\n    SUM(CASE WHEN edp.businessDate = CURDATE() THEN CAST(edp.totalPoints AS DECIMAL(12,6)) ELSE 0 END) AS today_daily_points\n  FROM engineer_daily_productivity edp\n  WHERE edp.businessDate BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()\n  GROUP BY edp.userId\n),\nmonth_support AS (\n  SELECT\n    stc.userId,\n    SUM(CAST(stc.supportHours AS DECIMAL(12,2))) AS support_hours,\n    SUM(CAST(stc.supportHours AS DECIMAL(12,2)) / 8) AS support_points,\n    SUM(CASE WHEN stc.businessDate = CURDATE() THEN CAST(stc.supportHours AS DECIMAL(12,2)) / 8 ELSE 0 END) AS today_support_points,\n    COUNT(DISTINCT stc.businessDate) AS support_days\n  FROM support_task_compensations stc\n  WHERE stc.businessDate BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()\n  GROUP BY stc.userId\n)\nSELECT\n  u.id AS user_id,\n  u.name,\n  u.role,\n  COALESCE(md.month_daily_points, 0) + COALESCE(ms.support_points, 0) AS month_total_points,\n  COALESCE(md.month_final_kpi_score, 0) AS summed_final_kpi_score,\n  COALESCE(md.attendance_days, 0) AS attendance_days_from_daily,\n  COALESCE(ms.support_days, 0) AS support_days,\n  COALESCE(ms.support_hours, 0) AS support_hours,\n  (COALESCE(md.today_daily_points, 0) + COALESCE(ms.today_support_points, 0)) * 100 AS today_display_points\nFROM users u\nLEFT JOIN month_daily md ON md.userId = u.id\nLEFT JOIN month_support ms ON ms.userId = u.id\nWHERE u.role <> 'admin'\nORDER BY u.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute WITH month_daily AS (\n  SELECT\n    edp.userId,\n    SUM(CAST(edp.totalPoints AS DECIMAL(12,6))) AS month_daily_points,\n    SUM(CAST(edp.finalKpiScore AS DECIMAL(12,6))) AS month_final_kpi_score,\n    SUM(CASE WHEN edp.attendanceFlag = 1 THEN 1 ELSE 0 END) AS attendance_days,\n    SUM(CASE WHEN edp.businessDate = CURDATE() THEN CAST(edp.totalPoints AS DECIMAL(12,6)) ELSE 0 END) AS today_daily_points\n  FROM engineer_daily_productivity edp\n  WHERE edp.businessDate BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()\n  GROUP BY edp.userId\n),\nmonth_support AS (\n  SELECT\n    stc.userId,\n    SUM(CAST(stc.supportHours AS DECIMAL(12,2))) AS support_hours,\n    SUM(CAST(stc.supportHours AS DECIMAL(12,2)) / 8) AS support_points,\n    SUM(CASE WHEN stc.businessDate = CURDATE() THEN CAST(stc.supportHours AS DECIMAL(12,2)) / 8 ELSE 0 END) AS today_support_points,\n    COUNT(DISTINCT stc.businessDate) AS support_days\n  FROM support_task_compensations stc\n  WHERE stc.businessDate BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()\n  GROUP BY stc.userId\n)\nSELECT\n  u.id AS user_id,\n  u.name,\n  u.role,\n  COALESCE(md.month_daily_points, 0) + COALESCE(ms.support_points, 0) AS month_total_points,\n  COALESCE(md.month_final_kpi_score, 0) AS summed_final_kpi_score,\n  COALESCE(md.attendance_days, 0) AS attendance_days_from_daily,\n  COALESCE(ms.support_days, 0) AS support_days,\n  COALESCE(ms.support_hours, 0) AS support_hours,\n  (COALESCE(md.today_daily_points, 0) + COALESCE(ms.today_support_points, 0)) * 100 AS today_display_points\nFROM users u\nLEFT JOIN month_daily md ON md.userId = u.id\nLEFT JOIN month_support ms ON ms.userId = u.id\nWHERE u.role <> 'admin'\nORDER BY u.id;",
+  "rows": [
+    {
+      "user_id": "90021",
+      "name": "測試",
+      "role": "engineer",
+      "month_total_points": "0",
+      "summed_final_kpi_score": "0",
+      "attendance_days_from_daily": "0",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "0"
+    },
+    {
+      "user_id": "750126",
+      "name": "明軒",
+      "role": "engineer",
+      "month_total_points": "0",
+      "summed_final_kpi_score": "0",
+      "attendance_days_from_daily": "0",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "0"
+    },
+    {
+      "user_id": "750136",
+      "name": "小周",
+      "role": "engineer",
+      "month_total_points": "4.030854",
+      "summed_final_kpi_score": "323.946236",
+      "attendance_days_from_daily": "7",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "42.085000"
+    },
+    {
+      "user_id": "750139",
+      "name": "Vicky",
+      "role": "engineer",
+      "month_total_points": "0.583658",
+      "summed_final_kpi_score": "47.033236",
+      "attendance_days_from_daily": "2",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "12.639400"
+    },
+    {
+      "user_id": "750189",
+      "name": "巧克力",
+      "role": "supervisor",
+      "month_total_points": "1.905807",
+      "summed_final_kpi_score": "101.785273",
+      "attendance_days_from_daily": "2",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "129.741200"
+    },
+    {
+      "user_id": "750192",
+      "name": "宥凱",
+      "role": "engineer",
+      "month_total_points": "3.797290",
+      "summed_final_kpi_score": "275.062703",
+      "attendance_days_from_daily": "8",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "46.369000"
+    },
+    {
+      "user_id": "750203",
+      "name": "黃Brian",
+      "role": "engineer",
+      "month_total_points": "0",
+      "summed_final_kpi_score": "0",
+      "attendance_days_from_daily": "0",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "0"
+    },
+    {
+      "user_id": "750206",
+      "name": "葉tiger",
+      "role": "engineer",
+      "month_total_points": "2.515466",
+      "summed_final_kpi_score": "150.551169",
+      "attendance_days_from_daily": "6",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "50.000000"
+    },
+    {
+      "user_id": "750209",
+      "name": "桔梗達曼",
+      "role": "supervisor",
+      "month_total_points": "0.160546",
+      "summed_final_kpi_score": "11.836996",
+      "attendance_days_from_daily": "2",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "3.500000"
+    },
+    {
+      "user_id": "750212",
+      "name": "佳穎",
+      "role": "engineer",
+      "month_total_points": "0.787695",
+      "summed_final_kpi_score": "15.011147",
+      "attendance_days_from_daily": "4",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "35.000000"
+    },
+    {
+      "user_id": "750215",
+      "name": "雋喆",
+      "role": "engineer",
+      "month_total_points": "1.997884",
+      "summed_final_kpi_score": "141.006753",
+      "attendance_days_from_daily": "4",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "55.968200"
+    },
+    {
+      "user_id": "2042728",
+      "name": "秉翰",
+      "role": "engineer",
+      "month_total_points": "0.012500",
+      "summed_final_kpi_score": "0.000000",
+      "attendance_days_from_daily": "1",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "1.250000"
+    },
+    {
+      "user_id": "2043935",
+      "name": "KPI Idempotent",
+      "role": "engineer",
+      "month_total_points": "0.000000",
+      "summed_final_kpi_score": "0.000000",
+      "attendance_days_from_daily": "0",
+      "support_days": "0",
+      "support_hours": "0",
+      "today_display_points": "0.000000"
+    }
+  ],
+  "messages": [],
+  "stdout": "user_id\tname\trole\tmonth_total_points\tsummed_final_kpi_score\tattendance_days_from_daily\tsupport_days\tsupport_hours\ttoday_display_points\n90021\t測試\tengineer\t0\t0\t0\t0\t0\t0\n750126\t明軒\tengineer\t0\t0\t0\t0\t0\t0\n750136\t小周\tengineer\t4.030854\t323.946236\t7\t0\t0\t42.085000\n750139\tVicky\tengineer\t0.583658\t47.033236\t2\t0\t0\t12.639400\n750189\t巧克力\tsupervisor\t1.905807\t101.785273\t2\t0\t0\t129.741200\n750192\t宥凱\tengineer\t3.797290\t275.062703\t8\t0\t0\t46.369000\n750203\t黃Brian\tengineer\t0\t0\t0\t0\t0\t0\n750206\t葉tiger\tengineer\t2.515466\t150.551169\t6\t0\t0\t50.000000\n750209\t桔梗達曼\tsupervisor\t0.160546\t11.836996\t2\t0\t0\t3.500000\n750212\t佳穎\tengineer\t0.787695\t15.011147\t4\t0\t0\t35.000000\n750215\t雋喆\tengineer\t1.997884\t141.006753\t4\t0\t0\t55.968200\n2042728\t秉翰\tengineer\t0.012500\t0.000000\t1\t0\t0\t1.250000\n2043935\tKPI Idempotent\tengineer\t0.000000\t0.000000\t0\t0\t0\t0.000000\n",
+  "stderr": "",
+  "execution_time_ms": 1819
+}
