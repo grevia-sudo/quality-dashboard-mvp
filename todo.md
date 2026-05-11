@@ -227,3 +227,6 @@
 - [x] 已修正 E 站照片預上傳與背景同步流程，改用 gws/OAuth 通道上傳 Google Drive，避免 service account 無 storage quota 導致阻塞
 - [x] 已補上並跑通 E 站照片上傳通道回歸測試：server/e-station-photo-source.test.ts 與 server/e-station-photo-fallback.integration.test.ts
 - [ ] 通知使用者 E 站照片上傳已改為 gws/OAuth 通道，請其以實機完成一次正反面照片預上傳與完成流程，確認 Google Drive 與採購單連結是否實際落檔
+- [x] 已追查正式部署環境出現 `spawn gws ENOENT` 的原因：部署後的 server runtime 無法直接呼叫僅存在於 sandbox 的 gws CLI
+- [x] 已將 E 站照片上傳改成部署環境可用的內建 storage 通道，完成後仍由背景程序回寫採購單照片連結
+- [x] 已補上正式部署環境可用上傳通道的回歸測試：server/e-station-photo-source.test.ts 與 server/e-station-photo-fallback.integration.test.ts

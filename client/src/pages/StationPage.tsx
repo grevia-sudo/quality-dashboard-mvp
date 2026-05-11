@@ -1100,13 +1100,13 @@ export default function StationPage() {
         uploadedRef: uploadResult.reference,
         uploadError: null,
       });
-      toast.success(`${photoLabel}已同步到 Google Drive`, {
+      toast.success(`${photoLabel}已完成上傳`, {
         position: "top-center",
       });
       return;
     } catch (error) {
       const reason = error instanceof Error ? error.message : `${photoLabel}預上傳失敗`;
-      const clearMessage = `${photoLabel}尚未同步到 Google Drive：${reason}。請點「重試上傳」後再完成；若仍失敗，請重新拍照。`;
+      const clearMessage = `${photoLabel}尚未成功上傳：${reason}。請點「重試上傳」後再完成；若仍失敗，請重新拍照。`;
       updateStationPhoto(taskId, key, {
         ...photo,
         isUploading: false,
@@ -1137,7 +1137,7 @@ export default function StationPage() {
 
     try {
       const compressedPhoto = await compressCapturedPhoto(selectedFile);
-      toast.success(key === "eFrontPhoto" ? "已更新正面照片，系統正在預上傳到 Google Drive" : "已更新反面照片，系統正在預上傳到 Google Drive", {
+      toast.success(key === "eFrontPhoto" ? "已更新正面照片，系統正在預先上傳" : "已更新反面照片，系統正在預先上傳", {
         position: "top-center",
       });
       await uploadExistingEPhoto(taskId, productId, key, compressedPhoto);
@@ -1215,21 +1215,21 @@ export default function StationPage() {
       }
 
       if (selections.eFrontPhoto.isUploading || selections.eBackPhoto.isUploading) {
-        toast.error("照片仍在同步到 Google Drive。請等兩張照片都顯示「已同步」後，再按完成。", {
+        toast.error("照片仍在上傳中。請等兩張照片都顯示「已完成上傳」後，再按完成。", {
           position: "top-center",
         });
         return;
       }
 
       if (selections.eFrontPhoto.uploadError || !selections.eFrontPhoto.uploadedRef) {
-        toast.error("正面照片尚未成功同步到 Google Drive，請先點「重試上傳」或重新拍照後再完成。", {
+        toast.error("正面照片尚未成功上傳，請先點「重試上傳」或重新拍照後再完成。", {
           position: "top-center",
         });
         return;
       }
 
       if (selections.eBackPhoto.uploadError || !selections.eBackPhoto.uploadedRef) {
-        toast.error("反面照片尚未成功同步到 Google Drive，請先點「重試上傳」或重新拍照後再完成。", {
+        toast.error("反面照片尚未成功上傳，請先點「重試上傳」或重新拍照後再完成。", {
           position: "top-center",
         });
         return;
@@ -1912,9 +1912,9 @@ export default function StationPage() {
                                 <img src={currentPhoto.dataUrl} alt={photoField.title} className="h-48 w-full rounded-2xl object-cover" />
                                 <p className={`text-xs ${currentPhoto.uploadError ? "text-rose-600" : "text-slate-500"}`}>
                                   {currentPhoto.isUploading
-                                    ? "照片同步到 Google Drive 中。同步完成後，按完成就不必再重新上傳。"
+                                    ? "照片上傳中。上傳完成後，按完成就不必再重新上傳。"
                                     : currentPhoto.uploadedRef
-                                      ? "照片已同步到 Google Drive；按完成時只會送照片參照，採購單連結稍後回寫。"
+                                      ? "照片已完成上傳；按完成時只會送照片參照，採購單連結稍後回寫。"
                                       : currentPhoto.uploadError
                                         ? currentPhoto.uploadError
                                         : "照片已保留在目前頁面，但尚未開始同步；請重新拍照或稍後再試。"}

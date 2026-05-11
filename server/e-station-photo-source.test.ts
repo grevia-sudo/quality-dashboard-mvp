@@ -46,10 +46,10 @@ describe("E 站照片上傳 source coverage", () => {
     expect(routersSource).toContain("eBackPhoto: stationPhotoInputSchema.optional()");
   });
 
-  it("queues E station photos for true background sync and uploads them to the configured Google Drive folder in the worker", () => {
+  it("queues E station photos for true background sync and uploads them through deploy-safe storage in the worker", () => {
     expect(dbSource).toContain('uploadStationPhotoToGoogleDrive');
-    expect(dbSource).toContain('execFileAsync("gws"');
-    expect(dbSource).toContain('parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID]');
+    expect(dbSource).toContain('storagePut(');
+    expect(dbSource).toContain('e-station-photos/');
     expect(dbSource).toContain('ePhotoPendingUploads');
     expect(dbSource).toContain('ePhotoSyncStatus = "queued_background"');
     expect(dbSource).toContain('ePhotoSyncMessage = "E 站照片已排入背景同步佇列"');
@@ -63,7 +63,7 @@ describe("E 站照片上傳 source coverage", () => {
     expect(appSource).toContain('<Toaster position="top-center" richColors />');
     expect(stationPageSource).toContain('toast.success(result?.message ?? "E 站抹除已完成並推進下一站，請直接掃描下一筆")');
     expect(stationPageSource).toContain('完成 E 站後會先快速保存，並在背景同步到採購單 AC 欄');
-    expect(stationPageSource).toContain('照片已同步到 Google Drive；按完成時只會送照片參照，採購單連結稍後回寫。');
+    expect(stationPageSource).toContain('照片已完成上傳；按完成時只會送照片參照，採購單連結稍後回寫。');
     expect(dbSource).toContain('E 站抹除已完成並推進下一站，照片已排入背景同步');
   });
 
