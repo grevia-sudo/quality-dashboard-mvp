@@ -1,0 +1,34 @@
+{
+  "query": "SELECT DATE_FORMAT(se.businessDate, '%Y-%m-%d') AS business_date,\n       CASE\n         WHEN p.productName LIKE 'Apple %' OR p.productName LIKE 'iPhone %' THEN 'Apple'\n         WHEN p.productName LIKE 'Xiaomi %' THEN 'Xiaomi'\n         WHEN p.productName LIKE 'Redmi %' THEN 'Redmi'\n         WHEN p.productName LIKE 'vivo %' THEN 'vivo'\n         WHEN p.productName LIKE 'OPPO %' THEN 'OPPO'\n         WHEN p.productName LIKE 'SAMSUNG %' OR p.productName LIKE 'Samsung %' THEN 'Samsung'\n         ELSE '其他'\n       END AS inferred_brand,\n       COUNT(*) AS missing_events,\n       ROUND(COUNT(*) * 0.625, 2) AS estimated_display_points_if_b160\nFROM station_events se\nJOIN products p ON p.id = se.productId\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE se.operatorUserId = 750212\n  AND se.stationCode = 'B'\n  AND se.businessDate IN ('2026-05-07', '2026-05-08')\n  AND psd.id IS NULL\nGROUP BY DATE_FORMAT(se.businessDate, '%Y-%m-%d'), inferred_brand\nORDER BY business_date DESC, missing_events DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT DATE_FORMAT(se.businessDate, '%Y-%m-%d') AS business_date,\n       CASE\n         WHEN p.productName LIKE 'Apple %' OR p.productName LIKE 'iPhone %' THEN 'Apple'\n         WHEN p.productName LIKE 'Xiaomi %' THEN 'Xiaomi'\n         WHEN p.productName LIKE 'Redmi %' THEN 'Redmi'\n         WHEN p.productName LIKE 'vivo %' THEN 'vivo'\n         WHEN p.productName LIKE 'OPPO %' THEN 'OPPO'\n         WHEN p.productName LIKE 'SAMSUNG %' OR p.productName LIKE 'Samsung %' THEN 'Samsung'\n         ELSE '其他'\n       END AS inferred_brand,\n       COUNT(*) AS missing_events,\n       ROUND(COUNT(*) * 0.625, 2) AS estimated_display_points_if_b160\nFROM station_events se\nJOIN products p ON p.id = se.productId\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE se.operatorUserId = 750212\n  AND se.stationCode = 'B'\n  AND se.businessDate IN ('2026-05-07', '2026-05-08')\n  AND psd.id IS NULL\nGROUP BY DATE_FORMAT(se.businessDate, '%Y-%m-%d'), inferred_brand\nORDER BY business_date DESC, missing_events DESC;",
+  "rows": [
+    {
+      "business_date": "2026-05-08",
+      "inferred_brand": "Apple",
+      "missing_events": "63",
+      "estimated_display_points_if_b160": "39.38"
+    },
+    {
+      "business_date": "2026-05-08",
+      "inferred_brand": "Redmi",
+      "missing_events": "1",
+      "estimated_display_points_if_b160": "0.63"
+    },
+    {
+      "business_date": "2026-05-08",
+      "inferred_brand": "Xiaomi",
+      "missing_events": "1",
+      "estimated_display_points_if_b160": "0.63"
+    },
+    {
+      "business_date": "2026-05-07",
+      "inferred_brand": "Apple",
+      "missing_events": "8",
+      "estimated_display_points_if_b160": "5.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "business_date\tinferred_brand\tmissing_events\testimated_display_points_if_b160\n2026-05-08\tApple\t63\t39.38\n2026-05-08\tRedmi\t1\t0.63\n2026-05-08\tXiaomi\t1\t0.63\n2026-05-07\tApple\t8\t5.00\n",
+  "stderr": "",
+  "execution_time_ms": 1807
+}

@@ -1,0 +1,33 @@
+{
+  "query": "SELECT DATE_FORMAT(se.businessDate, '%Y-%m-%d') AS business_date,\n       se.stationCode,\n       COUNT(*) AS event_count,\n       SUM(CASE WHEN se.countForProductivity = 1 THEN 1 ELSE 0 END) AS productivity_event_count\nFROM station_events se\nWHERE se.operatorUserId = 750212\n  AND se.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY DATE_FORMAT(se.businessDate, '%Y-%m-%d'), se.stationCode\nORDER BY business_date DESC, se.stationCode;\n\nSELECT DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       pc.categoryName,\n       pc.brandName,\n       pc.subtypeCode,\n       COUNT(*) AS row_count,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points,\n       ROUND(AVG(psd.baseUnitPoints) * 100, 3) AS avg_display_unit_points,\n       MIN(ptc.dailyTargetQty) AS configured_daily_target_qty\nFROM productivity_score_details psd\nLEFT JOIN product_categories pc ON pc.id = psd.categoryId\nLEFT JOIN productivity_target_configs ptc ON ptc.id = psd.targetConfigId\nWHERE psd.userId = 750212\n  AND psd.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode, pc.categoryName, pc.brandName, pc.subtypeCode\nORDER BY business_date DESC, psd.stationCode, pc.categoryName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT DATE_FORMAT(se.businessDate, '%Y-%m-%d') AS business_date,\n       se.stationCode,\n       COUNT(*) AS event_count,\n       SUM(CASE WHEN se.countForProductivity = 1 THEN 1 ELSE 0 END) AS productivity_event_count\nFROM station_events se\nWHERE se.operatorUserId = 750212\n  AND se.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY DATE_FORMAT(se.businessDate, '%Y-%m-%d'), se.stationCode\nORDER BY business_date DESC, se.stationCode;\n\nSELECT DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       pc.categoryName,\n       pc.brandName,\n       pc.subtypeCode,\n       COUNT(*) AS row_count,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points,\n       ROUND(AVG(psd.baseUnitPoints) * 100, 3) AS avg_display_unit_points,\n       MIN(ptc.dailyTargetQty) AS configured_daily_target_qty\nFROM productivity_score_details psd\nLEFT JOIN product_categories pc ON pc.id = psd.categoryId\nLEFT JOIN productivity_target_configs ptc ON ptc.id = psd.targetConfigId\nWHERE psd.userId = 750212\n  AND psd.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode, pc.categoryName, pc.brandName, pc.subtypeCode\nORDER BY business_date DESC, psd.stationCode, pc.categoryName;",
+  "rows": [
+    {
+      "business_date": "2026-05-11",
+      "stationCode": "B",
+      "event_count": "12",
+      "productivity_event_count": "12"
+    },
+    {
+      "business_date": "2026-05-08",
+      "stationCode": "B",
+      "event_count": "71",
+      "productivity_event_count": "71"
+    },
+    {
+      "business_date": "2026-05-07",
+      "stationCode": "B",
+      "event_count": "8",
+      "productivity_event_count": "8"
+    }
+  ],
+  "messages": [
+    "business_date\tstationCode\tcategoryName\tbrandName\tsubtypeCode\trow_count\tdisplay_points\tavg_display_unit_points\tconfigured_daily_target_qty",
+    "2026-05-11\tB\t智慧型手機\tApple\tApple\t12\t7.50\t0.625\t160",
+    "2026-05-08\tB\t智慧型手機\tXiaomi\tXiaomi\t5\t3.14\t0.629\t159",
+    "2026-05-08\tB\t智慧型手機\tRedmi\tRedmi\t1\t0.63\t0.625\t160"
+  ],
+  "stdout": "business_date\tstationCode\tevent_count\tproductivity_event_count\n2026-05-11\tB\t12\t12\n2026-05-08\tB\t71\t71\n2026-05-07\tB\t8\t8\nbusiness_date\tstationCode\tcategoryName\tbrandName\tsubtypeCode\trow_count\tdisplay_points\tavg_display_unit_points\tconfigured_daily_target_qty\n2026-05-11\tB\t智慧型手機\tApple\tApple\t12\t7.50\t0.625\t160\n2026-05-08\tB\t智慧型手機\tXiaomi\tXiaomi\t5\t3.14\t0.629\t159\n2026-05-08\tB\t智慧型手機\tRedmi\tRedmi\t1\t0.63\t0.625\t160\n",
+  "stderr": "",
+  "execution_time_ms": 2009
+}

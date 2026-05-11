@@ -1,0 +1,23 @@
+{
+  "query": "SELECT id, username, name, role\nFROM users\nWHERE name LIKE '%佳穎%' OR username LIKE '%jiaying%' OR username LIKE '%jiaying%';\n\nSELECT edp.userId,\n       DATE_FORMAT(edp.businessDate, '%Y-%m-%d') AS business_date,\n       edp.totalPoints,\n       edp.rawAchievementRate,\n       edp.kpiAchievementRate,\n       edp.finalKpiScore,\n       edp.attendanceFlag\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nWHERE (u.name LIKE '%佳穎%' OR u.username LIKE '%jiaying%' OR u.username LIKE '%jiaying%')\n  AND edp.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nORDER BY edp.businessDate DESC;\n\nSELECT psd.userId,\n       DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       COUNT(*) AS row_count,\n       SUM(psd.completedQty) AS completed_qty,\n       SUM(psd.earnedPoints) AS earned_points\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE (u.name LIKE '%佳穎%' OR u.username LIKE '%jiaying%' OR u.username LIKE '%jiaying%')\n  AND psd.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY psd.userId, DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode\nORDER BY business_date DESC, psd.stationCode;\n\nSELECT stc.userId,\n       DATE_FORMAT(stc.businessDate, '%Y-%m-%d') AS business_date,\n       SUM(stc.supportHours) AS support_hours\nFROM support_task_compensations stc\nJOIN users u ON u.id = stc.userId\nWHERE (u.name LIKE '%佳穎%' OR u.username LIKE '%jiaying%' OR u.username LIKE '%jiaying%')\n  AND stc.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY stc.userId, DATE_FORMAT(stc.businessDate, '%Y-%m-%d')\nORDER BY business_date DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, username, name, role\nFROM users\nWHERE name LIKE '%佳穎%' OR username LIKE '%jiaying%' OR username LIKE '%jiaying%';\n\nSELECT edp.userId,\n       DATE_FORMAT(edp.businessDate, '%Y-%m-%d') AS business_date,\n       edp.totalPoints,\n       edp.rawAchievementRate,\n       edp.kpiAchievementRate,\n       edp.finalKpiScore,\n       edp.attendanceFlag\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nWHERE (u.name LIKE '%佳穎%' OR u.username LIKE '%jiaying%' OR u.username LIKE '%jiaying%')\n  AND edp.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nORDER BY edp.businessDate DESC;\n\nSELECT psd.userId,\n       DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       COUNT(*) AS row_count,\n       SUM(psd.completedQty) AS completed_qty,\n       SUM(psd.earnedPoints) AS earned_points\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE (u.name LIKE '%佳穎%' OR u.username LIKE '%jiaying%' OR u.username LIKE '%jiaying%')\n  AND psd.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY psd.userId, DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode\nORDER BY business_date DESC, psd.stationCode;\n\nSELECT stc.userId,\n       DATE_FORMAT(stc.businessDate, '%Y-%m-%d') AS business_date,\n       SUM(stc.supportHours) AS support_hours\nFROM support_task_compensations stc\nJOIN users u ON u.id = stc.userId\nWHERE (u.name LIKE '%佳穎%' OR u.username LIKE '%jiaying%' OR u.username LIKE '%jiaying%')\n  AND stc.businessDate >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')\nGROUP BY stc.userId, DATE_FORMAT(stc.businessDate, '%Y-%m-%d')\nORDER BY business_date DESC;",
+  "rows": [
+    {
+      "id": "750212",
+      "username": "ying43",
+      "name": "佳穎",
+      "role": "engineer"
+    }
+  ],
+  "messages": [
+    "userId\tbusiness_date\ttotalPoints\trawAchievementRate\tkpiAchievementRate\tfinalKpiScore\tattendanceFlag",
+    "750212\t2026-05-11\t0.075000\t7.50\t7.50\t0.000000\t1",
+    "750212\t2026-05-08\t0.037695\t3.77\t3.77\t0.000000\t1",
+    "userId\tbusiness_date\tstationCode\trow_count\tcompleted_qty\tearned_points",
+    "750212\t2026-05-11\tB\t12\t12\t0.075000",
+    "750212\t2026-05-08\tB\t6\t6\t0.037695"
+  ],
+  "stdout": "id\tusername\tname\trole\n750212\tying43\t佳穎\tengineer\nuserId\tbusiness_date\ttotalPoints\trawAchievementRate\tkpiAchievementRate\tfinalKpiScore\tattendanceFlag\n750212\t2026-05-11\t0.075000\t7.50\t7.50\t0.000000\t1\n750212\t2026-05-08\t0.037695\t3.77\t3.77\t0.000000\t1\nuserId\tbusiness_date\tstationCode\trow_count\tcompleted_qty\tearned_points\n750212\t2026-05-11\tB\t12\t12\t0.075000\n750212\t2026-05-08\tB\t6\t6\t0.037695\n",
+  "stderr": "",
+  "execution_time_ms": 2349
+}

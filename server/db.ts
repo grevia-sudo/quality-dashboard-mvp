@@ -110,7 +110,7 @@ async function findProductivityTargetConfig(
   return exactMatch ?? fallbackMatch ?? targetRows[0] ?? null;
 }
 
-async function syncEngineerDailyProductivityRecord(
+export async function syncEngineerDailyProductivityRecord(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: {
     userId: number;
@@ -245,7 +245,7 @@ async function syncEngineerDailyProductivityRecord(
   });
 }
 
-async function backfillProductivityFromCompletedEvents(
+export async function backfillProductivityFromCompletedEvents(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input?: {
     userId?: number;
@@ -261,9 +261,14 @@ async function backfillProductivityFromCompletedEvents(
       categoryId: stationEvents.categoryId,
       subtypeCode: stationEvents.subtypeCode,
       isRework: stationEvents.isRework,
+      productCategoryId: products.categoryId,
+      importedCategoryName: products.importedCategoryName,
+      importedBrandName: products.importedBrandName,
+      productName: products.productName,
     })
     .from(stationEvents)
     .leftJoin(productivityScoreDetails, eq(productivityScoreDetails.stationEventId, stationEvents.id))
+    .leftJoin(products, eq(products.id, stationEvents.productId))
     .where(and(
       eq(stationEvents.eventType, "complete"),
       eq(stationEvents.countForProductivity, true),
@@ -280,10 +285,19 @@ async function backfillProductivityFromCompletedEvents(
       continue;
     }
 
+    const resolvedCategoryContext = await resolveProductCategoryContext(db, {
+      categoryId: event.categoryId ?? event.productCategoryId ?? null,
+      importedCategoryName: event.importedCategoryName,
+      importedBrandName: event.importedBrandName,
+      productName: event.productName,
+    });
+    const resolvedCategoryId = resolvedCategoryContext.categoryId;
+    const resolvedSubtypeCode = normalizeOptionalText(event.subtypeCode) ?? resolvedCategoryContext.subtypeCode;
+
     const cacheKey = [
       event.stationCode,
-      event.categoryId ?? "none",
-      normalizeOptionalText(event.subtypeCode) ?? "none",
+      resolvedCategoryId ?? "none",
+      resolvedSubtypeCode ?? "none",
       toDateKey(event.businessDate),
     ].join("__");
 
@@ -291,8 +305,8 @@ async function backfillProductivityFromCompletedEvents(
     if (typeof targetConfig === "undefined") {
       targetConfig = await findProductivityTargetConfig(db, {
         stationCode: event.stationCode,
-        categoryId: event.categoryId,
-        subtypeCode: event.subtypeCode,
+        categoryId: resolvedCategoryId,
+        subtypeCode: resolvedSubtypeCode,
         businessDateValue: event.businessDate,
       });
       targetCache.set(cacheKey, targetConfig);
@@ -300,6 +314,25 @@ async function backfillProductivityFromCompletedEvents(
 
     if (!targetConfig) {
       continue;
+    }
+
+    const existingDetail = await db
+      .select({ id: productivityScoreDetails.id })
+      .from(productivityScoreDetails)
+      .where(eq(productivityScoreDetails.stationEventId, event.stationEventId))
+      .limit(1);
+    if (existingDetail[0]) {
+      continue;
+    }
+
+    if ((!event.categoryId && resolvedCategoryId) || (!normalizeOptionalText(event.subtypeCode) && resolvedSubtypeCode)) {
+      await db
+        .update(stationEvents)
+        .set({
+          categoryId: resolvedCategoryId,
+          subtypeCode: resolvedSubtypeCode,
+        })
+        .where(eq(stationEvents.id, event.stationEventId));
     }
 
     const reworkFactor = event.isRework ? Number(targetConfig.reworkFactor ?? 1) : 1;
@@ -312,8 +345,8 @@ async function backfillProductivityFromCompletedEvents(
       stationEventId: event.stationEventId,
       productId: event.productId,
       stationCode: event.stationCode,
-      categoryId: event.categoryId,
-      subtypeCode: normalizeOptionalText(event.subtypeCode),
+      categoryId: resolvedCategoryId,
+      subtypeCode: resolvedSubtypeCode,
       targetConfigId: targetConfig.id,
       completedQty: 1,
       baseUnitPoints: targetConfig.baseUnitPoints,
@@ -1563,6 +1596,115 @@ function normalizeOptionalText(value?: string | null) {
 function normalizeCatalogComparisonText(value?: string | null) {
   const normalized = normalizeOptionalText(value);
   return normalized ? normalized.toLocaleUpperCase("en-US") : null;
+}
+
+function normalizeMeaningfulBrandName(value?: string | null) {
+  const normalized = normalizeOptionalText(value);
+  if (!normalized) {
+    return null;
+  }
+
+  if (["未指定品牌", "未分類", "NULL", "N/A", "NA", "-"] .includes(normalized.toLocaleUpperCase("en-US"))) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function inferBrandNameFromProductName(productName?: string | null) {
+  const normalized = normalizeOptionalText(productName);
+  if (!normalized) {
+    return null;
+  }
+
+  const upperName = normalized.toLocaleUpperCase("en-US");
+  if (upperName.startsWith("APPLE ") || upperName.startsWith("IPHONE ")) {
+    return "Apple";
+  }
+  if (upperName.startsWith("XIAOMI ")) {
+    return "Xiaomi";
+  }
+  if (upperName.startsWith("REDMI ")) {
+    return "Redmi";
+  }
+  if (upperName.startsWith("VIVO ")) {
+    return "vivo";
+  }
+  if (upperName.startsWith("OPPO ")) {
+    return "OPPO";
+  }
+  if (upperName.startsWith("SAMSUNG ")) {
+    return "Samsung";
+  }
+  if (upperName.startsWith("GOOGLE PIXEL") || upperName.startsWith("PIXEL ")) {
+    return "Google";
+  }
+
+  return null;
+}
+
+async function resolveProductCategoryContext(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: {
+    categoryId?: number | null;
+    importedCategoryName?: string | null;
+    importedBrandName?: string | null;
+    productName?: string | null;
+  },
+) {
+  if (input.categoryId) {
+    const existingRows = await db
+      .select({
+        id: productCategories.id,
+        subtypeCode: productCategories.subtypeCode,
+        brandName: productCategories.brandName,
+      })
+      .from(productCategories)
+      .where(eq(productCategories.id, input.categoryId))
+      .limit(1);
+
+    if (existingRows[0]) {
+      return {
+        categoryId: existingRows[0].id,
+        subtypeCode: normalizeOptionalText(existingRows[0].subtypeCode ?? existingRows[0].brandName),
+        brandName: normalizeOptionalText(existingRows[0].brandName),
+      };
+    }
+  }
+
+  const categoryName = normalizeOptionalText(input.importedCategoryName);
+  const brandName = normalizeMeaningfulBrandName(input.importedBrandName) ?? inferBrandNameFromProductName(input.productName);
+  if (!categoryName || !brandName) {
+    return {
+      categoryId: null,
+      subtypeCode: null,
+      brandName,
+    };
+  }
+
+  const matchedRows = await db
+    .select({
+      id: productCategories.id,
+      subtypeCode: productCategories.subtypeCode,
+      brandName: productCategories.brandName,
+    })
+    .from(productCategories)
+    .where(and(
+      eq(productCategories.active, true),
+      eq(productCategories.categoryName, categoryName),
+      or(
+        eq(productCategories.brandName, brandName),
+        eq(productCategories.subtypeCode, brandName),
+      ),
+    ))
+    .orderBy(desc(productCategories.id))
+    .limit(1);
+
+  return {
+    categoryId: matchedRows[0]?.id ?? null,
+    subtypeCode: normalizeOptionalText(matchedRows[0]?.subtypeCode ?? matchedRows[0]?.brandName ?? brandName),
+    brandName: normalizeOptionalText(matchedRows[0]?.brandName ?? brandName),
+  };
 }
 
 function parseArrivalAt(value?: string | Date | null) {
@@ -3309,6 +3451,7 @@ export async function completeStationTask(input: {
       poNumber: products.poNumber,
       importedCategoryName: products.importedCategoryName,
       importedBrandName: products.importedBrandName,
+      productName: products.productName,
       batchNo: products.batchNo,
       serialNumber: products.serialNumber,
       imei: products.imei,
@@ -3351,7 +3494,14 @@ export async function completeStationTask(input: {
     return { success: false as const, message: `此作業已失效，商品目前不在 ${stationToLabel(input.stationCode)}，請重新整理頁面` };
   }
 
-  const effectiveCategoryId = input.categoryId ?? productRow?.categoryId ?? null;
+  const resolvedCategoryContext = await resolveProductCategoryContext(db, {
+    categoryId: input.categoryId ?? productRow?.categoryId ?? null,
+    importedCategoryName: productRow?.importedCategoryName,
+    importedBrandName: productRow?.importedBrandName,
+    productName: productRow?.productName,
+  });
+  const effectiveCategoryId = resolvedCategoryContext.categoryId;
+  const effectiveSubtypeCode = normalizeOptionalText(input.subtypeCode) ?? resolvedCategoryContext.subtypeCode ?? null;
   const nextStation = await resolveNextStationByCategory(effectiveCategoryId, input.stationCode);
 
   if (input.stationCode === "STOCK" && (!productRow?.poNumber || !productRow.importedCategoryName || !productRow.importedBrandName)) {
@@ -3360,6 +3510,18 @@ export async function completeStationTask(input: {
       message: "此商品尚未完成匯入比對，請先補匯入對應資料後再完成入庫",
     };
   }
+
+  if (effectiveCategoryId && (!productRow.categoryId || !productRow.importedBrandName)) {
+    await db
+      .update(products)
+      .set({
+        categoryId: productRow.categoryId ?? effectiveCategoryId,
+        importedBrandName: productRow.importedBrandName ?? resolvedCategoryContext.brandName ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, input.productId));
+  }
+
   const { businessDateValue, now: completedAt } = getOperationTimeContext();
   const currentStationOptionIds = Array.from(new Set([
     ...(input.faultOptionIds ?? []),
@@ -3490,7 +3652,7 @@ export async function completeStationTask(input: {
     operatorUserId: input.operatorUserId,
     businessDate: businessDateValue,
     categoryId: effectiveCategoryId,
-    subtypeCode: input.subtypeCode ?? null,
+    subtypeCode: effectiveSubtypeCode,
     payload: {
       summary: input.summary ?? "已完成站點作業",
       faultOptionIds: input.faultOptionIds ?? [],
@@ -3524,7 +3686,7 @@ export async function completeStationTask(input: {
     const targetConfig = await findProductivityTargetConfig(db, {
       stationCode: input.stationCode,
       categoryId: effectiveCategoryId,
-      subtypeCode: input.subtypeCode ?? null,
+      subtypeCode: effectiveSubtypeCode,
       businessDateValue,
     });
 
@@ -3536,7 +3698,7 @@ export async function completeStationTask(input: {
         productId: input.productId,
         stationCode: input.stationCode,
         categoryId: effectiveCategoryId,
-        subtypeCode: normalizeOptionalText(input.subtypeCode),
+        subtypeCode: effectiveSubtypeCode,
         targetConfigId: targetConfig.id,
         completedQty: 1,
         baseUnitPoints: targetConfig.baseUnitPoints,
@@ -3617,7 +3779,7 @@ export async function completeStationTask(input: {
         operatorUserId: input.operatorUserId,
         businessDate: businessDateValue,
         categoryId: effectiveCategoryId,
-        subtypeCode: input.subtypeCode ?? null,
+        subtypeCode: effectiveSubtypeCode,
         payload: {
           summary: input.summary ?? `${stationToLabel(input.stationCode)} 完成後進入待入庫`,
           sourceStation: input.stationCode,

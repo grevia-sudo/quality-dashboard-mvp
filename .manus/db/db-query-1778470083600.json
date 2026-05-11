@@ -1,0 +1,56 @@
+{
+  "query": "SELECT DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       COUNT(*) AS detail_rows,\n       COUNT(DISTINCT psd.stationEventId) AS distinct_event_rows,\n       COUNT(*) - COUNT(DISTINCT psd.stationEventId) AS duplicate_rows,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points\nFROM productivity_score_details psd\nWHERE psd.userId = 750212\n  AND psd.businessDate >= '2026-05-01'\nGROUP BY DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode\nORDER BY business_date DESC, psd.stationCode;\n\nSELECT psd.stationEventId,\n       COUNT(*) AS duplicate_count,\n       DATE_FORMAT(MIN(psd.businessDate), '%Y-%m-%d') AS business_date,\n       MIN(psd.stationCode) AS station_code\nFROM productivity_score_details psd\nWHERE psd.userId = 750212\n  AND psd.businessDate >= '2026-05-01'\nGROUP BY psd.stationEventId\nHAVING COUNT(*) > 1\nORDER BY duplicate_count DESC, psd.stationEventId DESC\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       COUNT(*) AS detail_rows,\n       COUNT(DISTINCT psd.stationEventId) AS distinct_event_rows,\n       COUNT(*) - COUNT(DISTINCT psd.stationEventId) AS duplicate_rows,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points\nFROM productivity_score_details psd\nWHERE psd.userId = 750212\n  AND psd.businessDate >= '2026-05-01'\nGROUP BY DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode\nORDER BY business_date DESC, psd.stationCode;\n\nSELECT psd.stationEventId,\n       COUNT(*) AS duplicate_count,\n       DATE_FORMAT(MIN(psd.businessDate), '%Y-%m-%d') AS business_date,\n       MIN(psd.stationCode) AS station_code\nFROM productivity_score_details psd\nWHERE psd.userId = 750212\n  AND psd.businessDate >= '2026-05-01'\nGROUP BY psd.stationEventId\nHAVING COUNT(*) > 1\nORDER BY duplicate_count DESC, psd.stationEventId DESC\nLIMIT 20;",
+  "rows": [
+    {
+      "business_date": "2026-05-11",
+      "stationCode": "B",
+      "detail_rows": "21",
+      "distinct_event_rows": "21",
+      "duplicate_rows": "0",
+      "display_points": "13.13"
+    },
+    {
+      "business_date": "2026-05-08",
+      "stationCode": "B",
+      "detail_rows": "223",
+      "distinct_event_rows": "58",
+      "duplicate_rows": "165",
+      "display_points": "139.39"
+    },
+    {
+      "business_date": "2026-05-07",
+      "stationCode": "B",
+      "detail_rows": "28",
+      "distinct_event_rows": "6",
+      "duplicate_rows": "22",
+      "display_points": "17.50"
+    }
+  ],
+  "messages": [
+    "stationEventId\tduplicate_count\tbusiness_date\tstation_code",
+    "510901\t6\t2026-05-08\tB",
+    "510899\t6\t2026-05-08\tB",
+    "510805\t6\t2026-05-08\tB",
+    "510798\t6\t2026-05-08\tB",
+    "510771\t6\t2026-05-08\tB",
+    "510748\t6\t2026-05-08\tB",
+    "510747\t6\t2026-05-08\tB",
+    "510721\t6\t2026-05-08\tB",
+    "510713\t6\t2026-05-08\tB",
+    "510692\t6\t2026-05-08\tB",
+    "510670\t6\t2026-05-08\tB",
+    "510661\t6\t2026-05-08\tB",
+    "510595\t6\t2026-05-08\tB",
+    "510567\t6\t2026-05-08\tB",
+    "510522\t6\t2026-05-08\tB",
+    "510500\t6\t2026-05-08\tB",
+    "510497\t6\t2026-05-08\tB",
+    "510472\t6\t2026-05-08\tB",
+    "510451\t6\t2026-05-08\tB",
+    "510449\t6\t2026-05-08\tB"
+  ],
+  "stdout": "business_date\tstationCode\tdetail_rows\tdistinct_event_rows\tduplicate_rows\tdisplay_points\n2026-05-11\tB\t21\t21\t0\t13.13\n2026-05-08\tB\t223\t58\t165\t139.39\n2026-05-07\tB\t28\t6\t22\t17.50\nstationEventId\tduplicate_count\tbusiness_date\tstation_code\n510901\t6\t2026-05-08\tB\n510899\t6\t2026-05-08\tB\n510805\t6\t2026-05-08\tB\n510798\t6\t2026-05-08\tB\n510771\t6\t2026-05-08\tB\n510748\t6\t2026-05-08\tB\n510747\t6\t2026-05-08\tB\n510721\t6\t2026-05-08\tB\n510713\t6\t2026-05-08\tB\n510692\t6\t2026-05-08\tB\n510670\t6\t2026-05-08\tB\n510661\t6\t2026-05-08\tB\n510595\t6\t2026-05-08\tB\n510567\t6\t2026-05-08\tB\n510522\t6\t2026-05-08\tB\n510500\t6\t2026-05-08\tB\n510497\t6\t2026-05-08\tB\n510472\t6\t2026-05-08\tB\n510451\t6\t2026-05-08\tB\n510449\t6\t2026-05-08\tB\n",
+  "stderr": "",
+  "execution_time_ms": 1987
+}

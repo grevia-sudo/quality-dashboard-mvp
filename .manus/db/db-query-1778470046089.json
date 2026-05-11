@@ -1,0 +1,36 @@
+{
+  "query": "SELECT edp.userId,\n       DATE_FORMAT(edp.businessDate, '%Y-%m-%d') AS business_date,\n       ROUND(edp.totalPoints * 100, 2) AS display_points,\n       edp.rawAchievementRate,\n       edp.kpiAchievementRate\nFROM engineer_daily_productivity edp\nWHERE edp.userId = 750212\n  AND edp.businessDate >= '2026-05-01'\nORDER BY edp.businessDate DESC;\n\nSELECT DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       COUNT(*) AS detail_count,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points\nFROM productivity_score_details psd\nWHERE psd.userId = 750212\n  AND psd.businessDate >= '2026-05-01'\nGROUP BY DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode\nORDER BY business_date DESC, psd.stationCode;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT edp.userId,\n       DATE_FORMAT(edp.businessDate, '%Y-%m-%d') AS business_date,\n       ROUND(edp.totalPoints * 100, 2) AS display_points,\n       edp.rawAchievementRate,\n       edp.kpiAchievementRate\nFROM engineer_daily_productivity edp\nWHERE edp.userId = 750212\n  AND edp.businessDate >= '2026-05-01'\nORDER BY edp.businessDate DESC;\n\nSELECT DATE_FORMAT(psd.businessDate, '%Y-%m-%d') AS business_date,\n       psd.stationCode,\n       COUNT(*) AS detail_count,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points\nFROM productivity_score_details psd\nWHERE psd.userId = 750212\n  AND psd.businessDate >= '2026-05-01'\nGROUP BY DATE_FORMAT(psd.businessDate, '%Y-%m-%d'), psd.stationCode\nORDER BY business_date DESC, psd.stationCode;",
+  "rows": [
+    {
+      "userId": "750212",
+      "business_date": "2026-05-11",
+      "display_points": "13.13",
+      "rawAchievementRate": "13.13",
+      "kpiAchievementRate": "13.13"
+    },
+    {
+      "userId": "750212",
+      "business_date": "2026-05-08",
+      "display_points": "139.39",
+      "rawAchievementRate": "139.39",
+      "kpiAchievementRate": "100.00"
+    },
+    {
+      "userId": "750212",
+      "business_date": "2026-05-07",
+      "display_points": "17.50",
+      "rawAchievementRate": "17.50",
+      "kpiAchievementRate": "17.50"
+    }
+  ],
+  "messages": [
+    "business_date\tstationCode\tdetail_count\tdisplay_points",
+    "2026-05-11\tB\t21\t13.13",
+    "2026-05-08\tB\t223\t139.39",
+    "2026-05-07\tB\t28\t17.50"
+  ],
+  "stdout": "userId\tbusiness_date\tdisplay_points\trawAchievementRate\tkpiAchievementRate\n750212\t2026-05-11\t13.13\t13.13\t13.13\n750212\t2026-05-08\t139.39\t139.39\t100.00\n750212\t2026-05-07\t17.50\t17.50\t17.50\nbusiness_date\tstationCode\tdetail_count\tdisplay_points\n2026-05-11\tB\t21\t13.13\n2026-05-08\tB\t223\t139.39\n2026-05-07\tB\t28\t17.50\n",
+  "stderr": "",
+  "execution_time_ms": 2062
+}

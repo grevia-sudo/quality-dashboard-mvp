@@ -1,0 +1,120 @@
+{
+  "query": "SELECT pc.id,\n       pc.categoryName,\n       pc.brandName,\n       pc.subtypeCode,\n       ptc.stationCode,\n       ptc.dailyTargetQty,\n       ROUND(ptc.baseUnitPoints * 100, 3) AS display_unit_points,\n       ptc.active\nFROM product_categories pc\nLEFT JOIN productivity_target_configs ptc\n  ON ptc.categoryId = pc.id\n AND ptc.stationCode = 'B'\n AND ptc.active = 1\nWHERE pc.active = 1\n  AND pc.categoryName = '智慧型手機'\nORDER BY pc.brandName, ptc.id DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT pc.id,\n       pc.categoryName,\n       pc.brandName,\n       pc.subtypeCode,\n       ptc.stationCode,\n       ptc.dailyTargetQty,\n       ROUND(ptc.baseUnitPoints * 100, 3) AS display_unit_points,\n       ptc.active\nFROM product_categories pc\nLEFT JOIN productivity_target_configs ptc\n  ON ptc.categoryId = pc.id\n AND ptc.stationCode = 'B'\n AND ptc.active = 1\nWHERE pc.active = 1\n  AND pc.categoryName = '智慧型手機'\nORDER BY pc.brandName, ptc.id DESC;",
+  "rows": [
+    {
+      "id": "15",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "19",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "23",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "26",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "30",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "32",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "34",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "36",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "37",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "39",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "stationCode": "B",
+      "dailyTargetQty": "160",
+      "display_unit_points": "0.625",
+      "active": "1"
+    },
+    {
+      "id": "41",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "stationCode": "B",
+      "dailyTargetQty": "159",
+      "display_unit_points": "0.629",
+      "active": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcategoryName\tbrandName\tsubtypeCode\tstationCode\tdailyTargetQty\tdisplay_unit_points\tactive\n15\t智慧型手機\tApple\tApple\tB\t160\t0.625\t1\n19\t智慧型手機\tASUS\tASUS\tB\t160\t0.625\t1\n23\t智慧型手機\tGoogle\tGoogle\tB\t160\t0.625\t1\n26\t智慧型手機\tMotorola\tMotorola\tB\t160\t0.625\t1\n30\t智慧型手機\tOPPO\tOPPO\tB\t160\t0.625\t1\n32\t智慧型手機\tPOCO\tPOCO\tB\t160\t0.625\t1\n34\t智慧型手機\tRedmi\tRedmi\tB\t160\t0.625\t1\n36\t智慧型手機\tSamsung\tSamsung\tB\t160\t0.625\t1\n37\t智慧型手機\tSONY\tSONY\tB\t160\t0.625\t1\n39\t智慧型手機\tvivo\tvivo\tB\t160\t0.625\t1\n41\t智慧型手機\tXiaomi\tXiaomi\tB\t159\t0.629\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1743
+}
