@@ -23,9 +23,9 @@ describe("E 站照片上傳 source coverage", () => {
     expect(stationPageSource).toContain('key: "eFrontPhoto" as const');
     expect(stationPageSource).toContain('key: "eBackPhoto" as const');
     expect(stationPageSource).toContain('capture="environment"');
-    expect(stationPageSource).toContain('toast.error("請先拍攝正面與反面照片，再完成 E 站抹除")');
-    expect(stationPageSource).toContain('eFrontPhoto: selections.eFrontPhoto');
-    expect(stationPageSource).toContain('eBackPhoto: selections.eBackPhoto');
+    expect(stationPageSource).toContain('請先拍攝正面與反面照片，再完成 E 站抹除');
+    expect(stationPageSource).toContain('eFrontPhotoRef: selections.eFrontPhoto.uploadedRef');
+    expect(stationPageSource).toContain('eBackPhotoRef: selections.eBackPhoto.uploadedRef');
   });
 
   it("supports taking a photo of the QR code to fill the E station scan input", () => {
@@ -48,7 +48,7 @@ describe("E 站照片上傳 source coverage", () => {
 
   it("queues E station photos for true background sync and uploads them to the configured Google Drive folder in the worker", () => {
     expect(dbSource).toContain('uploadStationPhotoToGoogleDrive');
-    expect(dbSource).toContain('getGoogleDriveAccessToken()');
+    expect(dbSource).toContain('execFileAsync("gws"');
     expect(dbSource).toContain('parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID]');
     expect(dbSource).toContain('ePhotoPendingUploads');
     expect(dbSource).toContain('ePhotoSyncStatus = "queued_background"');
@@ -62,7 +62,8 @@ describe("E 站照片上傳 source coverage", () => {
   it("shows the global toast at the top so the E station complete button is not blocked", () => {
     expect(appSource).toContain('<Toaster position="top-center" richColors />');
     expect(stationPageSource).toContain('toast.success(result?.message ?? "E 站抹除已完成並推進下一站，請直接掃描下一筆")');
-    expect(stationPageSource).toContain('完成 E 站後會在背景同步到 Google Drive 與採購單試算表');
+    expect(stationPageSource).toContain('完成 E 站後會先快速保存，並在背景同步到採購單 AC 欄');
+    expect(stationPageSource).toContain('照片已同步到 Google Drive；按完成時只會送照片參照，採購單連結稍後回寫。');
     expect(dbSource).toContain('E 站抹除已完成並推進下一站，照片已排入背景同步');
   });
 

@@ -1,5 +1,10 @@
 import { spawn } from "node:child_process";
 import { createSign } from "node:crypto";
+import { execFile } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { promisify } from "node:util";
 import { and, asc, count, desc, eq, gte, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2/promise";
@@ -49,6 +54,7 @@ const PURCHASE_SHEET_SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7H
 const PURCHASE_SHEET_NAME = "採購單";
 const E_STATION_PHOTO_DRIVE_FOLDER_ID = "1PPdt4swkmSav8G6k2Dfpk55OBPJk4srW";
 const PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN = /ECONNRESET|PROTOCOL_CONNECTION_LOST|ETIMEDOUT|Connection lost|The server closed the connection/i;
+const execFileAsync = promisify(execFile);
 
 function toDateKey(value: Date) {
   return value.toISOString().slice(0, 10);
@@ -996,40 +1002,44 @@ function decodeStationPhotoDataUrl(photo: StationPhotoUploadInput) {
 
 async function uploadStationPhotoToGoogleDrive(photo: StationPhotoUploadInput) {
   const { mimeType, buffer } = decodeStationPhotoDataUrl(photo);
-  const accessToken = await getGoogleDriveAccessToken();
-  const boundary = `manus-e-station-${Date.now()}`;
-  const metadata = JSON.stringify({
-    name: photo.fileName,
-    parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID],
-  });
+  const tempDir = await mkdtemp(path.join(tmpdir(), "e-station-photo-"));
+  const tempFilePath = path.join(tempDir, photo.fileName || "e-station-photo.jpg");
 
-  const body = Buffer.concat([
-    Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n`, "utf8"),
-    Buffer.from(`--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`, "utf8"),
-    buffer,
-    Buffer.from(`\r\n--${boundary}--`, "utf8"),
-  ]);
+  try {
+    await writeFile(tempFilePath, buffer);
+    const { stdout } = await execFileAsync("gws", [
+      "drive",
+      "files",
+      "create",
+      "--upload",
+      tempFilePath,
+      "--json",
+      JSON.stringify({
+        name: photo.fileName,
+        parents: [E_STATION_PHOTO_DRIVE_FOLDER_ID],
+      }),
+    ], {
+      cwd: "/home/ubuntu/quality-dashboard-mvp",
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
-  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink,webContentLink", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": `multipart/related; boundary=${boundary}`,
-    },
-    body,
-  });
-  const result = await response.json() as { id?: string; webViewLink?: string; webContentLink?: string; error?: { message?: string } };
+    const result = JSON.parse(stdout) as { id?: string; webViewLink?: string; webContentLink?: string; error?: { message?: string } };
+    if (!result.id) {
+      throw new Error(result.error?.message || "上傳 E 站照片到 Google Drive 失敗");
+    }
 
-  if (!response.ok || !result.id) {
-    throw new Error(result.error?.message || "上傳 E 站照片到 Google Drive 失敗");
+    return {
+      driveFileId: result.id,
+      driveUrl: result.webViewLink ?? result.webContentLink ?? `https://drive.google.com/file/d/${result.id}/view`,
+      mimeType,
+      fileName: photo.fileName,
+    } satisfies StationPhotoUploadReference;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`上傳 E 站照片到 Google Drive 失敗：${message}`);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
   }
-
-  return {
-    driveFileId: result.id,
-    driveUrl: result.webViewLink ?? result.webContentLink ?? `https://drive.google.com/file/d/${result.id}/view`,
-    mimeType,
-    fileName: photo.fileName,
-  } satisfies StationPhotoUploadReference;
 }
 
 function buildEStationPhotoFileNameBase(batchNo: string) {

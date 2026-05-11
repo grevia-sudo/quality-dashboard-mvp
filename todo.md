@@ -223,3 +223,7 @@
 - [x] 重要原則：本輪未新增任何 Google 測試資料；使用者後續需自行驗證實際試算表結果
 - [x] 針對 row_mapping 與 ambiguous 案例整理人工確認清單，完成後再標記整體重複序號/IMEI 對齊任務完成
 - [ ] 針對保守版對帳回寫後的 Google 採購單結果，由使用者自行抽查確認 AE 備註與自動對齊欄位是否符合現場預期
+- [x] 已追查 E 站照片上傳失敗根因：正式頁面仍走 service account 直傳 Google Drive，未沿用已驗證可用的 gws/OAuth 通道
+- [x] 已修正 E 站照片預上傳與背景同步流程，改用 gws/OAuth 通道上傳 Google Drive，避免 service account 無 storage quota 導致阻塞
+- [x] 已補上並跑通 E 站照片上傳通道回歸測試：server/e-station-photo-source.test.ts 與 server/e-station-photo-fallback.integration.test.ts
+- [ ] 通知使用者 E 站照片上傳已改為 gws/OAuth 通道，請其以實機完成一次正反面照片預上傳與完成流程，確認 Google Drive 與採購單連結是否實際落檔
