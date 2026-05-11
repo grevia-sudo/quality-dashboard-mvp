@@ -1945,6 +1945,56 @@ async function findOtherActiveProductByBatchNo(
   return rows[0] ?? null;
 }
 
+async function findConflictingActiveProductByIdentity(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null; excludeProductId?: number | null },
+) {
+  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
+  const normalizedSerialNumber = normalizeOptionalText(input.serialNumber);
+  const normalizedImei = normalizeOptionalText(input.imei);
+  const matchConditions = [];
+
+  if (normalizedImei) {
+    matchConditions.push(eq(products.imei, normalizedImei));
+  }
+
+  if (normalizedSerialNumber && normalizedBatchNo) {
+    matchConditions.push(and(eq(products.serialNumber, normalizedSerialNumber), eq(products.batchNo, normalizedBatchNo)));
+  }
+
+  if (matchConditions.length === 0) {
+    return null;
+  }
+
+  const rows = await db
+    .select({
+      id: products.id,
+      productCode: products.productCode,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      poNumber: products.poNumber,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+    })
+    .from(products)
+    .where(and(
+      isNull(products.archivedAt),
+      or(...matchConditions),
+      input.excludeProductId ? sql`${products.id} <> ${input.excludeProductId}` : sql`true`,
+    ))
+    .orderBy(sql`
+      CASE
+        WHEN ${normalizedImei} IS NOT NULL AND ${products.imei} = ${normalizedImei} THEN 0
+        WHEN ${normalizedSerialNumber} IS NOT NULL AND ${normalizedBatchNo} IS NOT NULL AND ${products.serialNumber} = ${normalizedSerialNumber} AND ${products.batchNo} = ${normalizedBatchNo} THEN 1
+        ELSE 9
+      END
+    `, desc(products.updatedAt), desc(products.id))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
 export async function completeA1ArrivalByScan(input: {
   operatorUserId: number;
   batchNo?: string | null;
@@ -1985,6 +2035,18 @@ export async function completeA1ArrivalByScan(input: {
       return {
         success: false as const,
         message: "查無匯入資料時，需填寫商品批號、商品序號與品名，系統才能先建立流程商品並往下一站",
+      };
+    }
+
+    const conflictingIdentityProduct = await findConflictingActiveProductByIdentity(db, {
+      batchNo: normalizedBatchNo,
+      serialNumber: normalizedSerialNumber,
+      imei: normalizedImei,
+    });
+    if (conflictingIdentityProduct) {
+      return {
+        success: false as const,
+        message: `偵測到相同序號或 IMEI 已存在於 ${conflictingIdentityProduct.productCode ?? "既有商品"}（目前在 ${conflictingIdentityProduct.currentStationCode ?? "未知站點"}），為避免重複建立，請先確認既有流程資料。`,
       };
     }
 

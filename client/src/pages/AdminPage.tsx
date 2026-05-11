@@ -684,7 +684,7 @@ export default function AdminPage() {
               <Badge className="bg-white/80 text-slate-700">管理者／主管入口</Badge>
               <h1 className="text-3xl font-black tracking-tight text-slate-900">依照 ERD 管理站點流程、匯入節奏與 B/C 功能表</h1>
               <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                這裡除了既有站點規則外，也可依 A1～E 各站點設定每個品類的每日產能，供後續換算每小時產能與工程師點數；同時保留匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。管理者可直接切換到對應站點檢查實際畫面是否與資料設定一致。
+                這裡除了既有站點規則外，也可依 A1～E 各站點設定每個品類的每日產能，供後續換算每小時產能與工程師點數；同時保留匯入作業入口，以及 B 站軟測、C 站品檢所需的故障與外觀功能表維護。若要進入各管理功能，請從左側管理後台子分頁開啟對應頁面。
               </p>
               <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
                 <Button variant="outline" className="rounded-2xl" onClick={() => setLocation("/operations")}>站點總覽</Button>

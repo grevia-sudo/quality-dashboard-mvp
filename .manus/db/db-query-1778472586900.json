@@ -1,0 +1,24 @@
+{
+  "query": "WITH active_products AS (\n  SELECT id, poNumber, serialNumber, imei,\n         CASE WHEN poNumber IS NULL OR poNumber = '' THEN 'without_po' ELSE 'with_po' END AS sourceType\n  FROM products\n  WHERE archivedAt IS NULL\n), duplicate_groups AS (\n  SELECT 'serialNumber' AS duplicateType, serialNumber AS duplicateValue\n  FROM active_products\n  WHERE serialNumber IS NOT NULL AND serialNumber <> ''\n  GROUP BY serialNumber\n  HAVING COUNT(*) > 1\n  UNION ALL\n  SELECT 'imei' AS duplicateType, imei AS duplicateValue\n  FROM active_products\n  WHERE imei IS NOT NULL AND imei <> ''\n  GROUP BY imei\n  HAVING COUNT(*) > 1\n), classified_groups AS (\n  SELECT g.duplicateType,\n         g.duplicateValue,\n         COUNT(*) AS duplicateRows,\n         SUM(CASE WHEN p.sourceType = 'with_po' THEN 1 ELSE 0 END) AS withPoRows,\n         SUM(CASE WHEN p.sourceType = 'without_po' THEN 1 ELSE 0 END) AS withoutPoRows\n  FROM duplicate_groups g\n  JOIN active_products p\n    ON (g.duplicateType = 'serialNumber' AND p.serialNumber = g.duplicateValue)\n    OR (g.duplicateType = 'imei' AND p.imei = g.duplicateValue)\n  GROUP BY g.duplicateType, g.duplicateValue\n)\nSELECT duplicateType,\n       COUNT(*) AS duplicateGroups,\n       SUM(CASE WHEN withPoRows > 0 AND withoutPoRows = 0 THEN 1 ELSE 0 END) AS onlyWithPoGroups,\n       SUM(CASE WHEN withPoRows = 0 AND withoutPoRows > 0 THEN 1 ELSE 0 END) AS onlyWithoutPoGroups,\n       SUM(CASE WHEN withPoRows > 0 AND withoutPoRows > 0 THEN 1 ELSE 0 END) AS mixedGroups\nFROM classified_groups\nGROUP BY duplicateType\nORDER BY duplicateType;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute WITH active_products AS (\n  SELECT id, poNumber, serialNumber, imei,\n         CASE WHEN poNumber IS NULL OR poNumber = '' THEN 'without_po' ELSE 'with_po' END AS sourceType\n  FROM products\n  WHERE archivedAt IS NULL\n), duplicate_groups AS (\n  SELECT 'serialNumber' AS duplicateType, serialNumber AS duplicateValue\n  FROM active_products\n  WHERE serialNumber IS NOT NULL AND serialNumber <> ''\n  GROUP BY serialNumber\n  HAVING COUNT(*) > 1\n  UNION ALL\n  SELECT 'imei' AS duplicateType, imei AS duplicateValue\n  FROM active_products\n  WHERE imei IS NOT NULL AND imei <> ''\n  GROUP BY imei\n  HAVING COUNT(*) > 1\n), classified_groups AS (\n  SELECT g.duplicateType,\n         g.duplicateValue,\n         COUNT(*) AS duplicateRows,\n         SUM(CASE WHEN p.sourceType = 'with_po' THEN 1 ELSE 0 END) AS withPoRows,\n         SUM(CASE WHEN p.sourceType = 'without_po' THEN 1 ELSE 0 END) AS withoutPoRows\n  FROM duplicate_groups g\n  JOIN active_products p\n    ON (g.duplicateType = 'serialNumber' AND p.serialNumber = g.duplicateValue)\n    OR (g.duplicateType = 'imei' AND p.imei = g.duplicateValue)\n  GROUP BY g.duplicateType, g.duplicateValue\n)\nSELECT duplicateType,\n       COUNT(*) AS duplicateGroups,\n       SUM(CASE WHEN withPoRows > 0 AND withoutPoRows = 0 THEN 1 ELSE 0 END) AS onlyWithPoGroups,\n       SUM(CASE WHEN withPoRows = 0 AND withoutPoRows > 0 THEN 1 ELSE 0 END) AS onlyWithoutPoGroups,\n       SUM(CASE WHEN withPoRows > 0 AND withoutPoRows > 0 THEN 1 ELSE 0 END) AS mixedGroups\nFROM classified_groups\nGROUP BY duplicateType\nORDER BY duplicateType;",
+  "rows": [
+    {
+      "duplicateType": "imei",
+      "duplicateGroups": "125",
+      "onlyWithPoGroups": "120",
+      "onlyWithoutPoGroups": "2",
+      "mixedGroups": "3"
+    },
+    {
+      "duplicateType": "serialNumber",
+      "duplicateGroups": "127",
+      "onlyWithPoGroups": "122",
+      "onlyWithoutPoGroups": "2",
+      "mixedGroups": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "duplicateType\tduplicateGroups\tonlyWithPoGroups\tonlyWithoutPoGroups\tmixedGroups\nimei\t125\t120\t2\t3\nserialNumber\t127\t122\t2\t3\n",
+  "stderr": "",
+  "execution_time_ms": 1967
+}

@@ -1,0 +1,22 @@
+{
+  "query": "WITH active_products AS (\n  SELECT id, productCode, poNumber, vendorName, batchNo, serialNumber, imei,\n         CASE WHEN poNumber IS NULL OR poNumber = '' THEN 'without_po' ELSE 'with_po' END AS sourceType\n  FROM products\n  WHERE archivedAt IS NULL\n), duplicate_keys AS (\n  SELECT 'serialNumber' AS duplicateType, serialNumber AS duplicateValue\n  FROM active_products\n  WHERE serialNumber IS NOT NULL AND serialNumber <> ''\n  GROUP BY serialNumber\n  HAVING COUNT(*) > 1\n  UNION ALL\n  SELECT 'imei' AS duplicateType, imei AS duplicateValue\n  FROM active_products\n  WHERE imei IS NOT NULL AND imei <> ''\n  GROUP BY imei\n  HAVING COUNT(*) > 1\n)\nSELECT k.duplicateType,\n       COUNT(*) AS duplicateGroups,\n       SUM(CASE WHEN p.sourceType = 'without_po' THEN 1 ELSE 0 END) AS duplicateRowsWithoutPo,\n       SUM(CASE WHEN p.sourceType = 'with_po' THEN 1 ELSE 0 END) AS duplicateRowsWithPo\nFROM duplicate_keys k\nJOIN active_products p\n  ON (k.duplicateType = 'serialNumber' AND p.serialNumber = k.duplicateValue)\n  OR (k.duplicateType = 'imei' AND p.imei = k.duplicateValue)\nGROUP BY k.duplicateType\nORDER BY k.duplicateType;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute WITH active_products AS (\n  SELECT id, productCode, poNumber, vendorName, batchNo, serialNumber, imei,\n         CASE WHEN poNumber IS NULL OR poNumber = '' THEN 'without_po' ELSE 'with_po' END AS sourceType\n  FROM products\n  WHERE archivedAt IS NULL\n), duplicate_keys AS (\n  SELECT 'serialNumber' AS duplicateType, serialNumber AS duplicateValue\n  FROM active_products\n  WHERE serialNumber IS NOT NULL AND serialNumber <> ''\n  GROUP BY serialNumber\n  HAVING COUNT(*) > 1\n  UNION ALL\n  SELECT 'imei' AS duplicateType, imei AS duplicateValue\n  FROM active_products\n  WHERE imei IS NOT NULL AND imei <> ''\n  GROUP BY imei\n  HAVING COUNT(*) > 1\n)\nSELECT k.duplicateType,\n       COUNT(*) AS duplicateGroups,\n       SUM(CASE WHEN p.sourceType = 'without_po' THEN 1 ELSE 0 END) AS duplicateRowsWithoutPo,\n       SUM(CASE WHEN p.sourceType = 'with_po' THEN 1 ELSE 0 END) AS duplicateRowsWithPo\nFROM duplicate_keys k\nJOIN active_products p\n  ON (k.duplicateType = 'serialNumber' AND p.serialNumber = k.duplicateValue)\n  OR (k.duplicateType = 'imei' AND p.imei = k.duplicateValue)\nGROUP BY k.duplicateType\nORDER BY k.duplicateType;",
+  "rows": [
+    {
+      "duplicateType": "imei",
+      "duplicateGroups": "252",
+      "duplicateRowsWithoutPo": "8",
+      "duplicateRowsWithPo": "244"
+    },
+    {
+      "duplicateType": "serialNumber",
+      "duplicateGroups": "257",
+      "duplicateRowsWithoutPo": "9",
+      "duplicateRowsWithPo": "248"
+    }
+  ],
+  "messages": [],
+  "stdout": "duplicateType\tduplicateGroups\tduplicateRowsWithoutPo\tduplicateRowsWithPo\nimei\t252\t8\t244\nserialNumber\t257\t9\t248\n",
+  "stderr": "",
+  "execution_time_ms": 1944
+}

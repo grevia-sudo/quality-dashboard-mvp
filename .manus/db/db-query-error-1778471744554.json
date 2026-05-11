@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.id AS product_id,\n       p.`batchNo` AS batch_no,\n       p.`serialNumber` AS serial_number,\n       p.`currentStationCode` AS current_station_code,\n       p.`currentStatus` AS current_status,\n       st.`stationCode` AS station_code,\n       st.`taskStatus` AS task_status,\n       st.`resultSummary` AS result_summary,\n       st.`completedAt` AS completed_at\nFROM products p\nLEFT JOIN station_tasks st ON st.`productId` = p.id\nWHERE p.`batchNo` LIKE 'FLOW-STOCK-BATCH-%'\n  AND p.`archivedAt` IS NULL\nORDER BY p.id DESC, st.id ASC\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id AS product_id,\n       p.`batchNo` AS batch_no,\n       p.`serialNumber` AS serial_number,\n       p.`currentStationCode` AS current_station_code,\n       p.`currentStatus` AS current_status,\n       st.`stationCode` AS station_code,\n       st.`taskStatus` AS task_status,\n       st.`resultSummary` AS result_summary,\n       st.`completedAt` AS completed_at\nFROM products p\nLEFT JOIN station_tasks st ON st.`productId` = p.id\nWHERE p.`batchNo` LIKE 'FLOW-STOCK-BATCH-%'\n  AND p.`archivedAt` IS NULL\nORDER BY p.id DESC, st.id ASC\nLIMIT 20;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'p.currentstationcode' in 'field list'"
+  ]
+}

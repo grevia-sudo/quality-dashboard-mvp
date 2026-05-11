@@ -1,0 +1,38 @@
+{
+  "query": "SELECT serialNumber,\n       COUNT(*) AS total_rows,\n       SUM(CASE WHEN poNumber IS NULL OR TRIM(poNumber) = '' THEN 1 ELSE 0 END) AS rows_without_po,\n       SUM(CASE WHEN vendorName IS NULL OR TRIM(vendorName) = '' THEN 1 ELSE 0 END) AS rows_without_vendor,\n       GROUP_CONCAT(CONCAT(id, ':', COALESCE(poNumber,'NULL'), ':', COALESCE(batchNo,'NULL')) ORDER BY id DESC SEPARATOR ' | ') AS row_summary\nFROM products\nWHERE archivedAt IS NULL\n  AND serialNumber IN ('G0NCX7JVN735', 'C6KZLKJTN73D', '10AFAS1NEZ002GL', 'add33c0b')\nGROUP BY serialNumber\nORDER BY total_rows DESC, serialNumber ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT serialNumber,\n       COUNT(*) AS total_rows,\n       SUM(CASE WHEN poNumber IS NULL OR TRIM(poNumber) = '' THEN 1 ELSE 0 END) AS rows_without_po,\n       SUM(CASE WHEN vendorName IS NULL OR TRIM(vendorName) = '' THEN 1 ELSE 0 END) AS rows_without_vendor,\n       GROUP_CONCAT(CONCAT(id, ':', COALESCE(poNumber,'NULL'), ':', COALESCE(batchNo,'NULL')) ORDER BY id DESC SEPARATOR ' | ') AS row_summary\nFROM products\nWHERE archivedAt IS NULL\n  AND serialNumber IN ('G0NCX7JVN735', 'C6KZLKJTN73D', '10AFAS1NEZ002GL', 'add33c0b')\nGROUP BY serialNumber\nORDER BY total_rows DESC, serialNumber ASC;",
+  "rows": [
+    {
+      "serialNumber": "G0NCX7JVN735",
+      "total_rows": "4",
+      "rows_without_po": "2",
+      "rows_without_vendor": "2",
+      "row_summary": "331113:PO-20260505-01:NULL | 331088:PO-20260505-01:00500024718 | 331004:NULL:00500024718 | 331003:NULL:00500024718"
+    },
+    {
+      "serialNumber": "C6KZLKJTN73D",
+      "total_rows": "3",
+      "rows_without_po": "3",
+      "rows_without_vendor": "3",
+      "row_summary": "390003:NULL:00500024970 | 390002:NULL:00500024970 | 390001:NULL:00500024970"
+    },
+    {
+      "serialNumber": "10AFAS1NEZ002GL",
+      "total_rows": "2",
+      "rows_without_po": "1",
+      "rows_without_vendor": "1",
+      "row_summary": "331511:NULL:01900000028 | 330808:PO-20260506-02:01900000028"
+    },
+    {
+      "serialNumber": "add33c0b",
+      "total_rows": "2",
+      "rows_without_po": "1",
+      "rows_without_vendor": "1",
+      "row_summary": "480260:NULL:01400003049 | 480026:PO-20260508-01:01400003046"
+    }
+  ],
+  "messages": [],
+  "stdout": "serialNumber\ttotal_rows\trows_without_po\trows_without_vendor\trow_summary\nG0NCX7JVN735\t4\t2\t2\t331113:PO-20260505-01:NULL | 331088:PO-20260505-01:00500024718 | 331004:NULL:00500024718 | 331003:NULL:00500024718\nC6KZLKJTN73D\t3\t3\t3\t390003:NULL:00500024970 | 390002:NULL:00500024970 | 390001:NULL:00500024970\n10AFAS1NEZ002GL\t2\t1\t1\t331511:NULL:01900000028 | 330808:PO-20260506-02:01900000028\nadd33c0b\t2\t1\t1\t480260:NULL:01400003049 | 480026:PO-20260508-01:01400003046\n",
+  "stderr": "",
+  "execution_time_ms": 1809
+}

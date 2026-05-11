@@ -1,0 +1,297 @@
+{
+  "query": "SELECT 'serialNumber' AS identity_type,\n       serialNumber AS identity_value,\n       COUNT(*) AS duplicate_count,\n       GROUP_CONCAT(id ORDER BY id DESC) AS product_ids,\n       GROUP_CONCAT(DISTINCT poNumber ORDER BY poNumber DESC) AS po_numbers\nFROM products\nWHERE archivedAt IS NULL\n  AND serialNumber IS NOT NULL\n  AND TRIM(serialNumber) <> ''\nGROUP BY serialNumber\nHAVING COUNT(*) > 1\nORDER BY duplicate_count DESC, MAX(id) DESC\nLIMIT 20;\n\nSELECT 'imei' AS identity_type,\n       imei AS identity_value,\n       COUNT(*) AS duplicate_count,\n       GROUP_CONCAT(id ORDER BY id DESC) AS product_ids,\n       GROUP_CONCAT(DISTINCT poNumber ORDER BY poNumber DESC) AS po_numbers\nFROM products\nWHERE archivedAt IS NULL\n  AND imei IS NOT NULL\n  AND TRIM(imei) <> ''\nGROUP BY imei\nHAVING COUNT(*) > 1\nORDER BY duplicate_count DESC, MAX(id) DESC\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'serialNumber' AS identity_type,\n       serialNumber AS identity_value,\n       COUNT(*) AS duplicate_count,\n       GROUP_CONCAT(id ORDER BY id DESC) AS product_ids,\n       GROUP_CONCAT(DISTINCT poNumber ORDER BY poNumber DESC) AS po_numbers\nFROM products\nWHERE archivedAt IS NULL\n  AND serialNumber IS NOT NULL\n  AND TRIM(serialNumber) <> ''\nGROUP BY serialNumber\nHAVING COUNT(*) > 1\nORDER BY duplicate_count DESC, MAX(id) DESC\nLIMIT 20;\n\nSELECT 'imei' AS identity_type,\n       imei AS identity_value,\n       COUNT(*) AS duplicate_count,\n       GROUP_CONCAT(id ORDER BY id DESC) AS product_ids,\n       GROUP_CONCAT(DISTINCT poNumber ORDER BY poNumber DESC) AS po_numbers\nFROM products\nWHERE archivedAt IS NULL\n  AND imei IS NOT NULL\n  AND TRIM(imei) <> ''\nGROUP BY imei\nHAVING COUNT(*) > 1\nORDER BY duplicate_count DESC, MAX(id) DESC\nLIMIT 20;",
+  "rows": [
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G0NCX7JVN735",
+      "duplicate_count": "4",
+      "product_ids": "331113,331088,331004,331003",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "C6KZLKJTN73D",
+      "duplicate_count": "3",
+      "product_ids": "390003,390002,390001",
+      "po_numbers": "NULL"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "TRACE-SN-1778469711144",
+      "duplicate_count": "2",
+      "product_ids": "540022,540021",
+      "po_numbers": "PO-TRACE-1778469711144"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "add33c0b",
+      "duplicate_count": "2",
+      "product_ids": "480260,480026",
+      "po_numbers": "PO-20260508-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "30653793550060V",
+      "duplicate_count": "2",
+      "product_ids": "331663,331002",
+      "po_numbers": "NULL"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "10AFAS1NEZ002GL",
+      "duplicate_count": "2",
+      "product_ids": "331511,330808",
+      "po_numbers": "PO-20260506-02"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "MC6XPM9MFP",
+      "duplicate_count": "2",
+      "product_ids": "331252,331212",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDQBJT0D8Y",
+      "duplicate_count": "2",
+      "product_ids": "331251,331210",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "GMXVNXG74G",
+      "duplicate_count": "2",
+      "product_ids": "331250,331208",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "G6TDP7AQ0D52",
+      "duplicate_count": "2",
+      "product_ids": "331249,331206",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "R5CT4132R9W",
+      "duplicate_count": "2",
+      "product_ids": "331248,331204",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "PYHH0C9KP3",
+      "duplicate_count": "2",
+      "product_ids": "331247,331202",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "T9312VKTP6",
+      "duplicate_count": "2",
+      "product_ids": "331246,331200",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "HQR3XYMCQ5",
+      "duplicate_count": "2",
+      "product_ids": "331245,331198",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "T6QQR3FY49",
+      "duplicate_count": "2",
+      "product_ids": "331244,331196",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "RFCW31BF4TD",
+      "duplicate_count": "2",
+      "product_ids": "331243,331194",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "K7QHK26P07",
+      "duplicate_count": "2",
+      "product_ids": "331242,331192",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "DNPD315FN739",
+      "duplicate_count": "2",
+      "product_ids": "331241,331190",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "X6WP7X1N2X",
+      "duplicate_count": "2",
+      "product_ids": "331240,331188",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "serialNumber",
+      "identity_value": "H57J4W195R",
+      "duplicate_count": "2",
+      "product_ids": "331239,331187",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "identity_type",
+      "identity_value": "identity_value",
+      "duplicate_count": "duplicate_count",
+      "product_ids": "product_ids",
+      "po_numbers": "po_numbers"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353999107381929",
+      "duplicate_count": "3",
+      "product_ids": "390003,390002,390001",
+      "po_numbers": "NULL"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352985118832852",
+      "duplicate_count": "3",
+      "product_ids": "331113,331088,331004",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "862836060783077",
+      "duplicate_count": "2",
+      "product_ids": "480260,480026",
+      "po_numbers": "PO-20260508-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "868674059173065",
+      "duplicate_count": "2",
+      "product_ids": "331663,331002",
+      "po_numbers": "NULL"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "862492089507632",
+      "duplicate_count": "2",
+      "product_ids": "331511,330808",
+      "po_numbers": "PO-20260506-02"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359844761235652",
+      "duplicate_count": "2",
+      "product_ids": "331252,331212",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356695115351618",
+      "duplicate_count": "2",
+      "product_ids": "331251,331210",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353240585079754",
+      "duplicate_count": "2",
+      "product_ids": "331250,331208",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "356732114564618",
+      "duplicate_count": "2",
+      "product_ids": "331249,331206",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352556601096758",
+      "duplicate_count": "2",
+      "product_ids": "331248,331204",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359265383816887",
+      "duplicate_count": "2",
+      "product_ids": "331247,331202",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "358275380300117",
+      "duplicate_count": "2",
+      "product_ids": "331246,331200",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357711911761808",
+      "duplicate_count": "2",
+      "product_ids": "331245,331198",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "357588206561006",
+      "duplicate_count": "2",
+      "product_ids": "331244,331196",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350448736321479",
+      "duplicate_count": "2",
+      "product_ids": "331243,331194",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "350852695065607",
+      "duplicate_count": "2",
+      "product_ids": "331242,331192",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "352988118207760",
+      "duplicate_count": "2",
+      "product_ids": "331241,331190",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "353103648793748",
+      "duplicate_count": "2",
+      "product_ids": "331240,331188",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "351740767373968",
+      "duplicate_count": "2",
+      "product_ids": "331239,331187",
+      "po_numbers": "PO-20260505-01"
+    },
+    {
+      "identity_type": "imei",
+      "identity_value": "359406085331805",
+      "duplicate_count": "2",
+      "product_ids": "331238,331185",
+      "po_numbers": "PO-20260505-01"
+    }
+  ],
+  "messages": [],
+  "stdout": "identity_type\tidentity_value\tduplicate_count\tproduct_ids\tpo_numbers\nserialNumber\tG0NCX7JVN735\t4\t331113,331088,331004,331003\tPO-20260505-01\nserialNumber\tC6KZLKJTN73D\t3\t390003,390002,390001\tNULL\nserialNumber\tTRACE-SN-1778469711144\t2\t540022,540021\tPO-TRACE-1778469711144\nserialNumber\tadd33c0b\t2\t480260,480026\tPO-20260508-01\nserialNumber\t30653793550060V\t2\t331663,331002\tNULL\nserialNumber\t10AFAS1NEZ002GL\t2\t331511,330808\tPO-20260506-02\nserialNumber\tMC6XPM9MFP\t2\t331252,331212\tPO-20260505-01\nserialNumber\tG6TDQBJT0D8Y\t2\t331251,331210\tPO-20260505-01\nserialNumber\tGMXVNXG74G\t2\t331250,331208\tPO-20260505-01\nserialNumber\tG6TDP7AQ0D52\t2\t331249,331206\tPO-20260505-01\nserialNumber\tR5CT4132R9W\t2\t331248,331204\tPO-20260505-01\nserialNumber\tPYHH0C9KP3\t2\t331247,331202\tPO-20260505-01\nserialNumber\tT9312VKTP6\t2\t331246,331200\tPO-20260505-01\nserialNumber\tHQR3XYMCQ5\t2\t331245,331198\tPO-20260505-01\nserialNumber\tT6QQR3FY49\t2\t331244,331196\tPO-20260505-01\nserialNumber\tRFCW31BF4TD\t2\t331243,331194\tPO-20260505-01\nserialNumber\tK7QHK26P07\t2\t331242,331192\tPO-20260505-01\nserialNumber\tDNPD315FN739\t2\t331241,331190\tPO-20260505-01\nserialNumber\tX6WP7X1N2X\t2\t331240,331188\tPO-20260505-01\nserialNumber\tH57J4W195R\t2\t331239,331187\tPO-20260505-01\nidentity_type\tidentity_value\tduplicate_count\tproduct_ids\tpo_numbers\nimei\t353999107381929\t3\t390003,390002,390001\tNULL\nimei\t352985118832852\t3\t331113,331088,331004\tPO-20260505-01\nimei\t862836060783077\t2\t480260,480026\tPO-20260508-01\nimei\t868674059173065\t2\t331663,331002\tNULL\nimei\t862492089507632\t2\t331511,330808\tPO-20260506-02\nimei\t359844761235652\t2\t331252,331212\tPO-20260505-01\nimei\t356695115351618\t2\t331251,331210\tPO-20260505-01\nimei\t353240585079754\t2\t331250,331208\tPO-20260505-01\nimei\t356732114564618\t2\t331249,331206\tPO-20260505-01\nimei\t352556601096758\t2\t331248,331204\tPO-20260505-01\nimei\t359265383816887\t2\t331247,331202\tPO-20260505-01\nimei\t358275380300117\t2\t331246,331200\tPO-20260505-01\nimei\t357711911761808\t2\t331245,331198\tPO-20260505-01\nimei\t357588206561006\t2\t331244,331196\tPO-20260505-01\nimei\t350448736321479\t2\t331243,331194\tPO-20260505-01\nimei\t350852695065607\t2\t331242,331192\tPO-20260505-01\nimei\t352988118207760\t2\t331241,331190\tPO-20260505-01\nimei\t353103648793748\t2\t331240,331188\tPO-20260505-01\nimei\t351740767373968\t2\t331239,331187\tPO-20260505-01\nimei\t359406085331805\t2\t331238,331185\tPO-20260505-01\n",
+  "stderr": "",
+  "execution_time_ms": 2024
+}
