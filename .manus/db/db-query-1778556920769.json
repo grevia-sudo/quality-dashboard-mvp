@@ -1,0 +1,76 @@
+{
+  "query": "WITH target_po AS (\n  SELECT CONVERT('PO-A1-NAME-1778504644297' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS po_number UNION ALL\n  SELECT CONVERT('PO-A1-NAME-1778504804493' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-A1-RENAME-1778505568173' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-BASE-1778504566881' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-BASE-1778504806894' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-GUARD-1778504564630' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-GUARD-1778504644224' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-GUARD-1778504711473' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-E-RESTORE-1778505346688' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-E-RESTORE-1778505515012' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-E-RESTORE-1778505677150' USING utf8mb4) COLLATE utf8mb4_unicode_ci\n)\nSELECT \n  t.po_number,\n  COALESCE(p.product_count, 0) AS product_count,\n  COALESCE(d.delete_log_count, 0) AS delete_log_count,\n  d.last_deleted_at\nFROM target_po t\nLEFT JOIN (\n  SELECT poNumber, COUNT(*) AS product_count\n  FROM products\n  GROUP BY poNumber\n) p ON p.poNumber = t.po_number\nLEFT JOIN (\n  SELECT poNumber, COUNT(*) AS delete_log_count, MAX(createdAt) AS last_deleted_at\n  FROM purchase_order_deletion_logs\n  GROUP BY poNumber\n) d ON d.poNumber = t.po_number\nORDER BY t.po_number;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute WITH target_po AS (\n  SELECT CONVERT('PO-A1-NAME-1778504644297' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS po_number UNION ALL\n  SELECT CONVERT('PO-A1-NAME-1778504804493' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-A1-RENAME-1778505568173' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-BASE-1778504566881' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-BASE-1778504806894' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-GUARD-1778504564630' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-GUARD-1778504644224' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-BATCH-GUARD-1778504711473' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-E-RESTORE-1778505346688' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-E-RESTORE-1778505515012' USING utf8mb4) COLLATE utf8mb4_unicode_ci UNION ALL\n  SELECT CONVERT('PO-E-RESTORE-1778505677150' USING utf8mb4) COLLATE utf8mb4_unicode_ci\n)\nSELECT \n  t.po_number,\n  COALESCE(p.product_count, 0) AS product_count,\n  COALESCE(d.delete_log_count, 0) AS delete_log_count,\n  d.last_deleted_at\nFROM target_po t\nLEFT JOIN (\n  SELECT poNumber, COUNT(*) AS product_count\n  FROM products\n  GROUP BY poNumber\n) p ON p.poNumber = t.po_number\nLEFT JOIN (\n  SELECT poNumber, COUNT(*) AS delete_log_count, MAX(createdAt) AS last_deleted_at\n  FROM purchase_order_deletion_logs\n  GROUP BY poNumber\n) d ON d.poNumber = t.po_number\nORDER BY t.po_number;",
+  "rows": [
+    {
+      "po_number": "PO-A1-NAME-1778504644297",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:11"
+    },
+    {
+      "po_number": "PO-A1-NAME-1778504804493",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:32"
+    },
+    {
+      "po_number": "PO-A1-RENAME-1778505568173",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:55:15"
+    },
+    {
+      "po_number": "PO-BATCH-BASE-1778504566881",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:08"
+    },
+    {
+      "po_number": "PO-BATCH-BASE-1778504806894",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:39"
+    },
+    {
+      "po_number": "PO-BATCH-GUARD-1778504564630",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:01"
+    },
+    {
+      "po_number": "PO-BATCH-GUARD-1778504644224",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:15"
+    },
+    {
+      "po_number": "PO-BATCH-GUARD-1778504711473",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:21"
+    },
+    {
+      "po_number": "PO-E-RESTORE-1778505346688",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:54:49"
+    },
+    {
+      "po_number": "PO-E-RESTORE-1778505515012",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:55:09"
+    },
+    {
+      "po_number": "PO-E-RESTORE-1778505677150",
+      "product_count": "0",
+      "delete_log_count": "1",
+      "last_deleted_at": "2026-05-12 01:55:28"
+    }
+  ],
+  "messages": [],
+  "stdout": "po_number\tproduct_count\tdelete_log_count\tlast_deleted_at\nPO-A1-NAME-1778504644297\t0\t1\t2026-05-12 01:54:11\nPO-A1-NAME-1778504804493\t0\t1\t2026-05-12 01:54:32\nPO-A1-RENAME-1778505568173\t0\t1\t2026-05-12 01:55:15\nPO-BATCH-BASE-1778504566881\t0\t1\t2026-05-12 01:54:08\nPO-BATCH-BASE-1778504806894\t0\t1\t2026-05-12 01:54:39\nPO-BATCH-GUARD-1778504564630\t0\t1\t2026-05-12 01:54:01\nPO-BATCH-GUARD-1778504644224\t0\t1\t2026-05-12 01:54:15\nPO-BATCH-GUARD-1778504711473\t0\t1\t2026-05-12 01:54:21\nPO-E-RESTORE-1778505346688\t0\t1\t2026-05-12 01:54:49\nPO-E-RESTORE-1778505515012\t0\t1\t2026-05-12 01:55:09\nPO-E-RESTORE-1778505677150\t0\t1\t2026-05-12 01:55:28\n",
+  "stderr": "",
+  "execution_time_ms": 1780
+}
