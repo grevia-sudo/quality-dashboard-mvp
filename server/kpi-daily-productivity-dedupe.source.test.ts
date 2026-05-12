@@ -15,4 +15,12 @@ describe("engineer daily productivity dedupe source", () => {
     expect(dbSource).toContain("if (existingRows.length > 1)");
     expect(dbSource).toContain("await syncEngineerDailyProductivityRecords(db, Array.from(affectedProductivityItems.values()));");
   });
+
+  it("disables KPI counting when Google purchase sheet does not contain the normalized batch key", () => {
+    const dbSource = readFileSync(path.resolve(__dirname, "../server/db.ts"), "utf8");
+    expect(dbSource).toContain("const googleBatchKeys = await readPurchaseSheetBatchKeySet();");
+    expect(dbSource).toContain("if (!normalizedBatchKey || !googleBatchKeys.has(normalizedBatchKey)) {");
+    expect(dbSource).toContain("countForProductivity: false,");
+    expect(dbSource).toContain("const hasGoogleBaseline = Boolean(normalizedBatchKey && googleBatchKeys.has(normalizedBatchKey));");
+  });
 });

@@ -7,10 +7,13 @@ const pendingPageSource = readFileSync(new URL("../client/src/pages/PendingStock
 const stockExportSource = readFileSync(new URL("../client/src/pages/station-stock-export.ts", import.meta.url), "utf8");
 
 describe("A1 duplicate batch guard and pending stock B/C summaries", () => {
-  it("blocks duplicate batch numbers during A1 receive flow", () => {
+  it("blocks duplicate batch numbers during A1 and import flows with normalized batch keys", () => {
     expect(dbSource).toContain("async function findOtherActiveProductByBatchNo(");
     expect(dbSource).toContain("商品批號 ${normalizedBatchNo} 已存在於");
     expect(dbSource).toContain("商品批號 ${nextBatchNo} 已存在於");
+    expect(dbSource).toContain("const normalizedBatchNumberKeys = new Set(batchNumbers.map((value) => normalizeBatchMatchValue(value)).filter(Boolean));");
+    expect(dbSource).toContain("const duplicatedBatchProduct = normalizedRowBatchKey ? activeProductByBatchNo.get(normalizedRowBatchKey) ?? null : null;");
+    expect(dbSource).toContain("if (matchedProduct && row.batchNo && normalizeBatchMatchValue(matchedProduct.batchNo) === normalizedRowBatchKey)");
   });
 
   it("hydrates stock and pending mismatch data with latest B/C summaries", () => {
