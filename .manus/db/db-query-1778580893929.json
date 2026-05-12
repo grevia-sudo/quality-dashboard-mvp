@@ -1,0 +1,1873 @@
+{
+  "query": "SELECT 'product_categories' AS source_table, id, categoryName, brandName, subtypeCode, active, NULL AS label FROM product_categories WHERE categoryName = '耳機音響' OR brandName = 'Samsung' ORDER BY categoryName, brandName, id;\nSELECT 'product_name_catalog_entries' AS source_table, id, categoryName, brandName, NULL AS subtypeCode, active, label FROM product_name_catalog_entries WHERE categoryName = '耳機音響' OR brandName = 'Samsung' ORDER BY categoryName, brandName, id LIMIT 200;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'product_categories' AS source_table, id, categoryName, brandName, subtypeCode, active, NULL AS label FROM product_categories WHERE categoryName = '耳機音響' OR brandName = 'Samsung' ORDER BY categoryName, brandName, id;\nSELECT 'product_name_catalog_entries' AS source_table, id, categoryName, brandName, NULL AS subtypeCode, active, label FROM product_name_catalog_entries WHERE categoryName = '耳機音響' OR brandName = 'Samsung' ORDER BY categoryName, brandName, id LIMIT 200;",
+  "rows": [
+    {
+      "source_table": "product_categories",
+      "id": "90003",
+      "categoryName": "平板電腦",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1",
+      "label": "NULL"
+    },
+    {
+      "source_table": "product_categories",
+      "id": "36",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1",
+      "label": "NULL"
+    },
+    {
+      "source_table": "product_categories",
+      "id": "35",
+      "categoryName": "液晶螢幕",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1",
+      "label": "NULL"
+    },
+    {
+      "source_table": "product_categories",
+      "id": "90002",
+      "categoryName": "穿戴型設備",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1",
+      "label": "NULL"
+    },
+    {
+      "source_table": "product_categories",
+      "id": "10",
+      "categoryName": "耳機音響",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "active": "1",
+      "label": "NULL"
+    },
+    {
+      "source_table": "product_categories",
+      "id": "90001",
+      "categoryName": "耳機音響",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1",
+      "label": "NULL"
+    },
+    {
+      "source_table": "source_table",
+      "id": "id",
+      "categoryName": "categoryName",
+      "brandName": "brandName",
+      "subtypeCode": "subtypeCode",
+      "active": "active",
+      "label": "label"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491224",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A8 (2018) 4GB 32GB 4G 紫色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491225",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A8 (2018) 4GB 32GB 4G 金色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491226",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A8 (2018) 4GB 32GB 4G 黑色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491227",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9 4GB 64GB 4G 丁香紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491228",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9 4GB 64GB 4G 珊瑚藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491229",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9 4GB 64GB 4G 午夜黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491230",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9+ 6GB 64GB 4G 珊瑚藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491231",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9+ 6GB 128GB 4G 珊瑚藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491232",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9+ 6GB 128GB 4G 丁香紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491233",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9+ 6GB 128GB 4G 午夜黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491234",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S9+ 6GB 256GB 4G 珊瑚藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491235",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note9 6GB 128GB 4G 初雪白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491236",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note9 6GB 128GB 4G 湛海藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491237",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note9 6GB 128GB 4G 薰衣紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491238",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note9 6GB 128GB 4G 霧金銅"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491239",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note9 8GB 512GB 4G 湛海藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491240",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy J4+ 3GB 32GB 4G 桃紅色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491241",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy J4+ 3GB 32GB 4G 玫瑰金"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491242",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy J4+ 3GB 32GB 4G 黑色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491243",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A7 (2018) 4GB 128GB 4G 黑色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491244",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A7 (2018) 4GB 128GB 4G 藍色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491245",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A7 (2018) 4GB 128GB 4G 粉色"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491246",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A9 (2018) 6GB 128GB 4G 檸檬藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491247",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A9 (2018) 6GB 128GB 4G 泡泡糖粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491248",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A9 (2018) 6GB 128GB 4G 魚子醬黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491249",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A8s 6GB 128GB 4G 漸層黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491250",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A8s 6GB 128GB 4G 漸層藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491251",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A8s 6GB 128GB 4G 蜜桃蘇打"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491252",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10e 6GB 128GB 4G 絢光白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491253",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10e 6GB 128GB 4G 絢光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491254",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10e 6GB 128GB 4G 絢光綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491255",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10 8GB 128GB 4G 絢光白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491256",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10 8GB 128GB 4G 絢光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491257",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10 8GB 128GB 4G 絢光綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491258",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 8GB 128GB 4G 絢光白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491259",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 8GB 128GB 4G 絢光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491260",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 8GB 128GB 4G 絢光綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491261",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 8GB 512GB 4G 釉光白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491262",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 8GB 512GB 4G 釉光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491263",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 12GB 1TB 4G 釉光白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491264",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S10+ 12GB 1TB 4G 釉光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491265",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A30 4GB 64GB 4G 炫光藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491266",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A30 4GB 64GB 4G 炫光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491267",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A30 4GB 64GB 4G 炫光白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491268",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A20 3GB 32GB 4G 鏡面藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491269",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A20 3GB 32GB 4G 鏡面黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491270",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A20 3GB 32GB 4G 鏡面橘"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491271",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A50 6GB 128GB 4G 幻彩白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491272",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A50 6GB 128GB 4G 幻彩藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491273",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A50 6GB 128GB 4G 幻彩黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491274",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A70 6GB 128GB 4G 幻彩白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491275",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A70 6GB 128GB 4G 幻彩黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491276",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A70 6GB 128GB 4G 幻水藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491277",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A40s 6GB 64GB 4G 電光黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491278",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A40s 6GB 64GB 4G 電光藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491279",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A80 8GB 128GB 4G 極鏡銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491280",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A80 8GB 128GB 4G 極鏡金"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491281",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A80 8GB 128GB 4G 極鏡黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491282",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10 8GB 256GB 4G 星環黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491283",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10 8GB 256GB 4G 星環銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491284",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10+ 12GB 256GB 4G 星環白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491285",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10+ 12GB 256GB 4G 星環藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491286",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10+ 12GB 256GB 4G 星環銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491287",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10+ 12GB 256GB 4G 星環黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491288",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note10+ 12GB 512GB 4G 星環藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491289",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A30s 4GB 128GB 4G 冰晶白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491290",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A30s 4GB 128GB 4G 冰晶黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491291",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A30s 4GB 128GB 4G 冰晶綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491292",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A51 6GB 128GB 4G 晶礦黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491293",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A51 6GB 128GB 4G 晶礦白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491294",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A51 6GB 128GB 4G 晶礦藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491295",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A71 8GB 128GB 4G 晶石銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491296",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A71 8GB 128GB 4G 晶石黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491297",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A71 8GB 128GB 4G 晶石粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491298",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip 8GB 256GB 4G 頑美紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491299",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip 8GB 256GB 4G 頑美黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491300",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 12GB 128GB 5G 星空灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491301",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 12GB 128GB 5G 晴空粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491302",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 12GB 128GB 5G 晴空藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491303",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20+ 12GB 128GB 5G 星空灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491304",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20+ 12GB 128GB 5G 星空黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491305",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20+ 12GB 128GB 5G 晴空白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491306",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20+ 12GB 128GB 5G 晴空藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491307",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 Ultra 12GB 256GB 5G 星空灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491308",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 Ultra 12GB 256GB 5G 星空黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491309",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 Ultra 12GB 256GB 5G 晴空白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491310",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A31 6GB 128GB 4G 晶絢白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491311",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A31 6GB 128GB 4G 晶絢藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491312",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A31 6GB 128GB 4G 晶絢黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491313",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A21s 4GB 64GB 4G 幻石白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491314",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A21s 4GB 64GB 4G 幻石藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491315",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A21s 4GB 64GB 4G 幻石黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491316",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 8GB 256GB 5G 星霧灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491317",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 8GB 256GB 5G 星霧紅"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491318",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 8GB 256GB 5G 星霧綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491319",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 8GB 256GB 5G 星霧金"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491320",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 Ultra 12GB 256GB 5G 星幻白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491321",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 Ultra 12GB 256GB 5G 星幻黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491322",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 Ultra 12GB 256GB 5G 星霧金"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491323",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 Ultra 12GB 512GB 5G 星幻白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491324",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 Ultra 12GB 512GB 5G 星幻黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491325",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Note20 Ultra 12GB 512GB 5G 星霧金"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491326",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Fold2 12GB 256GB 5G 星幻黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491327",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Fold2 12GB 256GB 5G 星霧金"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491328",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M11 3GB 32GB 4G 晨曦藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491329",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M11 3GB 32GB 4G 暮光紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491330",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M11 3GB 32GB 4G 迷霧黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491331",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 6GB 128GB 5G 療癒藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491332",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 6GB 128GB 5G 浪漫紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491333",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 6GB 128GB 5G 率真綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491334",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 6GB 128GB 5G 狂野紅"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491335",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 6GB 128GB 5G 清新白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491336",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 8GB 256GB 5G 療癒藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491337",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S20 FE 8GB 256GB 5G 清新白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491338",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A42 6GB 128GB 5G 絢幻灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491339",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A42 6GB 128GB 5G 絢幻白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491340",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A42 6GB 128GB 5G 絢幻黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491341",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 8GB 128GB 5G 星魅灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491342",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 8GB 128GB 5G 星魅紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491343",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 8GB 256GB 5G 星魅灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491344",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 8GB 256GB 5G 星魅白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491345",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 8GB 256GB 5G 星魅粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491346",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 8GB 256GB 5G 星魅紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491347",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21+ 8GB 128GB 5G 星魅紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491348",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21+ 8GB 128GB 5G 星魅銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491349",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21+ 8GB 256GB 5G 星魅灰"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491350",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21+ 8GB 256GB 5G 星魅紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491351",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21+ 8GB 256GB 5G 星魅銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491352",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 Ultra 12GB 256GB 5G 星魅銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491353",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 Ultra 12GB 256GB 5G 星魅黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491354",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 Ultra 16GB 512GB 5G 星魅銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491355",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 Ultra 16GB 512GB 5G 星魅黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491356",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 4GB 64GB 5G 晶藍豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491357",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 4GB 64GB 5G 沁白豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491358",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 4GB 64GB 5G 潮黑豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491359",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 4GB 64GB 5G 絢紫豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491360",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 6GB 128GB 5G 晶藍豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491361",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 6GB 128GB 5G 沁白豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491362",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 6GB 128GB 5G 潮黑豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491363",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A32 6GB 128GB 5G 絢紫豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491364",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M12 4GB 128GB 4G 超鯊黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491365",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M12 4GB 128GB 4G 超鯊藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491366",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M12 4GB 128GB 4G 超鯊綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491367",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 6GB 128GB 5G 晶藍豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491368",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 6GB 128GB 5G 沁白豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491369",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 6GB 128GB 5G 潮黑豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491370",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 6GB 128GB 5G 絢紫豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491371",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 8GB 256GB 5G 晶藍豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491372",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 8GB 256GB 5G 沁白豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491373",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 8GB 256GB 5G 潮黑豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491374",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52 8GB 256GB 5G 絢紫豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491375",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A22 4GB 64GB 5G 冰河霧"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491376",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A22 4GB 64GB 5G 松墨霧"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491377",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A22 4GB 64GB 5G 薄荷霧"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491378",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A22 4GB 128GB 5G 冰河霧"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491379",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A22 4GB 128GB 5G 松墨霧"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491380",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A22 4GB 128GB 5G 薄荷霧"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491381",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M32 6GB 128GB 4G 超鯊黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491382",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M32 6GB 128GB 4G 超鯊藍"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491383",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy M32 6GB 128GB 4G 超鯊白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491384",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 6GB 128GB 5G 沁白豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491385",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 6GB 128GB 5G 漾綠豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491386",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 6GB 128GB 5G 潮黑豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491387",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 6GB 128GB 5G 絢紫豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491388",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 8GB 256GB 5G 沁白豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491389",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 8GB 256GB 5G 漾綠豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491390",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 8GB 256GB 5G 潮黑豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491391",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy A52s 8GB 256GB 5G 絢紫豆豆"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491392",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 128GB 5G 幻影黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491393",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 128GB 5G 日落紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491394",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 128GB 5G 石墨綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491395",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 128GB 5G 絨絲白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491396",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 256GB 5G 幻影黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491397",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 256GB 5G 日落紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491398",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 256GB 5G 石墨綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491399",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Flip3 8GB 256GB 5G 絨絲白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491400",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Fold3 12GB 256GB 5G 冷杉綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491401",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Fold3 12GB 512GB 5G 冷杉綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491402",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Fold3 12GB 512GB 5G 幻影黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491403",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy Z Fold3 12GB 512GB 5G 鈦灰銀"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491404",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 FE 8GB 256GB 5G 橄欖綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491405",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 FE 8GB 256GB 5G 薰衣紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491406",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 FE 8GB 256GB 5G 石墨黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491407",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S21 FE 8GB 256GB 5G 幻影白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491408",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 128GB 5G 幻夜紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491409",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 128GB 5G 星際黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491410",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 128GB 5G 極光綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491411",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 128GB 5G 皎月白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491412",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 128GB 5G 雪霧粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491413",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 256GB 5G 幻夜紫"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491414",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 256GB 5G 星際黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491415",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 256GB 5G 極光綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491416",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 256GB 5G 皎月白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491417",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22 8GB 256GB 5G 雪霧粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491418",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22+ 8GB 128GB 5G 星際黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491419",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22+ 8GB 128GB 5G 極光綠"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491420",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22+ 8GB 128GB 5G 皎月白"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491421",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22+ 8GB 128GB 5G 雪霧粉"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491422",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22+ 8GB 256GB 5G 星際黑"
+    },
+    {
+      "source_table": "product_name_catalog_entries",
+      "id": "491423",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "NULL",
+      "active": "1",
+      "label": "Samsung Galaxy S22+ 8GB 256GB 5G 極光綠"
+    }
+  ],
+  "messages": [],
+  "stdout": "source_table\tid\tcategoryName\tbrandName\tsubtypeCode\tactive\tlabel\nproduct_categories\t90003\t平板電腦\tSamsung\tSamsung\t1\tNULL\nproduct_categories\t36\t智慧型手機\tSamsung\tSamsung\t1\tNULL\nproduct_categories\t35\t液晶螢幕\tSamsung\tSamsung\t1\tNULL\nproduct_categories\t90002\t穿戴型設備\tSamsung\tSamsung\t1\tNULL\nproduct_categories\t10\t耳機音響\tApple\tApple\t1\tNULL\nproduct_categories\t90001\t耳機音響\tSamsung\tSamsung\t1\tNULL\nsource_table\tid\tcategoryName\tbrandName\tsubtypeCode\tactive\tlabel\nproduct_name_catalog_entries\t491224\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A8 (2018) 4GB 32GB 4G 紫色\nproduct_name_catalog_entries\t491225\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A8 (2018) 4GB 32GB 4G 金色\nproduct_name_catalog_entries\t491226\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A8 (2018) 4GB 32GB 4G 黑色\nproduct_name_catalog_entries\t491227\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9 4GB 64GB 4G 丁香紫\nproduct_name_catalog_entries\t491228\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9 4GB 64GB 4G 珊瑚藍\nproduct_name_catalog_entries\t491229\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9 4GB 64GB 4G 午夜黑\nproduct_name_catalog_entries\t491230\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9+ 6GB 64GB 4G 珊瑚藍\nproduct_name_catalog_entries\t491231\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9+ 6GB 128GB 4G 珊瑚藍\nproduct_name_catalog_entries\t491232\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9+ 6GB 128GB 4G 丁香紫\nproduct_name_catalog_entries\t491233\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9+ 6GB 128GB 4G 午夜黑\nproduct_name_catalog_entries\t491234\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S9+ 6GB 256GB 4G 珊瑚藍\nproduct_name_catalog_entries\t491235\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note9 6GB 128GB 4G 初雪白\nproduct_name_catalog_entries\t491236\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note9 6GB 128GB 4G 湛海藍\nproduct_name_catalog_entries\t491237\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note9 6GB 128GB 4G 薰衣紫\nproduct_name_catalog_entries\t491238\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note9 6GB 128GB 4G 霧金銅\nproduct_name_catalog_entries\t491239\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note9 8GB 512GB 4G 湛海藍\nproduct_name_catalog_entries\t491240\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy J4+ 3GB 32GB 4G 桃紅色\nproduct_name_catalog_entries\t491241\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy J4+ 3GB 32GB 4G 玫瑰金\nproduct_name_catalog_entries\t491242\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy J4+ 3GB 32GB 4G 黑色\nproduct_name_catalog_entries\t491243\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A7 (2018) 4GB 128GB 4G 黑色\nproduct_name_catalog_entries\t491244\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A7 (2018) 4GB 128GB 4G 藍色\nproduct_name_catalog_entries\t491245\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A7 (2018) 4GB 128GB 4G 粉色\nproduct_name_catalog_entries\t491246\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A9 (2018) 6GB 128GB 4G 檸檬藍\nproduct_name_catalog_entries\t491247\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A9 (2018) 6GB 128GB 4G 泡泡糖粉\nproduct_name_catalog_entries\t491248\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A9 (2018) 6GB 128GB 4G 魚子醬黑\nproduct_name_catalog_entries\t491249\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A8s 6GB 128GB 4G 漸層黑\nproduct_name_catalog_entries\t491250\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A8s 6GB 128GB 4G 漸層藍\nproduct_name_catalog_entries\t491251\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A8s 6GB 128GB 4G 蜜桃蘇打\nproduct_name_catalog_entries\t491252\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10e 6GB 128GB 4G 絢光白\nproduct_name_catalog_entries\t491253\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10e 6GB 128GB 4G 絢光黑\nproduct_name_catalog_entries\t491254\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10e 6GB 128GB 4G 絢光綠\nproduct_name_catalog_entries\t491255\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10 8GB 128GB 4G 絢光白\nproduct_name_catalog_entries\t491256\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10 8GB 128GB 4G 絢光黑\nproduct_name_catalog_entries\t491257\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10 8GB 128GB 4G 絢光綠\nproduct_name_catalog_entries\t491258\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 8GB 128GB 4G 絢光白\nproduct_name_catalog_entries\t491259\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 8GB 128GB 4G 絢光黑\nproduct_name_catalog_entries\t491260\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 8GB 128GB 4G 絢光綠\nproduct_name_catalog_entries\t491261\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 8GB 512GB 4G 釉光白\nproduct_name_catalog_entries\t491262\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 8GB 512GB 4G 釉光黑\nproduct_name_catalog_entries\t491263\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 12GB 1TB 4G 釉光白\nproduct_name_catalog_entries\t491264\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S10+ 12GB 1TB 4G 釉光黑\nproduct_name_catalog_entries\t491265\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A30 4GB 64GB 4G 炫光藍\nproduct_name_catalog_entries\t491266\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A30 4GB 64GB 4G 炫光黑\nproduct_name_catalog_entries\t491267\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A30 4GB 64GB 4G 炫光白\nproduct_name_catalog_entries\t491268\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A20 3GB 32GB 4G 鏡面藍\nproduct_name_catalog_entries\t491269\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A20 3GB 32GB 4G 鏡面黑\nproduct_name_catalog_entries\t491270\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A20 3GB 32GB 4G 鏡面橘\nproduct_name_catalog_entries\t491271\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A50 6GB 128GB 4G 幻彩白\nproduct_name_catalog_entries\t491272\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A50 6GB 128GB 4G 幻彩藍\nproduct_name_catalog_entries\t491273\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A50 6GB 128GB 4G 幻彩黑\nproduct_name_catalog_entries\t491274\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A70 6GB 128GB 4G 幻彩白\nproduct_name_catalog_entries\t491275\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A70 6GB 128GB 4G 幻彩黑\nproduct_name_catalog_entries\t491276\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A70 6GB 128GB 4G 幻水藍\nproduct_name_catalog_entries\t491277\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A40s 6GB 64GB 4G 電光黑\nproduct_name_catalog_entries\t491278\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A40s 6GB 64GB 4G 電光藍\nproduct_name_catalog_entries\t491279\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A80 8GB 128GB 4G 極鏡銀\nproduct_name_catalog_entries\t491280\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A80 8GB 128GB 4G 極鏡金\nproduct_name_catalog_entries\t491281\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A80 8GB 128GB 4G 極鏡黑\nproduct_name_catalog_entries\t491282\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10 8GB 256GB 4G 星環黑\nproduct_name_catalog_entries\t491283\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10 8GB 256GB 4G 星環銀\nproduct_name_catalog_entries\t491284\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10+ 12GB 256GB 4G 星環白\nproduct_name_catalog_entries\t491285\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10+ 12GB 256GB 4G 星環藍\nproduct_name_catalog_entries\t491286\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10+ 12GB 256GB 4G 星環銀\nproduct_name_catalog_entries\t491287\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10+ 12GB 256GB 4G 星環黑\nproduct_name_catalog_entries\t491288\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note10+ 12GB 512GB 4G 星環藍\nproduct_name_catalog_entries\t491289\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A30s 4GB 128GB 4G 冰晶白\nproduct_name_catalog_entries\t491290\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A30s 4GB 128GB 4G 冰晶黑\nproduct_name_catalog_entries\t491291\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A30s 4GB 128GB 4G 冰晶綠\nproduct_name_catalog_entries\t491292\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A51 6GB 128GB 4G 晶礦黑\nproduct_name_catalog_entries\t491293\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A51 6GB 128GB 4G 晶礦白\nproduct_name_catalog_entries\t491294\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A51 6GB 128GB 4G 晶礦藍\nproduct_name_catalog_entries\t491295\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A71 8GB 128GB 4G 晶石銀\nproduct_name_catalog_entries\t491296\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A71 8GB 128GB 4G 晶石黑\nproduct_name_catalog_entries\t491297\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A71 8GB 128GB 4G 晶石粉\nproduct_name_catalog_entries\t491298\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip 8GB 256GB 4G 頑美紫\nproduct_name_catalog_entries\t491299\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip 8GB 256GB 4G 頑美黑\nproduct_name_catalog_entries\t491300\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 12GB 128GB 5G 星空灰\nproduct_name_catalog_entries\t491301\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 12GB 128GB 5G 晴空粉\nproduct_name_catalog_entries\t491302\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 12GB 128GB 5G 晴空藍\nproduct_name_catalog_entries\t491303\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20+ 12GB 128GB 5G 星空灰\nproduct_name_catalog_entries\t491304\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20+ 12GB 128GB 5G 星空黑\nproduct_name_catalog_entries\t491305\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20+ 12GB 128GB 5G 晴空白\nproduct_name_catalog_entries\t491306\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20+ 12GB 128GB 5G 晴空藍\nproduct_name_catalog_entries\t491307\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 Ultra 12GB 256GB 5G 星空灰\nproduct_name_catalog_entries\t491308\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 Ultra 12GB 256GB 5G 星空黑\nproduct_name_catalog_entries\t491309\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 Ultra 12GB 256GB 5G 晴空白\nproduct_name_catalog_entries\t491310\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A31 6GB 128GB 4G 晶絢白\nproduct_name_catalog_entries\t491311\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A31 6GB 128GB 4G 晶絢藍\nproduct_name_catalog_entries\t491312\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A31 6GB 128GB 4G 晶絢黑\nproduct_name_catalog_entries\t491313\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A21s 4GB 64GB 4G 幻石白\nproduct_name_catalog_entries\t491314\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A21s 4GB 64GB 4G 幻石藍\nproduct_name_catalog_entries\t491315\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A21s 4GB 64GB 4G 幻石黑\nproduct_name_catalog_entries\t491316\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 8GB 256GB 5G 星霧灰\nproduct_name_catalog_entries\t491317\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 8GB 256GB 5G 星霧紅\nproduct_name_catalog_entries\t491318\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 8GB 256GB 5G 星霧綠\nproduct_name_catalog_entries\t491319\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 8GB 256GB 5G 星霧金\nproduct_name_catalog_entries\t491320\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 Ultra 12GB 256GB 5G 星幻白\nproduct_name_catalog_entries\t491321\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 Ultra 12GB 256GB 5G 星幻黑\nproduct_name_catalog_entries\t491322\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 Ultra 12GB 256GB 5G 星霧金\nproduct_name_catalog_entries\t491323\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 Ultra 12GB 512GB 5G 星幻白\nproduct_name_catalog_entries\t491324\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 Ultra 12GB 512GB 5G 星幻黑\nproduct_name_catalog_entries\t491325\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Note20 Ultra 12GB 512GB 5G 星霧金\nproduct_name_catalog_entries\t491326\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Fold2 12GB 256GB 5G 星幻黑\nproduct_name_catalog_entries\t491327\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Fold2 12GB 256GB 5G 星霧金\nproduct_name_catalog_entries\t491328\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M11 3GB 32GB 4G 晨曦藍\nproduct_name_catalog_entries\t491329\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M11 3GB 32GB 4G 暮光紫\nproduct_name_catalog_entries\t491330\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M11 3GB 32GB 4G 迷霧黑\nproduct_name_catalog_entries\t491331\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 6GB 128GB 5G 療癒藍\nproduct_name_catalog_entries\t491332\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 6GB 128GB 5G 浪漫紫\nproduct_name_catalog_entries\t491333\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 6GB 128GB 5G 率真綠\nproduct_name_catalog_entries\t491334\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 6GB 128GB 5G 狂野紅\nproduct_name_catalog_entries\t491335\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 6GB 128GB 5G 清新白\nproduct_name_catalog_entries\t491336\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 8GB 256GB 5G 療癒藍\nproduct_name_catalog_entries\t491337\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S20 FE 8GB 256GB 5G 清新白\nproduct_name_catalog_entries\t491338\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A42 6GB 128GB 5G 絢幻灰\nproduct_name_catalog_entries\t491339\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A42 6GB 128GB 5G 絢幻白\nproduct_name_catalog_entries\t491340\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A42 6GB 128GB 5G 絢幻黑\nproduct_name_catalog_entries\t491341\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 8GB 128GB 5G 星魅灰\nproduct_name_catalog_entries\t491342\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 8GB 128GB 5G 星魅紫\nproduct_name_catalog_entries\t491343\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 8GB 256GB 5G 星魅灰\nproduct_name_catalog_entries\t491344\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 8GB 256GB 5G 星魅白\nproduct_name_catalog_entries\t491345\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 8GB 256GB 5G 星魅粉\nproduct_name_catalog_entries\t491346\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 8GB 256GB 5G 星魅紫\nproduct_name_catalog_entries\t491347\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21+ 8GB 128GB 5G 星魅紫\nproduct_name_catalog_entries\t491348\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21+ 8GB 128GB 5G 星魅銀\nproduct_name_catalog_entries\t491349\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21+ 8GB 256GB 5G 星魅灰\nproduct_name_catalog_entries\t491350\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21+ 8GB 256GB 5G 星魅紫\nproduct_name_catalog_entries\t491351\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21+ 8GB 256GB 5G 星魅銀\nproduct_name_catalog_entries\t491352\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 Ultra 12GB 256GB 5G 星魅銀\nproduct_name_catalog_entries\t491353\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 Ultra 12GB 256GB 5G 星魅黑\nproduct_name_catalog_entries\t491354\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 Ultra 16GB 512GB 5G 星魅銀\nproduct_name_catalog_entries\t491355\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 Ultra 16GB 512GB 5G 星魅黑\nproduct_name_catalog_entries\t491356\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 4GB 64GB 5G 晶藍豆豆\nproduct_name_catalog_entries\t491357\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 4GB 64GB 5G 沁白豆豆\nproduct_name_catalog_entries\t491358\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 4GB 64GB 5G 潮黑豆豆\nproduct_name_catalog_entries\t491359\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 4GB 64GB 5G 絢紫豆豆\nproduct_name_catalog_entries\t491360\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 6GB 128GB 5G 晶藍豆豆\nproduct_name_catalog_entries\t491361\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 6GB 128GB 5G 沁白豆豆\nproduct_name_catalog_entries\t491362\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 6GB 128GB 5G 潮黑豆豆\nproduct_name_catalog_entries\t491363\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A32 6GB 128GB 5G 絢紫豆豆\nproduct_name_catalog_entries\t491364\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M12 4GB 128GB 4G 超鯊黑\nproduct_name_catalog_entries\t491365\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M12 4GB 128GB 4G 超鯊藍\nproduct_name_catalog_entries\t491366\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M12 4GB 128GB 4G 超鯊綠\nproduct_name_catalog_entries\t491367\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 6GB 128GB 5G 晶藍豆豆\nproduct_name_catalog_entries\t491368\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 6GB 128GB 5G 沁白豆豆\nproduct_name_catalog_entries\t491369\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 6GB 128GB 5G 潮黑豆豆\nproduct_name_catalog_entries\t491370\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 6GB 128GB 5G 絢紫豆豆\nproduct_name_catalog_entries\t491371\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 8GB 256GB 5G 晶藍豆豆\nproduct_name_catalog_entries\t491372\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 8GB 256GB 5G 沁白豆豆\nproduct_name_catalog_entries\t491373\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 8GB 256GB 5G 潮黑豆豆\nproduct_name_catalog_entries\t491374\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52 8GB 256GB 5G 絢紫豆豆\nproduct_name_catalog_entries\t491375\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A22 4GB 64GB 5G 冰河霧\nproduct_name_catalog_entries\t491376\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A22 4GB 64GB 5G 松墨霧\nproduct_name_catalog_entries\t491377\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A22 4GB 64GB 5G 薄荷霧\nproduct_name_catalog_entries\t491378\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A22 4GB 128GB 5G 冰河霧\nproduct_name_catalog_entries\t491379\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A22 4GB 128GB 5G 松墨霧\nproduct_name_catalog_entries\t491380\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A22 4GB 128GB 5G 薄荷霧\nproduct_name_catalog_entries\t491381\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M32 6GB 128GB 4G 超鯊黑\nproduct_name_catalog_entries\t491382\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M32 6GB 128GB 4G 超鯊藍\nproduct_name_catalog_entries\t491383\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy M32 6GB 128GB 4G 超鯊白\nproduct_name_catalog_entries\t491384\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 6GB 128GB 5G 沁白豆豆\nproduct_name_catalog_entries\t491385\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 6GB 128GB 5G 漾綠豆豆\nproduct_name_catalog_entries\t491386\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 6GB 128GB 5G 潮黑豆豆\nproduct_name_catalog_entries\t491387\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 6GB 128GB 5G 絢紫豆豆\nproduct_name_catalog_entries\t491388\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 8GB 256GB 5G 沁白豆豆\nproduct_name_catalog_entries\t491389\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 8GB 256GB 5G 漾綠豆豆\nproduct_name_catalog_entries\t491390\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 8GB 256GB 5G 潮黑豆豆\nproduct_name_catalog_entries\t491391\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy A52s 8GB 256GB 5G 絢紫豆豆\nproduct_name_catalog_entries\t491392\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 128GB 5G 幻影黑\nproduct_name_catalog_entries\t491393\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 128GB 5G 日落紫\nproduct_name_catalog_entries\t491394\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 128GB 5G 石墨綠\nproduct_name_catalog_entries\t491395\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 128GB 5G 絨絲白\nproduct_name_catalog_entries\t491396\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 256GB 5G 幻影黑\nproduct_name_catalog_entries\t491397\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 256GB 5G 日落紫\nproduct_name_catalog_entries\t491398\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 256GB 5G 石墨綠\nproduct_name_catalog_entries\t491399\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Flip3 8GB 256GB 5G 絨絲白\nproduct_name_catalog_entries\t491400\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Fold3 12GB 256GB 5G 冷杉綠\nproduct_name_catalog_entries\t491401\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Fold3 12GB 512GB 5G 冷杉綠\nproduct_name_catalog_entries\t491402\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Fold3 12GB 512GB 5G 幻影黑\nproduct_name_catalog_entries\t491403\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy Z Fold3 12GB 512GB 5G 鈦灰銀\nproduct_name_catalog_entries\t491404\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 FE 8GB 256GB 5G 橄欖綠\nproduct_name_catalog_entries\t491405\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 FE 8GB 256GB 5G 薰衣紫\nproduct_name_catalog_entries\t491406\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 FE 8GB 256GB 5G 石墨黑\nproduct_name_catalog_entries\t491407\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S21 FE 8GB 256GB 5G 幻影白\nproduct_name_catalog_entries\t491408\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 128GB 5G 幻夜紫\nproduct_name_catalog_entries\t491409\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 128GB 5G 星際黑\nproduct_name_catalog_entries\t491410\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 128GB 5G 極光綠\nproduct_name_catalog_entries\t491411\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 128GB 5G 皎月白\nproduct_name_catalog_entries\t491412\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 128GB 5G 雪霧粉\nproduct_name_catalog_entries\t491413\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 256GB 5G 幻夜紫\nproduct_name_catalog_entries\t491414\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 256GB 5G 星際黑\nproduct_name_catalog_entries\t491415\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 256GB 5G 極光綠\nproduct_name_catalog_entries\t491416\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 256GB 5G 皎月白\nproduct_name_catalog_entries\t491417\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22 8GB 256GB 5G 雪霧粉\nproduct_name_catalog_entries\t491418\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22+ 8GB 128GB 5G 星際黑\nproduct_name_catalog_entries\t491419\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22+ 8GB 128GB 5G 極光綠\nproduct_name_catalog_entries\t491420\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22+ 8GB 128GB 5G 皎月白\nproduct_name_catalog_entries\t491421\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22+ 8GB 128GB 5G 雪霧粉\nproduct_name_catalog_entries\t491422\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22+ 8GB 256GB 5G 星際黑\nproduct_name_catalog_entries\t491423\t智慧型手機\tSamsung\tNULL\t1\tSamsung Galaxy S22+ 8GB 256GB 5G 極光綠\n",
+  "stderr": "",
+  "execution_time_ms": 2045
+}

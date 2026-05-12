@@ -1,0 +1,22 @@
+{
+  "query": "SELECT LEFT(p.batchNo, 3) AS prefix_code, COUNT(*) AS target_count\nFROM `products` p\nJOIN `station_tasks` st ON st.`productId` = p.`id`\nWHERE st.`stationCode` = 'E'\n  AND st.`stationTaskStatus` = 'completed'\n  AND (p.`batchNo` LIKE '005%' OR p.`batchNo` LIKE '013%' OR p.`batchNo` LIKE '019%')\n  AND JSON_UNQUOTE(JSON_EXTRACT(st.`metadata`, '$.eFrontPhotoUrl')) LIKE '/manus-storage/%'\n  AND JSON_UNQUOTE(JSON_EXTRACT(st.`metadata`, '$.eBackPhotoUrl')) LIKE '/manus-storage/%'\nGROUP BY LEFT(p.`batchNo`, 3)\nORDER BY prefix_code;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT LEFT(p.batchNo, 3) AS prefix_code, COUNT(*) AS target_count\nFROM `products` p\nJOIN `station_tasks` st ON st.`productId` = p.`id`\nWHERE st.`stationCode` = 'E'\n  AND st.`stationTaskStatus` = 'completed'\n  AND (p.`batchNo` LIKE '005%' OR p.`batchNo` LIKE '013%' OR p.`batchNo` LIKE '019%')\n  AND JSON_UNQUOTE(JSON_EXTRACT(st.`metadata`, '$.eFrontPhotoUrl')) LIKE '/manus-storage/%'\n  AND JSON_UNQUOTE(JSON_EXTRACT(st.`metadata`, '$.eBackPhotoUrl')) LIKE '/manus-storage/%'\nGROUP BY LEFT(p.`batchNo`, 3)\nORDER BY prefix_code;",
+  "rows": [
+    {
+      "prefix_code": "005",
+      "target_count": "73"
+    },
+    {
+      "prefix_code": "013",
+      "target_count": "25"
+    },
+    {
+      "prefix_code": "019",
+      "target_count": "14"
+    }
+  ],
+  "messages": [],
+  "stdout": "prefix_code\ttarget_count\n005\t73\n013\t25\n019\t14\n",
+  "stderr": "",
+  "execution_time_ms": 1771
+}

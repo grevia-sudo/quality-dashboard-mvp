@@ -46,10 +46,11 @@ describe("E 站照片上傳 source coverage", () => {
     expect(routersSource).toContain("eBackPhoto: stationPhotoInputSchema.optional()");
   });
 
-  it("queues E station photos for true background sync and uploads them through deploy-safe storage in the worker", () => {
+  it("queues E station photos for true background sync and uploads them into the configured Google Drive folder in the worker", () => {
     expect(dbSource).toContain('uploadStationPhotoToGoogleDrive');
-    expect(dbSource).toContain('storagePut(');
-    expect(dbSource).toContain('e-station-photos/');
+    expect(dbSource).toContain('getGoogleDriveAccessToken()');
+    expect(dbSource).toContain('upload/drive/v3/files');
+    expect(dbSource).toContain('E_STATION_GOOGLE_DRIVE_FOLDER_ID');
     expect(dbSource).toContain('ePhotoPendingUploads');
     expect(dbSource).toContain('ePhotoSyncStatus = "queued_background"');
     expect(dbSource).toContain('ePhotoSyncMessage = "E 站照片已排入背景同步佇列"');

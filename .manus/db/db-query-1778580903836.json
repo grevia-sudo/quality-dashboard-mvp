@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, categoryName, brandName, subtypeCode, active FROM product_categories WHERE categoryName = '耳機音響' AND brandName = 'Samsung';\nSELECT COUNT(*) AS catalog_count FROM product_name_catalog_entries WHERE active = 1 AND categoryName = '耳機音響' AND brandName = 'Samsung';\nSELECT id, label, active FROM product_name_catalog_entries WHERE categoryName = '耳機音響' AND brandName = 'Samsung' ORDER BY id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, categoryName, brandName, subtypeCode, active FROM product_categories WHERE categoryName = '耳機音響' AND brandName = 'Samsung';\nSELECT COUNT(*) AS catalog_count FROM product_name_catalog_entries WHERE active = 1 AND categoryName = '耳機音響' AND brandName = 'Samsung';\nSELECT id, label, active FROM product_name_catalog_entries WHERE categoryName = '耳機音響' AND brandName = 'Samsung' ORDER BY id DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "90001",
+      "categoryName": "耳機音響",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1"
+    }
+  ],
+  "messages": [
+    "catalog_count",
+    "0"
+  ],
+  "stdout": "id\tcategoryName\tbrandName\tsubtypeCode\tactive\n90001\t耳機音響\tSamsung\tSamsung\t1\ncatalog_count\n0\n",
+  "stderr": "",
+  "execution_time_ms": 2242
+}

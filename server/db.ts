@@ -28,7 +28,6 @@ import {
 import { ENV } from "./_core/env";
 import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "./pending-stock-mismatch";
 import { deletePurchaseOrderRowsFromGoogleSheet } from "./purchase-sheet-delete-sync";
-import { storagePut } from "./storage";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
 const PRODUCTIVITY_TRACKED_STATION_CODES = ["A1", "A2", "B", "C", "E"] as const;
@@ -49,6 +48,7 @@ const PRODUCT_NAME_SYNC_COLUMN_RANGE = `${PRODUCT_NAME_SYNC_SHEET_NAME}!H:N`;
 const PURCHASE_SHEET_SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 const PURCHASE_SHEET_NAME = "採購單";
 const PURCHASE_SHEET_SYNC_DB_RETRYABLE_PATTERN = /ECONNRESET|PROTOCOL_CONNECTION_LOST|ETIMEDOUT|Connection lost|The server closed the connection/i;
+const E_STATION_GOOGLE_DRIVE_FOLDER_ID = "0AGU-A31NmApoUk9PVA";
 
 function toDateKey(value: Date) {
   return value.toISOString().slice(0, 10);
@@ -1021,24 +1021,49 @@ function decodeStationPhotoDataUrl(photo: StationPhotoUploadInput) {
 
 async function uploadStationPhotoToGoogleDrive(photo: StationPhotoUploadInput) {
   const { mimeType, buffer } = decodeStationPhotoDataUrl(photo);
+  const accessToken = await getGoogleDriveAccessToken();
+  const fileName = photo.fileName || `e-station-photo-${Date.now()}.jpg`;
+  const metadata = {
+    name: fileName,
+    parents: [E_STATION_GOOGLE_DRIVE_FOLDER_ID],
+  };
+  const boundary = `manus_drive_upload_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  const delimiter = `--${boundary}\r\n`;
+  const closeDelimiter = `--${boundary}--`;
+  const multipartBody = Buffer.concat([
+    Buffer.from(`${delimiter}Content-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`, "utf8"),
+    Buffer.from(`${delimiter}Content-Type: ${mimeType}\r\n\r\n`, "utf8"),
+    buffer,
+    Buffer.from(`\r\n${closeDelimiter}`, "utf8"),
+  ]);
 
-  try {
-    const uploaded = await storagePut(
-      `e-station-photos/${photo.fileName || `e-station-photo-${Date.now()}.jpg`}`,
-      buffer,
-      mimeType,
-    );
+  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink,webContentLink,name,parents", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`,
+    },
+    body: multipartBody,
+  });
 
-    return {
-      driveFileId: uploaded.key,
-      driveUrl: uploaded.url,
-      mimeType,
-      fileName: photo.fileName,
-    } satisfies StationPhotoUploadReference;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`上傳 E 站照片失敗：${message}`);
+  const result = await response.json() as {
+    id?: string;
+    name?: string;
+    webViewLink?: string;
+    webContentLink?: string;
+    error?: { message?: string };
+  };
+
+  if (!response.ok || !result.id) {
+    throw new Error(result.error?.message || "Google Drive 上傳失敗");
   }
+
+  return {
+    driveFileId: result.id,
+    driveUrl: result.webViewLink ?? result.webContentLink ?? `https://drive.google.com/file/d/${result.id}/view`,
+    mimeType,
+    fileName,
+  } satisfies StationPhotoUploadReference;
 }
 
 function buildEStationPhotoFileNameBase(batchNo: string) {

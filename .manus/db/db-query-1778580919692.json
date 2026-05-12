@@ -1,0 +1,15 @@
+{
+  "query": "SELECT categoryName, brandName, COUNT(*) AS catalog_count FROM product_name_catalog_entries WHERE active = 1 AND categoryName = '耳機音響' GROUP BY categoryName, brandName ORDER BY brandName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT categoryName, brandName, COUNT(*) AS catalog_count FROM product_name_catalog_entries WHERE active = 1 AND categoryName = '耳機音響' GROUP BY categoryName, brandName ORDER BY brandName;",
+  "rows": [
+    {
+      "categoryName": "耳機音響",
+      "brandName": "Apple",
+      "catalog_count": "22"
+    }
+  ],
+  "messages": [],
+  "stdout": "categoryName\tbrandName\tcatalog_count\n耳機音響\tApple\t22\n",
+  "stderr": "",
+  "execution_time_ms": 1714
+}
