@@ -273,3 +273,7 @@
 - [x] 修正 D 站修改 C 站結果時，未完整帶出 C 站原本已勾選項目的問題，並補上對應回歸測試
 - [x] 補上 D 站修改 C 站結果的直接行為測試：建立含 C 站 fault/appearance/camera option ids 的任務資料，驗證 D 站畫面會實際將對應 checkbox 預設為已勾選
 - [x] 補上 D 站回填的整合測試：驗證當 task metadata 與摘要文字不同時，D 站仍優先依 taskMetadata 的原始 option ids 完整帶出 C 站勾選結果
+- [x] 依使用者提供的 PO 清單安全移除系統內對應資料與必要關聯紀錄，不影響其餘正式資料
+- [x] 依使用者提供的 Google KPI 計算表重新核對每位人員在 A1、A2、B、C、D、E 各站得分與總分，找出與系統不一致的原因
+- [ ] 刪除指定 PO 後同步重算受影響人員與日期的 engineer_daily_productivity，或先清除受影響舊彙總後再重建
+- [ ] 補上 PO 清理後的驗證：確認剩餘正式資料的 KPI 彙總與 productivity_score_details 明細一致，且無殘留或重複的 engineer_daily_productivity 日彙總列

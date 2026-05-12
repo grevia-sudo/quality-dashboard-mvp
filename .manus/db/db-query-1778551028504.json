@@ -1,0 +1,983 @@
+{
+  "query": "SELECT stationCode, subtypeCode, dailyTargetQty, baseUnitPoints, effectiveFrom\nFROM productivity_target_configs\nORDER BY stationCode, subtypeCode, effectiveFrom DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT stationCode, subtypeCode, dailyTargetQty, baseUnitPoints, effectiveFrom\nFROM productivity_target_configs\nORDER BY stationCode, subtypeCode, effectiveFrom DESC;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "DELL",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Gigabyte",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "GOLIFE",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "HP",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Lenovo",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "PAPAGO",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "TOSHIBA",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A1",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "359",
+      "baseUnitPoints": "0.002786",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "A2",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "B",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "80",
+      "baseUnitPoints": "0.012500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "80",
+      "baseUnitPoints": "0.012500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "DELL",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Gigabyte",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "HP",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Lenovo",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "TOSHIBA",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "C",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "201",
+      "baseUnitPoints": "0.004975",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "DELL",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Gigabyte",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "HP",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Lenovo",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "TOSHIBA",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "D",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    },
+    {
+      "stationCode": "E",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tsubtypeCode\tdailyTargetQty\tbaseUnitPoints\teffectiveFrom\nA1\tAcer\t250\t0.004000\t2026-04-28\nA1\tAcer\t200\t0.005000\t2026-04-28\nA1\tApple\t400\t0.002500\t2026-04-28\nA1\tApple\t200\t0.005000\t2026-04-28\nA1\tApple\t400\t0.002500\t2026-04-28\nA1\tApple\t250\t0.004000\t2026-04-28\nA1\tApple\t200\t0.005000\t2026-04-28\nA1\tApple\t360\t0.002778\t2026-04-28\nA1\tApple\t360\t0.002778\t2026-04-28\nA1\tApple\t200\t0.005000\t2026-04-28\nA1\tApple\t200\t0.005000\t2026-04-28\nA1\tASUS\t360\t0.002778\t2026-04-28\nA1\tDELL\t250\t0.004000\t2026-04-28\nA1\tGigabyte\t200\t0.005000\t2026-04-28\nA1\tGOLIFE\t400\t0.002500\t2026-04-28\nA1\tGoogle\t360\t0.002778\t2026-04-28\nA1\tHP\t250\t0.004000\t2026-04-28\nA1\tLenovo\t250\t0.004000\t2026-04-28\nA1\tMotorola\t360\t0.002778\t2026-04-28\nA1\tMSI\t200\t0.005000\t2026-04-28\nA1\tMSI\t200\t0.005000\t2026-04-28\nA1\tMSI\t250\t0.004000\t2026-04-28\nA1\tOPPO\t360\t0.002778\t2026-04-28\nA1\tPAPAGO\t400\t0.002500\t2026-04-28\nA1\tPOCO\t360\t0.002778\t2026-04-28\nA1\tRedmi\t360\t0.002778\t2026-04-28\nA1\tRedmi\t360\t0.002778\t2026-04-28\nA1\tSamsung\t360\t0.002778\t2026-04-28\nA1\tSamsung\t200\t0.005000\t2026-04-28\nA1\tSONY\t360\t0.002778\t2026-04-28\nA1\tTOSHIBA\t250\t0.004000\t2026-04-28\nA1\tvivo\t360\t0.002778\t2026-04-28\nA1\tXiaomi\t360\t0.002778\t2026-04-28\nA1\tXiaomi\t360\t0.002778\t2026-04-28\nA2\tApple\t360\t0.002778\t2026-04-28\nA2\tApple\t360\t0.002778\t2026-04-28\nA2\tASUS\t360\t0.002778\t2026-04-28\nA2\tGoogle\t360\t0.002778\t2026-04-28\nA2\tMotorola\t360\t0.002778\t2026-04-28\nA2\tOPPO\t360\t0.002778\t2026-04-28\nA2\tPOCO\t360\t0.002778\t2026-04-28\nA2\tRedmi\t360\t0.002778\t2026-04-28\nA2\tRedmi\t359\t0.002786\t2026-04-28\nA2\tSamsung\t360\t0.002778\t2026-04-28\nA2\tSONY\t360\t0.002778\t2026-04-28\nA2\tvivo\t360\t0.002778\t2026-04-28\nA2\tXiaomi\t360\t0.002778\t2026-04-28\nA2\tXiaomi\t360\t0.002778\t2026-04-28\nB\tApple\t160\t0.006250\t2026-04-28\nB\tApple\t160\t0.006250\t2026-04-28\nB\tApple\t160\t0.006250\t2026-04-28\nB\tASUS\t160\t0.006250\t2026-04-28\nB\tGoogle\t160\t0.006250\t2026-04-28\nB\tMotorola\t160\t0.006250\t2026-04-28\nB\tOPPO\t160\t0.006250\t2026-04-28\nB\tPOCO\t160\t0.006250\t2026-04-28\nB\tRedmi\t160\t0.006250\t2026-04-28\nB\tRedmi\t160\t0.006250\t2026-04-28\nB\tSamsung\t160\t0.006250\t2026-04-28\nB\tSONY\t160\t0.006250\t2026-04-28\nB\tvivo\t160\t0.006250\t2026-04-28\nB\tXiaomi\t159\t0.006289\t2026-04-28\nB\tXiaomi\t160\t0.006250\t2026-04-28\nC\tAcer\t120\t0.008333\t2026-04-28\nC\tAcer\t40\t0.025000\t2026-04-28\nC\tApple\t80\t0.012500\t2026-04-28\nC\tApple\t160\t0.006250\t2026-04-28\nC\tApple\t120\t0.008333\t2026-04-28\nC\tApple\t160\t0.006250\t2026-04-28\nC\tApple\t80\t0.012500\t2026-04-28\nC\tApple\t40\t0.025000\t2026-04-28\nC\tApple\t159\t0.006289\t2026-04-28\nC\tApple\t40\t0.025000\t2026-04-28\nC\tASUS\t160\t0.006250\t2026-04-28\nC\tDELL\t40\t0.025000\t2026-04-28\nC\tGigabyte\t120\t0.008333\t2026-04-28\nC\tGoogle\t160\t0.006250\t2026-04-28\nC\tHP\t40\t0.025000\t2026-04-28\nC\tLenovo\t40\t0.025000\t2026-04-28\nC\tMotorola\t160\t0.006250\t2026-04-28\nC\tMSI\t40\t0.025000\t2026-04-28\nC\tMSI\t120\t0.008333\t2026-04-28\nC\tMSI\t40\t0.025000\t2026-04-28\nC\tOPPO\t160\t0.006250\t2026-04-28\nC\tPOCO\t160\t0.006250\t2026-04-28\nC\tRedmi\t160\t0.006250\t2026-04-28\nC\tRedmi\t160\t0.006250\t2026-04-28\nC\tSamsung\t160\t0.006250\t2026-04-28\nC\tSamsung\t120\t0.008333\t2026-04-28\nC\tSONY\t160\t0.006250\t2026-04-28\nC\tTOSHIBA\t40\t0.025000\t2026-04-28\nC\tvivo\t160\t0.006250\t2026-04-28\nC\tXiaomi\t160\t0.006250\t2026-04-28\nC\tXiaomi\t160\t0.006250\t2026-04-28\nD\tAcer\t150\t0.006667\t2026-04-28\nD\tAcer\t150\t0.006667\t2026-04-28\nD\tApple\t150\t0.006667\t2026-04-28\nD\tApple\t150\t0.006667\t2026-04-28\nD\tApple\t200\t0.005000\t2026-04-28\nD\tApple\t201\t0.004975\t2026-04-28\nD\tApple\t150\t0.006667\t2026-04-28\nD\tApple\t150\t0.006667\t2026-04-28\nD\tApple\t200\t0.005000\t2026-04-28\nD\tApple\t150\t0.006667\t2026-04-28\nD\tASUS\t200\t0.005000\t2026-04-28\nD\tDELL\t150\t0.006667\t2026-04-28\nD\tGigabyte\t150\t0.006667\t2026-04-28\nD\tGoogle\t200\t0.005000\t2026-04-28\nD\tHP\t150\t0.006667\t2026-04-28\nD\tLenovo\t150\t0.006667\t2026-04-28\nD\tMotorola\t200\t0.005000\t2026-04-28\nD\tMSI\t150\t0.006667\t2026-04-28\nD\tMSI\t150\t0.006667\t2026-04-28\nD\tMSI\t150\t0.006667\t2026-04-28\nD\tOPPO\t200\t0.005000\t2026-04-28\nD\tPOCO\t200\t0.005000\t2026-04-28\nD\tRedmi\t200\t0.005000\t2026-04-28\nD\tRedmi\t200\t0.005000\t2026-04-28\nD\tSamsung\t200\t0.005000\t2026-04-28\nD\tSamsung\t150\t0.006667\t2026-04-28\nD\tSONY\t200\t0.005000\t2026-04-28\nD\tTOSHIBA\t150\t0.006667\t2026-04-28\nD\tvivo\t200\t0.005000\t2026-04-28\nD\tXiaomi\t200\t0.005000\t2026-04-28\nD\tXiaomi\t200\t0.005000\t2026-04-28\nE\tApple\t400\t0.002500\t2026-04-28\nE\tApple\t400\t0.002500\t2026-04-28\nE\tASUS\t400\t0.002500\t2026-04-28\nE\tGoogle\t400\t0.002500\t2026-04-28\nE\tMotorola\t400\t0.002500\t2026-04-28\nE\tOPPO\t400\t0.002500\t2026-04-28\nE\tPOCO\t400\t0.002500\t2026-04-28\nE\tRedmi\t400\t0.002500\t2026-04-28\nE\tRedmi\t400\t0.002500\t2026-04-28\nE\tSamsung\t400\t0.002500\t2026-04-28\nE\tSONY\t400\t0.002500\t2026-04-28\nE\tvivo\t400\t0.002500\t2026-04-28\nE\tXiaomi\t400\t0.002500\t2026-04-28\nE\tXiaomi\t400\t0.002500\t2026-04-28\n",
+  "stderr": "",
+  "execution_time_ms": 1757
+}
