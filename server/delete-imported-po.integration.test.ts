@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { and, eq, inArray } from "drizzle-orm";
 import { completeStationTask, deleteImportedPurchaseOrder, getDb } from "./db";
 import {
+  engineerDailyProductivity,
   products,
   productivityScoreDetails,
   samplingResults,
@@ -155,8 +156,10 @@ describe("deleteImportedPurchaseOrder integration", () => {
       reworkToStationCode: "C",
     });
 
+    const businessDate = new Date("2026-05-04T00:00:00Z");
+
     await db.insert(productivityScoreDetails).values({
-      businessDate: new Date("2026-05-04T00:00:00Z"),
+      businessDate,
       userId: actor.id,
       stationEventId: insertedEvents[0]!.id,
       productId: insertedProducts[0]!.id,
@@ -166,6 +169,22 @@ describe("deleteImportedPurchaseOrder integration", () => {
       reworkFactor: "1.0000",
       qualityFactor: "1.0000",
       earnedPoints: "1.000000",
+    });
+
+    await db.insert(engineerDailyProductivity).values({
+      businessDate,
+      userId: actor.id,
+      attendanceFlag: true,
+      totalPoints: "1.500000",
+      rawAchievementRate: "150.00",
+      kpiAchievementRate: "100.00",
+      overAchievementRate: "50.00",
+      samplingFailRate: "0.0000",
+      reworkRate: "0.0000",
+      overdueCount: 0,
+      avgProcessHours: "0.00",
+      attendanceFairnessFactor: "1.0000",
+      finalKpiScore: "100.000000",
     });
 
     const result = await deleteImportedPurchaseOrder({
@@ -184,12 +203,13 @@ describe("deleteImportedPurchaseOrder integration", () => {
       reason: "test_environment",
     });
 
-    const [remainingProducts, remainingTasks, remainingEvents, remainingSampling, remainingScores, deletionLogs] = await Promise.all([
+    const [remainingProducts, remainingTasks, remainingEvents, remainingSampling, remainingScores, remainingDailySummaries, deletionLogs] = await Promise.all([
       db.select({ id: products.id }).from(products).where(eq(products.poNumber, poNumber)),
       db.select({ id: stationTasks.id }).from(stationTasks).where(inArray(stationTasks.productId, insertedProducts.map((product) => product.id))),
       db.select({ id: stationEvents.id }).from(stationEvents).where(inArray(stationEvents.productId, insertedProducts.map((product) => product.id))),
       db.select({ id: samplingResults.id }).from(samplingResults).where(eq(samplingResults.productId, insertedProducts[0]!.id)),
       db.select({ id: productivityScoreDetails.id }).from(productivityScoreDetails).where(eq(productivityScoreDetails.productId, insertedProducts[0]!.id)),
+      db.select({ id: engineerDailyProductivity.id }).from(engineerDailyProductivity).where(and(eq(engineerDailyProductivity.userId, actor.id), eq(engineerDailyProductivity.businessDate, businessDate))),
       db.select().from(purchaseOrderDeletionLogs).where(eq(purchaseOrderDeletionLogs.poNumber, poNumber)),
     ]);
 
@@ -198,6 +218,7 @@ describe("deleteImportedPurchaseOrder integration", () => {
     expect(remainingEvents).toHaveLength(0);
     expect(remainingSampling).toHaveLength(0);
     expect(remainingScores).toHaveLength(0);
+    expect(remainingDailySummaries).toHaveLength(0);
     expect(deletionLogs).toHaveLength(1);
     expect(deletionLogs[0]).toMatchObject({
       poNumber,

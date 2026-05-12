@@ -9,6 +9,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -254,7 +255,10 @@ export const engineerDailyProductivity = mysqlTable("engineer_daily_productivity
   finalKpiScore: decimal("finalKpiScore", { precision: 12, scale: 6 }).default("0.000000").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  userDateUniqueIdx: uniqueIndex("engineer_daily_productivity_user_date_unique_idx").on(table.userId, table.businessDate),
+  userDateIdx: index("engineer_daily_productivity_user_date_idx").on(table.userId, table.businessDate),
+}));
 
 export const supportTaskCompensations = mysqlTable("support_task_compensations", {
   id: int("id").autoincrement().primaryKey(),

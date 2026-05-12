@@ -1,0 +1,2 @@
+ALTER TABLE `engineer_daily_productivity` ADD CONSTRAINT `engineer_daily_productivity_user_date_unique_idx` UNIQUE(`userId`,`businessDate`);--> statement-breakpoint
+CREATE INDEX `engineer_daily_productivity_user_date_idx` ON `engineer_daily_productivity` (`userId`,`businessDate`);

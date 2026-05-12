@@ -221,20 +221,35 @@ export async function syncEngineerDailyProductivityRecord(
     finalKpiScore: finalKpiScore.toFixed(6),
   };
 
-  const existingRow = await db
+  const existingRows = await db
     .select({ id: engineerDailyProductivity.id })
     .from(engineerDailyProductivity)
     .where(and(
       eq(engineerDailyProductivity.userId, input.userId),
       eq(engineerDailyProductivity.businessDate, input.businessDateValue),
-    ))
-    .limit(1);
+    ));
 
-  if (existingRow[0]) {
+  const hasAnyRelevantActivity = dailyDetails.length > 0
+    || dailyEvents.length > 0
+    || dailySampling.length > 0
+    || dailySupportRows.length > 0;
+
+  if (!hasAnyRelevantActivity) {
+    if (existingRows.length > 0) {
+      await db.delete(engineerDailyProductivity).where(inArray(engineerDailyProductivity.id, existingRows.map((row) => row.id)));
+    }
+    return;
+  }
+
+  if (existingRows[0]) {
     await db
       .update(engineerDailyProductivity)
       .set(payload)
-      .where(eq(engineerDailyProductivity.id, existingRow[0].id));
+      .where(eq(engineerDailyProductivity.id, existingRows[0].id));
+
+    if (existingRows.length > 1) {
+      await db.delete(engineerDailyProductivity).where(inArray(engineerDailyProductivity.id, existingRows.slice(1).map((row) => row.id)));
+    }
     return;
   }
 
@@ -243,6 +258,16 @@ export async function syncEngineerDailyProductivityRecord(
     userId: input.userId,
     ...payload,
   });
+}
+
+async function syncEngineerDailyProductivityRecords(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  items: Array<{ userId: number; businessDateValue: Date }>,
+) {
+  const dedupedItems = Array.from(new Map(items.map((item) => [`${item.userId}-${toDateKey(item.businessDateValue)}`, item])).values());
+  for (const item of dedupedItems) {
+    await syncEngineerDailyProductivityRecord(db, item);
+  }
 }
 
 export async function backfillProductivityFromCompletedEvents(
@@ -6108,10 +6133,34 @@ export async function deleteImportedPurchaseOrder(input: {
   }
 
   const stationEventRows = await db
-    .select({ id: stationEvents.id })
+    .select({ id: stationEvents.id, operatorUserId: stationEvents.operatorUserId, businessDate: stationEvents.businessDate })
     .from(stationEvents)
     .where(inArray(stationEvents.productId, productIds));
   const stationEventIds = stationEventRows.map((row) => row.id);
+  const samplingRows = await db
+    .select({ sampledByUserId: samplingResults.sampledByUserId, sampleDate: samplingResults.sampleDate })
+    .from(samplingResults)
+    .where(inArray(samplingResults.productId, productIds));
+  const affectedProductivityItems = new Map<string, { userId: number; businessDateValue: Date }>();
+
+  stationEventRows.forEach((row) => {
+    if (!row.operatorUserId) {
+      return;
+    }
+    affectedProductivityItems.set(`${row.operatorUserId}-${toDateKey(row.businessDate)}`, {
+      userId: row.operatorUserId,
+      businessDateValue: row.businessDate,
+    });
+  });
+  samplingRows.forEach((row) => {
+    if (!row.sampledByUserId) {
+      return;
+    }
+    affectedProductivityItems.set(`${row.sampledByUserId}-${toDateKey(row.sampleDate)}`, {
+      userId: row.sampledByUserId,
+      businessDateValue: row.sampleDate,
+    });
+  });
 
   if (stationEventIds.length > 0) {
     await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.stationEventId, stationEventIds));
@@ -6139,6 +6188,8 @@ export async function deleteImportedPurchaseOrder(input: {
     deletedByUserId: input.deletedByUserId ?? null,
     deletedByName: normalizeOptionalText(input.deletedByName) ?? null,
   });
+
+  await syncEngineerDailyProductivityRecords(db, Array.from(affectedProductivityItems.values()));
 
   let googleSheetSync: {
     success: boolean;
