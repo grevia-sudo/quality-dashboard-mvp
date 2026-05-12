@@ -1,0 +1,17 @@
+{
+  "query": "SELECT\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN `sheetRowNumber` IS NULL THEN 1 ELSE 0 END) AS missing_sheet_row_number,\n  SUM(CASE WHEN `lastSheetSyncedAt` IS NULL THEN 1 ELSE 0 END) AS missing_last_sheet_synced_at,\n  SUM(CASE WHEN `sheetRowNumber` IS NOT NULL THEN 1 ELSE 0 END) AS has_sheet_row_number,\n  COUNT(DISTINCT `sheetRowNumber`) AS distinct_sheet_row_numbers\nFROM products\nWHERE `poNumber` = 'PO-20260512-03';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN `sheetRowNumber` IS NULL THEN 1 ELSE 0 END) AS missing_sheet_row_number,\n  SUM(CASE WHEN `lastSheetSyncedAt` IS NULL THEN 1 ELSE 0 END) AS missing_last_sheet_synced_at,\n  SUM(CASE WHEN `sheetRowNumber` IS NOT NULL THEN 1 ELSE 0 END) AS has_sheet_row_number,\n  COUNT(DISTINCT `sheetRowNumber`) AS distinct_sheet_row_numbers\nFROM products\nWHERE `poNumber` = 'PO-20260512-03';",
+  "rows": [
+    {
+      "total_products": "343",
+      "missing_sheet_row_number": "0",
+      "missing_last_sheet_synced_at": "0",
+      "has_sheet_row_number": "343",
+      "distinct_sheet_row_numbers": "343"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_products\tmissing_sheet_row_number\tmissing_last_sheet_synced_at\thas_sheet_row_number\tdistinct_sheet_row_numbers\n343\t0\t0\t343\t343\n",
+  "stderr": "",
+  "execution_time_ms": 1791
+}

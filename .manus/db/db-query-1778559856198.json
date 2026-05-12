@@ -1,0 +1,34 @@
+{
+  "query": "SHOW COLUMNS FROM station_tasks LIKE 'taskStatus';\nSHOW COLUMNS FROM station_tasks LIKE 'taskstatus';\nSHOW COLUMNS FROM station_tasks LIKE 'task_status';\nSHOW COLUMNS FROM station_tasks LIKE 'stationCode';\nSHOW COLUMNS FROM station_tasks LIKE 'metadata';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SHOW COLUMNS FROM station_tasks LIKE 'taskStatus';\nSHOW COLUMNS FROM station_tasks LIKE 'taskstatus';\nSHOW COLUMNS FROM station_tasks LIKE 'task_status';\nSHOW COLUMNS FROM station_tasks LIKE 'stationCode';\nSHOW COLUMNS FROM station_tasks LIKE 'metadata';",
+  "rows": [
+    {
+      "Field": "stationCode",
+      "Type": "enum('A1','A2','B','C','D','E','STOCK')",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "A1",
+      "Extra": ""
+    },
+    {
+      "Field": "Field",
+      "Type": "Type",
+      "Null": "Null",
+      "Key": "Key",
+      "Default": "Default",
+      "Extra": "Extra"
+    },
+    {
+      "Field": "metadata",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nstationCode\tenum('A1','A2','B','C','D','E','STOCK')\tNO\tMUL\tA1\t\nField\tType\tNull\tKey\tDefault\tExtra\nmetadata\tjson\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 2511
+}

@@ -1,0 +1,50 @@
+{
+  "query": "SELECT 'users' AS table_name, COUNT(*) AS row_count FROM users\nUNION ALL SELECT 'engineer_daily_productivity', COUNT(*) FROM engineer_daily_productivity\nUNION ALL SELECT 'productivity_target_configs', COUNT(*) FROM productivity_target_configs\nUNION ALL SELECT 'product_categories', COUNT(*) FROM product_categories\nUNION ALL SELECT 'category_station_flows', COUNT(*) FROM category_station_flows\nUNION ALL SELECT 'product_name_options', COUNT(*) FROM product_name_options\nUNION ALL SELECT 'product_name_catalog_entries', COUNT(*) FROM product_name_catalog_entries;\n\nSELECT id, openId, username, passwordHash, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn FROM users ORDER BY id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'users' AS table_name, COUNT(*) AS row_count FROM users\nUNION ALL SELECT 'engineer_daily_productivity', COUNT(*) FROM engineer_daily_productivity\nUNION ALL SELECT 'productivity_target_configs', COUNT(*) FROM productivity_target_configs\nUNION ALL SELECT 'product_categories', COUNT(*) FROM product_categories\nUNION ALL SELECT 'category_station_flows', COUNT(*) FROM category_station_flows\nUNION ALL SELECT 'product_name_options', COUNT(*) FROM product_name_options\nUNION ALL SELECT 'product_name_catalog_entries', COUNT(*) FROM product_name_catalog_entries;\n\nSELECT id, openId, username, passwordHash, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn FROM users ORDER BY id LIMIT 10;",
+  "rows": [
+    {
+      "table_name": "engineer_daily_productivity",
+      "row_count": "44"
+    },
+    {
+      "table_name": "productivity_target_configs",
+      "row_count": "139"
+    },
+    {
+      "table_name": "users",
+      "row_count": "17"
+    },
+    {
+      "table_name": "product_categories",
+      "row_count": "38"
+    },
+    {
+      "table_name": "category_station_flows",
+      "row_count": "212"
+    },
+    {
+      "table_name": "product_name_options",
+      "row_count": "5334"
+    },
+    {
+      "table_name": "product_name_catalog_entries",
+      "row_count": "5334"
+    }
+  ],
+  "messages": [
+    "id\topenId\tusername\tpasswordHash\tname\temail\tloginMethod\trole\tcreatedAt\tupdatedAt\tlastSignedIn",
+    "1\tnGEZQgdJ8Qyfy5RnJ2fdhv\tNULL\tNULL\t綠途未來股份有限公司\tgrevia@grevia.com.tw\tgoogle\tadmin\t2026-04-27 08:59:20\t2026-05-12 03:57:49\t2026-05-12 03:57:49",
+    "10\tlocal:Kiddliao\tKiddliao\tscrypt:a4de80e59b73baa5ddb21579d220ec85:8edac90602dfe41af226c802927a36aa070c6ab8d98cdb67001b447f50a9f87ae6f417a64badf39300431645594ca4c84f127247c96c4d098d39c12b40579e37\tKiddliao\tNULL\tpassword\tadmin\t2026-04-27 09:00:30\t2026-05-12 03:04:23\t2026-05-12 03:04:24",
+    "90021\tlocal:test\ttest\tscrypt:c9771447970909911b7f74ae2487df32:4b450168a0419f9746599f471f7a8475fcd52797e352f232848cd85fbcd23de1cddae556b873259ee29a134f0bc8cf1d26ef0dd874de7d2dc4235ef70b5bc590\t測試\tNULL\tpassword\tengineer\t2026-04-28 02:06:20\t2026-05-09 11:34:10\t2026-05-09 11:34:10",
+    "750005\tlocal:ＨＣ\tＨＣ\tscrypt:015a3d3c9873bd8c7cc0f6a6fcf82cdc:2619c73fd6c0306538b7f6bef5540aa5d91ecf536f4e06e991447720bd42bfe9965b4c90882faffe4457e7a634871d0528c7d95145668eca452adc116324718f\t得智\tNULL\tpassword\tadmin\t2026-04-30 06:09:57\t2026-05-06 11:09:06\t2026-05-06 11:09:06",
+    "750008\tlocal:mmin\tmmin\tscrypt:7fe187ff63021dd9b922363fbe6d7aee:b05195428d480dadfccd7515b103f58d05f7835c25884a3ff86d49d862ce774ff27189cc81186aa0372bbced2e44a692593f0c31842929606dc9aae69fa737de\t佳珉\tNULL\tpassword\tadmin\t2026-04-30 06:10:38\t2026-05-12 03:53:02\t2026-05-12 03:53:02",
+    "750126\tlocal:a123456\ta123456\tscrypt:e573a5874eba1ee859576438b81f789b:c82914e63cbfbd3ecb8e6a4d76a2e6254bf916eeab834f3be5c87b96fde550a60c05007bba49860b526b46c317b6e3ee7399b8a8fbc0e6457d4a35616b61355f\t明軒\tNULL\tpassword\tengineer\t2026-04-30 07:58:40\t2026-04-30 07:58:40\t2026-04-30 07:58:40",
+    "750136\tlocal:raymond93520\traymond93520\tscrypt:69b0951f39859d17a82a938bc9513435:0ad99fbd143dc2304f61ad36eb677f0fcbdc9b46b9ed635b70cc77712d66dac94dfc824fe3ad670a9a828caa65b4f14d0a85ab82191ee52152a3da40dc21f1d9\t小周\tNULL\tpassword\tengineer\t2026-04-30 08:01:39\t2026-05-12 03:56:01\t2026-05-12 03:56:02",
+    "750139\tlocal:vvv312\tvvv312\tscrypt:30853858bbdadb4f74bf7bf2f290acf8:23a000a1d0f77ab660595926bf6327a65352c863cddb5755eae951f78dd15d670c9345c011d1c70ab20e92a064c5726bcb675379205e0743e7b79416e7bb0603\tVicky\tNULL\tpassword\tengineer\t2026-04-30 08:02:11\t2026-05-12 03:32:51\t2026-05-12 03:32:52",
+    "750189\tlocal:Qc.8\tQc.8\tscrypt:f70295f36af171cc284b52ab86cb6a33:35d6948689edf9c74b429f34f5cbaad35479a13fe9e3ebf23af904552f6a6d108ca4fd618846a6f343603ad474c448c97cccf426ea44d53f610835808ec659d9\t巧克力\tNULL\tpassword\tsupervisor\t2026-04-30 08:14:01\t2026-05-12 03:56:32\t2026-05-12 03:56:32",
+    "750192\tlocal:Youkai\tYoukai\tscrypt:25de9444494c773113fdf5c42ce65a08:b747efaa215d4ee2aed5937b033b6af9f24e1182dc6b09d8fb1420d84df9f350f00ce32702e5b0f812bdd04e88691b4f11ca203c9ddca2c8c14e1b6588abd712\t宥凱\tNULL\tpassword\tengineer\t2026-04-30 08:14:26\t2026-05-12 03:26:08\t2026-05-12 03:26:09"
+  ],
+  "stdout": "table_name\trow_count\nengineer_daily_productivity\t44\nproductivity_target_configs\t139\nusers\t17\nproduct_categories\t38\ncategory_station_flows\t212\nproduct_name_options\t5334\nproduct_name_catalog_entries\t5334\nid\topenId\tusername\tpasswordHash\tname\temail\tloginMethod\trole\tcreatedAt\tupdatedAt\tlastSignedIn\n1\tnGEZQgdJ8Qyfy5RnJ2fdhv\tNULL\tNULL\t綠途未來股份有限公司\tgrevia@grevia.com.tw\tgoogle\tadmin\t2026-04-27 08:59:20\t2026-05-12 03:57:49\t2026-05-12 03:57:49\n10\tlocal:Kiddliao\tKiddliao\tscrypt:a4de80e59b73baa5ddb21579d220ec85:8edac90602dfe41af226c802927a36aa070c6ab8d98cdb67001b447f50a9f87ae6f417a64badf39300431645594ca4c84f127247c96c4d098d39c12b40579e37\tKiddliao\tNULL\tpassword\tadmin\t2026-04-27 09:00:30\t2026-05-12 03:04:23\t2026-05-12 03:04:24\n90021\tlocal:test\ttest\tscrypt:c9771447970909911b7f74ae2487df32:4b450168a0419f9746599f471f7a8475fcd52797e352f232848cd85fbcd23de1cddae556b873259ee29a134f0bc8cf1d26ef0dd874de7d2dc4235ef70b5bc590\t測試\tNULL\tpassword\tengineer\t2026-04-28 02:06:20\t2026-05-09 11:34:10\t2026-05-09 11:34:10\n750005\tlocal:ＨＣ\tＨＣ\tscrypt:015a3d3c9873bd8c7cc0f6a6fcf82cdc:2619c73fd6c0306538b7f6bef5540aa5d91ecf536f4e06e991447720bd42bfe9965b4c90882faffe4457e7a634871d0528c7d95145668eca452adc116324718f\t得智\tNULL\tpassword\tadmin\t2026-04-30 06:09:57\t2026-05-06 11:09:06\t2026-05-06 11:09:06\n750008\tlocal:mmin\tmmin\tscrypt:7fe187ff63021dd9b922363fbe6d7aee:b05195428d480dadfccd7515b103f58d05f7835c25884a3ff86d49d862ce774ff27189cc81186aa0372bbced2e44a692593f0c31842929606dc9aae69fa737de\t佳珉\tNULL\tpassword\tadmin\t2026-04-30 06:10:38\t2026-05-12 03:53:02\t2026-05-12 03:53:02\n750126\tlocal:a123456\ta123456\tscrypt:e573a5874eba1ee859576438b81f789b:c82914e63cbfbd3ecb8e6a4d76a2e6254bf916eeab834f3be5c87b96fde550a60c05007bba49860b526b46c317b6e3ee7399b8a8fbc0e6457d4a35616b61355f\t明軒\tNULL\tpassword\tengineer\t2026-04-30 07:58:40\t2026-04-30 07:58:40\t2026-04-30 07:58:40\n750136\tlocal:raymond93520\traymond93520\tscrypt:69b0951f39859d17a82a938bc9513435:0ad99fbd143dc2304f61ad36eb677f0fcbdc9b46b9ed635b70cc77712d66dac94dfc824fe3ad670a9a828caa65b4f14d0a85ab82191ee52152a3da40dc21f1d9\t小周\tNULL\tpassword\tengineer\t2026-04-30 08:01:39\t2026-05-12 03:56:01\t2026-05-12 03:56:02\n750139\tlocal:vvv312\tvvv312\tscrypt:30853858bbdadb4f74bf7bf2f290acf8:23a000a1d0f77ab660595926bf6327a65352c863cddb5755eae951f78dd15d670c9345c011d1c70ab20e92a064c5726bcb675379205e0743e7b79416e7bb0603\tVicky\tNULL\tpassword\tengineer\t2026-04-30 08:02:11\t2026-05-12 03:32:51\t2026-05-12 03:32:52\n750189\tlocal:Qc.8\tQc.8\tscrypt:f70295f36af171cc284b52ab86cb6a33:35d6948689edf9c74b429f34f5cbaad35479a13fe9e3ebf23af904552f6a6d108ca4fd618846a6f343603ad474c448c97cccf426ea44d53f610835808ec659d9\t巧克力\tNULL\tpassword\tsupervisor\t2026-04-30 08:14:01\t2026-05-12 03:56:32\t2026-05-12 03:56:32\n750192\tlocal:Youkai\tYoukai\tscrypt:25de9444494c773113fdf5c42ce65a08:b747efaa215d4ee2aed5937b033b6af9f24e1182dc6b09d8fb1420d84df9f350f00ce32702e5b0f812bdd04e88691b4f11ca203c9ddca2c8c14e1b6588abd712\t宥凱\tNULL\tpassword\tengineer\t2026-04-30 08:14:26\t2026-05-12 03:26:08\t2026-05-12 03:26:09\n",
+  "stderr": "",
+  "execution_time_ms": 1992
+}

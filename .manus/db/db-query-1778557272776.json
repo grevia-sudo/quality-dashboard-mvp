@@ -1,0 +1,22 @@
+{
+  "query": "SELECT\n  'products' AS source,\n  COUNT(*) AS row_count,\n  MIN(createdAt) AS first_created_at,\n  MAX(createdAt) AS last_created_at\nFROM products\nWHERE poNumber = 'PO-20260512-03'\nUNION ALL\nSELECT\n  'purchase_order_deletion_logs' AS source,\n  COUNT(*) AS row_count,\n  MIN(createdAt) AS first_created_at,\n  MAX(createdAt) AS last_created_at\nFROM purchase_order_deletion_logs\nWHERE poNumber = 'PO-20260512-03';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT\n  'products' AS source,\n  COUNT(*) AS row_count,\n  MIN(createdAt) AS first_created_at,\n  MAX(createdAt) AS last_created_at\nFROM products\nWHERE poNumber = 'PO-20260512-03'\nUNION ALL\nSELECT\n  'purchase_order_deletion_logs' AS source,\n  COUNT(*) AS row_count,\n  MIN(createdAt) AS first_created_at,\n  MAX(createdAt) AS last_created_at\nFROM purchase_order_deletion_logs\nWHERE poNumber = 'PO-20260512-03';",
+  "rows": [
+    {
+      "source": "purchase_order_deletion_logs",
+      "row_count": "0",
+      "first_created_at": "NULL",
+      "last_created_at": "NULL"
+    },
+    {
+      "source": "products",
+      "row_count": "343",
+      "first_created_at": "2026-05-07 01:50:56",
+      "last_created_at": "2026-05-12 02:04:29"
+    }
+  ],
+  "messages": [],
+  "stdout": "source\trow_count\tfirst_created_at\tlast_created_at\npurchase_order_deletion_logs\t0\tNULL\tNULL\nproducts\t343\t2026-05-07 01:50:56\t2026-05-12 02:04:29\n",
+  "stderr": "",
+  "execution_time_ms": 1788
+}

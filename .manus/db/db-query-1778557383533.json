@@ -1,0 +1,30 @@
+{
+  "query": "SELECT `stationCode`, `productStatus`, COUNT(*) AS row_count\nFROM products\nWHERE `poNumber` = 'PO-20260512-03'\nGROUP BY `stationCode`, `productStatus`\nORDER BY `stationCode`, `productStatus`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `stationCode`, `productStatus`, COUNT(*) AS row_count\nFROM products\nWHERE `poNumber` = 'PO-20260512-03'\nGROUP BY `stationCode`, `productStatus`\nORDER BY `stationCode`, `productStatus`;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "row_count": "330"
+    },
+    {
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "row_count": "1"
+    },
+    {
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "row_count": "11"
+    },
+    {
+      "stationCode": "D",
+      "productStatus": "pending_d",
+      "row_count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tproductStatus\trow_count\nA1\tpending_a1\t330\nA2\tpending_a2\t1\nB\tpending_b\t11\nD\tpending_d\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1765
+}
