@@ -25,4 +25,13 @@ describe("D station sampling source coverage", () => {
     expect(samplingPageSource).toContain('cameraOptions.map((option) => (');
     expect(samplingPageSource).toContain('toggleBatteryIssueLabel(task, optionLabel, Boolean(checked))');
   });
+
+  it("prefills D-station C result checkboxes from task metadata option ids before falling back to summary text", () => {
+    expect(samplingPageSource).toContain('const carriedCFaultOptionIds = normalizeIdList(task.taskMetadata?.faultOptionIds ?? [])');
+    expect(samplingPageSource).toContain('const carriedCAppearanceOptionIds = normalizeIdList(task.taskMetadata?.appearanceOptionIds ?? [])');
+    expect(samplingPageSource).toContain('const carriedCCameraOptionIds = normalizeIdList(task.taskMetadata?.cameraOptionIds ?? [])');
+    expect(samplingPageSource).toContain('cFaultOptionIds: carriedCFaultOptionIds.length > 0');
+    expect(samplingPageSource).toContain('cAppearanceOptionIds: carriedCAppearanceOptionIds.length > 0');
+    expect(samplingPageSource).toContain('cCameraOptionIds: carriedCCameraOptionIds.length > 0');
+  });
 });

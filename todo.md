@@ -270,3 +270,6 @@
 - [x] 將 0 分帳號區分為「本月未作業」與「測試帳號」，並在 KPI 檢視與報表中清楚標示
 - [x] 調整 KPI 權限需求並於後續確認最終規則：改為僅 admin / manager 可查看全部人的 KPI，supervisor / engineer 一律只能查看自己的 KPI
 - [x] 依使用者最新確認調整 KPI 權限：僅 admin / manager 可查看全部人的 KPI，supervisor / engineer 一律只能查看自己的 KPI，並同步套用到頁面顯示、報表下載與後端查詢
+- [x] 修正 D 站修改 C 站結果時，未完整帶出 C 站原本已勾選項目的問題，並補上對應回歸測試
+- [x] 補上 D 站修改 C 站結果的直接行為測試：建立含 C 站 fault/appearance/camera option ids 的任務資料，驗證 D 站畫面會實際將對應 checkbox 預設為已勾選
+- [x] 補上 D 站回填的整合測試：驗證當 task metadata 與摘要文字不同時，D 站仍優先依 taskMetadata 的原始 option ids 完整帶出 C 站勾選結果

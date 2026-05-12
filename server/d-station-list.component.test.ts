@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from "react";
 (globalThis as any).React = React;
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const useAuthMock = vi.fn(() => ({
@@ -175,5 +175,75 @@ describe("SamplingPage D station list layout", () => {
     expect(screen.getAllByText("iPhone 15 128GB").length).toBeGreaterThan(0);
     expect(screen.getByText("當日未完成清單")).toBeTruthy();
     expect(screen.getByText("當日已完成清單")).toBeTruthy();
+  });
+
+  it("prefills C-station checkboxes in D station from task metadata option ids", () => {
+    samplingQueueUseQueryMock.mockReturnValue({
+      data: {
+        tasks: [
+          {
+            taskId: 201,
+            productId: 601,
+            productCode: "P-D-201",
+            productName: "iPhone 13 128GB",
+            batchNo: "BATCH-PREFILL-001",
+            serialNumber: "SN-PREFILL-001",
+            imei: "IMEI-PREFILL-001",
+            categoryName: "智慧手機",
+            brandName: "Apple",
+            importedCategoryName: "智慧手機",
+            importedBrandName: "Apple",
+            subtypeCode: "iPhone",
+            inheritedBatterySummary: "正常",
+            inheritedBFaultSummary: "正常",
+            inheritedCFaultSummary: "摘要文字故意不同",
+            inheritedCAppearanceSummary: "另一個摘要",
+            inheritedCCameraSummary: "正常",
+            taskMetadata: {
+              faultOptionIds: [9001],
+              appearanceOptionIds: [9102],
+              cameraOptionIds: [9201],
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    stationDetailUseQueryMock.mockReturnValue({
+      data: {
+        faultOptions: [
+          { id: 9001, label: "螢幕亮點", active: true },
+          { id: 9002, label: "螢幕刮傷", active: true },
+        ],
+        appearanceOptions: [
+          { id: 9101, label: "邊框磨損", active: true },
+          { id: 9102, label: "破裂", active: true },
+        ],
+        cameraOptions: [
+          { id: 9201, label: "鏡頭入塵", active: true },
+          { id: 9202, label: "鏡頭刮傷", active: true },
+        ],
+        bFaultOptions: [],
+        dTodayCompletedTasks: [],
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    render(React.createElement(SamplingPage));
+
+    fireEvent.change(screen.getByPlaceholderText("輸入商品批號、商品序號或產品編號"), {
+      target: { value: "BATCH-PREFILL-001" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "修改 C 站結果" }));
+
+    expect(within(screen.getByText("螢幕亮點").closest("label") as HTMLElement).getByRole("checkbox").getAttribute("data-state")).toBe("checked");
+    expect(within(screen.getByText("破裂").closest("label") as HTMLElement).getByRole("checkbox").getAttribute("data-state")).toBe("checked");
+    expect(within(screen.getByText("鏡頭入塵").closest("label") as HTMLElement).getByRole("checkbox").getAttribute("data-state")).toBe("checked");
+    expect(within(screen.getByText("螢幕刮傷").closest("label") as HTMLElement).getByRole("checkbox").getAttribute("data-state")).toBe("unchecked");
+    expect(within(screen.getByText("邊框磨損").closest("label") as HTMLElement).getByRole("checkbox").getAttribute("data-state")).toBe("unchecked");
   });
 });

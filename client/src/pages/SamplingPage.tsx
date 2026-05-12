@@ -42,6 +42,12 @@ type SamplingTask = {
   inheritedCAppearanceSummary?: string | null;
   inheritedCCameraSummary?: string | null;
   inheritedCInspectionSummary?: string | null;
+  taskMetadata?: {
+    faultOptionIds?: number[];
+    appearanceOptionIds?: number[];
+    cameraOptionIds?: number[];
+    bFaultOptionIds?: number[];
+  };
 };
 
 const B_BATTERY_ISSUE_OPTIONS = ["電池膨脹", "副廠電池", "蓄電異常"] as const;
@@ -128,18 +134,30 @@ function createInitialDraft(task: SamplingTask, detailData?: StationDetailData):
   const faultOptions = (detailData?.faultOptions ?? []).filter((option) => option.active);
   const appearanceOptions = (detailData?.appearanceOptions ?? []).filter((option) => option.active);
   const cameraOptions = (detailData?.cameraOptions ?? []).filter((option) => option.active);
+  const carriedBFaultOptionIds = normalizeIdList(task.taskMetadata?.bFaultOptionIds ?? []);
+  const carriedCFaultOptionIds = normalizeIdList(task.taskMetadata?.faultOptionIds ?? []);
+  const carriedCAppearanceOptionIds = normalizeIdList(task.taskMetadata?.appearanceOptionIds ?? []);
+  const carriedCCameraOptionIds = normalizeIdList(task.taskMetadata?.cameraOptionIds ?? []);
   return {
     batterySummary: normalizeResultText(task.inheritedBatterySummary),
     batteryNote: batteryInputs.batteryNote,
     batteryIssueLabels: batteryInputs.batteryIssueLabels,
     bFaultSummary: normalizeResultText(task.inheritedBFaultSummary),
-    bFaultOptionIds: mapSummaryToOptionIds(task.inheritedBFaultSummary, bFaultOptions),
+    bFaultOptionIds: carriedBFaultOptionIds.length > 0
+      ? carriedBFaultOptionIds
+      : mapSummaryToOptionIds(task.inheritedBFaultSummary, bFaultOptions),
     cFaultSummary: normalizeResultText(task.inheritedCFaultSummary),
-    cFaultOptionIds: mapSummaryToOptionIds(task.inheritedCFaultSummary, faultOptions),
+    cFaultOptionIds: carriedCFaultOptionIds.length > 0
+      ? carriedCFaultOptionIds
+      : mapSummaryToOptionIds(task.inheritedCFaultSummary, faultOptions),
     cAppearanceSummary: normalizeResultText(task.inheritedCAppearanceSummary),
-    cAppearanceOptionIds: mapSummaryToOptionIds(task.inheritedCAppearanceSummary, appearanceOptions),
+    cAppearanceOptionIds: carriedCAppearanceOptionIds.length > 0
+      ? carriedCAppearanceOptionIds
+      : mapSummaryToOptionIds(task.inheritedCAppearanceSummary, appearanceOptions),
     cCameraSummary: normalizeResultText(task.inheritedCCameraSummary),
-    cCameraOptionIds: mapSummaryToOptionIds(task.inheritedCCameraSummary, cameraOptions),
+    cCameraOptionIds: carriedCCameraOptionIds.length > 0
+      ? carriedCCameraOptionIds
+      : mapSummaryToOptionIds(task.inheritedCCameraSummary, cameraOptions),
     isEditingPrevious: false,
     isEditingCurrent: false,
   };
