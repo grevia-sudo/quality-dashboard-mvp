@@ -1,0 +1,34 @@
+{
+  "query": "SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE poNumber = 'PO-20260512-01'\nUNION ALL\nSELECT 'station_tasks', COUNT(*) FROM station_tasks WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'station_events', COUNT(*) FROM station_events WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'sampling_results', COUNT(*) FROM sampling_results WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'productivity_score_details', COUNT(*) FROM productivity_score_details WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'engineer_daily_productivity_affected', COUNT(*) FROM engineer_daily_productivity WHERE (userId, businessDate) IN (\n  SELECT DISTINCT se.operatorUserId, se.businessDate\n  FROM station_events se\n  JOIN products p ON p.id = se.productId\n  WHERE p.poNumber = 'PO-20260512-01' AND se.operatorUserId IS NOT NULL\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE poNumber = 'PO-20260512-01'\nUNION ALL\nSELECT 'station_tasks', COUNT(*) FROM station_tasks WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'station_events', COUNT(*) FROM station_events WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'sampling_results', COUNT(*) FROM sampling_results WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'productivity_score_details', COUNT(*) FROM productivity_score_details WHERE productId IN (SELECT id FROM products WHERE poNumber = 'PO-20260512-01')\nUNION ALL\nSELECT 'engineer_daily_productivity_affected', COUNT(*) FROM engineer_daily_productivity WHERE (userId, businessDate) IN (\n  SELECT DISTINCT se.operatorUserId, se.businessDate\n  FROM station_events se\n  JOIN products p ON p.id = se.productId\n  WHERE p.poNumber = 'PO-20260512-01' AND se.operatorUserId IS NOT NULL\n);",
+  "rows": [
+    {
+      "table_name": "products",
+      "row_count": "0"
+    },
+    {
+      "table_name": "station_tasks",
+      "row_count": "0"
+    },
+    {
+      "table_name": "sampling_results",
+      "row_count": "0"
+    },
+    {
+      "table_name": "station_events",
+      "row_count": "0"
+    },
+    {
+      "table_name": "productivity_score_details",
+      "row_count": "0"
+    },
+    {
+      "table_name": "engineer_daily_productivity_affected",
+      "row_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\trow_count\nproducts\t0\nstation_tasks\t0\nsampling_results\t0\nstation_events\t0\nproductivity_score_details\t0\nengineer_daily_productivity_affected\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1772
+}

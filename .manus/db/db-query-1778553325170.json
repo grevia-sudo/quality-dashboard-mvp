@@ -1,0 +1,100 @@
+{
+  "query": "SELECT batchNo, COUNT(*) AS duplicateCount, GROUP_CONCAT(DISTINCT poNumber ORDER BY poNumber SEPARATOR ', ') AS poNumbers\nFROM products\nWHERE batchNo IN (\n'01400003031','01400003032','01400003033','01400003034','01400003035','01400003036','01400003037','01400003038','01400003039',\n'01400003040','01400003041','01400003042','01400003043','01400003044','01400003045','01400003046','01400003047','01400003048'\n)\nGROUP BY batchNo\nORDER BY duplicateCount DESC, batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT batchNo, COUNT(*) AS duplicateCount, GROUP_CONCAT(DISTINCT poNumber ORDER BY poNumber SEPARATOR ', ') AS poNumbers\nFROM products\nWHERE batchNo IN (\n'01400003031','01400003032','01400003033','01400003034','01400003035','01400003036','01400003037','01400003038','01400003039',\n'01400003040','01400003041','01400003042','01400003043','01400003044','01400003045','01400003046','01400003047','01400003048'\n)\nGROUP BY batchNo\nORDER BY duplicateCount DESC, batchNo;",
+  "rows": [
+    {
+      "batchNo": "01400003031",
+      "duplicateCount": "2",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003035",
+      "duplicateCount": "2",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003038",
+      "duplicateCount": "2",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003040",
+      "duplicateCount": "2",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003048",
+      "duplicateCount": "2",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003032",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003033",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003034",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003036",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003037",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003039",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003041",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003042",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003043",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003044",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003045",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003046",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    },
+    {
+      "batchNo": "01400003047",
+      "duplicateCount": "1",
+      "poNumbers": "PO-20260508-01"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tduplicateCount\tpoNumbers\n01400003031\t2\tPO-20260508-01\n01400003035\t2\tPO-20260508-01\n01400003038\t2\tPO-20260508-01\n01400003040\t2\tPO-20260508-01\n01400003048\t2\tPO-20260508-01\n01400003032\t1\tPO-20260508-01\n01400003033\t1\tPO-20260508-01\n01400003034\t1\tPO-20260508-01\n01400003036\t1\tPO-20260508-01\n01400003037\t1\tPO-20260508-01\n01400003039\t1\tPO-20260508-01\n01400003041\t1\tPO-20260508-01\n01400003042\t1\tPO-20260508-01\n01400003043\t1\tPO-20260508-01\n01400003044\t1\tPO-20260508-01\n01400003045\t1\tPO-20260508-01\n01400003046\t1\tPO-20260508-01\n01400003047\t1\tPO-20260508-01\n",
+  "stderr": "",
+  "execution_time_ms": 1783
+}

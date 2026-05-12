@@ -25,13 +25,13 @@ describe("deleteImportedPurchaseOrder source", () => {
     expect(taskIndex).toBeGreaterThan(eventIndex);
   });
 
-  it("marks deleted purchase rows with strikethrough in Google Sheet after DB deletion", () => {
+  it("deletes matching purchase rows from Google Sheet after DB deletion", () => {
     const source = readFileSync(path.resolve(__dirname, "../server/db.ts"), "utf8");
     const start = source.indexOf("export async function deleteImportedPurchaseOrder");
     const end = source.indexOf("export async function getPurchaseOrderTrace", start);
     const snippet = source.slice(start, end > start ? end : undefined);
 
-    expect(snippet).toContain("markPurchaseOrderRowsDeletedInGoogleSheet");
+    expect(snippet).toContain("deletePurchaseOrderRowsFromGoogleSheet");
     expect(snippet).toContain("sheetRowNumber: products.sheetRowNumber");
     expect(snippet).toContain("batchNo: products.batchNo");
     expect(snippet).toContain("serialNumber: products.serialNumber");

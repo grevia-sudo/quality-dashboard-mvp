@@ -1,0 +1,17 @@
+{
+  "query": "SELECT poNumber,\n       COUNT(*) AS productCount,\n       SUM(CASE WHEN productCode LIKE 'RESTORED-%' THEN 1 ELSE 0 END) AS restoredProductCount,\n       MIN(createdAt) AS firstCreatedAt,\n       MAX(createdAt) AS lastCreatedAt\nFROM products\nWHERE poNumber = 'PO-20260508-01'\nGROUP BY poNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT poNumber,\n       COUNT(*) AS productCount,\n       SUM(CASE WHEN productCode LIKE 'RESTORED-%' THEN 1 ELSE 0 END) AS restoredProductCount,\n       MIN(createdAt) AS firstCreatedAt,\n       MAX(createdAt) AS lastCreatedAt\nFROM products\nWHERE poNumber = 'PO-20260508-01'\nGROUP BY poNumber;",
+  "rows": [
+    {
+      "poNumber": "PO-20260508-01",
+      "productCount": "91",
+      "restoredProductCount": "91",
+      "firstCreatedAt": "2026-05-11 08:53:43",
+      "lastCreatedAt": "2026-05-11 08:53:43"
+    }
+  ],
+  "messages": [],
+  "stdout": "poNumber\tproductCount\trestoredProductCount\tfirstCreatedAt\tlastCreatedAt\nPO-20260508-01\t91\t91\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n",
+  "stderr": "",
+  "execution_time_ms": 1769
+}

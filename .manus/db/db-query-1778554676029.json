@@ -1,0 +1,17 @@
+{
+  "query": "SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE poNumber = 'PO-20260512-01';\nSELECT poNumber, vendorName, deletedProducts, deletedTasks, deletedByName, createdAt FROM purchase_order_deletion_logs WHERE poNumber = 'PO-20260512-01' ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE poNumber = 'PO-20260512-01';\nSELECT poNumber, vendorName, deletedProducts, deletedTasks, deletedByName, createdAt FROM purchase_order_deletion_logs WHERE poNumber = 'PO-20260512-01' ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "table_name": "products",
+      "row_count": "0"
+    }
+  ],
+  "messages": [
+    "poNumber\tvendorName\tdeletedProducts\tdeletedTasks\tdeletedByName\tcreatedAt",
+    "PO-20260512-01\t點子\t343\t554\tKiddliao\t2026-05-12 02:03:29"
+  ],
+  "stdout": "table_name\trow_count\nproducts\t0\npoNumber\tvendorName\tdeletedProducts\tdeletedTasks\tdeletedByName\tcreatedAt\nPO-20260512-01\t點子\t343\t554\tKiddliao\t2026-05-12 02:03:29\n",
+  "stderr": "",
+  "execution_time_ms": 1916
+}

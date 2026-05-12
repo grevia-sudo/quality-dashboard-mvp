@@ -1,0 +1,194 @@
+{
+  "query": "SELECT batchNo, poNumber, productCode, stationCode, productStatus, createdAt\nFROM products\nWHERE batchNo IN (\n'01400003031','01400003032','01400003033','01400003034','01400003035','01400003036','01400003037','01400003038','01400003039',\n'01400003040','01400003041','01400003042','01400003043','01400003044','01400003045','01400003046','01400003047','01400003048'\n)\nORDER BY batchNo, createdAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT batchNo, poNumber, productCode, stationCode, productStatus, createdAt\nFROM products\nWHERE batchNo IN (\n'01400003031','01400003032','01400003033','01400003034','01400003035','01400003036','01400003037','01400003038','01400003039',\n'01400003040','01400003041','01400003042','01400003043','01400003044','01400003045','01400003046','01400003047','01400003048'\n)\nORDER BY batchNo, createdAt;",
+  "rows": [
+    {
+      "batchNo": "01400003031",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0545",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003031",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0478",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003032",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0539",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003033",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0563",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003034",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0522",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003035",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0484",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003035",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0541",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003036",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0567",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003037",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0543",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003038",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0479",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003038",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0559",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003039",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0524",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003040",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0555",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003040",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0481",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003041",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0552",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003042",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0536",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003043",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0554",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003044",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0550",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003045",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0553",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003046",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0528",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003047",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0532",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003048",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0530",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    },
+    {
+      "batchNo": "01400003048",
+      "poNumber": "PO-20260508-01",
+      "productCode": "RESTORED-PO-20260508-01-0490",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "createdAt": "2026-05-11 08:53:43"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tpoNumber\tproductCode\tstationCode\tproductStatus\tcreatedAt\n01400003031\tPO-20260508-01\tRESTORED-PO-20260508-01-0545\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003031\tPO-20260508-01\tRESTORED-PO-20260508-01-0478\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003032\tPO-20260508-01\tRESTORED-PO-20260508-01-0539\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003033\tPO-20260508-01\tRESTORED-PO-20260508-01-0563\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003034\tPO-20260508-01\tRESTORED-PO-20260508-01-0522\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003035\tPO-20260508-01\tRESTORED-PO-20260508-01-0484\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003035\tPO-20260508-01\tRESTORED-PO-20260508-01-0541\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003036\tPO-20260508-01\tRESTORED-PO-20260508-01-0567\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003037\tPO-20260508-01\tRESTORED-PO-20260508-01-0543\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003038\tPO-20260508-01\tRESTORED-PO-20260508-01-0479\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003038\tPO-20260508-01\tRESTORED-PO-20260508-01-0559\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003039\tPO-20260508-01\tRESTORED-PO-20260508-01-0524\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003040\tPO-20260508-01\tRESTORED-PO-20260508-01-0555\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003040\tPO-20260508-01\tRESTORED-PO-20260508-01-0481\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003041\tPO-20260508-01\tRESTORED-PO-20260508-01-0552\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003042\tPO-20260508-01\tRESTORED-PO-20260508-01-0536\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003043\tPO-20260508-01\tRESTORED-PO-20260508-01-0554\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003044\tPO-20260508-01\tRESTORED-PO-20260508-01-0550\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003045\tPO-20260508-01\tRESTORED-PO-20260508-01-0553\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003046\tPO-20260508-01\tRESTORED-PO-20260508-01-0528\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003047\tPO-20260508-01\tRESTORED-PO-20260508-01-0532\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003048\tPO-20260508-01\tRESTORED-PO-20260508-01-0530\tA1\tpending_a1\t2026-05-11 08:53:43\n01400003048\tPO-20260508-01\tRESTORED-PO-20260508-01-0490\tA1\tpending_a1\t2026-05-11 08:53:43\n",
+  "stderr": "",
+  "execution_time_ms": 1784
+}

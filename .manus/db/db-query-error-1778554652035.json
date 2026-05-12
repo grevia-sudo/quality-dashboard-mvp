@@ -1,0 +1,10 @@
+{
+  "query": "SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE poNumber = 'PO-20260512-01';\nSELECT poNumber, deletedProductCount, deletedTaskCount, deletedByName, deletedAt FROM purchase_order_deletion_logs WHERE poNumber = 'PO-20260512-01' ORDER BY deletedAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE poNumber = 'PO-20260512-01';\nSELECT poNumber, deletedProductCount, deletedTaskCount, deletedByName, deletedAt FROM purchase_order_deletion_logs WHERE poNumber = 'PO-20260512-01' ORDER BY deletedAt DESC LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "table_name\trow_count",
+    "products\t0",
+    "ERROR 1054 (42S22) at line 2: Unknown column 'deletedproductcount' in 'field list'"
+  ]
+}

@@ -2,7 +2,6 @@ import { createSign } from "node:crypto";
 
 const PURCHASE_SHEET_SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 const PURCHASE_SHEET_NAME = "採購單";
-const PURCHASE_SHEET_COLUMN_COUNT = 30;
 
 type DeletedPurchaseSheetProduct = {
   poNumber?: string | null;
@@ -24,22 +23,13 @@ type GoogleSheetDescriptor = {
 };
 
 type BatchUpdateRequest = {
-  repeatCell: {
+  deleteDimension: {
     range: {
       sheetId: number;
-      startRowIndex: number;
-      endRowIndex: number;
-      startColumnIndex: number;
-      endColumnIndex: number;
+      dimension: "ROWS";
+      startIndex: number;
+      endIndex: number;
     };
-    cell: {
-      userEnteredFormat: {
-        textFormat: {
-          strikethrough: boolean;
-        };
-      };
-    };
-    fields: string;
   };
 };
 
@@ -58,7 +48,7 @@ function base64UrlEncode(value: string) {
 function parseServiceAccountCredentials() {
   const rawCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!rawCredentials) {
-    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON 不存在，無法回寫採購單刪除狀態到 Google Sheet");
+    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON 不存在，無法同步刪除 Google Sheet 採購單資料");
   }
 
   const credentials = JSON.parse(rawCredentials) as { client_email?: string; private_key?: string; token_uri?: string };
@@ -245,29 +235,22 @@ export function resolveDeletedPurchaseSheetRowNumbers(
   return Array.from(resolved).sort((a, b) => a - b);
 }
 
-export function buildStrikethroughRequests(rowNumbers: number[], sheetId: number): BatchUpdateRequest[] {
-  return rowNumbers.map((rowNumber) => ({
-    repeatCell: {
-      range: {
-        sheetId,
-        startRowIndex: rowNumber - 1,
-        endRowIndex: rowNumber,
-        startColumnIndex: 0,
-        endColumnIndex: PURCHASE_SHEET_COLUMN_COUNT,
-      },
-      cell: {
-        userEnteredFormat: {
-          textFormat: {
-            strikethrough: true,
-          },
+export function buildDeleteRowRequests(rowNumbers: number[], sheetId: number): BatchUpdateRequest[] {
+  return [...rowNumbers]
+    .sort((a, b) => b - a)
+    .map((rowNumber) => ({
+      deleteDimension: {
+        range: {
+          sheetId,
+          dimension: "ROWS",
+          startIndex: rowNumber - 1,
+          endIndex: rowNumber,
         },
       },
-      fields: "userEnteredFormat.textFormat.strikethrough",
-    },
-  }));
+    }));
 }
 
-export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
+export async function deletePurchaseOrderRowsFromGoogleSheet(input: {
   poNumber: string;
   products: DeletedPurchaseSheetProduct[];
 }) {
@@ -275,7 +258,7 @@ export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
     return {
       success: true as const,
       skipped: true,
-      updatedRowNumbers: input.products
+      deletedRowNumbers: input.products
         .map((product) => product.sheetRowNumber)
         .filter((rowNumber): rowNumber is number => typeof rowNumber === "number" && rowNumber > 1),
       reason: "test_environment",
@@ -301,7 +284,7 @@ export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
     return {
       success: true as const,
       skipped: true,
-      updatedRowNumbers: [] as number[],
+      deletedRowNumbers: [] as number[],
       reason: "rows_not_found",
     };
   }
@@ -312,7 +295,7 @@ export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
     {
       method: "POST",
       body: {
-        requests: buildStrikethroughRequests(rowNumbers, sheetId),
+        requests: buildDeleteRowRequests(rowNumbers, sheetId),
       },
     },
   );
@@ -320,7 +303,7 @@ export async function markPurchaseOrderRowsDeletedInGoogleSheet(input: {
   return {
     success: true as const,
     skipped: false,
-    updatedRowNumbers: rowNumbers,
+    deletedRowNumbers: rowNumbers,
     reason: null,
   };
 }

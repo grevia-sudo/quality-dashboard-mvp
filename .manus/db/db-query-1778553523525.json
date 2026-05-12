@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) AS totalRows,\n       COUNT(DISTINCT sheetRowNumber) AS distinctSheetRowNumbers,\n       SUM(CASE WHEN sheetRowNumber IS NULL THEN 1 ELSE 0 END) AS nullSheetRowNumbers\nFROM products\nWHERE poNumber = 'PO-20260508-01';\nSELECT sheetRowNumber, COUNT(*) AS rowCount\nFROM products\nWHERE poNumber = 'PO-20260508-01'\nGROUP BY sheetRowNumber\nHAVING COUNT(*) > 1\nORDER BY rowCount DESC, sheetRowNumber\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COUNT(*) AS totalRows,\n       COUNT(DISTINCT sheetRowNumber) AS distinctSheetRowNumbers,\n       SUM(CASE WHEN sheetRowNumber IS NULL THEN 1 ELSE 0 END) AS nullSheetRowNumbers\nFROM products\nWHERE poNumber = 'PO-20260508-01';\nSELECT sheetRowNumber, COUNT(*) AS rowCount\nFROM products\nWHERE poNumber = 'PO-20260508-01'\nGROUP BY sheetRowNumber\nHAVING COUNT(*) > 1\nORDER BY rowCount DESC, sheetRowNumber\nLIMIT 20;",
+  "rows": [
+    {
+      "totalRows": "91",
+      "distinctSheetRowNumbers": "91",
+      "nullSheetRowNumbers": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "totalRows\tdistinctSheetRowNumbers\tnullSheetRowNumbers\n91\t91\t0\n",
+  "stderr": "",
+  "execution_time_ms": 2031
+}

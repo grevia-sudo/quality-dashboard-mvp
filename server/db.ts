@@ -27,7 +27,7 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "./pending-stock-mismatch";
-import { markPurchaseOrderRowsDeletedInGoogleSheet } from "./purchase-sheet-delete-sync";
+import { deletePurchaseOrderRowsFromGoogleSheet } from "./purchase-sheet-delete-sync";
 import { storagePut } from "./storage";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
@@ -6194,18 +6194,18 @@ export async function deleteImportedPurchaseOrder(input: {
   let googleSheetSync: {
     success: boolean;
     skipped: boolean;
-    updatedRowNumbers: number[];
+    deletedRowNumbers: number[];
     reason: string | null;
     errorMessage?: string;
   } = {
-    success: true,
+    success: false,
     skipped: true,
-    updatedRowNumbers: [],
+    deletedRowNumbers: [],
     reason: "not_attempted",
   };
 
   try {
-    googleSheetSync = await markPurchaseOrderRowsDeletedInGoogleSheet({
+    googleSheetSync = await deletePurchaseOrderRowsFromGoogleSheet({
       poNumber: normalizedPoNumber,
       products: productRows.map((row) => ({
         poNumber: row.poNumber,
@@ -6219,23 +6219,23 @@ export async function deleteImportedPurchaseOrder(input: {
     googleSheetSync = {
       success: false,
       skipped: true,
-      updatedRowNumbers: [],
+      deletedRowNumbers: [],
       reason: "google_sheet_sync_failed",
       errorMessage: error instanceof Error ? error.message : String(error),
     };
-    console.error("[deleteImportedPurchaseOrder] failed to write deletion strike-through to Google Sheet", error);
+    console.error("[deleteImportedPurchaseOrder] failed to delete rows from Google Sheet", error);
   }
 
   const resultStatus = googleSheetSync.success && [null, "test_environment"].includes(googleSheetSync.reason)
     ? "success"
     : "partial_success";
   const googleSheetSyncMessage = resultStatus === "success"
-    ? "已回寫 Google 並加上刪除線"
+    ? "已同步清除 Google 對應資料列"
     : googleSheetSync.reason === "rows_not_found"
-      ? "採購單已刪除，但找不到 Google 對應列，尚未加上刪除線"
+      ? "採購單已刪除，但找不到 Google 對應列，可能已先被清除"
       : googleSheetSync.reason === "google_sheet_sync_failed"
-        ? "採購單已刪除，但回寫 Google 刪除線失敗"
-        : "採購單已刪除，但 Google 回寫狀態需要人工確認";
+        ? "採購單已刪除，但清除 Google 資料列失敗"
+        : "採購單已刪除，但 Google 同步狀態需要人工確認";
 
   return {
     success: true as const,

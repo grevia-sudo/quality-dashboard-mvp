@@ -1,0 +1,15 @@
+{
+  "query": "SELECT t.stationCode, t.stationTaskStatus, COUNT(*) AS rowCount\nFROM station_tasks t\nJOIN products p ON p.id = t.productId\nWHERE p.batchNo IN (\n'01400003031','01400003032','01400003033','01400003034','01400003035','01400003036','01400003037','01400003038','01400003039',\n'01400003040','01400003041','01400003042','01400003043','01400003044','01400003045','01400003046','01400003047','01400003048'\n)\nGROUP BY t.stationCode, t.stationTaskStatus\nORDER BY t.stationCode, t.stationTaskStatus;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT t.stationCode, t.stationTaskStatus, COUNT(*) AS rowCount\nFROM station_tasks t\nJOIN products p ON p.id = t.productId\nWHERE p.batchNo IN (\n'01400003031','01400003032','01400003033','01400003034','01400003035','01400003036','01400003037','01400003038','01400003039',\n'01400003040','01400003041','01400003042','01400003043','01400003044','01400003045','01400003046','01400003047','01400003048'\n)\nGROUP BY t.stationCode, t.stationTaskStatus\nORDER BY t.stationCode, t.stationTaskStatus;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "stationTaskStatus": "pending",
+      "rowCount": "23"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tstationTaskStatus\trowCount\nA1\tpending\t23\n",
+  "stderr": "",
+  "execution_time_ms": 1717
+}

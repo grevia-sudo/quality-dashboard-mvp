@@ -199,7 +199,7 @@ describe("deleteImportedPurchaseOrder integration", () => {
     expect(result.googleSheetSync).toMatchObject({
       success: true,
       skipped: true,
-      updatedRowNumbers: [18, 19],
+      deletedRowNumbers: [18, 19],
       reason: "test_environment",
     });
 

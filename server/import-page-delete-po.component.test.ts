@@ -165,7 +165,7 @@ describe("ImportPage purchase-order delete access", () => {
     expect(deletePoMutateMock).toHaveBeenCalledWith({ poNumber: "PO-20260430-05" });
   });
 
-  it("shows success toast when Google strikethrough write-back also succeeds", async () => {
+  it("shows success toast when Google row deletion also succeeds", async () => {
     useAuthMock.mockReturnValue({
       loading: false,
       user: {
@@ -181,14 +181,14 @@ describe("ImportPage purchase-order delete access", () => {
       deletedProducts: 2,
       deletedTasks: 2,
       resultStatus: "success",
-      googleSheetSyncMessage: "已回寫 Google 並加上刪除線",
+      googleSheetSyncMessage: "已同步清除 Google 對應資料列",
     });
 
-    expect(toastMocks.success).toHaveBeenCalledWith("已刪除採購單 PO-20260430-05，共清除 2 筆商品與 2 筆站點任務；已回寫 Google 並加上刪除線");
+    expect(toastMocks.success).toHaveBeenCalledWith("已刪除採購單 PO-20260430-05，共清除 2 筆商品與 2 筆站點任務；已同步清除 Google 對應資料列");
     expect(toastMocks.warning).not.toHaveBeenCalled();
   });
 
-  it("shows warning toast when Google strikethrough write-back is only partially successful", async () => {
+  it("shows warning toast when Google row deletion is only partially successful", async () => {
     useAuthMock.mockReturnValue({
       loading: false,
       user: {
@@ -204,10 +204,10 @@ describe("ImportPage purchase-order delete access", () => {
       deletedProducts: 2,
       deletedTasks: 2,
       resultStatus: "partial_success",
-      googleSheetSyncMessage: "採購單已刪除，但回寫 Google 刪除線失敗",
+      googleSheetSyncMessage: "採購單已刪除，但清除 Google 資料列失敗",
     });
 
-    expect(toastMocks.warning).toHaveBeenCalledWith("已刪除採購單 PO-20260430-05，共清除 2 筆商品與 2 筆站點任務；採購單已刪除，但回寫 Google 刪除線失敗");
+    expect(toastMocks.warning).toHaveBeenCalledWith("已刪除採購單 PO-20260430-05，共清除 2 筆商品與 2 筆站點任務；採購單已刪除，但清除 Google 資料列失敗");
   });
 
   it("hides delete action for non-admin management users", () => {

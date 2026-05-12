@@ -9,8 +9,8 @@ vi.mock("node:crypto", () => ({
 }));
 
 import {
-  buildStrikethroughRequests,
-  markPurchaseOrderRowsDeletedInGoogleSheet,
+  buildDeleteRowRequests,
+  deletePurchaseOrderRowsFromGoogleSheet,
   matchesDeletedProductRow,
   resolveDeletedPurchaseSheetRowNumbers,
 } from "./purchase-sheet-delete-sync";
@@ -99,50 +99,32 @@ describe("purchase sheet delete sync helpers", () => {
     expect(rowNumbers).toEqual([2, 3, 4, 5]);
   });
 
-  it("builds repeatCell requests that strike through the full purchase row", () => {
-    expect(buildStrikethroughRequests([8, 11], 99)).toEqual([
+  it("builds deleteDimension requests in reverse row order to avoid index shift", () => {
+    expect(buildDeleteRowRequests([8, 11], 99)).toEqual([
       {
-        repeatCell: {
+        deleteDimension: {
           range: {
             sheetId: 99,
-            startRowIndex: 7,
-            endRowIndex: 8,
-            startColumnIndex: 0,
-            endColumnIndex: 30,
+            dimension: "ROWS",
+            startIndex: 10,
+            endIndex: 11,
           },
-          cell: {
-            userEnteredFormat: {
-              textFormat: {
-                strikethrough: true,
-              },
-            },
-          },
-          fields: "userEnteredFormat.textFormat.strikethrough",
         },
       },
       {
-        repeatCell: {
+        deleteDimension: {
           range: {
             sheetId: 99,
-            startRowIndex: 10,
-            endRowIndex: 11,
-            startColumnIndex: 0,
-            endColumnIndex: 30,
+            dimension: "ROWS",
+            startIndex: 7,
+            endIndex: 8,
           },
-          cell: {
-            userEnteredFormat: {
-              textFormat: {
-                strikethrough: true,
-              },
-            },
-          },
-          fields: "userEnteredFormat.textFormat.strikethrough",
         },
       },
     ]);
   });
 
-  it("marks all rows of the purchase order with strikethrough when rows can be resolved", async () => {
+  it("deletes all rows of the purchase order when rows can be resolved", async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValueOnce(createJsonResponse({ access_token: "token-123" }));
     fetchMock.mockResolvedValueOnce(createJsonResponse({
@@ -158,7 +140,7 @@ describe("purchase sheet delete sync helpers", () => {
     }));
     fetchMock.mockResolvedValueOnce(createJsonResponse({ replies: [] }));
 
-    const result = await markPurchaseOrderRowsDeletedInGoogleSheet({
+    const result = await deletePurchaseOrderRowsFromGoogleSheet({
       poNumber: "PO-1",
       products: [
         { poNumber: "PO-1", batchNo: "BATCH-1" },
@@ -169,7 +151,7 @@ describe("purchase sheet delete sync helpers", () => {
     expect(result).toMatchObject({
       success: true,
       skipped: false,
-      updatedRowNumbers: [2, 3, 4],
+      deletedRowNumbers: [2, 3, 4],
       reason: null,
     });
     expect(fetchMock).toHaveBeenCalledTimes(4);
@@ -189,7 +171,7 @@ describe("purchase sheet delete sync helpers", () => {
       sheets: [{ properties: { title: "採購單", sheetId: 321 } }],
     }));
 
-    const result = await markPurchaseOrderRowsDeletedInGoogleSheet({
+    const result = await deletePurchaseOrderRowsFromGoogleSheet({
       poNumber: "PO-1",
       products: [{ poNumber: "PO-1", serialNumber: "SER-NOT-FOUND" }],
     });
@@ -197,7 +179,7 @@ describe("purchase sheet delete sync helpers", () => {
     expect(result).toMatchObject({
       success: true,
       skipped: true,
-      updatedRowNumbers: [],
+      deletedRowNumbers: [],
       reason: "rows_not_found",
     });
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -217,7 +199,7 @@ describe("purchase sheet delete sync helpers", () => {
     }));
     fetchMock.mockResolvedValueOnce(createJsonResponse({ error: { message: "boom" } }, false));
 
-    await expect(markPurchaseOrderRowsDeletedInGoogleSheet({
+    await expect(deletePurchaseOrderRowsFromGoogleSheet({
       poNumber: "PO-1",
       products: [{ poNumber: "PO-1", serialNumber: "SER-2" }],
     })).rejects.toThrow("Google Sheets API 失敗");

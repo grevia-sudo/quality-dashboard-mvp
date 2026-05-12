@@ -277,3 +277,10 @@
 - [x] 依使用者提供的 Google KPI 計算表重新核對每位人員在 A1、A2、B、C、D、E 各站得分與總分，找出與系統不一致的原因
 - [x] 刪除指定 PO 後同步重算受影響人員與日期的 engineer_daily_productivity，或先清除受影響舊彙總後再重建
 - [x] 補上 PO 清理後的驗證：確認剩餘正式資料的 KPI 彙總與 productivity_score_details 明細一致，且無殘留或重複的 engineer_daily_productivity 日彙總列
+- [x] 將使用者已於 Google 刪除的 PO-20260512-01 從系統中安全移除，並確認相關 products、station_tasks、station_events、sampling_results、productivity_score_details 與 engineer_daily_productivity 已同步清理
+- [x] 追查批號 01400003031 至 01400003048 為何 Google 有資料但系統刷入後各站顯示無符合條件待處理商品，確認目前資料實際掛在 PO-20260508-01 且停在 A1；畫面重跑驗證由使用者自行處理
+- [x] 追查 Google 再次出現重複值且多集中於 PO-20260512-01 的根因，確認主因是刪除後僅保留歷史列而未直接清除 Google 主表資料
+- [x] 清除 Google 採購單主表中 `PO-20260512-01` 的殘留列，讓目前 Google 與系統資料一致
+- [x] 將採購單刪除流程改為系統與 Google 直接同步刪除，不再保留刪除線歷史列
+- [x] 已確認 `01400003031` 至 `01400003048` 目前停在 A1 待處理；畫面重跑驗證改由使用者自行處理
+- [x] 補上刪除採購單後 Google 直接清除列的回歸測試，確認系統與 Google 對齊

@@ -1,0 +1,17 @@
+{
+  "query": "SELECT poNumber, deletedProducts, deletedTasks, deletedByName, createdAt FROM purchase_order_deletion_logs WHERE poNumber = 'PO-20260512-01';\nSELECT id, poNumber, backupLabel, productCount, createdAt, restoredAt FROM import_batch_backups WHERE poNumber = 'PO-20260512-01';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT poNumber, deletedProducts, deletedTasks, deletedByName, createdAt FROM purchase_order_deletion_logs WHERE poNumber = 'PO-20260512-01';\nSELECT id, poNumber, backupLabel, productCount, createdAt, restoredAt FROM import_batch_backups WHERE poNumber = 'PO-20260512-01';",
+  "rows": [
+    {
+      "poNumber": "PO-20260512-01",
+      "deletedProducts": "343",
+      "deletedTasks": "554",
+      "deletedByName": "Kiddliao",
+      "createdAt": "2026-05-12 02:03:29"
+    }
+  ],
+  "messages": [],
+  "stdout": "poNumber\tdeletedProducts\tdeletedTasks\tdeletedByName\tcreatedAt\nPO-20260512-01\t343\t554\tKiddliao\t2026-05-12 02:03:29\n",
+  "stderr": "",
+  "execution_time_ms": 1992
+}

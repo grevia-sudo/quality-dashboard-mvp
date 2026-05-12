@@ -1,0 +1,210 @@
+{
+  "query": "SELECT id, jobType, targetSheetName, syncJobStatus, queuedAt, startedAt, finishedAt, errorMessage\nFROM sheet_sync_jobs\nWHERE jobType = 'purchase_sheet_sync'\nORDER BY id DESC\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, jobType, targetSheetName, syncJobStatus, queuedAt, startedAt, finishedAt, errorMessage\nFROM sheet_sync_jobs\nWHERE jobType = 'purchase_sheet_sync'\nORDER BY id DESC\nLIMIT 20;",
+  "rows": [
+    {
+      "id": "570363",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:35:23",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:35:28",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570361",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:34:45",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:34:49",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570359",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:34:25",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:34:44",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570357",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:31:29",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:31:33",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570355",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:31:08",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:31:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570353",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:30:58",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:31:08",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570351",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:29:41",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:29:44",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570349",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:27:23",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:27:34",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570347",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:26:11",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:26:23",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570345",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:25:55",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:26:23",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570343",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:22:52",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:25:23",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570341",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:22:11",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:22:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570340",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:21:18",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:30",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570338",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:21:16",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570337",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:21:05",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570336",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:21:03",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570335",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:20:50",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570334",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:20:41",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570331",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:20:40",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "570329",
+      "jobType": "purchase_sheet_sync",
+      "targetSheetName": "採購單",
+      "syncJobStatus": "success",
+      "queuedAt": "2026-05-12 02:20:37",
+      "startedAt": "NULL",
+      "finishedAt": "2026-05-12 02:21:16",
+      "errorMessage": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tjobType\ttargetSheetName\tsyncJobStatus\tqueuedAt\tstartedAt\tfinishedAt\terrorMessage\n570363\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:35:23\tNULL\t2026-05-12 02:35:28\tNULL\n570361\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:34:45\tNULL\t2026-05-12 02:34:49\tNULL\n570359\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:34:25\tNULL\t2026-05-12 02:34:44\tNULL\n570357\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:31:29\tNULL\t2026-05-12 02:31:33\tNULL\n570355\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:31:08\tNULL\t2026-05-12 02:31:16\tNULL\n570353\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:30:58\tNULL\t2026-05-12 02:31:08\tNULL\n570351\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:29:41\tNULL\t2026-05-12 02:29:44\tNULL\n570349\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:27:23\tNULL\t2026-05-12 02:27:34\tNULL\n570347\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:26:11\tNULL\t2026-05-12 02:26:23\tNULL\n570345\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:25:55\tNULL\t2026-05-12 02:26:23\tNULL\n570343\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:22:52\tNULL\t2026-05-12 02:25:23\tNULL\n570341\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:22:11\tNULL\t2026-05-12 02:22:16\tNULL\n570340\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:21:18\tNULL\t2026-05-12 02:21:30\tNULL\n570338\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:21:16\tNULL\t2026-05-12 02:21:16\tNULL\n570337\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:21:05\tNULL\t2026-05-12 02:21:16\tNULL\n570336\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:21:03\tNULL\t2026-05-12 02:21:16\tNULL\n570335\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:20:50\tNULL\t2026-05-12 02:21:16\tNULL\n570334\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:20:41\tNULL\t2026-05-12 02:21:16\tNULL\n570331\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:20:40\tNULL\t2026-05-12 02:21:16\tNULL\n570329\tpurchase_sheet_sync\t採購單\tsuccess\t2026-05-12 02:20:37\tNULL\t2026-05-12 02:21:16\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1788
+}
