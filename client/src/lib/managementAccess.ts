@@ -1,7 +1,12 @@
 export const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"] as const;
+export const KPI_ALL_VIEWER_ROLES = ["manager", "admin"] as const;
 
 export function canAccessManagementOps(role?: string | null) {
   return Boolean(role && MANAGEMENT_VIEWER_ROLES.includes(role as (typeof MANAGEMENT_VIEWER_ROLES)[number]));
+}
+
+export function canViewAllKpi(role?: string | null) {
+  return Boolean(role && KPI_ALL_VIEWER_ROLES.includes(role as (typeof KPI_ALL_VIEWER_ROLES)[number]));
 }
 
 export function shouldEnableManagementQuery(input: { loading: boolean; role?: string | null }) {

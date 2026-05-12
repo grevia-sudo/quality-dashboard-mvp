@@ -1,0 +1,129 @@
+{
+  "query": "SELECT id, username, name, role, loginMethod FROM users ORDER BY role, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, username, name, role, loginMethod FROM users ORDER BY role, id;",
+  "rows": [
+    {
+      "id": "1",
+      "username": "NULL",
+      "name": "綠途未來股份有限公司",
+      "role": "admin",
+      "loginMethod": "google"
+    },
+    {
+      "id": "10",
+      "username": "Kiddliao",
+      "name": "Kiddliao",
+      "role": "admin",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750005",
+      "username": "ＨＣ",
+      "name": "得智",
+      "role": "admin",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750008",
+      "username": "mmin",
+      "name": "佳珉",
+      "role": "admin",
+      "loginMethod": "password"
+    },
+    {
+      "id": "90021",
+      "username": "test",
+      "name": "測試",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750126",
+      "username": "a123456",
+      "name": "明軒",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750136",
+      "username": "raymond93520",
+      "name": "小周",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750139",
+      "username": "vvv312",
+      "name": "Vicky",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750192",
+      "username": "Youkai",
+      "name": "宥凱",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750203",
+      "username": "a987654321",
+      "name": "黃Brian",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750206",
+      "username": "tiger8712",
+      "name": "葉tiger",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750212",
+      "username": "ying43",
+      "name": "佳穎",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750215",
+      "username": "qc6",
+      "name": "雋喆",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "2042728",
+      "username": "9289",
+      "name": "秉翰",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "2043935",
+      "username": "kpi-idempotent-1778496469410-idempotent",
+      "name": "KPI Idempotent",
+      "role": "engineer",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750189",
+      "username": "Qc.8",
+      "name": "巧克力",
+      "role": "supervisor",
+      "loginMethod": "password"
+    },
+    {
+      "id": "750209",
+      "username": "geng03",
+      "name": "桔梗達曼",
+      "role": "supervisor",
+      "loginMethod": "password"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tusername\tname\trole\tloginMethod\n1\tNULL\t綠途未來股份有限公司\tadmin\tgoogle\n10\tKiddliao\tKiddliao\tadmin\tpassword\n750005\tＨＣ\t得智\tadmin\tpassword\n750008\tmmin\t佳珉\tadmin\tpassword\n90021\ttest\t測試\tengineer\tpassword\n750126\ta123456\t明軒\tengineer\tpassword\n750136\traymond93520\t小周\tengineer\tpassword\n750139\tvvv312\tVicky\tengineer\tpassword\n750192\tYoukai\t宥凱\tengineer\tpassword\n750203\ta987654321\t黃Brian\tengineer\tpassword\n750206\ttiger8712\t葉tiger\tengineer\tpassword\n750212\tying43\t佳穎\tengineer\tpassword\n750215\tqc6\t雋喆\tengineer\tpassword\n2042728\t9289\t秉翰\tengineer\tpassword\n2043935\tkpi-idempotent-1778496469410-idempotent\tKPI Idempotent\tengineer\tpassword\n750189\tQc.8\t巧克力\tsupervisor\tpassword\n750209\tgeng03\t桔梗達曼\tsupervisor\tpassword\n",
+  "stderr": "",
+  "execution_time_ms": 1737
+}

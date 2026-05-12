@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { analyzeProductTraceResults } from "@/lib/adminProductTrace";
+import { canViewAllKpi } from "@/lib/managementAccess";
 import { trpc } from "@/lib/trpc";
-import { Boxes, ClipboardCheck, Database, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
+import { Boxes, ClipboardCheck, Database, Download, Gauge, PackagePlus, Search, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 
 const MANAGEMENT_VIEWER_ROLES = ["supervisor", "manager", "admin"];
 
-type AdminSectionId = "rules" | "targets" | "menus" | "tools" | "product-trace" | "inventory-history" | "support" | "users" | "categories" | "product-names";
+type AdminSectionId = "rules" | "targets" | "menus" | "tools" | "product-trace" | "inventory-history" | "support" | "users" | "categories" | "product-names" | "kpi-report";
 
 const adminSections: Array<{ id: AdminSectionId; label: string; path: string; description: string }> = [
   { id: "rules", label: "站點規則", path: "/admin/rules", description: "設定各站流程、下一站與返工規則。" },
@@ -27,6 +28,7 @@ const adminSections: Array<{ id: AdminSectionId; label: string; path: string; de
   { id: "users", label: "帳號管理", path: "/admin/users", description: "建立本地帳號並檢視現有登入資訊。" },
   { id: "categories", label: "品類設定", path: "/admin/categories", description: "維護品類流程與站點設定來源。" },
   { id: "product-names", label: "品名管理", path: "/admin/product-names", description: "維護匯入作業與 A1 點到貨使用的品名清單。" },
+  { id: "kpi-report", label: "KPI 複核報表", path: "/admin/kpi-report", description: "查看站點別 KPI 明細、0 分帳號分類並下載複核報表。" },
 ];
 
 function resolveAdminSectionId(pathname: string): AdminSectionId {
@@ -131,6 +133,55 @@ function formatDisplayPoints(value?: number | null) {
 
 function formatSupportHours(value?: number | null) {
   return `${Number(value ?? 0).toFixed(1)} 小時`;
+}
+
+function formatKpiStationBreakdown(rows: Array<{ stationCode: string; completedQty: number; totalDisplayPoints: number; supportHours?: number }>) {
+  if (!rows.length) {
+    return "-";
+  }
+
+  return rows
+    .map((row) => row.stationCode === "SUPPORT"
+      ? `${row.stationCode}｜${formatDisplayPoints(row.totalDisplayPoints)}／${formatSupportHours(row.supportHours ?? 0)}`
+      : `${row.stationCode}｜${row.completedQty} 件／${formatDisplayPoints(row.totalDisplayPoints)}`)
+    .join("；");
+}
+
+function buildKpiAuditCsv(rows: Array<{
+  name: string;
+  username: string;
+  role: string;
+  zeroScoreCategory?: string | null;
+  todayDisplayPoints: number;
+  monthTotalDisplayPoints: number;
+  monthAvgDisplayPoints: number;
+  todaySupportDisplayPoints: number;
+  todaySupportHours: number;
+  avgKpiAchievementRate: number;
+  finalKpiScore: number;
+  attendanceDays: number;
+  stationBreakdown: Array<{ stationCode: string; completedQty: number; totalDisplayPoints: number; supportHours?: number }>;
+}>) {
+  const header = ["工程師", "帳號", "角色", "0分分類", "今日表現", "區間總表現", "區間日均表現", "今日支援補償", "今日支援時數", "平均KPI達標率", "最新KPI分數", "出勤天數", "站點別明細"];
+  const csvRows = rows.map((row) => [
+    row.name,
+    row.username,
+    row.role,
+    row.zeroScoreCategory ?? "",
+    Number(row.todayDisplayPoints ?? 0).toFixed(1),
+    Number(row.monthTotalDisplayPoints ?? 0).toFixed(1),
+    Number(row.monthAvgDisplayPoints ?? 0).toFixed(1),
+    Number(row.todaySupportDisplayPoints ?? 0).toFixed(1),
+    Number(row.todaySupportHours ?? 0).toFixed(1),
+    Number(row.avgKpiAchievementRate ?? 0).toFixed(1),
+    Number(row.finalKpiScore ?? 0).toFixed(1),
+    `${row.attendanceDays ?? 0}`,
+    formatKpiStationBreakdown(row.stationBreakdown ?? []),
+  ]);
+
+  return [header, ...csvRows]
+    .map((columns) => columns.map((value) => `"${String(value ?? "").replaceAll('"', '""')}"`).join(","))
+    .join("\n");
 }
 
 export default function AdminPage() {
@@ -530,6 +581,11 @@ export default function AdminPage() {
   const kpiRangeLabel = query.data?.kpiRange
     ? `${query.data.kpiRange.startDate} ～ ${query.data.kpiRange.endDate}`
     : "本月";
+  const canSeeAllKpi = canViewAllKpi(user?.role);
+  const zeroScoreRows = kpiProgress.filter((item) => item.monthTotalPoints <= 0);
+  const zeroScoreWorkingRows = zeroScoreRows.filter((item) => item.zeroScoreCategory === "本月未作業");
+  const zeroScoreTestRows = zeroScoreRows.filter((item) => item.zeroScoreCategory === "測試帳號");
+  const kpiCardTitle = canSeeAllKpi ? "全員 KPI 進度" : "我的 KPI 進度";
 
   const handleApplyKpiFilter = () => {
     setAppliedKpiRange({
@@ -573,6 +629,17 @@ export default function AdminPage() {
     setKpiFilterStartDate("");
     setKpiFilterEndDate("");
     setAppliedKpiRange({});
+  };
+
+  const handleDownloadKpiAuditReport = () => {
+    const csv = buildKpiAuditCsv(kpiProgress);
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `kpi-audit-report-${(query.data?.kpiRange?.startDate ?? "month")}-${(query.data?.kpiRange?.endDate ?? "today")}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleCopyCategoryFlow = (sourceCategoryId: number) => {
@@ -766,10 +833,10 @@ export default function AdminPage() {
               <CardHeader>
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                   <div>
-                    <CardTitle className="text-base font-bold">全員 KPI 進度</CardTitle>
-                    <p className="mt-2 text-sm text-slate-500">目前查看區間：{kpiRangeLabel}</p>
+                    <CardTitle className="text-base font-bold">{kpiCardTitle}</CardTitle>
+                    <p className="mt-2 text-sm text-slate-500">目前查看區間：{kpiRangeLabel}。{canSeeAllKpi ? "你目前可查看全部人的 KPI。" : "依權限限制，目前僅顯示你自己的 KPI。"}</p>
                   </div>
-                  <div className="grid gap-3 md:grid-cols-[180px_180px_auto_auto]">
+                  <div className="grid gap-3 md:grid-cols-[180px_180px_auto_auto_auto]">
                     <label className="space-y-2 text-sm text-slate-600">
                       <span>開始日期</span>
                       <Input type="date" value={kpiFilterStartDate} onChange={(event) => setKpiFilterStartDate(event.target.value)} className="editable-field rounded-2xl border-0 bg-slate-50" />
@@ -780,6 +847,7 @@ export default function AdminPage() {
                     </label>
                     <Button className="rounded-2xl self-end" disabled={query.isFetching} onClick={handleApplyKpiFilter}>套用 KPI 篩選</Button>
                     <Button variant="outline" className="rounded-2xl self-end" disabled={query.isFetching} onClick={handleResetKpiFilter}>重設為當月</Button>
+                    <Button variant="outline" className="rounded-2xl self-end" onClick={() => setLocation("/admin/kpi-report")}>查看 KPI 複核報表</Button>
                   </div>
                 </div>
               </CardHeader>
@@ -796,9 +864,9 @@ export default function AdminPage() {
                   <p className="mt-1 text-sm text-slate-500">{topEngineer ? `${topEngineer.name}｜區間總表現 ${formatDisplayPoints(topEngineer.monthTotalDisplayPoints)}` : "尚無資料"}</p>
                 </div>
                 <div className="rounded-[24px] bg-slate-50 p-4">
-                  <p className="text-xs text-slate-400">此區間平均 KPI 分數</p>
-                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length > 0 ? `${(kpiProgress.reduce((sum, item) => sum + item.finalKpiScore, 0) / kpiProgress.length).toFixed(1)}` : "0.0"}</p>
-                  <p className="mt-1 text-sm text-slate-500">前台已統一改為 100 點制顯示</p>
+                  <p className="text-xs text-slate-400">0 分帳號分類</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{zeroScoreRows.length}</p>
+                  <p className="mt-1 text-sm text-slate-500">本月未作業 {zeroScoreWorkingRows.length}｜測試帳號 {zeroScoreTestRows.length}</p>
                 </div>
               </div>
               <div className="overflow-x-auto rounded-[24px] bg-slate-50">
@@ -807,6 +875,7 @@ export default function AdminPage() {
                     <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
                       <th className="px-4 py-3">工程師</th>
                       <th className="px-4 py-3">角色</th>
+                      <th className="px-4 py-3">0分分類</th>
                       <th className="px-4 py-3">今日表現</th>
                       <th className="px-4 py-3">區間總表現</th>
                       <th className="px-4 py-3">區間日均表現</th>
@@ -820,6 +889,7 @@ export default function AdminPage() {
                       <tr key={item.userId} className="border-b border-slate-200/80 last:border-b-0 align-top">
                         <td className="px-4 py-3 font-medium text-slate-900">{item.name}<div className="text-xs text-slate-400">{item.username}</div></td>
                         <td className="px-4 py-3">{item.role}</td>
+                        <td className="px-4 py-3">{item.zeroScoreCategory ?? "-"}</td>
                         <td className="px-4 py-3">{formatDisplayPoints(item.todayDisplayPoints)}</td>
                         <td className="px-4 py-3">{formatDisplayPoints(item.monthTotalDisplayPoints)}</td>
                         <td className="px-4 py-3">{formatDisplayPoints(item.monthAvgDisplayPoints)}</td>
@@ -830,7 +900,7 @@ export default function AdminPage() {
                         <td className="px-4 py-3">{item.avgKpiAchievementRate.toFixed(1)}%</td>
                         <td className="px-4 py-3">{item.finalKpiScore.toFixed(1)}</td>
                       </tr>
-                    )) : <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500">目前尚無工程師 KPI 資料</td></tr>}
+                    )) : <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-500">目前尚無工程師 KPI 資料</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -1192,6 +1262,74 @@ export default function AdminPage() {
                             </td>
                           </tr>
                         )) : <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">目前尚無支援補償紀錄</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="kpi-report">
+            <div className="space-y-4">
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <CardTitle className="text-base font-bold">KPI 複核報表</CardTitle>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      目前查看區間：{kpiRangeLabel}。{canSeeAllKpi ? "你目前可查看全部人的站點別 KPI 明細。" : "依權限限制，目前僅可下載你自己的 KPI 複核報表。"}
+                    </p>
+                  </div>
+                  <Button className="rounded-2xl" onClick={handleDownloadKpiAuditReport}>
+                    <Download className="mr-2 h-4 w-4" />下載 CSV 報表
+                  </Button>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-3">
+                  <div className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="text-xs text-slate-400">可見帳號數</p>
+                    <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiProgress.length}</p>
+                  </div>
+                  <div className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="text-xs text-slate-400">本月未作業</p>
+                    <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{zeroScoreWorkingRows.length}</p>
+                  </div>
+                  <div className="rounded-[24px] bg-slate-50 p-4">
+                    <p className="text-xs text-slate-400">測試帳號</p>
+                    <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{zeroScoreTestRows.length}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">站點別 KPI 明細</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                    <table className="min-w-full text-sm text-slate-700">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                          <th className="px-4 py-3">工程師</th>
+                          <th className="px-4 py-3">角色</th>
+                          <th className="px-4 py-3">0分分類</th>
+                          <th className="px-4 py-3">區間總表現</th>
+                          <th className="px-4 py-3">區間日均表現</th>
+                          <th className="px-4 py-3">平均 KPI 達標率</th>
+                          <th className="px-4 py-3">站點別明細</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kpiProgress.length > 0 ? kpiProgress.map((item) => (
+                          <tr key={`kpi-report-${item.userId}`} className="border-b border-slate-200/80 last:border-b-0 align-top">
+                            <td className="px-4 py-3 font-medium text-slate-900">{item.name}<div className="text-xs text-slate-400">{item.username}</div></td>
+                            <td className="px-4 py-3">{item.role}</td>
+                            <td className="px-4 py-3">{item.zeroScoreCategory ?? "-"}</td>
+                            <td className="px-4 py-3">{formatDisplayPoints(item.monthTotalDisplayPoints)}</td>
+                            <td className="px-4 py-3">{formatDisplayPoints(item.monthAvgDisplayPoints)}</td>
+                            <td className="px-4 py-3">{item.avgKpiAchievementRate.toFixed(1)}%</td>
+                            <td className="px-4 py-3 text-slate-600">{formatKpiStationBreakdown(item.stationBreakdown ?? [])}</td>
+                          </tr>
+                        )) : <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">目前尚無可下載的 KPI 複核資料</td></tr>}
                       </tbody>
                     </table>
                   </div>

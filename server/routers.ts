@@ -31,6 +31,7 @@ import {
   listSupportCompensations,
   getDefectOptions,
   getEngineerKpiSummary,
+  getVisibleEngineerKpiProgress,
   getProductCategoryOptions,
   getProductNameOptions,
   getSamplingQueue,
@@ -364,6 +365,24 @@ export const appRouter = router({
       await seedKpiForDemo(ctx.user.id);
       return getEngineerKpiSummary(ctx.user.id);
     }),
+    kpiAudit: protectedProcedure
+      .input(
+        z.object({
+          startDate: optionalTextSchema.nullable().optional(),
+          endDate: optionalTextSchema.nullable().optional(),
+        }).optional(),
+      )
+      .query(async ({ ctx, input }) => {
+        await ensureMvpSeedData();
+        await seedKpiForDemo(ctx.user.id);
+        return getVisibleEngineerKpiProgress({
+          startDate: input?.startDate ?? undefined,
+          endDate: input?.endDate ?? undefined,
+        }, {
+          userId: ctx.user.id,
+          role: ctx.user.role,
+        });
+      }),
   }),
   admin: router({
     setup: managementProcedure
@@ -373,12 +392,15 @@ export const appRouter = router({
           endDate: optionalTextSchema.nullable().optional(),
         }).optional(),
       )
-      .query(async ({ input }) => {
+      .query(async ({ ctx, input }) => {
         await ensureMvpSeedData();
         await archiveExpiredData();
         return getAdminSetupData({
           startDate: input?.startDate ?? undefined,
           endDate: input?.endDate ?? undefined,
+        }, {
+          userId: ctx.user.id,
+          role: ctx.user.role,
         });
       }),
     pendingStockMismatches: managementProcedure

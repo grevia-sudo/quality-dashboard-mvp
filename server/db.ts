@@ -4940,6 +4940,42 @@ type AdminDateRangeInput = {
   endDate?: string | null;
 };
 
+const KPI_ALL_VIEWER_ROLES = ["admin", "manager"] as const;
+const TEST_ACCOUNT_PATTERN = /(test|測試|demo|seed|dummy|idempotent)/i;
+const KPI_STATION_ORDER = ["A1", "A2", "B", "C", "D", "E", "STOCK", "SUPPORT"] as const;
+
+export function canViewAllKpiForRole(role?: string | null) {
+  return Boolean(role && KPI_ALL_VIEWER_ROLES.includes(role as (typeof KPI_ALL_VIEWER_ROLES)[number]));
+}
+
+export function isLikelyTestKpiAccount(user: { username?: string | null; name?: string | null }) {
+  return TEST_ACCOUNT_PATTERN.test(`${user.username ?? ""} ${user.name ?? ""}`);
+}
+
+export function classifyZeroScoreKpiAccount(user: { username?: string | null; name?: string | null }, monthTotalPoints: number) {
+  if (monthTotalPoints > 0) {
+    return null;
+  }
+
+  return isLikelyTestKpiAccount(user) ? "測試帳號" : "本月未作業";
+}
+
+function sortKpiStationBreakdown<T extends { stationCode: string }>(rows: T[]) {
+  return [...rows].sort((left, right) => {
+    const leftIndex = KPI_STATION_ORDER.indexOf(left.stationCode as (typeof KPI_STATION_ORDER)[number]);
+    const rightIndex = KPI_STATION_ORDER.indexOf(right.stationCode as (typeof KPI_STATION_ORDER)[number]);
+    return (leftIndex === -1 ? 999 : leftIndex) - (rightIndex === -1 ? 999 : rightIndex) || left.stationCode.localeCompare(right.stationCode);
+  });
+}
+
+function getVisibleKpiRowsForViewer<T extends { userId: number }>(rows: T[], viewer?: { userId: number; role?: string | null }) {
+  if (!viewer || canViewAllKpiForRole(viewer.role)) {
+    return rows;
+  }
+
+  return rows.filter((row) => row.userId === viewer.userId);
+}
+
 function getCurrentMonthStartDate(dateKey: string) {
   return `${dateKey.slice(0, 7)}-01`;
 }
@@ -4971,7 +5007,7 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
 
   const range = normalizeAdminDateRange(input);
   await backfillProductivityFromCompletedEvents(db);
-  const [userRows, productivityRows, supportRows] = await Promise.all([
+  const [userRows, productivityRows, productivityDetailRows, supportRows] = await Promise.all([
     db
       .select({
         id: users.id,
@@ -4995,6 +5031,19 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
       .from(engineerDailyProductivity),
     db
       .select({
+        userId: productivityScoreDetails.userId,
+        stationCode: productivityScoreDetails.stationCode,
+        completedQty: productivityScoreDetails.completedQty,
+        earnedPoints: productivityScoreDetails.earnedPoints,
+        businessDate: productivityScoreDetails.businessDate,
+      })
+      .from(productivityScoreDetails)
+      .where(and(
+        gte(productivityScoreDetails.businessDate, dateKeyToDate(range.startDate)),
+        lte(productivityScoreDetails.businessDate, dateKeyToDate(range.endDate)),
+      )),
+    db
+      .select({
         userId: supportTaskCompensations.userId,
         businessDate: supportTaskCompensations.businessDate,
         supportHours: supportTaskCompensations.supportHours,
@@ -5007,6 +5056,7 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   ]);
 
   const rangedRows = productivityRows.filter((row) => isDateKeyWithinRange(toDateKey(row.businessDate), range));
+  const rangedDetailRows = productivityDetailRows.filter((row) => isDateKeyWithinRange(toDateKey(row.businessDate), range));
   const supportByUserDate = new Map<string, { supportHours: number; supportPoints: number }>();
 
   supportRows.forEach((row) => {
@@ -5022,6 +5072,7 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   return userRows
     .map((user) => {
       const rows = rangedRows.filter((row) => row.userId === user.id);
+      const detailRows = rangedDetailRows.filter((row) => row.userId === user.id);
       const rowsByDate = new Map<string, (typeof rows)[number]>();
       rows.forEach((row) => {
         rowsByDate.set(toDateKey(row.businessDate), row);
@@ -5040,12 +5091,9 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
       const todaySupport = supportByUserDate.get(`${user.id}-${range.todayKey}`) ?? { supportHours: 0, supportPoints: 0 };
       const todayProductivityPoints = Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
       const todayPoints = todayProductivityPoints + todaySupport.supportPoints;
-      const rangeSupportPoints = Array.from(supportByUserDate.entries())
-        .filter(([key]) => key.startsWith(`${user.id}-`))
-        .reduce((sum, [, value]) => sum + value.supportPoints, 0);
-      const rangeSupportHours = Array.from(supportByUserDate.entries())
-        .filter(([key]) => key.startsWith(`${user.id}-`))
-        .reduce((sum, [, value]) => sum + value.supportHours, 0);
+      const rangeSupportEntries = Array.from(supportByUserDate.entries()).filter(([key]) => key.startsWith(`${user.id}-`));
+      const rangeSupportPoints = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportPoints, 0);
+      const rangeSupportHours = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportHours, 0);
       const rangeProductivityPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
       const rangeTotalPoints = rangeProductivityPoints + rangeSupportPoints;
       const attendanceDays = attendanceDateSet.size;
@@ -5054,6 +5102,34 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
       const rawAchievementRate = toDisplayPoints(todayPoints);
       const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
       const finalKpiScore = rows.length > 0 ? Number(rows[rows.length - 1]?.finalKpiScore ?? 0) : Math.min(rawAchievementRate, 100);
+      const stationBreakdownMap = new Map<string, { stationCode: string; completedQty: number; totalPoints: number; totalDisplayPoints: number; supportHours: number }>();
+
+      detailRows.forEach((row) => {
+        const stationCode = row.stationCode;
+        const existing = stationBreakdownMap.get(stationCode) ?? {
+          stationCode,
+          completedQty: 0,
+          totalPoints: 0,
+          totalDisplayPoints: 0,
+          supportHours: 0,
+        };
+        existing.completedQty += Number(row.completedQty ?? 0);
+        existing.totalPoints += Number(row.earnedPoints ?? 0);
+        existing.totalDisplayPoints = toDisplayPoints(existing.totalPoints);
+        stationBreakdownMap.set(stationCode, existing);
+      });
+
+      if (rangeSupportHours > 0 || rangeSupportPoints > 0) {
+        stationBreakdownMap.set("SUPPORT", {
+          stationCode: "SUPPORT",
+          completedQty: 0,
+          totalPoints: rangeSupportPoints,
+          totalDisplayPoints: toDisplayPoints(rangeSupportPoints),
+          supportHours: rangeSupportHours,
+        });
+      }
+
+      const zeroScoreCategory = classifyZeroScoreKpiAccount(user, rangeTotalPoints);
 
       return {
         userId: user.id,
@@ -5080,9 +5156,24 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
         rawAchievementRate,
         overAchievementRate,
         finalKpiScore,
+        zeroScoreCategory,
+        stationBreakdown: sortKpiStationBreakdown(Array.from(stationBreakdownMap.values())),
       };
     })
     .sort((left, right) => right.monthTotalPoints - left.monthTotalPoints || right.finalKpiScore - left.finalKpiScore);
+}
+
+export async function getVisibleEngineerKpiProgress(input: AdminDateRangeInput | undefined, viewer: { userId: number; role?: string | null }) {
+  const range = normalizeAdminDateRange(input);
+  const rows = await getAdminEngineerKpiProgress(range);
+  return {
+    viewerScope: canViewAllKpiForRole(viewer.role) ? "all" : "self",
+    kpiRange: {
+      startDate: range.startDate,
+      endDate: range.endDate,
+    },
+    rows: getVisibleKpiRowsForViewer(rows, viewer),
+  };
 }
 
 async function getAdminStationLeadTimes() {
@@ -5317,7 +5408,7 @@ export async function getPendingStockImportMismatchProducts() {
     }));
 }
 
-export async function getAdminSetupData(input?: AdminDateRangeInput) {
+export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { userId: number; role?: string | null }) {
   const db = await getDb();
   const normalizedRange = normalizeAdminDateRange(input);
   if (!db) {
@@ -5361,6 +5452,11 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
     getCategoryStationFlowConfigs(),
   ]);
 
+  const visibleKpiProgress = getVisibleKpiRowsForViewer(kpiProgress, viewer);
+  const visibleSupportCompensations = viewer && !canViewAllKpiForRole(viewer.role)
+    ? supportCompensations.filter((item) => item.userId === viewer.userId)
+    : supportCompensations;
+
   return {
     users: userRows,
     rules: ruleRows,
@@ -5368,8 +5464,8 @@ export async function getAdminSetupData(input?: AdminDateRangeInput) {
     targets: targetRows,
     defectOptions: defectOptionRows,
     productNameOptions: productNameRows,
-    kpiProgress,
-    supportCompensations,
+    kpiProgress: visibleKpiProgress,
+    supportCompensations: visibleSupportCompensations,
     stationLeadTimes,
     categoryStockCycleTimes,
     categoryFlows,
