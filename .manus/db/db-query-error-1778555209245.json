@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.batchNo, p.poNumber, p.stationCode, p.productStatus, p.updatedAt,\n       st.stationCode AS taskStationCode, st.taskStatus, st.startedAt, st.completedAt\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nWHERE p.batchNo BETWEEN '01400003031' AND '01400003048'\nORDER BY p.batchNo ASC, st.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.poNumber, p.stationCode, p.productStatus, p.updatedAt,\n       st.stationCode AS taskStationCode, st.taskStatus, st.startedAt, st.completedAt\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nWHERE p.batchNo BETWEEN '01400003031' AND '01400003048'\nORDER BY p.batchNo ASC, st.id ASC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'st.taskstatus' in 'field list'"
+  ]
+}

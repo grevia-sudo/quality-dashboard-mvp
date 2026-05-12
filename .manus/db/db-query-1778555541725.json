@@ -1,0 +1,90 @@
+{
+  "query": "SELECT p.id AS productId, p.batchNo,\n       COUNT(DISTINCT st.id) AS taskCount,\n       GROUP_CONCAT(DISTINCT CONCAT(st.stationCode, ':', st.stationTaskStatus) ORDER BY st.id SEPARATOR ' | ') AS taskSummary,\n       COUNT(DISTINCT se.id) AS eventCount,\n       COUNT(DISTINCT psd.id) AS scoreCount\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nLEFT JOIN station_events se ON se.productId = p.id\nLEFT JOIN productivity_score_details psd ON psd.productId = p.id\nWHERE p.id IN (540612,540679,540618,540675,540613,540693,540615,540689,540624,540664)\nGROUP BY p.id, p.batchNo\nORDER BY p.batchNo ASC, p.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id AS productId, p.batchNo,\n       COUNT(DISTINCT st.id) AS taskCount,\n       GROUP_CONCAT(DISTINCT CONCAT(st.stationCode, ':', st.stationTaskStatus) ORDER BY st.id SEPARATOR ' | ') AS taskSummary,\n       COUNT(DISTINCT se.id) AS eventCount,\n       COUNT(DISTINCT psd.id) AS scoreCount\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nLEFT JOIN station_events se ON se.productId = p.id\nLEFT JOIN productivity_score_details psd ON psd.productId = p.id\nWHERE p.id IN (540612,540679,540618,540675,540613,540693,540615,540689,540624,540664)\nGROUP BY p.id, p.batchNo\nORDER BY p.batchNo ASC, p.id ASC;",
+  "rows": [
+    {
+      "productId": "540612",
+      "batchNo": "01400003031",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540679",
+      "batchNo": "01400003031",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540618",
+      "batchNo": "01400003035",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540675",
+      "batchNo": "01400003035",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540613",
+      "batchNo": "01400003038",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540693",
+      "batchNo": "01400003038",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540615",
+      "batchNo": "01400003040",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540689",
+      "batchNo": "01400003040",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540624",
+      "batchNo": "01400003048",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    },
+    {
+      "productId": "540664",
+      "batchNo": "01400003048",
+      "taskCount": "1",
+      "taskSummary": "A1:pending",
+      "eventCount": "0",
+      "scoreCount": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "productId\tbatchNo\ttaskCount\ttaskSummary\teventCount\tscoreCount\n540612\t01400003031\t1\tA1:pending\t0\t0\n540679\t01400003031\t1\tA1:pending\t0\t0\n540618\t01400003035\t1\tA1:pending\t0\t0\n540675\t01400003035\t1\tA1:pending\t0\t0\n540613\t01400003038\t1\tA1:pending\t0\t0\n540693\t01400003038\t1\tA1:pending\t0\t0\n540615\t01400003040\t1\tA1:pending\t0\t0\n540689\t01400003040\t1\tA1:pending\t0\t0\n540624\t01400003048\t1\tA1:pending\t0\t0\n540664\t01400003048\t1\tA1:pending\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1739
+}

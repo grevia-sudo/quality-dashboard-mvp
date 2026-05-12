@@ -1,0 +1,130 @@
+{
+  "query": "SELECT id, batchNo, serialNumber, imei, poNumber, stationCode, productStatus, sheetRowNumber, createdAt, updatedAt\nFROM products\nWHERE batchNo IN ('01400003031','01400003035','01400003038','01400003040','01400003048')\nORDER BY batchNo ASC, id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, batchNo, serialNumber, imei, poNumber, stationCode, productStatus, sheetRowNumber, createdAt, updatedAt\nFROM products\nWHERE batchNo IN ('01400003031','01400003035','01400003038','01400003040','01400003048')\nORDER BY batchNo ASC, id ASC;",
+  "rows": [
+    {
+      "id": "540612",
+      "batchNo": "01400003031",
+      "serialNumber": "1ae67237",
+      "imei": "866917062239932",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "478",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540679",
+      "batchNo": "01400003031",
+      "serialNumber": "1ae67237",
+      "imei": "866917062239932",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "545",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540618",
+      "batchNo": "01400003035",
+      "serialNumber": "RK4X4LB6ZXPB7XFY",
+      "imei": "861585066365063",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "484",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540675",
+      "batchNo": "01400003035",
+      "serialNumber": "RK4X4LB6ZXPB7XFY",
+      "imei": "861585066365063",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "541",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540613",
+      "batchNo": "01400003038",
+      "serialNumber": "c6e3925e",
+      "imei": "866917062850795",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "479",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540693",
+      "batchNo": "01400003038",
+      "serialNumber": "c6e3925e",
+      "imei": "866917062850795",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "559",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540615",
+      "batchNo": "01400003040",
+      "serialNumber": "99991bf0",
+      "imei": "862836060931452",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "481",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540689",
+      "batchNo": "01400003040",
+      "serialNumber": "99991bf0",
+      "imei": "862836060931452",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "555",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540624",
+      "batchNo": "01400003048",
+      "serialNumber": "b48d0d81",
+      "imei": "867498062073331",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "490",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    },
+    {
+      "id": "540664",
+      "batchNo": "01400003048",
+      "serialNumber": "b48d0d81",
+      "imei": "867498062073331",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "530",
+      "createdAt": "2026-05-11 08:53:43",
+      "updatedAt": "2026-05-11 08:53:43"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tserialNumber\timei\tpoNumber\tstationCode\tproductStatus\tsheetRowNumber\tcreatedAt\tupdatedAt\n540612\t01400003031\t1ae67237\t866917062239932\tPO-20260508-01\tA1\tpending_a1\t478\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540679\t01400003031\t1ae67237\t866917062239932\tPO-20260508-01\tA1\tpending_a1\t545\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540618\t01400003035\tRK4X4LB6ZXPB7XFY\t861585066365063\tPO-20260508-01\tA1\tpending_a1\t484\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540675\t01400003035\tRK4X4LB6ZXPB7XFY\t861585066365063\tPO-20260508-01\tA1\tpending_a1\t541\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540613\t01400003038\tc6e3925e\t866917062850795\tPO-20260508-01\tA1\tpending_a1\t479\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540693\t01400003038\tc6e3925e\t866917062850795\tPO-20260508-01\tA1\tpending_a1\t559\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540615\t01400003040\t99991bf0\t862836060931452\tPO-20260508-01\tA1\tpending_a1\t481\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540689\t01400003040\t99991bf0\t862836060931452\tPO-20260508-01\tA1\tpending_a1\t555\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540624\t01400003048\tb48d0d81\t867498062073331\tPO-20260508-01\tA1\tpending_a1\t490\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n540664\t01400003048\tb48d0d81\t867498062073331\tPO-20260508-01\tA1\tpending_a1\t530\t2026-05-11 08:53:43\t2026-05-11 08:53:43\n",
+  "stderr": "",
+  "execution_time_ms": 1723
+}

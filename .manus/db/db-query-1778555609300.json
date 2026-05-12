@@ -1,0 +1,100 @@
+{
+  "query": "SELECT p.batchNo, COUNT(*) AS productCount,\n       GROUP_CONCAT(CONCAT(p.id, ':', p.stationCode, ':', p.productStatus, ':task=', COALESCE(st.stationTaskStatus,'none')) ORDER BY p.id SEPARATOR ' | ') AS summary\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nWHERE p.batchNo BETWEEN '01400003031' AND '01400003048'\nGROUP BY p.batchNo\nORDER BY p.batchNo ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, COUNT(*) AS productCount,\n       GROUP_CONCAT(CONCAT(p.id, ':', p.stationCode, ':', p.productStatus, ':task=', COALESCE(st.stationTaskStatus,'none')) ORDER BY p.id SEPARATOR ' | ') AS summary\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nWHERE p.batchNo BETWEEN '01400003031' AND '01400003048'\nGROUP BY p.batchNo\nORDER BY p.batchNo ASC;",
+  "rows": [
+    {
+      "batchNo": "01400003031",
+      "productCount": "1",
+      "summary": "540612:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003032",
+      "productCount": "1",
+      "summary": "540673:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003033",
+      "productCount": "1",
+      "summary": "540697:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003034",
+      "productCount": "1",
+      "summary": "540656:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003035",
+      "productCount": "1",
+      "summary": "540618:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003036",
+      "productCount": "1",
+      "summary": "540701:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003037",
+      "productCount": "1",
+      "summary": "540677:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003038",
+      "productCount": "1",
+      "summary": "540613:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003039",
+      "productCount": "1",
+      "summary": "540658:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003040",
+      "productCount": "1",
+      "summary": "540615:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003041",
+      "productCount": "1",
+      "summary": "540686:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003042",
+      "productCount": "1",
+      "summary": "540670:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003043",
+      "productCount": "1",
+      "summary": "540688:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003044",
+      "productCount": "1",
+      "summary": "540684:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003045",
+      "productCount": "1",
+      "summary": "540687:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003046",
+      "productCount": "1",
+      "summary": "540662:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003047",
+      "productCount": "1",
+      "summary": "540666:A1:pending_a1:task=pending"
+    },
+    {
+      "batchNo": "01400003048",
+      "productCount": "1",
+      "summary": "540624:A1:pending_a1:task=pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tproductCount\tsummary\n01400003031\t1\t540612:A1:pending_a1:task=pending\n01400003032\t1\t540673:A1:pending_a1:task=pending\n01400003033\t1\t540697:A1:pending_a1:task=pending\n01400003034\t1\t540656:A1:pending_a1:task=pending\n01400003035\t1\t540618:A1:pending_a1:task=pending\n01400003036\t1\t540701:A1:pending_a1:task=pending\n01400003037\t1\t540677:A1:pending_a1:task=pending\n01400003038\t1\t540613:A1:pending_a1:task=pending\n01400003039\t1\t540658:A1:pending_a1:task=pending\n01400003040\t1\t540615:A1:pending_a1:task=pending\n01400003041\t1\t540686:A1:pending_a1:task=pending\n01400003042\t1\t540670:A1:pending_a1:task=pending\n01400003043\t1\t540688:A1:pending_a1:task=pending\n01400003044\t1\t540684:A1:pending_a1:task=pending\n01400003045\t1\t540687:A1:pending_a1:task=pending\n01400003046\t1\t540662:A1:pending_a1:task=pending\n01400003047\t1\t540666:A1:pending_a1:task=pending\n01400003048\t1\t540624:A1:pending_a1:task=pending\n",
+  "stderr": "",
+  "execution_time_ms": 1741
+}

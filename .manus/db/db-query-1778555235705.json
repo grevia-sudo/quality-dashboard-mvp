@@ -1,0 +1,263 @@
+{
+  "query": "SELECT p.batchNo, p.poNumber, p.stationCode, p.productStatus, p.updatedAt,\n       st.stationCode AS taskStationCode, st.stationTaskStatus, st.startedAt, st.completedAt\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nWHERE p.batchNo BETWEEN '01400003031' AND '01400003048'\nORDER BY p.batchNo ASC, st.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.poNumber, p.stationCode, p.productStatus, p.updatedAt,\n       st.stationCode AS taskStationCode, st.stationTaskStatus, st.startedAt, st.completedAt\nFROM products p\nLEFT JOIN station_tasks st ON st.productId = p.id\nWHERE p.batchNo BETWEEN '01400003031' AND '01400003048'\nORDER BY p.batchNo ASC, st.id ASC;",
+  "rows": [
+    {
+      "batchNo": "01400003031",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003031",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003032",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003033",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003034",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003035",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003035",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003036",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003037",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003038",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003038",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003039",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003040",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003040",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003041",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003042",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003043",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003044",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003045",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003046",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003047",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003048",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    },
+    {
+      "batchNo": "01400003048",
+      "poNumber": "PO-20260508-01",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "updatedAt": "2026-05-11 08:53:43",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "pending",
+      "startedAt": "NULL",
+      "completedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tpoNumber\tstationCode\tproductStatus\tupdatedAt\ttaskStationCode\tstationTaskStatus\tstartedAt\tcompletedAt\n01400003031\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003031\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003032\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003033\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003034\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003035\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003035\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003036\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003037\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003038\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003038\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003039\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003040\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003040\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003041\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003042\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003043\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003044\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003045\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003046\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003047\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003048\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n01400003048\tPO-20260508-01\tA1\tpending_a1\t2026-05-11 08:53:43\tA1\tpending\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1772
+}

@@ -1,0 +1,100 @@
+{
+  "query": "SELECT batchNo, COUNT(*) AS productCount, GROUP_CONCAT(CONCAT(id, ':', poNumber, ':', stationCode, ':', productStatus) ORDER BY id SEPARATOR ' | ') AS productRows\nFROM products\nWHERE batchNo BETWEEN '01400003031' AND '01400003048'\nGROUP BY batchNo\nORDER BY batchNo ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT batchNo, COUNT(*) AS productCount, GROUP_CONCAT(CONCAT(id, ':', poNumber, ':', stationCode, ':', productStatus) ORDER BY id SEPARATOR ' | ') AS productRows\nFROM products\nWHERE batchNo BETWEEN '01400003031' AND '01400003048'\nGROUP BY batchNo\nORDER BY batchNo ASC;",
+  "rows": [
+    {
+      "batchNo": "01400003031",
+      "productCount": "2",
+      "productRows": "540612:PO-20260508-01:A1:pending_a1 | 540679:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003032",
+      "productCount": "1",
+      "productRows": "540673:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003033",
+      "productCount": "1",
+      "productRows": "540697:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003034",
+      "productCount": "1",
+      "productRows": "540656:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003035",
+      "productCount": "2",
+      "productRows": "540618:PO-20260508-01:A1:pending_a1 | 540675:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003036",
+      "productCount": "1",
+      "productRows": "540701:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003037",
+      "productCount": "1",
+      "productRows": "540677:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003038",
+      "productCount": "2",
+      "productRows": "540613:PO-20260508-01:A1:pending_a1 | 540693:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003039",
+      "productCount": "1",
+      "productRows": "540658:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003040",
+      "productCount": "2",
+      "productRows": "540615:PO-20260508-01:A1:pending_a1 | 540689:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003041",
+      "productCount": "1",
+      "productRows": "540686:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003042",
+      "productCount": "1",
+      "productRows": "540670:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003043",
+      "productCount": "1",
+      "productRows": "540688:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003044",
+      "productCount": "1",
+      "productRows": "540684:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003045",
+      "productCount": "1",
+      "productRows": "540687:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003046",
+      "productCount": "1",
+      "productRows": "540662:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003047",
+      "productCount": "1",
+      "productRows": "540666:PO-20260508-01:A1:pending_a1"
+    },
+    {
+      "batchNo": "01400003048",
+      "productCount": "2",
+      "productRows": "540624:PO-20260508-01:A1:pending_a1 | 540664:PO-20260508-01:A1:pending_a1"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tproductCount\tproductRows\n01400003031\t2\t540612:PO-20260508-01:A1:pending_a1 | 540679:PO-20260508-01:A1:pending_a1\n01400003032\t1\t540673:PO-20260508-01:A1:pending_a1\n01400003033\t1\t540697:PO-20260508-01:A1:pending_a1\n01400003034\t1\t540656:PO-20260508-01:A1:pending_a1\n01400003035\t2\t540618:PO-20260508-01:A1:pending_a1 | 540675:PO-20260508-01:A1:pending_a1\n01400003036\t1\t540701:PO-20260508-01:A1:pending_a1\n01400003037\t1\t540677:PO-20260508-01:A1:pending_a1\n01400003038\t2\t540613:PO-20260508-01:A1:pending_a1 | 540693:PO-20260508-01:A1:pending_a1\n01400003039\t1\t540658:PO-20260508-01:A1:pending_a1\n01400003040\t2\t540615:PO-20260508-01:A1:pending_a1 | 540689:PO-20260508-01:A1:pending_a1\n01400003041\t1\t540686:PO-20260508-01:A1:pending_a1\n01400003042\t1\t540670:PO-20260508-01:A1:pending_a1\n01400003043\t1\t540688:PO-20260508-01:A1:pending_a1\n01400003044\t1\t540684:PO-20260508-01:A1:pending_a1\n01400003045\t1\t540687:PO-20260508-01:A1:pending_a1\n01400003046\t1\t540662:PO-20260508-01:A1:pending_a1\n01400003047\t1\t540666:PO-20260508-01:A1:pending_a1\n01400003048\t2\t540624:PO-20260508-01:A1:pending_a1 | 540664:PO-20260508-01:A1:pending_a1\n",
+  "stderr": "",
+  "execution_time_ms": 1797
+}
