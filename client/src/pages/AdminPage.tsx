@@ -215,6 +215,7 @@ export default function AdminPage() {
   const [backupLabel, setBackupLabel] = useState("");
   const [deletePoNumber, setDeletePoNumber] = useState("PO-20260422-21");
   const [productTraceKeyword, setProductTraceKeyword] = useState("");
+  const [selectedGapBatchNos, setSelectedGapBatchNos] = useState<string[]>([]);
   const [submittedProductTraceKeyword, setSubmittedProductTraceKeyword] = useState("");
   const [newUsername, setNewUsername] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
@@ -438,9 +439,9 @@ export default function AdminPage() {
       if (result.resultStatus === "partial_success") {
         toast.warning(`${successMessage}；${result.googleSheetSyncMessage}`);
       } else {
-        toast.success(`${successMessage}；${result.googleSheetSyncMessage}`);
+        toast.success(successMessage);
       }
-      setDeletePoNumber("");
+      await importBackupQuery.refetch();
       await utils.admin.setup.invalidate();
       await utils.station.list.invalidate();
     },
@@ -448,6 +449,20 @@ export default function AdminPage() {
       toast.error(error.message || "刪除採購單失敗");
     },
   });
+
+  const excludeGoogleMissingKpiMutation = trpc.admin.excludeGoogleMissingKpiBatches.useMutation({
+    onSuccess: async (result) => {
+      toast.success(`已排除 ${result.excludedBatchNos.length} 個批號，更新 ${result.affectedStationEventCount} 筆站點事件與 ${result.deletedDetailCount} 筆 KPI 明細`);
+      setSelectedGapBatchNos([]);
+      await utils.admin.setup.invalidate();
+      await utils.engineer.kpi.invalidate();
+      await utils.engineer.kpiAudit.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "排除 Google 缺漏 KPI 失敗");
+    },
+  });
+
 
   const createUserMutation = trpc.admin.createUser.useMutation({
     onSuccess: async () => {
@@ -585,6 +600,10 @@ export default function AdminPage() {
   const zeroScoreRows = kpiProgress.filter((item) => item.monthTotalPoints <= 0);
   const zeroScoreWorkingRows = zeroScoreRows.filter((item) => item.zeroScoreCategory === "本月未作業");
   const zeroScoreTestRows = zeroScoreRows.filter((item) => item.zeroScoreCategory === "測試帳號");
+  const kpiRiskChecklist = query.data?.kpiRiskChecklist ?? [];
+  const kpiGoogleGapAudit = query.data?.kpiGoogleGapAudit;
+  const kpiGapCandidateBatches = kpiGoogleGapAudit?.candidateBatches ?? [];
+  const effectiveGapBatchNos = selectedGapBatchNos.length > 0 ? selectedGapBatchNos : kpiGapCandidateBatches.slice(0, 5).map((item) => item.batchNo);
   const kpiCardTitle = canSeeAllKpi ? "全員 KPI 進度" : "我的 KPI 進度";
 
   const handleApplyKpiFilter = () => {
@@ -1296,6 +1315,146 @@ export default function AdminPage() {
                   <div className="rounded-[24px] bg-slate-50 p-4">
                     <p className="text-xs text-slate-400">測試帳號</p>
                     <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{zeroScoreTestRows.length}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">KPI / Google 對帳風險清單</CardTitle>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">整理目前最容易造成 KPI 漏算、重算或 Google 對帳誤差的情境，協助你先判斷口徑問題，再決定要不要執行排除或重算。</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {kpiRiskChecklist.length > 0 ? kpiRiskChecklist.map((item) => (
+                      <div key={item.key} className={`rounded-[24px] px-4 py-4 ${item.severity === "high" ? "bg-rose-50 text-rose-900" : item.severity === "medium" ? "bg-amber-50 text-amber-900" : "bg-slate-50 text-slate-700"}`}>
+                        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <p className="text-base font-bold">{item.title}</p>
+                            <p className="mt-2 text-sm leading-6">{item.summary}</p>
+                          </div>
+                          <Badge className={item.severity === "high" ? "bg-rose-100 text-rose-700" : item.severity === "medium" ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-700"}>
+                            {item.severity === "high" ? "高風險" : item.severity === "medium" ? "中風險" : "低風險"}
+                          </Badge>
+                        </div>
+                        <p className="mt-3 text-sm leading-6"><span className="font-semibold">建議處理：</span>{item.action}</p>
+                      </div>
+                    )) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-500">目前沒有額外偵測到 KPI / Google 對帳風險。</div>}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <CardTitle className="text-base font-bold">Google 主表缺漏 KPI 差異清單</CardTitle>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">以 Google 採購單 A 至 G 欄作為基準，列出系統已計入 KPI 但 Google 主表未出現的明細，並提供不刪商品主資料的正式排除操作。</p>
+                  </div>
+                  {isAdmin ? (
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl"
+                      disabled={excludeGoogleMissingKpiMutation.isPending || effectiveGapBatchNos.length === 0}
+                      onClick={() => excludeGoogleMissingKpiMutation.mutate({
+                        startDate: appliedKpiRange.startDate,
+                        endDate: appliedKpiRange.endDate,
+                        batchNos: effectiveGapBatchNos,
+                      })}
+                    >
+                      {excludeGoogleMissingKpiMutation.isPending ? "排除中…" : `排除 ${effectiveGapBatchNos.length} 個缺漏批號的 KPI`}
+                    </Button>
+                  ) : null}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="rounded-[24px] bg-slate-50 p-4">
+                      <p className="text-xs text-slate-400">Google 主表列數</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiGoogleGapAudit?.googleRowCount ?? 0}</p>
+                    </div>
+                    <div className="rounded-[24px] bg-slate-50 p-4">
+                      <p className="text-xs text-slate-400">區間 KPI 明細</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiGoogleGapAudit?.detailRowCount ?? 0}</p>
+                    </div>
+                    <div className="rounded-[24px] bg-rose-50 p-4">
+                      <p className="text-xs text-rose-500">主表缺漏明細</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-rose-700">{kpiGoogleGapAudit?.missingCount ?? 0}</p>
+                    </div>
+                    <div className="rounded-[24px] bg-amber-50 p-4">
+                      <p className="text-xs text-amber-600">候選批號 / 受影響事件</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-amber-700">{kpiGoogleGapAudit?.candidateBatchCount ?? 0} / {kpiGoogleGapAudit?.affectedStationEventCount ?? 0}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-900">
+                    系統只會把選定批號對應的站點事件改為不納入 KPI，並刪除對應 KPI 明細後重算每日彙總；不會直接刪除商品主資料。預設按鈕會套用目前差異最大的前 5 個批號，你也可以先勾選表格中的批號再執行。
+                  </div>
+                  <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                    <table className="min-w-full text-sm text-slate-700">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                          <th className="px-4 py-3">選取</th>
+                          <th className="px-4 py-3">批號</th>
+                          <th className="px-4 py-3">PO 單號</th>
+                          <th className="px-4 py-3">站點</th>
+                          <th className="px-4 py-3">工程師</th>
+                          <th className="px-4 py-3">缺漏明細</th>
+                          <th className="px-4 py-3">受影響事件</th>
+                          <th className="px-4 py-3">前台表現</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kpiGapCandidateBatches.length > 0 ? kpiGapCandidateBatches.map((item) => {
+                          const checked = selectedGapBatchNos.includes(item.batchNo);
+                          return (
+                            <tr key={`kpi-gap-batch-${item.normalizedBatchKey}`} className="border-b border-slate-200/80 last:border-b-0 align-top">
+                              <td className="px-4 py-3">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(event) => {
+                                    setSelectedGapBatchNos((current) => event.target.checked
+                                      ? Array.from(new Set([...current, item.batchNo]))
+                                      : current.filter((value) => value !== item.batchNo));
+                                  }}
+                                />
+                              </td>
+                              <td className="px-4 py-3 font-medium text-slate-900">{item.batchNo}</td>
+                              <td className="px-4 py-3 text-slate-600">{item.poNumbers.join("、") || "-"}</td>
+                              <td className="px-4 py-3 text-slate-600">{item.stationCodes.join("、") || "-"}</td>
+                              <td className="px-4 py-3 text-slate-600">{item.userNames.join("、") || "-"}</td>
+                              <td className="px-4 py-3">{item.missingCount}</td>
+                              <td className="px-4 py-3">{item.stationEventCount}</td>
+                              <td className="px-4 py-3">{formatDisplayPoints(item.missingDisplayPoints)}</td>
+                            </tr>
+                          );
+                        }) : <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500">目前沒有系統已計入但 Google 主表缺漏的 KPI 明細</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="overflow-x-auto rounded-[24px] bg-slate-50">
+                    <table className="min-w-full text-sm text-slate-700">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                          <th className="px-4 py-3">工程師</th>
+                          <th className="px-4 py-3">角色</th>
+                          <th className="px-4 py-3">站點</th>
+                          <th className="px-4 py-3">缺漏件數</th>
+                          <th className="px-4 py-3">缺漏表現</th>
+                          <th className="px-4 py-3">樣本批號</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(kpiGoogleGapAudit?.summaryRows ?? []).length > 0 ? (kpiGoogleGapAudit?.summaryRows ?? []).map((item, index) => (
+                          <tr key={`kpi-gap-summary-${item.username}-${item.stationCode}-${index}`} className="border-b border-slate-200/80 last:border-b-0 align-top">
+                            <td className="px-4 py-3 font-medium text-slate-900">{item.userName}<div className="text-xs text-slate-400">{item.username}</div></td>
+                            <td className="px-4 py-3">{item.role ?? "-"}</td>
+                            <td className="px-4 py-3">{item.stationCode}</td>
+                            <td className="px-4 py-3">{item.missingCount}</td>
+                            <td className="px-4 py-3">{formatDisplayPoints(item.missingDisplayPoints)}</td>
+                            <td className="px-4 py-3 text-slate-600">{item.sampleBatchNos.join("、") || "-"}</td>
+                          </tr>
+                        )) : <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500">目前沒有 Google 主表缺漏差異摘要</td></tr>}
+                      </tbody>
+                    </table>
                   </div>
                 </CardContent>
               </Card>

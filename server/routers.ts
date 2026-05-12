@@ -16,6 +16,7 @@ import {
   createImportBatchBackup,
   createSupportCompensation,
   deleteImportedPurchaseOrder,
+  excludeGoogleMissingKpiBatches,
   deleteProductCategoryOption,
   deleteProductNameOption,
   deleteSupportCompensation,
@@ -707,6 +708,20 @@ export const appRouter = router({
           poNumber: input.poNumber,
           deletedByUserId: ctx.user.id,
           deletedByName: ctx.user.name ?? ctx.user.username ?? "管理者",
+        });
+      }),
+    excludeGoogleMissingKpiBatches: adminProcedure
+      .input(z.object({
+        startDate: optionalTextSchema.nullable().optional(),
+        endDate: optionalTextSchema.nullable().optional(),
+        batchNos: z.array(z.string().trim().min(1)).min(1, "請至少選擇一個批號"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return excludeGoogleMissingKpiBatches({
+          startDate: input.startDate ?? undefined,
+          endDate: input.endDate ?? undefined,
+          batchNos: input.batchNos,
+          appliedByUserId: ctx.user.id,
         });
       }),
     createUser: adminProcedure

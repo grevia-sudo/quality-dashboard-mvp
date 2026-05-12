@@ -5554,6 +5554,413 @@ export async function getPendingStockImportMismatchProducts() {
     }));
 }
 
+function buildKpiAuditIdentityKeys(identity: { batchNo?: unknown; serialNumber?: unknown; imei?: unknown }) {
+  const batchKey = normalizeBatchMatchValue(identity.batchNo);
+  const serialKey = normalizeIdentityMatchValue(identity.serialNumber);
+  const imeiKey = normalizeIdentityMatchValue(identity.imei);
+  const keys: string[] = [];
+  if (imeiKey) {
+    keys.push(`imei:${imeiKey}`);
+  }
+  if (serialKey) {
+    keys.push(`serial:${serialKey}`);
+  }
+  if (batchKey) {
+    keys.push(`batch:${batchKey}`);
+  }
+  if (batchKey && serialKey) {
+    keys.push(`batch_serial:${batchKey}__${serialKey}`);
+  }
+  if (batchKey && imeiKey) {
+    keys.push(`batch_imei:${batchKey}__${imeiKey}`);
+  }
+  return keys;
+}
+
+async function getKpiGoogleGapAudit(input?: AdminDateRangeInput, viewer?: { userId: number; role?: string | null }) {
+  const db = await getDb();
+  const range = normalizeAdminDateRange(input);
+  if (!db) {
+    return {
+      range: {
+        startDate: range.startDate,
+        endDate: range.endDate,
+      },
+      googleRowCount: 0,
+      detailRowCount: 0,
+      missingCount: 0,
+      candidateBatchCount: 0,
+      affectedStationEventCount: 0,
+      affectedProductCount: 0,
+      summaryRows: [],
+      candidateBatches: [],
+      missingRows: [],
+    };
+  }
+
+  await backfillProductivityFromCompletedEvents(db);
+
+  const [detailRows, googleSheetRows] = await Promise.all([
+    db
+      .select({
+        detailId: productivityScoreDetails.id,
+        businessDate: productivityScoreDetails.businessDate,
+        userId: productivityScoreDetails.userId,
+        stationEventId: productivityScoreDetails.stationEventId,
+        productId: productivityScoreDetails.productId,
+        stationCode: productivityScoreDetails.stationCode,
+        completedQty: productivityScoreDetails.completedQty,
+        earnedPoints: productivityScoreDetails.earnedPoints,
+        userName: users.name,
+        username: users.username,
+        role: users.role,
+        poNumber: products.poNumber,
+        batchNo: products.batchNo,
+        serialNumber: products.serialNumber,
+        imei: products.imei,
+        productName: products.productName,
+        categoryName: productCategories.categoryName,
+        brandName: productCategories.brandName,
+      })
+      .from(productivityScoreDetails)
+      .innerJoin(users, eq(users.id, productivityScoreDetails.userId))
+      .leftJoin(products, eq(products.id, productivityScoreDetails.productId))
+      .leftJoin(productCategories, eq(productCategories.id, productivityScoreDetails.categoryId))
+      .where(and(
+        gte(productivityScoreDetails.businessDate, dateKeyToDate(range.startDate)),
+        lte(productivityScoreDetails.businessDate, dateKeyToDate(range.endDate)),
+      )),
+    readPurchaseSheetRows(`${PURCHASE_SHEET_NAME}!A:G`),
+  ]);
+
+  const visibleUserIds = viewer && !canViewAllKpiForRole(viewer.role)
+    ? new Set([viewer.userId])
+    : null;
+
+  const googleKeyMap = new Map<string, Array<{ rowNumber: number; poNumber: string; batchNo: string; serialNumber: string; imei: string }>>();
+  googleSheetRows.slice(1).forEach((row, index) => {
+    const googleRow = {
+      rowNumber: index + 2,
+      poNumber: normalizeOptionalText(row?.[0]) ?? "",
+      batchNo: normalizeBatchNo(row?.[3]) ?? "",
+      serialNumber: normalizeOptionalText(row?.[4]) ?? "",
+      imei: normalizeOptionalText(row?.[5]) ?? "",
+    };
+    buildKpiAuditIdentityKeys(googleRow).forEach((key) => {
+      if (!googleKeyMap.has(key)) {
+        googleKeyMap.set(key, []);
+      }
+      googleKeyMap.get(key)?.push(googleRow);
+    });
+  });
+
+  const auditedDetailRows = detailRows
+    .filter((row) => !visibleUserIds || visibleUserIds.has(row.userId))
+    .map((row) => ({
+      detailId: Number(row.detailId),
+      businessDate: toDateKey(row.businessDate),
+      userId: Number(row.userId),
+      userName: normalizeOptionalText(row.userName) ?? normalizeOptionalText(row.username) ?? `User-${row.userId}`,
+      username: normalizeOptionalText(row.username) ?? "",
+      role: row.role,
+      stationCode: row.stationCode,
+      completedQty: Number(row.completedQty ?? 0),
+      earnedPoints: Number(row.earnedPoints ?? 0),
+      displayPoints: toDisplayPoints(Number(row.earnedPoints ?? 0)),
+      stationEventId: Number(row.stationEventId),
+      productId: Number(row.productId),
+      poNumber: normalizeOptionalText(row.poNumber) ?? "",
+      batchNo: normalizeBatchNo(row.batchNo) ?? "",
+      serialNumber: normalizeOptionalText(row.serialNumber) ?? "",
+      imei: normalizeOptionalText(row.imei) ?? "",
+      productName: normalizeOptionalText(row.productName) ?? "",
+      categoryName: normalizeOptionalText(row.categoryName) ?? "",
+      brandName: normalizeOptionalText(row.brandName) ?? "",
+    }));
+
+  const missingRows = auditedDetailRows.filter((row) => {
+    const keys = buildKpiAuditIdentityKeys(row);
+    if (keys.length === 0) {
+      return false;
+    }
+    return !keys.some((key) => (googleKeyMap.get(key)?.length ?? 0) > 0);
+  });
+
+  const summaryMap = new Map<string, {
+    userName: string;
+    username: string;
+    role: string | null;
+    stationCode: string;
+    missingCount: number;
+    missingDisplayPoints: number;
+    sampleBatchNos: string[];
+  }>();
+  const candidateBatchMap = new Map<string, {
+    batchNo: string;
+    normalizedBatchKey: string;
+    poNumbers: Set<string>;
+    stationCodes: Set<string>;
+    userNames: Set<string>;
+    productIds: Set<number>;
+    stationEventIds: Set<number>;
+    detailIds: Set<number>;
+    missingCount: number;
+    missingDisplayPoints: number;
+  }>();
+
+  missingRows.forEach((row) => {
+    const summaryKey = `${row.userId}-${row.stationCode}`;
+    const summaryEntry = summaryMap.get(summaryKey) ?? {
+      userName: row.userName,
+      username: row.username,
+      role: row.role,
+      stationCode: row.stationCode,
+      missingCount: 0,
+      missingDisplayPoints: 0,
+      sampleBatchNos: [],
+    };
+    summaryEntry.missingCount += 1;
+    summaryEntry.missingDisplayPoints = Number((summaryEntry.missingDisplayPoints + row.displayPoints).toFixed(2));
+    if (row.batchNo && summaryEntry.sampleBatchNos.length < 10) {
+      summaryEntry.sampleBatchNos.push(row.batchNo);
+    }
+    summaryMap.set(summaryKey, summaryEntry);
+
+    const normalizedBatchKey = normalizeBatchMatchValue(row.batchNo);
+    if (!normalizedBatchKey) {
+      return;
+    }
+    const batchEntry = candidateBatchMap.get(normalizedBatchKey) ?? {
+      batchNo: row.batchNo,
+      normalizedBatchKey,
+      poNumbers: new Set<string>(),
+      stationCodes: new Set<string>(),
+      userNames: new Set<string>(),
+      productIds: new Set<number>(),
+      stationEventIds: new Set<number>(),
+      detailIds: new Set<number>(),
+      missingCount: 0,
+      missingDisplayPoints: 0,
+    };
+    if (row.poNumber) {
+      batchEntry.poNumbers.add(row.poNumber);
+    }
+    if (row.stationCode) {
+      batchEntry.stationCodes.add(row.stationCode);
+    }
+    if (row.userName) {
+      batchEntry.userNames.add(row.userName);
+    }
+    if (row.productId) {
+      batchEntry.productIds.add(row.productId);
+    }
+    if (row.stationEventId) {
+      batchEntry.stationEventIds.add(row.stationEventId);
+    }
+    if (row.detailId) {
+      batchEntry.detailIds.add(row.detailId);
+    }
+    batchEntry.missingCount += 1;
+    batchEntry.missingDisplayPoints = Number((batchEntry.missingDisplayPoints + row.displayPoints).toFixed(2));
+    candidateBatchMap.set(normalizedBatchKey, batchEntry);
+  });
+
+  const summaryRows = Array.from(summaryMap.values())
+    .sort((left, right) => right.missingDisplayPoints - left.missingDisplayPoints || right.missingCount - left.missingCount || left.userName.localeCompare(right.userName, "zh-Hant"));
+
+  const candidateBatches = Array.from(candidateBatchMap.values())
+    .map((entry) => ({
+      batchNo: entry.batchNo,
+      normalizedBatchKey: entry.normalizedBatchKey,
+      poNumbers: Array.from(entry.poNumbers),
+      stationCodes: Array.from(entry.stationCodes),
+      userNames: Array.from(entry.userNames),
+      productCount: entry.productIds.size,
+      stationEventCount: entry.stationEventIds.size,
+      detailCount: entry.detailIds.size,
+      missingCount: entry.missingCount,
+      missingDisplayPoints: entry.missingDisplayPoints,
+    }))
+    .sort((left, right) => right.missingDisplayPoints - left.missingDisplayPoints || right.stationEventCount - left.stationEventCount || left.batchNo.localeCompare(right.batchNo, "zh-Hant"));
+
+  const affectedStationEventCount = candidateBatches.reduce((sum, item) => sum + item.stationEventCount, 0);
+  const affectedProductCount = candidateBatches.reduce((sum, item) => sum + item.productCount, 0);
+
+  return {
+    range: {
+      startDate: range.startDate,
+      endDate: range.endDate,
+    },
+    googleRowCount: Math.max(googleSheetRows.length - 1, 0),
+    detailRowCount: auditedDetailRows.length,
+    missingCount: missingRows.length,
+    candidateBatchCount: candidateBatches.length,
+    affectedStationEventCount,
+    affectedProductCount,
+    summaryRows,
+    candidateBatches,
+    missingRows,
+  };
+}
+
+async function getKpiRiskChecklist(input?: AdminDateRangeInput, viewer?: { userId: number; role?: string | null }) {
+  const db = await getDb();
+  const range = normalizeAdminDateRange(input);
+  const audit = await getKpiGoogleGapAudit(range, viewer);
+  if (!db) {
+    return [];
+  }
+
+  const duplicateDailyRows = await db
+    .select({
+      userId: engineerDailyProductivity.userId,
+      businessDate: engineerDailyProductivity.businessDate,
+      duplicateCount: sql<number>`count(*)`,
+    })
+    .from(engineerDailyProductivity)
+    .where(and(
+      gte(engineerDailyProductivity.businessDate, dateKeyToDate(range.startDate)),
+      lte(engineerDailyProductivity.businessDate, dateKeyToDate(range.endDate)),
+    ))
+    .groupBy(engineerDailyProductivity.userId, engineerDailyProductivity.businessDate)
+    .having(sql`count(*) > 1`);
+
+  const googleSheetRows = await readPurchaseSheetRows(`${PURCHASE_SHEET_NAME}!A:G`);
+  const googleIdentityCounts = new Map<string, number>();
+  googleSheetRows.slice(1).forEach((row) => {
+    const identityKey = normalizeBatchMatchValue(row?.[3])
+      ? `batch:${normalizeBatchMatchValue(row?.[3])}`
+      : normalizeIdentityMatchValue(row?.[4])
+        ? `serial:${normalizeIdentityMatchValue(row?.[4])}`
+        : normalizeIdentityMatchValue(row?.[5])
+          ? `imei:${normalizeIdentityMatchValue(row?.[5])}`
+          : "";
+    if (!identityKey) {
+      return;
+    }
+    googleIdentityCounts.set(identityKey, (googleIdentityCounts.get(identityKey) ?? 0) + 1);
+  });
+  const duplicateGoogleIdentityCount = Array.from(googleIdentityCounts.values()).filter((count) => count > 1).length;
+  const duplicateDailyExtraRows = duplicateDailyRows.reduce((sum, row) => sum + Math.max(Number(row.duplicateCount ?? 0) - 1, 0), 0);
+
+  const riskItems = [] as Array<{
+    key: string;
+    severity: "high" | "medium" | "low";
+    title: string;
+    summary: string;
+    action: string;
+  }>;
+
+  if (audit.missingCount > 0) {
+    riskItems.push({
+      key: "google_missing_kpi",
+      severity: "high",
+      title: "系統已計入 KPI，但 Google 主表缺漏對應資料",
+      summary: `目前區間共有 ${audit.missingCount} 筆 KPI 明細、${audit.candidateBatchCount} 個候選批號未能在 Google 主表找到對應。`,
+      action: "先在 KPI 複核報表檢視差異清單，再用排除按鈕將確認缺漏的批號改為不納入 KPI。",
+    });
+  }
+
+  if (duplicateDailyRows.length > 0) {
+    riskItems.push({
+      key: "duplicate_daily_productivity",
+      severity: "high",
+      title: "同人同日 KPI 日彙總可能重複累加",
+      summary: `目前區間找到 ${duplicateDailyRows.length} 組 user/date 重複日彙總，額外重複列共 ${duplicateDailyExtraRows} 筆。`,
+      action: "遇到月總分偏高時，優先重算受影響 user/date 的 engineer_daily_productivity，避免月 KPI 被舊列放大。",
+    });
+  }
+
+  if (duplicateGoogleIdentityCount > 0) {
+    riskItems.push({
+      key: "duplicate_google_identity",
+      severity: "medium",
+      title: "Google 主表存在重複身份列，可能造成對帳誤判",
+      summary: `目前 Google 主表偵測到 ${duplicateGoogleIdentityCount} 組重複身份鍵（優先以批號，其次序號與 IMEI 判斷）。`,
+      action: "比對缺漏或重複時，先回頭檢查 Google 主表是否有重複列或位移，再決定是否排除 KPI。",
+    });
+  }
+
+  if (!new Set<string>(PRODUCTIVITY_TRACKED_STATION_CODES).has("D")) {
+    riskItems.push({
+      key: "d_station_not_counted",
+      severity: "medium",
+      title: "D 站未納入系統 KPI 計分範圍",
+      summary: "目前系統正式納入 KPI 的站點不包含 D 站，因此若 Google 或人工統計把 D 站算入，站點總分會固定落差。",
+      action: "對帳前先確認口徑是否包含 D 站；若要與 Google 完全一致，需另行調整 KPI 業務規則。",
+    });
+  }
+
+  return riskItems;
+}
+
+export async function excludeGoogleMissingKpiBatches(input: {
+  startDate?: string | null;
+  endDate?: string | null;
+  batchNos: string[];
+  appliedByUserId: number;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database is not available");
+  }
+
+  const normalizedBatchKeys = Array.from(new Set(input.batchNos.map((value) => normalizeBatchMatchValue(value)).filter(Boolean)));
+  if (normalizedBatchKeys.length === 0) {
+    throw new Error("請至少提供一個要排除 KPI 的批號");
+  }
+
+  const audit = await getKpiGoogleGapAudit({
+    startDate: input.startDate ?? undefined,
+    endDate: input.endDate ?? undefined,
+  });
+  const targetRows = audit.missingRows.filter((row) => normalizedBatchKeys.includes(normalizeBatchMatchValue(row.batchNo)));
+  if (targetRows.length === 0) {
+    throw new Error("目前查無可排除的 Google 缺漏 KPI 明細");
+  }
+
+  const stationEventIds = Array.from(new Set(targetRows.map((row) => row.stationEventId).filter((value) => Number(value) > 0)));
+  const detailIds = Array.from(new Set(targetRows.map((row) => row.detailId).filter((value) => Number(value) > 0)));
+  const affectedUserDates = Array.from(new Map(targetRows.map((row) => [`${row.userId}-${row.businessDate}`, {
+    userId: row.userId,
+    businessDateValue: dateKeyToDate(row.businessDate),
+    businessDate: row.businessDate,
+  }])).values());
+
+  if (stationEventIds.length > 0) {
+    await db
+      .update(stationEvents)
+      .set({
+        countForProductivity: false,
+      })
+      .where(inArray(stationEvents.id, stationEventIds));
+  }
+
+  if (detailIds.length > 0) {
+    await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.id, detailIds));
+  }
+
+  for (const item of affectedUserDates) {
+    await syncEngineerDailyProductivityRecord(db, {
+      userId: item.userId,
+      businessDateValue: item.businessDateValue,
+    });
+  }
+
+  return {
+    success: true as const,
+    appliedByUserId: input.appliedByUserId,
+    excludedBatchNos: normalizedBatchKeys,
+    affectedProductCount: new Set(targetRows.map((row) => row.productId).filter((value) => Number(value) > 0)).size,
+    affectedStationEventCount: stationEventIds.length,
+    deletedDetailCount: detailIds.length,
+    resyncedUserDates: affectedUserDates.map((item) => ({
+      userId: item.userId,
+      businessDate: item.businessDate,
+    })),
+  };
+}
+
 export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { userId: number; role?: string | null }) {
   const db = await getDb();
   const normalizedRange = normalizeAdminDateRange(input);
@@ -5565,6 +5972,22 @@ export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { 
       targets: [],
       productNameOptions: [],
       kpiProgress: [],
+      kpiRiskChecklist: [],
+      kpiGoogleGapAudit: {
+        range: {
+          startDate: normalizedRange.startDate,
+          endDate: normalizedRange.endDate,
+        },
+        googleRowCount: 0,
+        detailRowCount: 0,
+        missingCount: 0,
+        candidateBatchCount: 0,
+        affectedStationEventCount: 0,
+        affectedProductCount: 0,
+        summaryRows: [],
+        candidateBatches: [],
+        missingRows: [],
+      },
       supportCompensations: [],
       stationLeadTimes: [],
       categoryStockCycleTimes: [],
@@ -5584,7 +6007,7 @@ export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { 
     .from(products)
     .where(and(isNull(products.archivedAt), sql`${products.createdAt} < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 6 MONTH)`));
 
-  const [userRows, ruleRows, categoryRows, targetRows, defectOptionRows, productNameRows, kpiProgress, supportCompensations, stationLeadTimes, categoryStockCycleTimes, categoryFlows] = await Promise.all([
+  const [userRows, ruleRows, categoryRows, targetRows, defectOptionRows, productNameRows, kpiProgress, kpiRiskChecklist, kpiGoogleGapAudit, supportCompensations, stationLeadTimes, categoryStockCycleTimes, categoryFlows] = await Promise.all([
     db.select().from(users).orderBy(asc(users.id)),
     db.select().from(stationRules).orderBy(asc(stationRules.id)),
     db.select().from(productCategories).orderBy(asc(productCategories.categoryName), asc(productCategories.brandName), asc(productCategories.id)),
@@ -5592,6 +6015,8 @@ export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { 
     db.select().from(defectOptions).orderBy(asc(defectOptions.stationCode), asc(defectOptions.optionType), asc(defectOptions.sortOrder), asc(defectOptions.id)),
     db.select().from(productNameOptions).orderBy(asc(productNameOptions.sortOrder), asc(productNameOptions.id)),
     getAdminEngineerKpiProgress(normalizedRange),
+    getKpiRiskChecklist(normalizedRange, viewer),
+    getKpiGoogleGapAudit(normalizedRange, viewer),
     listSupportCompensations(normalizedRange),
     getAdminStationLeadTimes(),
     getAdminCategoryStockCycleTimes(),
@@ -5611,6 +6036,8 @@ export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { 
     defectOptions: defectOptionRows,
     productNameOptions: productNameRows,
     kpiProgress: visibleKpiProgress,
+    kpiRiskChecklist,
+    kpiGoogleGapAudit,
     supportCompensations: visibleSupportCompensations,
     stationLeadTimes,
     categoryStockCycleTimes,

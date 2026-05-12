@@ -12,6 +12,9 @@ describe("KPI report visibility wiring", () => {
     expect(dbSource).toContain("zeroScoreCategory");
     expect(dbSource).toContain("classifyZeroScoreKpiAccount");
     expect(dbSource).toContain("getVisibleKpiRowsForViewer");
+    expect(dbSource).toContain("getKpiGoogleGapAudit");
+    expect(dbSource).toContain("getKpiRiskChecklist");
+    expect(dbSource).toContain("excludeGoogleMissingKpiBatches");
   });
 
   it("exposes a viewer-aware kpiAudit route and passes viewer info into admin setup", () => {
@@ -20,6 +23,9 @@ describe("KPI report visibility wiring", () => {
     expect(routerSource).toContain("return getAdminSetupData({");
     expect(routerSource).toContain("userId: ctx.user.id");
     expect(routerSource).toContain("role: ctx.user.role");
+    expect(routerSource).toContain("excludeGoogleMissingKpiBatches: adminProcedure");
+    expect(routerSource).toContain("batchNos: z.array(z.string().trim().min(1)).min(1, \"請至少選擇一個批號\")");
+    expect(dbSource).toContain("kpiRiskChecklist");
   });
 
   it("renders KPI report entry points and all-view scope messaging in admin and engineer pages", () => {
@@ -27,6 +33,11 @@ describe("KPI report visibility wiring", () => {
     expect(adminPageSource).toContain("下載 CSV 報表");
     expect(adminPageSource).toContain("0分分類");
     expect(adminPageSource).toContain("站點別 KPI 明細");
+    expect(adminPageSource).toContain("KPI / Google 對帳風險清單");
+    expect(adminPageSource).toContain("Google 主表缺漏 KPI 差異清單");
+    expect(adminPageSource).toContain("個缺漏批號的 KPI");
+    expect(adminPageSource).toContain("selectedGapBatchNos");
+    expect(adminPageSource).toContain("高風險");
     expect(engineerPageSource).toContain("全員 KPI 摘要");
     expect(engineerPageSource).toContain("前往 KPI 複核報表");
     expect(engineerPageSource).toContain("canViewAllKpi");
