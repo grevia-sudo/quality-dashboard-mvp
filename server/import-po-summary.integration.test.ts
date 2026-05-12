@@ -210,6 +210,52 @@ describe("import PO summary integration", () => {
     expect(new Set(importedTasks.map((task) => task.importedCategoryName ?? task.categoryName))).toEqual(new Set(["智慧手機", "平板"]));
   }, 10000);
 
+  it("allows importing Samsung audio rows when the active category exists even if catalog rows are missing", async () => {
+    const uniqueSuffix = `${Date.now()}-samsung-audio`;
+    const matchedCategory = await createProductCategoryOption({ categoryName: "耳機音響", brandName: "Samsung" });
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    await db.delete(productNameCatalogEntries).where(and(
+      eq(productNameCatalogEntries.categoryName, "耳機音響"),
+      eq(productNameCatalogEntries.brandName, "Samsung"),
+    ));
+
+    const rows = [
+      {
+        batchNo: `SAMSUNG-AUDIO-${uniqueSuffix}-01`,
+        serialNumber: `SAMSUNG-AUDIO-SN-${uniqueSuffix}-01`,
+        imei: `97${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+        productName: "Samsung Buds Test",
+        categoryName: "耳機音響",
+        brandName: "Samsung",
+      },
+    ];
+
+    const importResult = await importProducts({
+      vendorName: "Samsung 音訊匯入驗證廠商",
+      rows,
+    });
+    createdPoNumbers.add(importResult.poNumber);
+
+    const importedProducts = await db
+      .select({
+        batchNo: products.batchNo,
+        categoryId: products.categoryId,
+        importedCategoryName: products.importedCategoryName,
+        importedBrandName: products.importedBrandName,
+      })
+      .from(products)
+      .where(and(eq(products.poNumber, importResult.poNumber), isNull(products.archivedAt)));
+
+    expect(importedProducts).toHaveLength(1);
+    expect(importedProducts[0]?.categoryId).toBe(matchedCategory?.id ?? null);
+    expect(importedProducts[0]?.importedCategoryName).toBe("耳機音響");
+    expect(importedProducts[0]?.importedBrandName).toBe("Samsung");
+  }, 10000);
+
   it("maps categoryId by category+brand and preserves importedBrandName when unmatched", async () => {
     const uniqueSuffix = `${Date.now()}`;
     const matchedCategory = await createProductCategoryOption({ categoryName: "智慧手機", brandName: "Apple" });

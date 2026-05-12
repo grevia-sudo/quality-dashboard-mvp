@@ -1,0 +1,8 @@
+{
+  "query": "SELECT JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status, COUNT(*) AS row_count\nFROM `station_tasks`\nWHERE `stationCode` = 'E'\n  AND `taskStatus` = 'completed'\n  AND JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) IN ('background_failed', 'storage_fallback', 'sheet_write_failed')\nGROUP BY JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus'));",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status, COUNT(*) AS row_count\nFROM `station_tasks`\nWHERE `stationCode` = 'E'\n  AND `taskStatus` = 'completed'\n  AND JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) IN ('background_failed', 'storage_fallback', 'sheet_write_failed')\nGROUP BY JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus'));",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'taskstatus' in 'where clause'"
+  ]
+}

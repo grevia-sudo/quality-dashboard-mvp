@@ -1,0 +1,20 @@
+{
+  "query": "SELECT p.batchNo, p.sheetRowNumber, st.id AS taskId, JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') AS ePhotoSyncStatus, JSON_EXTRACT(st.metadata, '$.ePhotoSyncAttempts') AS ePhotoSyncAttempts, JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage') AS ePhotoSyncMessage, JSON_EXTRACT(st.metadata, '$.ePhotoFrontStorageUrl') AS frontStorageUrl, JSON_EXTRACT(st.metadata, '$.ePhotoBackStorageUrl') AS backStorageUrl FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'E' AND p.batchNo LIKE '019%' AND (JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') IS NULL OR JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') = '\"background_failed\"') ORDER BY p.batchNo LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.sheetRowNumber, st.id AS taskId, JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') AS ePhotoSyncStatus, JSON_EXTRACT(st.metadata, '$.ePhotoSyncAttempts') AS ePhotoSyncAttempts, JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage') AS ePhotoSyncMessage, JSON_EXTRACT(st.metadata, '$.ePhotoFrontStorageUrl') AS frontStorageUrl, JSON_EXTRACT(st.metadata, '$.ePhotoBackStorageUrl') AS backStorageUrl FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'E' AND p.batchNo LIKE '019%' AND (JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') IS NULL OR JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') = '\"background_failed\"') ORDER BY p.batchNo LIMIT 50;",
+  "rows": [
+    {
+      "batchNo": "01900000067",
+      "sheetRowNumber": "442",
+      "taskId": "511270",
+      "ePhotoSyncStatus": "NULL",
+      "ePhotoSyncAttempts": "NULL",
+      "ePhotoSyncMessage": "NULL",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tsheetRowNumber\ttaskId\tePhotoSyncStatus\tePhotoSyncAttempts\tePhotoSyncMessage\tfrontStorageUrl\tbackStorageUrl\n01900000067\t442\t511270\tNULL\tNULL\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1853
+}

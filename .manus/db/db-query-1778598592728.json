@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, categoryName, brandName, subtypeCode, active FROM product_categories WHERE categoryName LIKE '%耳機%' OR categoryName LIKE '%音響%' OR brandName LIKE '%Samsung%' ORDER BY categoryName, brandName, id; SELECT id, categoryName, brandName, label, active, sourceRowNumber FROM product_name_catalog_entries WHERE categoryName LIKE '%耳機%' OR categoryName LIKE '%音響%' OR brandName LIKE '%Samsung%' ORDER BY categoryName, brandName, sourceRowNumber LIMIT 200;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, categoryName, brandName, subtypeCode, active FROM product_categories WHERE categoryName LIKE '%耳機%' OR categoryName LIKE '%音響%' OR brandName LIKE '%Samsung%' ORDER BY categoryName, brandName, id; SELECT id, categoryName, brandName, label, active, sourceRowNumber FROM product_name_catalog_entries WHERE categoryName LIKE '%耳機%' OR categoryName LIKE '%音響%' OR brandName LIKE '%Samsung%' ORDER BY categoryName, brandName, sourceRowNumber LIMIT 200;",
+  "rows": [
+    {
+      "id": "90003",
+      "categoryName": "平板電腦",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1"
+    },
+    {
+      "id": "36",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1"
+    },
+    {
+      "id": "35",
+      "categoryName": "液晶螢幕",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1"
+    },
+    {
+      "id": "90002",
+      "categoryName": "穿戴型設備",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1"
+    },
+    {
+      "id": "10",
+      "categoryName": "耳機音響",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "active": "1"
+    },
+    {
+      "id": "90001",
+      "categoryName": "耳機音響",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "active": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcategoryName\tbrandName\tsubtypeCode\tactive\n90003\t平板電腦\tSamsung\tSamsung\t1\n36\t智慧型手機\tSamsung\tSamsung\t1\n35\t液晶螢幕\tSamsung\tSamsung\t1\n90002\t穿戴型設備\tSamsung\tSamsung\t1\n10\t耳機音響\tApple\tApple\t1\n90001\t耳機音響\tSamsung\tSamsung\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1951
+}

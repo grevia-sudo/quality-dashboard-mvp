@@ -1,0 +1,20 @@
+{
+  "query": "SELECT `id`,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status,\n  CASE WHEN JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.front.dataUrl') IS NULL THEN 0 ELSE CHAR_LENGTH(JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.front.dataUrl'))) END AS front_dataurl_len,\n  CASE WHEN JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.back.dataUrl') IS NULL THEN 0 ELSE CHAR_LENGTH(JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.back.dataUrl'))) END AS back_dataurl_len,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.front.fileName')) AS front_file_name,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.back.fileName')) AS back_file_name,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eFrontPhotoUrl')) AS front_url,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eBackPhotoUrl')) AS back_url\nFROM `station_tasks`\nWHERE `id` = 510875;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status,\n  CASE WHEN JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.front.dataUrl') IS NULL THEN 0 ELSE CHAR_LENGTH(JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.front.dataUrl'))) END AS front_dataurl_len,\n  CASE WHEN JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.back.dataUrl') IS NULL THEN 0 ELSE CHAR_LENGTH(JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.back.dataUrl'))) END AS back_dataurl_len,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.front.fileName')) AS front_file_name,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoPendingUploads.back.fileName')) AS back_file_name,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eFrontPhotoUrl')) AS front_url,\n  JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eBackPhotoUrl')) AS back_url\nFROM `station_tasks`\nWHERE `id` = 510875;",
+  "rows": [
+    {
+      "id": "510875",
+      "sync_status": "background_failed",
+      "front_dataurl_len": "266823",
+      "back_dataurl_len": "514575",
+      "front_file_name": "01900000060-1.jpg",
+      "back_file_name": "01900000060-2.jpg",
+      "front_url": "NULL",
+      "back_url": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsync_status\tfront_dataurl_len\tback_dataurl_len\tfront_file_name\tback_file_name\tfront_url\tback_url\n510875\tbackground_failed\t266823\t514575\t01900000060-1.jpg\t01900000060-2.jpg\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1751
+}

@@ -1,0 +1,18 @@
+{
+  "query": "SELECT st.`id` AS task_id, p.`id` AS product_id, p.`batchNo`, p.`serialNumber`, p.`imei`, p.`sheetRowNumber`\nFROM `station_tasks` st\nJOIN `products` p ON p.`id` = st.`productId`\nWHERE st.`id` = 510865;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT st.`id` AS task_id, p.`id` AS product_id, p.`batchNo`, p.`serialNumber`, p.`imei`, p.`sheetRowNumber`\nFROM `station_tasks` st\nJOIN `products` p ON p.`id` = st.`productId`\nWHERE st.`id` = 510865;",
+  "rows": [
+    {
+      "task_id": "510865",
+      "product_id": "420009",
+      "batchNo": "01900000051",
+      "serialNumber": "10AFB21NZ7002MZ",
+      "imei": "862492089211359",
+      "sheetRowNumber": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "task_id\tproduct_id\tbatchNo\tserialNumber\timei\tsheetRowNumber\n510865\t420009\t01900000051\t10AFB21NZ7002MZ\t862492089211359\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1706
+}

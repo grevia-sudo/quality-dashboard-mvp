@@ -1,0 +1,40 @@
+{
+  "query": "SELECT LEFT(p.batchNo, 3) AS batchPrefix, JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') AS ePhotoSyncStatus, COUNT(*) AS rowCount FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'E' AND (p.batchNo LIKE '005%' OR p.batchNo LIKE '013%' OR p.batchNo LIKE '019%') GROUP BY LEFT(p.batchNo, 3), JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') ORDER BY batchPrefix, ePhotoSyncStatus;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT LEFT(p.batchNo, 3) AS batchPrefix, JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') AS ePhotoSyncStatus, COUNT(*) AS rowCount FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'E' AND (p.batchNo LIKE '005%' OR p.batchNo LIKE '013%' OR p.batchNo LIKE '019%') GROUP BY LEFT(p.batchNo, 3), JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus') ORDER BY batchPrefix, ePhotoSyncStatus;",
+  "rows": [
+    {
+      "batchPrefix": "005",
+      "ePhotoSyncStatus": "NULL",
+      "rowCount": "15"
+    },
+    {
+      "batchPrefix": "005",
+      "ePhotoSyncStatus": "\"background_completed\"",
+      "rowCount": "73"
+    },
+    {
+      "batchPrefix": "013",
+      "ePhotoSyncStatus": "\"background_completed\"",
+      "rowCount": "25"
+    },
+    {
+      "batchPrefix": "019",
+      "ePhotoSyncStatus": "NULL",
+      "rowCount": "1"
+    },
+    {
+      "batchPrefix": "019",
+      "ePhotoSyncStatus": "\"background_completed\"",
+      "rowCount": "46"
+    },
+    {
+      "batchPrefix": "019",
+      "ePhotoSyncStatus": "\"background_failed\"",
+      "rowCount": "18"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchPrefix\tePhotoSyncStatus\trowCount\n005\tNULL\t15\n005\t\"background_completed\"\t73\n013\t\"background_completed\"\t25\n019\tNULL\t1\n019\t\"background_completed\"\t46\n019\t\"background_failed\"\t18\n",
+  "stderr": "",
+  "execution_time_ms": 1856
+}

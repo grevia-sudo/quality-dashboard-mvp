@@ -23,4 +23,11 @@ describe("engineer daily productivity dedupe source", () => {
     expect(dbSource).toContain("countForProductivity: false,");
     expect(dbSource).toContain("const hasGoogleBaseline = Boolean(normalizedBatchKey && googleBatchKeys.has(normalizedBatchKey));");
   });
+
+  it("builds today points from detail rows and picks the latest effective daily score", () => {
+    const dbSource = readFileSync(path.resolve(__dirname, "../server/db.ts"), "utf8");
+    expect(dbSource).toContain("const todayDetailPoints = detailRows");
+    expect(dbSource).toContain("const latestEffectiveDailyRow = [...rows]");
+    expect(dbSource).toContain(".find((row) => Boolean(row.attendanceFlag) || Number(row.totalPoints ?? 0) > 0 || Number(row.finalKpiScore ?? 0) > 0)");
+  });
 });

@@ -1962,8 +1962,20 @@ async function validateImportRowsAgainstProductCatalog(
     return;
   }
 
+  const categoryOptionRows = await db
+    .select({
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+      subtypeCode: productCategories.subtypeCode,
+    })
+    .from(productCategories)
+    .where(eq(productCategories.active, true));
+
   const categoryBrandKeys = new Set(
-    catalogRows
+    [
+      ...catalogRows.map((row) => ({ categoryName: row.categoryName, brandName: row.brandName })),
+      ...categoryOptionRows.map((row) => ({ categoryName: row.categoryName, brandName: row.brandName ?? row.subtypeCode })),
+    ]
       .map((row) => {
         const categoryName = normalizeOptionalText(row.categoryName);
         const brandName = normalizeCatalogComparisonText(row.brandName);
@@ -1982,7 +1994,7 @@ async function validateImportRowsAgainstProductCatalog(
 
     const categoryBrandKey = `${categoryName}__${brandName}`;
     if (!categoryBrandKeys.has(categoryBrandKey)) {
-      throw new Error(`第 ${index + 1} 筆資料驗證失敗：商品分類「${categoryName}」與品牌「${brandName}」不在商品編碼列表中，請重新匯入；本次匯入不成功`);
+      throw new Error(`第 ${index + 1} 筆資料驗證失敗：商品分類「${categoryName}」與品牌「${brandName}」不在商品編碼列表或啟用中的品類設定內，請重新匯入；本次匯入不成功`);
     }
   });
 }
@@ -5174,7 +5186,8 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
         finalKpiScore: engineerDailyProductivity.finalKpiScore,
         attendanceFlag: engineerDailyProductivity.attendanceFlag,
       })
-      .from(engineerDailyProductivity),
+      .from(engineerDailyProductivity)
+      .orderBy(asc(engineerDailyProductivity.businessDate), asc(engineerDailyProductivity.id)),
     db
       .select({
         userId: productivityScoreDetails.userId,
@@ -5235,7 +5248,12 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
         .forEach((row) => attendanceDateSet.add(toDateKey(row.businessDate)));
 
       const todaySupport = supportByUserDate.get(`${user.id}-${range.todayKey}`) ?? { supportHours: 0, supportPoints: 0 };
-      const todayProductivityPoints = Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
+      const todayDetailPoints = detailRows
+        .filter((row) => toDateKey(row.businessDate) === range.todayKey)
+        .reduce((sum, row) => sum + Number(row.earnedPoints ?? 0), 0);
+      const todayProductivityPoints = todayDetailPoints > 0
+        ? todayDetailPoints
+        : Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
       const todayPoints = todayProductivityPoints + todaySupport.supportPoints;
       const rangeSupportEntries = Array.from(supportByUserDate.entries()).filter(([key]) => key.startsWith(`${user.id}-`));
       const rangeSupportPoints = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportPoints, 0);
@@ -5247,7 +5265,12 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
       const avgKpiAchievementRate = attendanceDays > 0 ? Math.min(toDisplayPoints(monthAvgPoints), 100) : 0;
       const rawAchievementRate = toDisplayPoints(todayPoints);
       const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
-      const finalKpiScore = rows.length > 0 ? Number(rows[rows.length - 1]?.finalKpiScore ?? 0) : Math.min(rawAchievementRate, 100);
+      const latestEffectiveDailyRow = [...rows]
+        .reverse()
+        .find((row) => Boolean(row.attendanceFlag) || Number(row.totalPoints ?? 0) > 0 || Number(row.finalKpiScore ?? 0) > 0);
+      const finalKpiScore = latestEffectiveDailyRow
+        ? Number(latestEffectiveDailyRow.finalKpiScore ?? 0)
+        : Math.min(rawAchievementRate, 100);
       const stationBreakdownMap = new Map<string, { stationCode: string; completedQty: number; totalPoints: number; totalDisplayPoints: number; supportHours: number }>();
 
       detailRows.forEach((row) => {

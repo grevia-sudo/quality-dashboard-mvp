@@ -1,0 +1,190 @@
+{
+  "query": "SELECT p.batchNo, p.sheetRowNumber, st.id AS taskId, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) AS ePhotoSyncStatus, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncAttempts')) AS ePhotoSyncAttempts, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage')) AS ePhotoSyncMessage, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoFrontStorageUrl')) AS frontStorageUrl, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoBackStorageUrl')) AS backStorageUrl FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'E' AND p.batchNo LIKE '019%' AND JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) = 'background_failed' ORDER BY p.batchNo LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.sheetRowNumber, st.id AS taskId, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) AS ePhotoSyncStatus, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncAttempts')) AS ePhotoSyncAttempts, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncMessage')) AS ePhotoSyncMessage, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoFrontStorageUrl')) AS frontStorageUrl, JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoBackStorageUrl')) AS backStorageUrl FROM station_tasks st INNER JOIN products p ON p.id = st.productId WHERE st.stationCode = 'E' AND p.batchNo LIKE '019%' AND JSON_UNQUOTE(JSON_EXTRACT(st.metadata, '$.ePhotoSyncStatus')) = 'background_failed' ORDER BY p.batchNo LIMIT 50;",
+  "rows": [
+    {
+      "batchNo": "01900000047",
+      "sheetRowNumber": "464",
+      "taskId": "510861",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000048",
+      "sheetRowNumber": "428",
+      "taskId": "510862",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000049",
+      "sheetRowNumber": "454",
+      "taskId": "510863",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000050",
+      "sheetRowNumber": "429",
+      "taskId": "510864",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000051",
+      "sheetRowNumber": "NULL",
+      "taskId": "510865",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000052",
+      "sheetRowNumber": "457",
+      "taskId": "510866",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000053",
+      "sheetRowNumber": "439",
+      "taskId": "510867",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000054",
+      "sheetRowNumber": "407",
+      "taskId": "510868",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000055",
+      "sheetRowNumber": "406",
+      "taskId": "510869",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000056",
+      "sheetRowNumber": "400",
+      "taskId": "510870",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000057",
+      "sheetRowNumber": "431",
+      "taskId": "510871",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000058",
+      "sheetRowNumber": "415",
+      "taskId": "510872",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000059",
+      "sheetRowNumber": "447",
+      "taskId": "510874",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000060",
+      "sheetRowNumber": "408",
+      "taskId": "510875",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000061",
+      "sheetRowNumber": "418",
+      "taskId": "510876",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000062",
+      "sheetRowNumber": "434",
+      "taskId": "510841",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000064",
+      "sheetRowNumber": "449",
+      "taskId": "511263",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    },
+    {
+      "batchNo": "01900000065",
+      "sheetRowNumber": "441",
+      "taskId": "511267",
+      "ePhotoSyncStatus": "background_failed",
+      "ePhotoSyncAttempts": "3",
+      "ePhotoSyncMessage": "E 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "frontStorageUrl": "NULL",
+      "backStorageUrl": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tsheetRowNumber\ttaskId\tePhotoSyncStatus\tePhotoSyncAttempts\tePhotoSyncMessage\tfrontStorageUrl\tbackStorageUrl\n01900000047\t464\t510861\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000048\t428\t510862\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000049\t454\t510863\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000050\t429\t510864\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000051\tNULL\t510865\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000052\t457\t510866\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000053\t439\t510867\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000054\t407\t510868\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000055\t406\t510869\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000056\t400\t510870\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000057\t431\t510871\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000058\t415\t510872\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000059\t447\t510874\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000060\t408\t510875\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000061\t418\t510876\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000062\t434\t510841\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000064\t449\t511263\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n01900000065\t441\t511267\tbackground_failed\t3\tE 站照片同步到 Google Drive 失敗，請手動補傳：Google Drive API has not been used in project 533349586080 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=533349586080 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1951
+}

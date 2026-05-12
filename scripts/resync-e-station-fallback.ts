@@ -8,11 +8,13 @@ import { getDb } from '../server/db';
 
 const execFileAsync = promisify(execFile);
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
-const DRIVE_FOLDER_ID = '1PPdt4swkmSav8G6k2Dfpk55OBPJk4srW';
+const DRIVE_FOLDER_ID = '0AGU-A31NmApoUk9PVA';
+const GWS_BIN = '/home/ubuntu/.local/share/pnpm/bin/gws';
 const PURCHASE_SHEET_SPREADSHEET_ID = '15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y';
 const PURCHASE_SHEET_NAME = '採購單';
 const APP_BASE_URL = process.env.APP_BASE_URL ?? 'http://localhost:3000';
-const TMP_DIR = '/home/ubuntu/quality-dashboard-mvp/tmp/e-station-resync';
+const TMP_BASE_DIR = '/home/ubuntu/quality-dashboard-mvp/tmp/e-station-resync';
+const TMP_DIR = `${TMP_BASE_DIR}/${process.pid}-${Date.now()}`;
 const OUTPUT_PATH = '/home/ubuntu/quality-dashboard-mvp/e-station-photo-resync-result.json';
 
 type ServiceAccountCredentials = {
@@ -30,6 +32,16 @@ type DbRow = {
   sheetRowNumber: number | null;
   metadata: Record<string, unknown> | null;
 };
+
+type PendingPhotoUpload = {
+  fileName?: string;
+  mimeType?: string;
+  dataUrl?: string;
+};
+
+type PhotoSource =
+  | { kind: 'storage'; path: string }
+  | { kind: 'data_url'; dataUrl: string; mimeType?: string };
 
 function base64UrlEncode(input: string) {
   return Buffer.from(input)
@@ -103,17 +115,66 @@ function ensurePhotoPath(value: unknown, label: string) {
   return path;
 }
 
-async function downloadStoredPhoto(path: string, destinationPath: string) {
-  const response = await fetch(new URL(path, APP_BASE_URL), { redirect: 'follow' });
-  if (!response.ok) {
-    throw new Error(`讀取備援照片失敗：${path} (${response.status})`);
+function parsePendingPhotoUpload(value: unknown): PendingPhotoUpload | null {
+  if (!value || typeof value !== 'object') {
+    return null;
   }
-  const arrayBuffer = await response.arrayBuffer();
-  await writeFile(destinationPath, Buffer.from(arrayBuffer));
+  const photo = value as Record<string, unknown>;
+  const dataUrl = String(photo.dataUrl ?? '').trim();
+  if (!dataUrl.startsWith('data:')) {
+    return null;
+  }
+  return {
+    fileName: typeof photo.fileName === 'string' ? photo.fileName : undefined,
+    mimeType: typeof photo.mimeType === 'string' ? photo.mimeType : undefined,
+    dataUrl,
+  };
+}
+
+function resolvePhotoSource(metadata: Record<string, unknown> | null, side: 'front' | 'back') {
+  const urlKey = side === 'front' ? 'eFrontPhotoUrl' : 'eBackPhotoUrl';
+  const label = side === 'front' ? '正面照片' : '反面照片';
+  const directPath = String(metadata?.[urlKey] ?? '').trim();
+  if (directPath.startsWith('/manus-storage/')) {
+    return { kind: 'storage', path: directPath } as PhotoSource;
+  }
+
+  const pendingUploads = metadata?.ePhotoPendingUploads;
+  if (pendingUploads && typeof pendingUploads === 'object') {
+    const pendingPhoto = parsePendingPhotoUpload((pendingUploads as Record<string, unknown>)[side]);
+    if (pendingPhoto?.dataUrl) {
+      return {
+        kind: 'data_url',
+        dataUrl: pendingPhoto.dataUrl,
+        mimeType: pendingPhoto.mimeType,
+      } as PhotoSource;
+    }
+  }
+
+  throw new Error(`${label} 缺少可用的備援照片來源`);
+}
+
+async function writePhotoSourceToFile(source: PhotoSource, destinationPath: string) {
+  if (source.kind === 'storage') {
+    const response = await fetch(new URL(source.path, APP_BASE_URL), { redirect: 'follow' });
+    if (!response.ok) {
+      throw new Error(`讀取備援照片失敗：${source.path} (${response.status})`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    await writeFile(destinationPath, Buffer.from(arrayBuffer));
+    return;
+  }
+
+  const commaIndex = source.dataUrl.indexOf(',');
+  if (commaIndex < 0) {
+    throw new Error('dataUrl 格式錯誤，無法還原照片');
+  }
+  const encoded = source.dataUrl.slice(commaIndex + 1);
+  await writeFile(destinationPath, Buffer.from(encoded, 'base64'));
 }
 
 async function uploadPhotoToDriveWithGws(localPath: string, fileName: string) {
-  const { stdout } = await execFileAsync('gws', [
+  const { stdout } = await execFileAsync(GWS_BIN, [
     'drive',
     'files',
     'create',
@@ -123,6 +184,10 @@ async function uploadPhotoToDriveWithGws(localPath: string, fileName: string) {
     JSON.stringify({
       name: fileName,
       parents: [DRIVE_FOLDER_ID],
+    }),
+    '--params',
+    JSON.stringify({
+      supportsAllDrives: true,
     }),
   ], {
     cwd: '/home/ubuntu/quality-dashboard-mvp',
@@ -190,11 +255,17 @@ async function writePhotoLinksToSheet(sheetsAccessToken: string, input: { sheetR
 
 function shouldTarget(metadata: Record<string, unknown> | null) {
   const status = String(metadata?.ePhotoSyncStatus ?? '');
-  const front = String(metadata?.eFrontPhotoUrl ?? '');
-  const back = String(metadata?.eBackPhotoUrl ?? '');
-  return (status === 'storage_fallback' || status === 'background_failed')
-    && front.startsWith('/manus-storage/')
-    && back.startsWith('/manus-storage/');
+  if (status !== 'storage_fallback' && status !== 'background_failed') {
+    return false;
+  }
+
+  try {
+    resolvePhotoSource(metadata, 'front');
+    resolvePhotoSource(metadata, 'back');
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function main() {
@@ -238,13 +309,13 @@ async function main() {
         throw new Error('此商品缺少商品批號，無法建立 E 站照片檔名');
       }
 
-      const frontPath = ensurePhotoPath(metadata.eFrontPhotoUrl, '正面照片');
-      const backPath = ensurePhotoPath(metadata.eBackPhotoUrl, '反面照片');
-      await downloadStoredPhoto(frontPath, frontTempPath);
-      await downloadStoredPhoto(backPath, backTempPath);
+      const frontSource = resolvePhotoSource(metadata, 'front');
+      const backSource = resolvePhotoSource(metadata, 'back');
+      await writePhotoSourceToFile(frontSource, frontTempPath);
+      await writePhotoSourceToFile(backSource, backTempPath);
 
-      const frontDriveUrl = await uploadPhotoToDriveWithGws(`tmp/e-station-resync/${row.taskId}-front.jpg`, `${batchNoBase}-1.jpg`);
-      const backDriveUrl = await uploadPhotoToDriveWithGws(`tmp/e-station-resync/${row.taskId}-back.jpg`, `${batchNoBase}-2.jpg`);
+      const frontDriveUrl = await uploadPhotoToDriveWithGws(frontTempPath, `${batchNoBase}-1.jpg`);
+      const backDriveUrl = await uploadPhotoToDriveWithGws(backTempPath, `${batchNoBase}-2.jpg`);
 
       try {
         const rowNumber = await writePhotoLinksToSheet(sheetsAccessToken, {

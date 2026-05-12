@@ -1,0 +1,15 @@
+{
+  "query": "SELECT `id`, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncMessage')) AS sync_message\nFROM `station_tasks`\nWHERE `id` = 510865;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncMessage')) AS sync_message\nFROM `station_tasks`\nWHERE `id` = 510865;",
+  "rows": [
+    {
+      "id": "510865",
+      "sync_status": "sheet_write_failed",
+      "sync_message": "E 站照片已補上傳到 Google Drive，但採購單回寫失敗：找不到對應的採購單資料列，無法回寫 E 站照片連結"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsync_status\tsync_message\n510865\tsheet_write_failed\tE 站照片已補上傳到 Google Drive，但採購單回寫失敗：找不到對應的採購單資料列，無法回寫 E 站照片連結\n",
+  "stderr": "",
+  "execution_time_ms": 1748
+}

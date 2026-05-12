@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, category_name, brand_name, subtype_code, active FROM product_categories WHERE category_name LIKE '%耳機%' OR category_name LIKE '%音響%' OR brand_name LIKE '%Samsung%' ORDER BY category_name, brand_name, id; SELECT id, category_name, brand_name, label, active, source_row_number FROM product_name_catalog_entries WHERE category_name LIKE '%耳機%' OR category_name LIKE '%音響%' OR brand_name LIKE '%Samsung%' ORDER BY category_name, brand_name, source_row_number LIMIT 200;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, category_name, brand_name, subtype_code, active FROM product_categories WHERE category_name LIKE '%耳機%' OR category_name LIKE '%音響%' OR brand_name LIKE '%Samsung%' ORDER BY category_name, brand_name, id; SELECT id, category_name, brand_name, label, active, source_row_number FROM product_name_catalog_entries WHERE category_name LIKE '%耳機%' OR category_name LIKE '%音響%' OR brand_name LIKE '%Samsung%' ORDER BY category_name, brand_name, source_row_number LIMIT 200;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'category_name' in 'where clause'"
+  ]
+}

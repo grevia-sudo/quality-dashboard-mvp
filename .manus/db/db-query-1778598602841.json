@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, categoryName, brandName, label, active, sourceRowNumber FROM product_name_catalog_entries WHERE categoryName = '耳機音響' AND brandName = 'Samsung' ORDER BY sourceRowNumber, id LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, categoryName, brandName, label, active, sourceRowNumber FROM product_name_catalog_entries WHERE categoryName = '耳機音響' AND brandName = 'Samsung' ORDER BY sourceRowNumber, id LIMIT 50;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1780
+}

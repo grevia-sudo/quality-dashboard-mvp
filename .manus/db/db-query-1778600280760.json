@@ -1,0 +1,24 @@
+{
+  "query": "SELECT `id`, `poNumber`, `vendorName`, `batchNo`, `serialNumber`, `imei`, `productName`, `importedCategoryName`, `categoryId`, `sheetRowNumber`, `lastSheetSyncedAt`, `archivedAt`\nFROM `products`\nWHERE `id` = 420009;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `poNumber`, `vendorName`, `batchNo`, `serialNumber`, `imei`, `productName`, `importedCategoryName`, `categoryId`, `sheetRowNumber`, `lastSheetSyncedAt`, `archivedAt`\nFROM `products`\nWHERE `id` = 420009;",
+  "rows": [
+    {
+      "id": "420009",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "batchNo": "01900000051",
+      "serialNumber": "10AFB21NZ7002MZ",
+      "imei": "862492089211359",
+      "productName": "vivo X300 Pro 16GB 512GB 5G 晴空藍",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL",
+      "archivedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpoNumber\tvendorName\tbatchNo\tserialNumber\timei\tproductName\timportedCategoryName\tcategoryId\tsheetRowNumber\tlastSheetSyncedAt\tarchivedAt\n420009\tNULL\tNULL\t01900000051\t10AFB21NZ7002MZ\t862492089211359\tvivo X300 Pro 16GB 512GB 5G 晴空藍\tNULL\tNULL\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1721
+}

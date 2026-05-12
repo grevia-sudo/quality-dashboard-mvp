@@ -1,0 +1,18 @@
+{
+  "query": "SELECT `id`, `productId`, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncMessage')) AS sync_message, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eFrontPhotoUrl')) AS front_url, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eBackPhotoUrl')) AS back_url\nFROM `station_tasks`\nWHERE `stationCode` = 'E'\n  AND `stationTaskStatus` = 'completed'\n  AND JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) = 'sheet_write_failed'\nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `productId`, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) AS sync_status, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncMessage')) AS sync_message, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eFrontPhotoUrl')) AS front_url, JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.eBackPhotoUrl')) AS back_url\nFROM `station_tasks`\nWHERE `stationCode` = 'E'\n  AND `stationTaskStatus` = 'completed'\n  AND JSON_UNQUOTE(JSON_EXTRACT(`metadata`, '$.ePhotoSyncStatus')) = 'sheet_write_failed'\nLIMIT 5;",
+  "rows": [
+    {
+      "id": "510865",
+      "productId": "420009",
+      "sync_status": "sheet_write_failed",
+      "sync_message": "E 站照片已補上傳到 Google Drive，但採購單回寫失敗：找不到對應的採購單資料列，無法回寫 E 站照片連結",
+      "front_url": "https://drive.google.com/file/d/1wx0xnm7nyqeRbF2MLe4CCvpSL0H3BbIG/view",
+      "back_url": "https://drive.google.com/file/d/1wY8cobpRvOygqoWfly3tv9xsP-VUNHL-/view"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductId\tsync_status\tsync_message\tfront_url\tback_url\n510865\t420009\tsheet_write_failed\tE 站照片已補上傳到 Google Drive，但採購單回寫失敗：找不到對應的採購單資料列，無法回寫 E 站照片連結\thttps://drive.google.com/file/d/1wx0xnm7nyqeRbF2MLe4CCvpSL0H3BbIG/view\thttps://drive.google.com/file/d/1wY8cobpRvOygqoWfly3tv9xsP-VUNHL-/view\n",
+  "stderr": "",
+  "execution_time_ms": 1724
+}
