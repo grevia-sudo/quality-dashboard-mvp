@@ -1,0 +1,250 @@
+{
+  "query": "SHOW COLUMNS FROM station_events;\nSHOW COLUMNS FROM productivity_score_details;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SHOW COLUMNS FROM station_events;\nSHOW COLUMNS FROM productivity_score_details;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "productId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stationTaskId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stationCode",
+      "Type": "enum('A1','A2','B','C','D','E','STOCK')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "A1",
+      "Extra": ""
+    },
+    {
+      "Field": "stationEventType",
+      "Type": "enum('enter','complete','return_to_hub','rework','sampling_pass','sampling_fail','wipe_complete','stock_ready','archived')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "operatorUserId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "businessDate",
+      "Type": "date",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "categoryId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "subtypeCode",
+      "Type": "varchar(80)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "isRework",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "reworkRound",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "countForProductivity",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "payload",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "Field",
+      "Type": "Type",
+      "Null": "Null",
+      "Key": "Key",
+      "Default": "Default",
+      "Extra": "Extra"
+    },
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "businessDate",
+      "Type": "date",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "userId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stationEventId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "productId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stationCode",
+      "Type": "enum('A1','A2','B','C','D','E','STOCK')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "C",
+      "Extra": ""
+    },
+    {
+      "Field": "categoryId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "subtypeCode",
+      "Type": "varchar(80)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "targetConfigId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "completedQty",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "baseUnitPoints",
+      "Type": "decimal(12,6)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "reworkFactor",
+      "Type": "decimal(8,4)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1.0000",
+      "Extra": ""
+    },
+    {
+      "Field": "qualityFactor",
+      "Type": "decimal(8,4)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1.0000",
+      "Extra": ""
+    },
+    {
+      "Field": "earnedPoints",
+      "Type": "decimal(12,6)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nproductId\tint\tNO\tMUL\tNULL\t\nstationTaskId\tint\tYES\tMUL\tNULL\t\nstationCode\tenum('A1','A2','B','C','D','E','STOCK')\tNO\t\tA1\t\nstationEventType\tenum('enter','complete','return_to_hub','rework','sampling_pass','sampling_fail','wipe_complete','stock_ready','archived')\tNO\t\tNULL\t\noperatorUserId\tint\tYES\tMUL\tNULL\t\nbusinessDate\tdate\tNO\t\tNULL\t\ncategoryId\tint\tYES\tMUL\tNULL\t\nsubtypeCode\tvarchar(80)\tYES\t\tNULL\t\nisRework\ttinyint(1)\tNO\t\t0\t\nreworkRound\tint\tNO\t\t0\t\ncountForProductivity\ttinyint(1)\tNO\t\t1\t\npayload\tjson\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nField\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nbusinessDate\tdate\tNO\t\tNULL\t\nuserId\tint\tNO\tMUL\tNULL\t\nstationEventId\tint\tNO\tMUL\tNULL\t\nproductId\tint\tNO\tMUL\tNULL\t\nstationCode\tenum('A1','A2','B','C','D','E','STOCK')\tNO\t\tC\t\ncategoryId\tint\tYES\tMUL\tNULL\t\nsubtypeCode\tvarchar(80)\tYES\t\tNULL\t\ntargetConfigId\tint\tYES\t\tNULL\t\ncompletedQty\tint\tNO\t\t1\t\nbaseUnitPoints\tdecimal(12,6)\tNO\t\tNULL\t\nreworkFactor\tdecimal(8,4)\tNO\t\t1.0000\t\nqualityFactor\tdecimal(8,4)\tNO\t\t1.0000\t\nearnedPoints\tdecimal(12,6)\tNO\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\n",
+  "stderr": "",
+  "execution_time_ms": 1958
+}

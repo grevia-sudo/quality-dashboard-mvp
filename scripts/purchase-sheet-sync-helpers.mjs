@@ -9,6 +9,39 @@ export function stringifyCell(value) {
   return String(value).trim();
 }
 
+export function normalizeBatchNo(value) {
+  return stringifyCell(value)
+    .replace(/^'+/, "")
+    .replace(/\s+/g, "")
+    .toUpperCase();
+}
+
+export function normalizeBatchNoKey(value) {
+  const normalized = normalizeBatchNo(value);
+  if (!normalized) {
+    return "";
+  }
+
+  if (/^\d+$/.test(normalized)) {
+    return normalized.replace(/^0+(?=\d)/, "");
+  }
+
+  return normalized;
+}
+
+function normalizeIdentityCell(value) {
+  return stringifyCell(value)
+    .replace(/^'+/, "")
+    .replace(/\s+/g, "")
+    .toUpperCase();
+}
+
+function isSameBatchNo(left, right) {
+  const leftKey = normalizeBatchNoKey(left);
+  const rightKey = normalizeBatchNoKey(right);
+  return Boolean(leftKey && rightKey && leftKey === rightKey);
+}
+
 export function formatSheetDateTime(value) {
   if (!value) {
     return "";
@@ -176,12 +209,12 @@ export function mergeMissingCells(existingRow, generatedRow, product) {
 }
 
 export function matchesSheetRow(row, product) {
-  const imei = stringifyCell(product.imei);
-  const serialNumber = stringifyCell(product.serialNumber);
-  const batchNo = stringifyCell(product.batchNo);
-  const rowBatchNo = stringifyCell(row?.[3]);
-  const rowSerialNumber = stringifyCell(row?.[4]);
-  const rowImei = stringifyCell(row?.[5]);
+  const imei = normalizeIdentityCell(product.imei);
+  const serialNumber = normalizeIdentityCell(product.serialNumber);
+  const batchNo = normalizeBatchNo(product.batchNo);
+  const rowBatchNo = normalizeBatchNo(row?.[3]);
+  const rowSerialNumber = normalizeIdentityCell(row?.[4]);
+  const rowImei = normalizeIdentityCell(row?.[5]);
 
   if (imei && rowImei && rowImei === imei) {
     return true;
@@ -189,7 +222,7 @@ export function matchesSheetRow(row, product) {
   if (serialNumber && rowSerialNumber && rowSerialNumber === serialNumber) {
     return true;
   }
-  if (batchNo && rowBatchNo && rowBatchNo === batchNo) {
+  if (isSameBatchNo(batchNo, rowBatchNo)) {
     return true;
   }
 

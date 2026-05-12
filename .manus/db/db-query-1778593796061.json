@@ -1,0 +1,90 @@
+{
+  "query": "SELECT p.id AS productId, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.stationCode, p.productStatus, p.sheetRowNumber, p.archivedAt\nFROM products p\nWHERE p.batchNo IN ('500025007','500025004','500024968','500025035','500025029')\nORDER BY p.batchNo;\n\nSELECT se.id AS stationEventId, se.productId, p.batchNo, se.stationCode, se.operatorUserId, u.name AS operatorName, se.stationEventType, se.countForProductivity, se.businessDate, se.createdAt\nFROM station_events se\nJOIN products p ON p.id = se.productId\nLEFT JOIN users u ON u.id = se.operatorUserId\nWHERE p.batchNo IN ('500025007','500025004','500024968','500025035','500025029')\n  AND se.stationEventType = 'complete'\nORDER BY p.batchNo, se.stationCode, se.id;\n\nSELECT psd.id AS detailId, psd.stationEventId, psd.productId, p.batchNo, psd.stationCode, psd.userId, u.name AS userName, psd.earnedPoints, psd.businessDate\nFROM productivity_score_details psd\nJOIN products p ON p.id = psd.productId\nLEFT JOIN users u ON u.id = psd.userId\nWHERE p.batchNo IN ('500025007','500025004','500024968','500025035','500025029')\nORDER BY p.batchNo, psd.stationCode, psd.id;\n\nSELECT batchNo, COUNT(*) AS activeCount\nFROM products\nWHERE archivedAt IS NULL AND batchNo IS NOT NULL AND batchNo <> ''\nGROUP BY batchNo\nHAVING COUNT(*) > 1\nORDER BY activeCount DESC, batchNo\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id AS productId, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.stationCode, p.productStatus, p.sheetRowNumber, p.archivedAt\nFROM products p\nWHERE p.batchNo IN ('500025007','500025004','500024968','500025035','500025029')\nORDER BY p.batchNo;\n\nSELECT se.id AS stationEventId, se.productId, p.batchNo, se.stationCode, se.operatorUserId, u.name AS operatorName, se.stationEventType, se.countForProductivity, se.businessDate, se.createdAt\nFROM station_events se\nJOIN products p ON p.id = se.productId\nLEFT JOIN users u ON u.id = se.operatorUserId\nWHERE p.batchNo IN ('500025007','500025004','500024968','500025035','500025029')\n  AND se.stationEventType = 'complete'\nORDER BY p.batchNo, se.stationCode, se.id;\n\nSELECT psd.id AS detailId, psd.stationEventId, psd.productId, p.batchNo, psd.stationCode, psd.userId, u.name AS userName, psd.earnedPoints, psd.businessDate\nFROM productivity_score_details psd\nJOIN products p ON p.id = psd.productId\nLEFT JOIN users u ON u.id = psd.userId\nWHERE p.batchNo IN ('500025007','500025004','500024968','500025035','500025029')\nORDER BY p.batchNo, psd.stationCode, psd.id;\n\nSELECT batchNo, COUNT(*) AS activeCount\nFROM products\nWHERE archivedAt IS NULL AND batchNo IS NOT NULL AND batchNo <> ''\nGROUP BY batchNo\nHAVING COUNT(*) > 1\nORDER BY activeCount DESC, batchNo\nLIMIT 20;",
+  "rows": [
+    {
+      "batchNo": "00500024718",
+      "activeCount": "3"
+    },
+    {
+      "batchNo": "00500024764",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024829",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024830",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024831",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024832",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024835",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024836",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024837",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024838",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024839",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024840",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024841",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024843",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024844",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024845",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024846",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024847",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024848",
+      "activeCount": "2"
+    },
+    {
+      "batchNo": "00500024849",
+      "activeCount": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tactiveCount\n00500024718\t3\n00500024764\t2\n00500024829\t2\n00500024830\t2\n00500024831\t2\n00500024832\t2\n00500024835\t2\n00500024836\t2\n00500024837\t2\n00500024838\t2\n00500024839\t2\n00500024840\t2\n00500024841\t2\n00500024843\t2\n00500024844\t2\n00500024845\t2\n00500024846\t2\n00500024847\t2\n00500024848\t2\n00500024849\t2\n",
+  "stderr": "",
+  "execution_time_ms": 2461
+}

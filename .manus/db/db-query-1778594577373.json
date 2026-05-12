@@ -1,0 +1,40 @@
+{
+  "query": "SELECT p.batchNo, SUM(CASE WHEN se.countForProductivity = 1 THEN 1 ELSE 0 END) AS countable_complete_events, COUNT(psd.id) AS productivity_details, GROUP_CONCAT(DISTINCT CONCAT(edp.userId, ':', DATE_FORMAT(edp.businessDate, '%Y-%m-%d')) ORDER BY edp.userId, edp.businessDate SEPARATOR ', ') AS daily_rows\nFROM products p\nLEFT JOIN station_events se ON se.productId = p.id AND se.stationEventType = 'complete'\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nLEFT JOIN engineer_daily_productivity edp ON edp.userId IN (750192,750136,750212,750189) AND DATE(edp.businessDate) IN ('2026-05-07','2026-05-08','2026-05-11')\nWHERE p.batchNo IN ('00500025007','00500025004','00500024968','00500025035','00500025029')\nGROUP BY p.batchNo\nORDER BY p.batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, SUM(CASE WHEN se.countForProductivity = 1 THEN 1 ELSE 0 END) AS countable_complete_events, COUNT(psd.id) AS productivity_details, GROUP_CONCAT(DISTINCT CONCAT(edp.userId, ':', DATE_FORMAT(edp.businessDate, '%Y-%m-%d')) ORDER BY edp.userId, edp.businessDate SEPARATOR ', ') AS daily_rows\nFROM products p\nLEFT JOIN station_events se ON se.productId = p.id AND se.stationEventType = 'complete'\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nLEFT JOIN engineer_daily_productivity edp ON edp.userId IN (750192,750136,750212,750189) AND DATE(edp.businessDate) IN ('2026-05-07','2026-05-08','2026-05-11')\nWHERE p.batchNo IN ('00500025007','00500025004','00500024968','00500025035','00500025029')\nGROUP BY p.batchNo\nORDER BY p.batchNo;",
+  "rows": [
+    {
+      "batchNo": "00500024968",
+      "countable_complete_events": "0",
+      "productivity_details": "0",
+      "daily_rows": "750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11"
+    },
+    {
+      "batchNo": "00500025004",
+      "countable_complete_events": "0",
+      "productivity_details": "0",
+      "daily_rows": "750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11"
+    },
+    {
+      "batchNo": "00500025007",
+      "countable_complete_events": "0",
+      "productivity_details": "0",
+      "daily_rows": "750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11"
+    },
+    {
+      "batchNo": "00500025029",
+      "countable_complete_events": "0",
+      "productivity_details": "0",
+      "daily_rows": "750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11"
+    },
+    {
+      "batchNo": "00500025035",
+      "countable_complete_events": "0",
+      "productivity_details": "0",
+      "daily_rows": "750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tcountable_complete_events\tproductivity_details\tdaily_rows\n00500024968\t0\t0\t750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11\n00500025004\t0\t0\t750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11\n00500025007\t0\t0\t750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11\n00500025029\t0\t0\t750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11\n00500025035\t0\t0\t750136:2026-05-07, 750136:2026-05-08, 750136:2026-05-11, 750189:2026-05-08, 750189:2026-05-11, 750192:2026-05-07, 750192:2026-05-08, 750192:2026-05-11, 750212:2026-05-07, 750212:2026-05-08, 750212:2026-05-11\n",
+  "stderr": "",
+  "execution_time_ms": 1720
+}

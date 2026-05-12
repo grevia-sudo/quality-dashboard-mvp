@@ -253,11 +253,49 @@ export async function syncEngineerDailyProductivityRecord(
     return;
   }
 
-  await db.insert(engineerDailyProductivity).values({
-    businessDate: input.businessDateValue,
-    userId: input.userId,
-    ...payload,
-  });
+  try {
+    await db.insert(engineerDailyProductivity).values({
+      businessDate: input.businessDateValue,
+      userId: input.userId,
+      ...payload,
+    });
+  } catch (error) {
+    const errorMessage = [
+      error instanceof Error ? error.message : String(error),
+      typeof error === "object" && error !== null && "cause" in error
+        ? String((error as { cause?: { message?: string } }).cause?.message ?? "")
+        : "",
+      typeof error === "object" && error !== null && "code" in error
+        ? String((error as { code?: string }).code ?? "")
+        : "",
+    ].join(" ");
+    const duplicateKeyError = /duplicate entry|er_dup_entry/i.test(errorMessage);
+    if (!duplicateKeyError) {
+      throw error;
+    }
+
+    const retryRows = (await db
+      .select({
+        id: engineerDailyProductivity.id,
+        businessDate: engineerDailyProductivity.businessDate,
+      })
+      .from(engineerDailyProductivity)
+      .where(eq(engineerDailyProductivity.userId, input.userId)))
+      .filter((row) => toDateKey(row.businessDate) === businessDate);
+
+    if (!retryRows[0]) {
+      throw error;
+    }
+
+    await db
+      .update(engineerDailyProductivity)
+      .set(payload)
+      .where(eq(engineerDailyProductivity.id, retryRows[0].id));
+
+    if (retryRows.length > 1) {
+      await db.delete(engineerDailyProductivity).where(inArray(engineerDailyProductivity.id, retryRows.slice(1).map((row) => row.id)));
+    }
+  }
 }
 
 async function syncEngineerDailyProductivityRecords(
@@ -290,6 +328,7 @@ export async function backfillProductivityFromCompletedEvents(
       importedCategoryName: products.importedCategoryName,
       importedBrandName: products.importedBrandName,
       productName: products.productName,
+      batchNo: products.batchNo,
     })
     .from(stationEvents)
     .leftJoin(productivityScoreDetails, eq(productivityScoreDetails.stationEventId, stationEvents.id))
@@ -304,9 +343,21 @@ export async function backfillProductivityFromCompletedEvents(
 
   const affectedUserDateKeys = new Map<string, { userId: number; businessDateValue: Date }>();
   const targetCache = new Map<string, Awaited<ReturnType<typeof findProductivityTargetConfig>>>();
+  const googleBatchKeys = await readPurchaseSheetBatchKeySet();
 
   for (const event of missingEvents) {
     if (!event.operatorUserId || !isProductivityTrackedStation(event.stationCode)) {
+      continue;
+    }
+
+    const normalizedBatchKey = normalizeBatchMatchValue(event.batchNo);
+    if (!normalizedBatchKey || !googleBatchKeys.has(normalizedBatchKey)) {
+      await db
+        .update(stationEvents)
+        .set({
+          countForProductivity: false,
+        })
+        .where(eq(stationEvents.id, event.stationEventId));
       continue;
     }
 
@@ -912,16 +963,33 @@ function triggerEStationPhotoSyncInBackground() {
   scheduleEStationPhotoSyncWorker(200);
 }
 
-function normalizeBatchMatchValue(value: unknown) {
+function normalizeIdentityMatchValue(value: unknown) {
   return typeof value === "string"
     ? value.trim().replace(/^'+/, "").replace(/\s+/g, "").toUpperCase()
     : "";
 }
 
+function normalizeBatchNo(value: unknown) {
+  return normalizeIdentityMatchValue(value);
+}
+
+function normalizeBatchMatchValue(value: unknown) {
+  const normalized = normalizeBatchNo(value);
+  if (!normalized) {
+    return "";
+  }
+
+  if (/^\d+$/.test(normalized)) {
+    return normalized.replace(/^0+(?=\d)/, "");
+  }
+
+  return normalized;
+}
+
 function buildImportRowIdentity(row: { batchNo?: unknown; serialNumber?: unknown; imei?: unknown }) {
   const batchNo = normalizeBatchMatchValue(row.batchNo);
-  const serialNumber = normalizeBatchMatchValue(row.serialNumber);
-  const imei = normalizeBatchMatchValue(row.imei);
+  const serialNumber = normalizeIdentityMatchValue(row.serialNumber);
+  const imei = normalizeIdentityMatchValue(row.imei);
 
   return [batchNo, serialNumber, imei].filter(Boolean).join("|");
 }
@@ -1004,6 +1072,27 @@ async function getGoogleSheetsAccessToken() {
 
 async function getGoogleDriveAccessToken() {
   return getGoogleAccessToken("https://www.googleapis.com/auth/drive");
+}
+
+async function readPurchaseSheetRows(range = `${PURCHASE_SHEET_NAME}!A:G`) {
+  const accessToken = await getGoogleSheetsAccessToken();
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodeURIComponent(range)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const result = await response.json() as { values?: string[][]; error?: { message?: string } };
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "讀取採購單資料列失敗");
+  }
+
+  return result.values ?? [];
+}
+
+async function readPurchaseSheetBatchKeySet() {
+  const rows = await readPurchaseSheetRows(`${PURCHASE_SHEET_NAME}!A:G`);
+  return new Set(rows.slice(1).map((row) => normalizeBatchMatchValue(row?.[3])).filter(Boolean));
 }
 
 function decodeStationPhotoDataUrl(photo: StationPhotoUploadInput) {
@@ -1117,12 +1206,12 @@ export async function uploadEStationPhotoReference(input: {
 }
 
 function matchesPurchaseSheetIdentity(row: string[] | undefined, identity: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null }) {
-  const rowBatchNo = String(row?.[3] ?? "").trim();
-  const rowSerialNumber = String(row?.[4] ?? "").trim();
-  const rowImei = String(row?.[5] ?? "").trim();
-  const batchNo = String(identity.batchNo ?? "").trim();
-  const serialNumber = String(identity.serialNumber ?? "").trim();
-  const imei = String(identity.imei ?? "").trim();
+  const rowBatchNo = normalizeBatchMatchValue(row?.[3]);
+  const rowSerialNumber = normalizeIdentityMatchValue(row?.[4]);
+  const rowImei = normalizeIdentityMatchValue(row?.[5]);
+  const batchNo = normalizeBatchMatchValue(identity.batchNo);
+  const serialNumber = normalizeIdentityMatchValue(identity.serialNumber);
+  const imei = normalizeIdentityMatchValue(identity.imei);
 
   return Boolean(
     (imei && rowImei && imei === rowImei)
@@ -1140,20 +1229,8 @@ async function resolvePurchaseSheetRowNumber(identity: {
   if (identity.sheetRowNumber && identity.sheetRowNumber > 1) {
     return identity.sheetRowNumber;
   }
-
-  const accessToken = await getGoogleSheetsAccessToken();
-  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodeURIComponent(`${PURCHASE_SHEET_NAME}!A:F`)}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const result = await response.json() as { values?: string[][]; error?: { message?: string } };
-
-  if (!response.ok) {
-    throw new Error(result.error?.message || "讀取採購單資料列失敗");
-  }
-
-  const rowNumber = (result.values ?? []).findIndex((row, index) => index > 0 && matchesPurchaseSheetIdentity(row, identity));
+  const rows = await readPurchaseSheetRows(`${PURCHASE_SHEET_NAME}!A:F`);
+  const rowNumber = rows.findIndex((row, index) => index > 0 && matchesPurchaseSheetIdentity(row, identity));
   if (rowNumber < 0) {
     throw new Error("找不到對應的採購單資料列，無法回寫 E 站照片連結");
   }
@@ -1916,7 +1993,7 @@ async function findPendingA1ProductByIdentity(
 ) {
   const imei = normalizeOptionalText(input.imei);
   const serialNumber = normalizeOptionalText(input.serialNumber);
-  const batchNo = normalizeOptionalText(input.batchNo);
+  const batchNo = normalizeBatchNo(input.batchNo) || null;
   const matchConditions = [];
   if (imei) {
     matchConditions.push(eq(products.imei, imei));
@@ -2057,8 +2134,8 @@ async function findOtherActiveProductByBatchNo(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: { batchNo?: string | null; excludeProductId?: number | null },
 ) {
-  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
-  if (!normalizedBatchNo) {
+  const normalizedBatchKey = normalizeBatchMatchValue(input.batchNo);
+  if (!normalizedBatchKey) {
     return null;
   }
 
@@ -2066,20 +2143,19 @@ async function findOtherActiveProductByBatchNo(
     .select({
       id: products.id,
       productCode: products.productCode,
+      batchNo: products.batchNo,
       currentStationCode: products.currentStationCode,
       currentStatus: products.currentStatus,
       archivedAt: products.archivedAt,
     })
     .from(products)
     .where(and(
-      eq(products.batchNo, normalizedBatchNo),
       isNull(products.archivedAt),
       input.excludeProductId ? sql`${products.id} <> ${input.excludeProductId}` : sql`true`,
     ))
-    .orderBy(desc(products.updatedAt), desc(products.id))
-    .limit(1);
+    .orderBy(desc(products.updatedAt), desc(products.id));
 
-  return rows[0] ?? null;
+  return rows.find((row) => normalizeBatchMatchValue(row.batchNo) === normalizedBatchKey) ?? null;
 }
 
 async function findGooglePurchaseSheetBatchConflict(input: {
@@ -2087,35 +2163,23 @@ async function findGooglePurchaseSheetBatchConflict(input: {
   serialNumber?: string | null;
   imei?: string | null;
 }) {
-  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
-  const normalizedSerialNumber = normalizeOptionalText(input.serialNumber);
-  const normalizedImei = normalizeOptionalText(input.imei);
-  if (!normalizedBatchNo) {
+  const normalizedBatchKey = normalizeBatchMatchValue(input.batchNo);
+  const normalizedSerialNumber = normalizeIdentityMatchValue(input.serialNumber);
+  const normalizedImei = normalizeIdentityMatchValue(input.imei);
+  if (!normalizedBatchKey) {
     return null;
   }
 
-  const accessToken = await getGoogleSheetsAccessToken();
-  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${PURCHASE_SHEET_SPREADSHEET_ID}/values/${encodeURIComponent(`${PURCHASE_SHEET_NAME}!A:G`)}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const result = await response.json() as { values?: string[][]; error?: { message?: string } };
-
-  if (!response.ok) {
-    throw new Error(result.error?.message || "讀取採購單資料列失敗");
-  }
-
-  const rows = result.values ?? [];
+  const rows = await readPurchaseSheetRows(`${PURCHASE_SHEET_NAME}!A:G`);
   for (let index = 1; index < rows.length; index += 1) {
     const row = rows[index] ?? [];
-    const rowBatchNo = normalizeOptionalText(row[3]);
-    if (rowBatchNo !== normalizedBatchNo) {
+    const rowBatchKey = normalizeBatchMatchValue(row[3]);
+    if (rowBatchKey !== normalizedBatchKey) {
       continue;
     }
 
-    const rowSerialNumber = normalizeOptionalText(row[4]);
-    const rowImei = normalizeOptionalText(row[5]);
+    const rowSerialNumber = normalizeIdentityMatchValue(row[4]);
+    const rowImei = normalizeIdentityMatchValue(row[5]);
     const sameIdentity = Boolean(
       (normalizedSerialNumber && rowSerialNumber && normalizedSerialNumber === rowSerialNumber)
       || (normalizedImei && rowImei && normalizedImei === rowImei),
@@ -2127,8 +2191,8 @@ async function findGooglePurchaseSheetBatchConflict(input: {
 
     return {
       rowNumber: index + 1,
-      serialNumber: rowSerialNumber,
-      imei: rowImei,
+      serialNumber: normalizeOptionalText(row[4]),
+      imei: normalizeOptionalText(row[5]),
       productName: normalizeOptionalText(row[6]),
     };
   }
@@ -2140,7 +2204,7 @@ async function findConflictingActiveProductByIdentity(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   input: { batchNo?: string | null; serialNumber?: string | null; imei?: string | null; excludeProductId?: number | null },
 ) {
-  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
+  const normalizedBatchNo = normalizeBatchNo(input.batchNo) || null;
   const normalizedSerialNumber = normalizeOptionalText(input.serialNumber);
   const normalizedImei = normalizeOptionalText(input.imei);
   const matchConditions = [];
@@ -2202,7 +2266,7 @@ export async function completeA1ArrivalByScan(input: {
     return { success: false as const, message: "A1 需填寫商品批號、商品序號與品名；IMEI 可選填" };
   }
 
-  const normalizedBatchNo = normalizeOptionalText(input.batchNo);
+  const normalizedBatchNo = normalizeBatchNo(input.batchNo) || null;
   const normalizedSerialNumber = normalizeOptionalText(input.serialNumber);
   const normalizedImei = normalizeOptionalText(input.imei);
   const normalizedProductName = normalizeOptionalText(input.productName);
@@ -3508,7 +3572,7 @@ export async function importProducts(input: {
   const normalizedRows = input.rows.map((row) => ({
     categoryName: normalizeOptionalText(row.categoryName),
     brandName: normalizeOptionalText(row.brandName),
-    batchNo: normalizeOptionalText(row.batchNo),
+    batchNo: normalizeBatchNo(row.batchNo) || null,
     serialNumber: normalizeOptionalText(row.serialNumber),
     imei: normalizeOptionalText(row.imei),
     productName: normalizeOptionalText(row.productName),
@@ -3558,6 +3622,15 @@ export async function importProducts(input: {
           ),
         )
     : [];
+  const normalizedBatchNumberKeys = new Set(batchNumbers.map((value) => normalizeBatchMatchValue(value)).filter(Boolean));
+  const activeBatchProducts = normalizedBatchNumberKeys.size > 0
+    ? (await db
+        .select()
+        .from(products)
+        .where(and(isNull(products.archivedAt), sql`${products.batchNo} is not null`)))
+        .filter((product) => normalizedBatchNumberKeys.has(normalizeBatchMatchValue(product.batchNo)))
+    : [];
+  const mergedMatchedProducts = Array.from(new Map([...matchedProducts, ...activeBatchProducts].map((product) => [product.id, product])).values());
 
   const categoryOptions = await db
     .select({
@@ -3580,30 +3653,32 @@ export async function importProducts(input: {
   });
   const categoryByKey = new Map(categoryByKeyEntries);
 
-  const matchedByImei = new Map<string, (typeof matchedProducts)[number]>();
-  const matchedBySerialNumber = new Map<string, (typeof matchedProducts)[number]>();
-  const matchedByBatchNo = new Map<string, (typeof matchedProducts)[number]>();
+  const matchedByImei = new Map<string, (typeof mergedMatchedProducts)[number]>();
+  const matchedBySerialNumber = new Map<string, (typeof mergedMatchedProducts)[number]>();
+  const matchedByBatchNo = new Map<string, (typeof mergedMatchedProducts)[number]>();
 
-  for (const product of matchedProducts) {
+  for (const product of mergedMatchedProducts) {
     if (product.imei && !matchedByImei.has(product.imei)) {
       matchedByImei.set(product.imei, product);
     }
     if (product.serialNumber && !matchedBySerialNumber.has(product.serialNumber)) {
       matchedBySerialNumber.set(product.serialNumber, product);
     }
-    if (product.batchNo && !matchedByBatchNo.has(product.batchNo)) {
-      matchedByBatchNo.set(product.batchNo, product);
+    const normalizedProductBatchKey = normalizeBatchMatchValue(product.batchNo);
+    if (normalizedProductBatchKey && !matchedByBatchNo.has(normalizedProductBatchKey)) {
+      matchedByBatchNo.set(normalizedProductBatchKey, product);
     }
   }
 
-  const activeProductByBatchNo = new Map<string, (typeof matchedProducts)[number]>();
-  for (const product of matchedProducts) {
-    if (product.batchNo && !activeProductByBatchNo.has(product.batchNo)) {
-      activeProductByBatchNo.set(product.batchNo, product);
+  const activeProductByBatchNo = new Map<string, (typeof mergedMatchedProducts)[number]>();
+  for (const product of mergedMatchedProducts) {
+    const normalizedProductBatchKey = normalizeBatchMatchValue(product.batchNo);
+    if (normalizedProductBatchKey && !activeProductByBatchNo.has(normalizedProductBatchKey)) {
+      activeProductByBatchNo.set(normalizedProductBatchKey, product);
     }
   }
 
-  const matchedProductIds = Array.from(new Set(matchedProducts.map((product) => product.id)));
+  const matchedProductIds = Array.from(new Set(mergedMatchedProducts.map((product) => product.id)));
   const pendingA1TaskProductIds = new Set<number>();
   if (matchedProductIds.length > 0) {
     const existingTasks = await db
@@ -3674,17 +3749,18 @@ export async function importProducts(input: {
     const matchedCategory = categoryByKey.get(
       `${normalizeOptionalText(categoryName)}__${normalizeCatalogComparisonText(brandName)}`,
     ) ?? null;
+    const normalizedRowBatchKey = normalizeBatchMatchValue(row.batchNo);
     const matchedProduct = (row.imei ? matchedByImei.get(row.imei) : undefined)
       ?? (row.serialNumber ? matchedBySerialNumber.get(row.serialNumber) : undefined)
-      ?? (row.batchNo ? matchedByBatchNo.get(row.batchNo) : undefined)
+      ?? (normalizedRowBatchKey ? matchedByBatchNo.get(normalizedRowBatchKey) : undefined)
       ?? null;
-    const duplicatedBatchProduct = row.batchNo ? activeProductByBatchNo.get(row.batchNo) ?? null : null;
+    const duplicatedBatchProduct = normalizedRowBatchKey ? activeProductByBatchNo.get(normalizedRowBatchKey) ?? null : null;
 
     if (duplicatedBatchProduct && duplicatedBatchProduct.id !== matchedProduct?.id) {
       throw new Error(`第 ${index + 1} 列商品批號 ${row.batchNo} 已存在於 ${duplicatedBatchProduct.productCode ?? "其他商品"}，請確認後再匯入`);
     }
 
-    if (matchedProduct && row.batchNo && matchedProduct.batchNo === row.batchNo) {
+    if (matchedProduct && row.batchNo && normalizeBatchMatchValue(matchedProduct.batchNo) === normalizedRowBatchKey) {
       const hasSerialConflict = Boolean(matchedProduct.serialNumber && row.serialNumber && matchedProduct.serialNumber !== row.serialNumber);
       const hasImeiConflict = Boolean(matchedProduct.imei && row.imei && matchedProduct.imei !== row.imei);
       if (hasSerialConflict || hasImeiConflict) {
@@ -4144,12 +4220,32 @@ export async function completeStationTask(input: {
   }).$returningId();
 
   if (isProductivityTrackedStation(input.stationCode)) {
-    const targetConfig = await findProductivityTargetConfig(db, {
+    const productRows = await db
+      .select({
+        batchNo: products.batchNo,
+      })
+      .from(products)
+      .where(eq(products.id, input.productId))
+      .limit(1);
+    const googleBatchKeys = await readPurchaseSheetBatchKeySet();
+    const normalizedBatchKey = normalizeBatchMatchValue(productRows[0]?.batchNo);
+    const hasGoogleBaseline = Boolean(normalizedBatchKey && googleBatchKeys.has(normalizedBatchKey));
+
+    if (!hasGoogleBaseline && stationEventResult[0]?.id) {
+      await db
+        .update(stationEvents)
+        .set({
+          countForProductivity: false,
+        })
+        .where(eq(stationEvents.id, stationEventResult[0].id));
+    }
+
+    const targetConfig = hasGoogleBaseline ? await findProductivityTargetConfig(db, {
       stationCode: input.stationCode,
       categoryId: effectiveCategoryId,
       subtypeCode: effectiveSubtypeCode,
       businessDateValue,
-    });
+    }) : null;
 
     if (targetConfig && stationEventResult[0]?.id) {
       await db.insert(productivityScoreDetails).values({

@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, batchNo, poNumber, serialNumber, imei FROM products WHERE batchNo IN ('500025007','500025004','500024968','500025035','500025029','00500025007','00500025004','00500024968','00500025035','00500025029') ORDER BY batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, batchNo, poNumber, serialNumber, imei FROM products WHERE batchNo IN ('500025007','500025004','500024968','500025035','500025029','00500025007','00500025004','00500024968','00500025035','00500025029') ORDER BY batchNo;",
+  "rows": [
+    {
+      "id": "331466",
+      "batchNo": "00500024968",
+      "poNumber": "PO-20260505-01",
+      "serialNumber": "C6KG205D0GQ3",
+      "imei": "351025523882191"
+    },
+    {
+      "id": "331402",
+      "batchNo": "00500025004",
+      "poNumber": "PO-20260505-01",
+      "serialNumber": "C39Z68VHN6Y7",
+      "imei": "353827109382746"
+    },
+    {
+      "id": "331460",
+      "batchNo": "00500025007",
+      "poNumber": "PO-20260505-01",
+      "serialNumber": "C6KZ769VN736",
+      "imei": "353987107216419"
+    },
+    {
+      "id": "331333",
+      "batchNo": "00500025029",
+      "poNumber": "PO-20260505-01",
+      "serialNumber": "CCWP9Q0NX6",
+      "imei": "353504861349425"
+    },
+    {
+      "id": "331375",
+      "batchNo": "00500025035",
+      "poNumber": "PO-20260505-01",
+      "serialNumber": "C6KXJ2BLKXK2",
+      "imei": "357354090919994"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tpoNumber\tserialNumber\timei\n331466\t00500024968\tPO-20260505-01\tC6KG205D0GQ3\t351025523882191\n331402\t00500025004\tPO-20260505-01\tC39Z68VHN6Y7\t353827109382746\n331460\t00500025007\tPO-20260505-01\tC6KZ769VN736\t353987107216419\n331333\t00500025029\tPO-20260505-01\tCCWP9Q0NX6\t353504861349425\n331375\t00500025035\tPO-20260505-01\tC6KXJ2BLKXK2\t357354090919994\n",
+  "stderr": "",
+  "execution_time_ms": 1731
+}

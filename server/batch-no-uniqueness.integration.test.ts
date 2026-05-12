@@ -61,6 +61,43 @@ describe("batch number uniqueness guard", () => {
     expect(secondProduct[0]?.batchNo).toBe(`BATCH-GUARD-${uniqueSuffix}-02`);
   }, 20000);
 
+  it("blocks import rows that reuse an existing active batch number after leading-zero normalization", async () => {
+    await ensureMvpSeedData();
+    const uniqueSuffix = `${Date.now()}`;
+    const reusedBatchNo = `005${uniqueSuffix.slice(-8)}`;
+    const reusedBatchNoWithoutLeadingZeros = String(Number(reusedBatchNo));
+
+    await importProducts({
+      poNumber: `PO-BATCH-BASE-NORMALIZED-${uniqueSuffix}`,
+      vendorName: "批號唯一測試廠商",
+      rows: [
+        {
+          batchNo: reusedBatchNo,
+          serialNumber: `IMPORT-BATCH-NORM-SN-${uniqueSuffix}-01`,
+          imei: `93${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`,
+          productName: "Import Guard Device Normalized 01",
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+
+    await expect(importProducts({
+      poNumber: `PO-BATCH-DUP-NORMALIZED-${uniqueSuffix}`,
+      vendorName: "批號唯一測試廠商",
+      rows: [
+        {
+          batchNo: reusedBatchNoWithoutLeadingZeros,
+          serialNumber: `IMPORT-BATCH-NORM-SN-${uniqueSuffix}-02`,
+          imei: `93${`${Number(uniqueSuffix) + 2}`.padStart(13, "0").slice(-13)}`,
+          productName: "Import Guard Device Normalized 02",
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    })).rejects.toThrow(`商品批號 ${reusedBatchNoWithoutLeadingZeros} 已存在於`);
+  }, 20000);
+
   it("blocks import rows that reuse an existing active batch number", async () => {
     await ensureMvpSeedData();
     const uniqueSuffix = `${Date.now()}`;

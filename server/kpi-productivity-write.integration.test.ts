@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   engineerDailyProductivity,
   productCategories,
@@ -14,6 +14,45 @@ import { backfillProductivityFromCompletedEvents, completeStationTask, ensureMvp
 
 const createdPoNumbers = new Set<string>();
 const createdUserIds: number[] = [];
+const originalFetch = global.fetch;
+
+function mockGooglePurchaseSheetBatches(batches: string[]) {
+  global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("oauth2.googleapis.com/token")) {
+      return new Response(JSON.stringify({
+        access_token: "fake-google-token",
+        expires_in: 3600,
+        token_type: "Bearer",
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.includes("sheets.googleapis.com")) {
+      return new Response(JSON.stringify({
+        values: [
+          ["PO", "Vendor", "Arrived", "批號", "序號", "IMEI", "品名"],
+          ...batches.map((batch, index) => [
+            `PO-MOCK-${index + 1}`,
+            "Mock Vendor",
+            "",
+            batch,
+            `MOCK-SERIAL-${index + 1}`,
+            "",
+            `Mock Product ${index + 1}`,
+          ]),
+        ],
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    throw new Error(`Unexpected fetch URL in test: ${url}`);
+  }) as typeof fetch;
+}
 
 async function cleanupCreatedRows() {
   const db = await getDb();
@@ -48,6 +87,8 @@ async function cleanupCreatedRows() {
 
 afterEach(async () => {
   await cleanupCreatedRows();
+  global.fetch = originalFetch;
+  vi.restoreAllMocks();
 });
 
 describe("station productivity persistence", () => {
@@ -125,6 +166,8 @@ describe("station productivity persistence", () => {
       .select({ id: supportTaskCompensations.id })
       .from(supportTaskCompensations)
       .where(eq(supportTaskCompensations.userId, engineerId));
+
+    mockGooglePurchaseSheetBatches([`KPI-BATCH-${uniqueSuffix}`]);
 
     await completeStationTask({
       taskId: a1Task[0]?.taskId ?? 0,
@@ -240,6 +283,8 @@ describe("station productivity persistence", () => {
 
     expect(a1Task[0]).toBeTruthy();
 
+    mockGooglePurchaseSheetBatches([`KPI-FALLBACK-BATCH-${uniqueSuffix}`]);
+
     await completeStationTask({
       taskId: a1Task[0]?.taskId ?? 0,
       stationCode: "A1",
@@ -264,6 +309,8 @@ describe("station productivity persistence", () => {
       .limit(1);
 
     expect(a2Task[0]).toBeTruthy();
+
+    mockGooglePurchaseSheetBatches([`KPI-FALLBACK-BATCH-${uniqueSuffix}`]);
 
     await completeStationTask({
       taskId: a2Task[0]?.taskId ?? 0,
@@ -295,6 +342,8 @@ describe("station productivity persistence", () => {
       .limit(1);
 
     expect(bTask[0]).toBeTruthy();
+
+    mockGooglePurchaseSheetBatches([`KPI-FALLBACK-BATCH-${uniqueSuffix}`]);
 
     await completeStationTask({
       taskId: bTask[0]?.taskId ?? 0,
@@ -330,6 +379,209 @@ describe("station productivity persistence", () => {
 
     expect(refreshedProduct?.categoryId).toBe(a1Task[0]?.categoryId ?? null);
     expect(refreshedProduct?.importedBrandName).toBe("Apple");
+  }, 20000);
+
+  it("does not disable KPI details when Google purchase sheet includes the batch with a different zero-padded format", async () => {
+    await ensureMvpSeedData();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const uniqueSuffix = `${Date.now()}-google-guard`;
+    const engineerOpenId = `kpi-google-guard-${uniqueSuffix}`;
+
+    await db.insert(users).values({
+      openId: engineerOpenId,
+      username: `kpi-google-guard-${uniqueSuffix}`,
+      name: "KPI Google Guard",
+      loginMethod: "password",
+      role: "engineer",
+    });
+
+    const engineerRow = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.openId, engineerOpenId))
+      .limit(1);
+
+    const engineerId = engineerRow[0]?.id;
+    expect(engineerId).toBeTruthy();
+    if (!engineerId) {
+      return;
+    }
+
+    createdUserIds.push(engineerId);
+
+    const poNumber = `PO-KPI-GOOGLE-GUARD-${uniqueSuffix}`;
+    createdPoNumbers.add(poNumber);
+    const dbBatchNo = `005${Date.now().toString().slice(-8)}`;
+    const googleBatchNo = String(Number(dbBatchNo));
+
+    await importProducts({
+      poNumber,
+      vendorName: "KPI Google Guard Vendor",
+      rows: [
+        {
+          batchNo: dbBatchNo,
+          serialNumber: `KPI-GOOGLE-GUARD-SN-${uniqueSuffix}`,
+          imei: `96${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+          productName: "Apple iPhone Guard",
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+
+    const seededTask = (await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(eq(products.poNumber, poNumber), eq(stationTasks.stationCode, "A1"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1))[0];
+
+    expect(seededTask).toBeTruthy();
+
+    const businessDateValue = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const insertedEvent = await db.insert(stationEvents).values({
+      productId: seededTask?.productId ?? 0,
+      stationTaskId: seededTask?.taskId ?? null,
+      stationCode: "A1",
+      eventType: "complete",
+      operatorUserId: engineerId,
+      businessDate: businessDateValue,
+      categoryId: seededTask?.categoryId ?? null,
+      subtypeCode: seededTask?.subtypeCode ?? null,
+      countForProductivity: true,
+      payload: { summary: "Google 主表批號準入回歸測試" },
+    }).$returningId();
+
+    mockGooglePurchaseSheetBatches([googleBatchNo]);
+
+    await backfillProductivityFromCompletedEvents(db, { userId: engineerId });
+
+    const detailRows = await db
+      .select({ id: productivityScoreDetails.id })
+      .from(productivityScoreDetails)
+      .where(eq(productivityScoreDetails.stationEventId, insertedEvent[0]?.id ?? 0));
+
+    expect(detailRows).toHaveLength(1);
+
+    const eventRow = (await db
+      .select({ countForProductivity: stationEvents.countForProductivity })
+      .from(stationEvents)
+      .where(eq(stationEvents.id, insertedEvent[0]?.id ?? 0))
+      .limit(1))[0];
+
+    expect(eventRow?.countForProductivity).toBe(true);
+  }, 20000);
+
+  it("does not create productivity detail when Google purchase sheet does not contain the batch", async () => {
+    await ensureMvpSeedData();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const uniqueSuffix = `${Date.now()}-missing-google`;
+    const engineerOpenId = `kpi-missing-google-${uniqueSuffix}`;
+
+    await db.insert(users).values({
+      openId: engineerOpenId,
+      username: `kpi-missing-google-${uniqueSuffix}`,
+      name: "KPI Missing Google",
+      loginMethod: "password",
+      role: "engineer",
+    });
+
+    const engineerRow = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.openId, engineerOpenId))
+      .limit(1);
+
+    const engineerId = engineerRow[0]?.id;
+    expect(engineerId).toBeTruthy();
+    if (!engineerId) {
+      return;
+    }
+
+    createdUserIds.push(engineerId);
+
+    const poNumber = `PO-KPI-MISSING-GOOGLE-${uniqueSuffix}`;
+    createdPoNumbers.add(poNumber);
+    const batchNo = `KPI-MISSING-GOOGLE-BATCH-${uniqueSuffix}`;
+
+    await importProducts({
+      poNumber,
+      vendorName: "KPI Missing Google Vendor",
+      rows: [
+        {
+          batchNo,
+          serialNumber: `KPI-MISSING-GOOGLE-SN-${uniqueSuffix}`,
+          imei: `99${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+          productName: "Apple iPhone Missing",
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+
+    const seededTask = (await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(eq(products.poNumber, poNumber), eq(stationTasks.stationCode, "A1"), eq(stationTasks.taskStatus, "pending")))
+      .limit(1))[0];
+
+    expect(seededTask).toBeTruthy();
+
+    const businessDateValue = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const insertedEvent = await db.insert(stationEvents).values({
+      productId: seededTask?.productId ?? 0,
+      stationTaskId: seededTask?.taskId ?? null,
+      stationCode: "A1",
+      eventType: "complete",
+      operatorUserId: engineerId,
+      businessDate: businessDateValue,
+      categoryId: seededTask?.categoryId ?? null,
+      subtypeCode: seededTask?.subtypeCode ?? null,
+      countForProductivity: true,
+      payload: { summary: "Google 主表缺批號不得寫入 KPI" },
+    }).$returningId();
+
+    mockGooglePurchaseSheetBatches([]);
+
+    await backfillProductivityFromCompletedEvents(db, { userId: engineerId });
+
+    const detailRows = await db
+      .select({ id: productivityScoreDetails.id })
+      .from(productivityScoreDetails)
+      .where(eq(productivityScoreDetails.stationEventId, insertedEvent[0]?.id ?? 0));
+
+    expect(detailRows).toHaveLength(0);
+
+    const eventRow = (await db
+      .select({ countForProductivity: stationEvents.countForProductivity })
+      .from(stationEvents)
+      .where(eq(stationEvents.id, insertedEvent[0]?.id ?? 0))
+      .limit(1))[0];
+
+    expect(eventRow?.countForProductivity).toBe(false);
   }, 20000);
 
   it("does not duplicate productivity details when backfill is executed repeatedly for the same engineer", async () => {
@@ -395,6 +647,8 @@ describe("station productivity persistence", () => {
       .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
       .where(and(eq(products.poNumber, poNumber), eq(stationTasks.stationCode, "A1"), eq(stationTasks.taskStatus, "pending")))
       .limit(1);
+
+    mockGooglePurchaseSheetBatches([`KPI-IDEMPOTENT-BATCH-${uniqueSuffix}`]);
 
     await completeStationTask({
       taskId: a1Task[0]?.taskId ?? 0,

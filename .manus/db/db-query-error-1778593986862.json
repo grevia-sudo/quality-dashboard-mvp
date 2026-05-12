@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.batch_no, se.id AS station_event_id, se.stationCode AS station_code, se.operatorUserId AS operator_user_id, se.businessDate AS business_date, se.countForProductivity AS count_for_productivity, psd.id AS productivity_detail_id, psd.userId AS detail_user_id, psd.businessDate AS detail_business_date, psd.pointsAwarded AS points_awarded\nFROM products p\nLEFT JOIN station_events se ON se.productId = p.id AND se.stationEventType = 'complete'\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE p.batch_no IN ('500025007','500025004','500024968','500025035','500025029')\nORDER BY p.batch_no, se.stationCode, se.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batch_no, se.id AS station_event_id, se.stationCode AS station_code, se.operatorUserId AS operator_user_id, se.businessDate AS business_date, se.countForProductivity AS count_for_productivity, psd.id AS productivity_detail_id, psd.userId AS detail_user_id, psd.businessDate AS detail_business_date, psd.pointsAwarded AS points_awarded\nFROM products p\nLEFT JOIN station_events se ON se.productId = p.id AND se.stationEventType = 'complete'\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE p.batch_no IN ('500025007','500025004','500024968','500025035','500025029')\nORDER BY p.batch_no, se.stationCode, se.id;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'p.batch_no' in 'order clause'"
+  ]
+}
