@@ -1,0 +1,2 @@
+ALTER TABLE `productivity_score_details` ADD CONSTRAINT `productivity_score_details_station_event_unique_idx` UNIQUE(`stationEventId`);--> statement-breakpoint
+CREATE INDEX `productivity_score_details_user_date_idx` ON `productivity_score_details` (`userId`,`businessDate`);

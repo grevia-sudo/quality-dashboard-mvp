@@ -1,0 +1,216 @@
+{
+  "query": "SELECT psd.`userId`, DATE_FORMAT(psd.`businessDate`, '%Y-%m-%d') AS businessDate, psd.`stationEventId`, COUNT(*) AS detailCount, GROUP_CONCAT(psd.`id` ORDER BY psd.`id`) AS detailIds\nFROM `productivity_score_details` psd\nINNER JOIN `users` u ON u.`id` = psd.`userId`\nWHERE COALESCE(u.`name`, u.`username`) = '宥凱' AND psd.`businessDate` = CURRENT_DATE()\nGROUP BY psd.`userId`, psd.`businessDate`, psd.`stationEventId`\nHAVING COUNT(*) > 1\nORDER BY detailCount DESC, psd.`stationEventId` ASC;\n\nSELECT p.`batchNo`, p.`id` AS productId, p.`sheetRowNumber`, p.`lastSheetSyncedAt`, p.`stationCode`, p.`productStatus`\nFROM `products` p\nWHERE p.`batchNo` IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.`batchNo` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT psd.`userId`, DATE_FORMAT(psd.`businessDate`, '%Y-%m-%d') AS businessDate, psd.`stationEventId`, COUNT(*) AS detailCount, GROUP_CONCAT(psd.`id` ORDER BY psd.`id`) AS detailIds\nFROM `productivity_score_details` psd\nINNER JOIN `users` u ON u.`id` = psd.`userId`\nWHERE COALESCE(u.`name`, u.`username`) = '宥凱' AND psd.`businessDate` = CURRENT_DATE()\nGROUP BY psd.`userId`, psd.`businessDate`, psd.`stationEventId`\nHAVING COUNT(*) > 1\nORDER BY detailCount DESC, psd.`stationEventId` ASC;\n\nSELECT p.`batchNo`, p.`id` AS productId, p.`sheetRowNumber`, p.`lastSheetSyncedAt`, p.`stationCode`, p.`productStatus`\nFROM `products` p\nWHERE p.`batchNo` IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.`batchNo` ASC;",
+  "rows": [
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690236",
+      "detailCount": "4",
+      "detailIds": "240096,240097,240098,240104"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690238",
+      "detailCount": "4",
+      "detailIds": "240134,240135,240136,240141"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690292",
+      "detailCount": "4",
+      "detailIds": "240113,240114,240115,240116"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690329",
+      "detailCount": "4",
+      "detailIds": "240089,240090,240091,240092"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690239",
+      "detailCount": "3",
+      "detailIds": "240139,240140,240146"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690240",
+      "detailCount": "3",
+      "detailIds": "240082,240083,240084"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690241",
+      "detailCount": "3",
+      "detailIds": "240072,240073,240074"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690249",
+      "detailCount": "3",
+      "detailIds": "240099,240100,240101"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690253",
+      "detailCount": "3",
+      "detailIds": "240120,240121,240122"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690257",
+      "detailCount": "3",
+      "detailIds": "240131,240132,240133"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690259",
+      "detailCount": "3",
+      "detailIds": "240080,240081,240085"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690261",
+      "detailCount": "3",
+      "detailIds": "240110,240111,240112"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690266",
+      "detailCount": "3",
+      "detailIds": "240128,240129,240130"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690272",
+      "detailCount": "3",
+      "detailIds": "240123,240124,240125"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690318",
+      "detailCount": "3",
+      "detailIds": "240086,240087,240088"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690319",
+      "detailCount": "3",
+      "detailIds": "240093,240094,240095"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690320",
+      "detailCount": "3",
+      "detailIds": "240107,240108,240109"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690333",
+      "detailCount": "3",
+      "detailIds": "240117,240118,240119"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690237",
+      "detailCount": "2",
+      "detailIds": "240126,240127"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690251",
+      "detailCount": "2",
+      "detailIds": "240075,240076"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690252",
+      "detailCount": "2",
+      "detailIds": "240077,240078"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690267",
+      "detailCount": "2",
+      "detailIds": "240137,240138"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690284",
+      "detailCount": "2",
+      "detailIds": "240105,240106"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690286",
+      "detailCount": "2",
+      "detailIds": "240142,240143"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690289",
+      "detailCount": "2",
+      "detailIds": "240144,240145"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690295",
+      "detailCount": "2",
+      "detailIds": "240102,240103"
+    },
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "stationEventId": "690323",
+      "detailCount": "2",
+      "detailIds": "240070,240071"
+    }
+  ],
+  "messages": [
+    "batchNo\tproductId\tsheetRowNumber\tlastSheetSyncedAt\tstationCode\tproductStatus",
+    "00500025209\t660212\tNULL\tNULL\tB\tpending_b",
+    "00500025225\t660213\tNULL\tNULL\tB\tpending_b",
+    "00500025228\t660214\tNULL\tNULL\tB\tpending_b",
+    "00500025229\t660215\tNULL\tNULL\tB\tpending_b",
+    "00500025239\t660235\tNULL\tNULL\tB\tpending_b",
+    "00500025240\t660236\tNULL\tNULL\tB\tpending_b",
+    "00500025241\t660237\tNULL\tNULL\tB\tpending_b",
+    "00500025247\t660238\tNULL\tNULL\tB\tpending_b",
+    "00500025252\t660239\tNULL\tNULL\tB\tpending_b",
+    "00500025253\t660240\tNULL\tNULL\tB\tpending_b",
+    "00500025256\t660241\tNULL\tNULL\tB\tpending_b",
+    "00500025264\t660242\tNULL\tNULL\tB\tpending_b",
+    "00500025266\t660243\tNULL\tNULL\tB\tpending_b",
+    "00500025269\t660244\tNULL\tNULL\tB\tpending_b",
+    "00500025271\t660245\tNULL\tNULL\tB\tpending_b"
+  ],
+  "stdout": "userId\tbusinessDate\tstationEventId\tdetailCount\tdetailIds\n750192\t2026-05-13\t690236\t4\t240096,240097,240098,240104\n750192\t2026-05-13\t690238\t4\t240134,240135,240136,240141\n750192\t2026-05-13\t690292\t4\t240113,240114,240115,240116\n750192\t2026-05-13\t690329\t4\t240089,240090,240091,240092\n750192\t2026-05-13\t690239\t3\t240139,240140,240146\n750192\t2026-05-13\t690240\t3\t240082,240083,240084\n750192\t2026-05-13\t690241\t3\t240072,240073,240074\n750192\t2026-05-13\t690249\t3\t240099,240100,240101\n750192\t2026-05-13\t690253\t3\t240120,240121,240122\n750192\t2026-05-13\t690257\t3\t240131,240132,240133\n750192\t2026-05-13\t690259\t3\t240080,240081,240085\n750192\t2026-05-13\t690261\t3\t240110,240111,240112\n750192\t2026-05-13\t690266\t3\t240128,240129,240130\n750192\t2026-05-13\t690272\t3\t240123,240124,240125\n750192\t2026-05-13\t690318\t3\t240086,240087,240088\n750192\t2026-05-13\t690319\t3\t240093,240094,240095\n750192\t2026-05-13\t690320\t3\t240107,240108,240109\n750192\t2026-05-13\t690333\t3\t240117,240118,240119\n750192\t2026-05-13\t690237\t2\t240126,240127\n750192\t2026-05-13\t690251\t2\t240075,240076\n750192\t2026-05-13\t690252\t2\t240077,240078\n750192\t2026-05-13\t690267\t2\t240137,240138\n750192\t2026-05-13\t690284\t2\t240105,240106\n750192\t2026-05-13\t690286\t2\t240142,240143\n750192\t2026-05-13\t690289\t2\t240144,240145\n750192\t2026-05-13\t690295\t2\t240102,240103\n750192\t2026-05-13\t690323\t2\t240070,240071\nbatchNo\tproductId\tsheetRowNumber\tlastSheetSyncedAt\tstationCode\tproductStatus\n00500025209\t660212\tNULL\tNULL\tB\tpending_b\n00500025225\t660213\tNULL\tNULL\tB\tpending_b\n00500025228\t660214\tNULL\tNULL\tB\tpending_b\n00500025229\t660215\tNULL\tNULL\tB\tpending_b\n00500025239\t660235\tNULL\tNULL\tB\tpending_b\n00500025240\t660236\tNULL\tNULL\tB\tpending_b\n00500025241\t660237\tNULL\tNULL\tB\tpending_b\n00500025247\t660238\tNULL\tNULL\tB\tpending_b\n00500025252\t660239\tNULL\tNULL\tB\tpending_b\n00500025253\t660240\tNULL\tNULL\tB\tpending_b\n00500025256\t660241\tNULL\tNULL\tB\tpending_b\n00500025264\t660242\tNULL\tNULL\tB\tpending_b\n00500025266\t660243\tNULL\tNULL\tB\tpending_b\n00500025269\t660244\tNULL\tNULL\tB\tpending_b\n00500025271\t660245\tNULL\tNULL\tB\tpending_b\n",
+  "stderr": "",
+  "execution_time_ms": 1972
+}

@@ -1,0 +1,10 @@
+{
+  "query": "SELECT id, userId, businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, overAchievementRate, finalKpiScore, createdAt, updatedAt FROM engineer_daily_productivity WHERE userId = 750192 ORDER BY businessDate DESC, updatedAt DESC;\n\nSELECT businessDate, stationCode, COUNT(*) AS detailCount, ROUND(SUM(pointsAwarded), 6) AS detailPoints, SUM(CASE WHEN countForProductivity = 1 THEN 1 ELSE 0 END) AS countedRows FROM productivity_score_details WHERE userId = 750192 GROUP BY businessDate, stationCode ORDER BY businessDate DESC, stationCode;\n\nSELECT COUNT(*) AS totalDetailRows, ROUND(SUM(pointsAwarded), 6) AS totalDetailPoints, SUM(CASE WHEN countForProductivity = 1 THEN 1 ELSE 0 END) AS countedRows FROM productivity_score_details WHERE userId = 750192;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, userId, businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, overAchievementRate, finalKpiScore, createdAt, updatedAt FROM engineer_daily_productivity WHERE userId = 750192 ORDER BY businessDate DESC, updatedAt DESC;\n\nSELECT businessDate, stationCode, COUNT(*) AS detailCount, ROUND(SUM(pointsAwarded), 6) AS detailPoints, SUM(CASE WHEN countForProductivity = 1 THEN 1 ELSE 0 END) AS countedRows FROM productivity_score_details WHERE userId = 750192 GROUP BY businessDate, stationCode ORDER BY businessDate DESC, stationCode;\n\nSELECT COUNT(*) AS totalDetailRows, ROUND(SUM(pointsAwarded), 6) AS totalDetailPoints, SUM(CASE WHEN countForProductivity = 1 THEN 1 ELSE 0 END) AS countedRows FROM productivity_score_details WHERE userId = 750192;",
+  "returncode": 1,
+  "logs": [
+    "id\tuserId\tbusinessDate\ttotalPoints\trawAchievementRate\tkpiAchievementRate\toverAchievementRate\tfinalKpiScore\tcreatedAt\tupdatedAt",
+    "330001\t750192\t2026-05-13\t0.358362\t35.84\t35.84\t0.00\t33.843832\t2026-05-13 06:21:50\t2026-05-13 09:51:37",
+    "ERROR 1054 (42S22) at line 3: Unknown column 'pointsawarded' in 'where clause'"
+  ]
+}

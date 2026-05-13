@@ -1,0 +1,175 @@
+{
+  "query": "SELECT p.batchNo, p.productName, p.categoryId AS productCategoryId, p.importedCategoryName, p.importedBrandName, se.id AS stationEventId, se.countForProductivity, se.categoryId AS eventCategoryId, se.subtypeCode\nFROM products p\nJOIN station_events se ON se.productId = p.id AND se.stationEventType = 'complete' AND se.stationCode = 'A1'\nWHERE p.batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.productName, p.categoryId AS productCategoryId, p.importedCategoryName, p.importedBrandName, se.id AS stationEventId, se.countForProductivity, se.categoryId AS eventCategoryId, se.subtypeCode\nFROM products p\nJOIN station_events se ON se.productId = p.id AND se.stationEventType = 'complete' AND se.stationCode = 'A1'\nWHERE p.batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.batchNo;",
+  "rows": [
+    {
+      "batchNo": "00500025209",
+      "productName": "Apple iPhone X 256GB 銀色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690258",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025225",
+      "productName": "Apple iPhone 12 128GB 白色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690283",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025228",
+      "productName": "Apple iPhone 12 mini 64GB 藍色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690293",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025229",
+      "productName": "Apple iPhone 11 128GB 白色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690294",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025239",
+      "productName": "Apple iPhone 13 128GB 綠色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690330",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025240",
+      "productName": "Apple iPhone 14 Pro 256GB 銀色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690331",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025241",
+      "productName": "Apple iPhone 12 128GB 綠色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690332",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025247",
+      "productName": "Apple iPhone 11 Pro 256GB 夜幕綠色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690343",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025252",
+      "productName": "Apple iPhone 14 Pro Max 256GB 深紫色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690353",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025253",
+      "productName": "Apple iPhone 12 Pro 256GB 太平洋藍色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690354",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025256",
+      "productName": "Apple iPhone 14 Pro Max 128GB 深紫色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690364",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025264",
+      "productName": "Apple iPhone 12 128GB 紫色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690377",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025266",
+      "productName": "Apple iPhone 16 128GB 粉紅色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690389",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025269",
+      "productName": "Apple iPhone 15 256GB 藍色",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690393",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    },
+    {
+      "batchNo": "00500025271",
+      "productName": "Apple iPhone 15 Pro Max 256GB 藍色鈦金屬",
+      "productCategoryId": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "stationEventId": "690405",
+      "countForProductivity": "1",
+      "eventCategoryId": "NULL",
+      "subtypeCode": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tproductName\tproductCategoryId\timportedCategoryName\timportedBrandName\tstationEventId\tcountForProductivity\teventCategoryId\tsubtypeCode\n00500025209\tApple iPhone X 256GB 銀色\tNULL\tNULL\tNULL\t690258\t1\tNULL\tNULL\n00500025225\tApple iPhone 12 128GB 白色\tNULL\tNULL\tNULL\t690283\t1\tNULL\tNULL\n00500025228\tApple iPhone 12 mini 64GB 藍色\tNULL\tNULL\tNULL\t690293\t1\tNULL\tNULL\n00500025229\tApple iPhone 11 128GB 白色\tNULL\tNULL\tNULL\t690294\t1\tNULL\tNULL\n00500025239\tApple iPhone 13 128GB 綠色\tNULL\tNULL\tNULL\t690330\t1\tNULL\tNULL\n00500025240\tApple iPhone 14 Pro 256GB 銀色\tNULL\tNULL\tNULL\t690331\t1\tNULL\tNULL\n00500025241\tApple iPhone 12 128GB 綠色\tNULL\tNULL\tNULL\t690332\t1\tNULL\tNULL\n00500025247\tApple iPhone 11 Pro 256GB 夜幕綠色\tNULL\tNULL\tNULL\t690343\t1\tNULL\tNULL\n00500025252\tApple iPhone 14 Pro Max 256GB 深紫色\tNULL\tNULL\tNULL\t690353\t1\tNULL\tNULL\n00500025253\tApple iPhone 12 Pro 256GB 太平洋藍色\tNULL\tNULL\tNULL\t690354\t1\tNULL\tNULL\n00500025256\tApple iPhone 14 Pro Max 128GB 深紫色\tNULL\tNULL\tNULL\t690364\t1\tNULL\tNULL\n00500025264\tApple iPhone 12 128GB 紫色\tNULL\tNULL\tNULL\t690377\t1\tNULL\tNULL\n00500025266\tApple iPhone 16 128GB 粉紅色\tNULL\tNULL\tNULL\t690389\t1\tNULL\tNULL\n00500025269\tApple iPhone 15 256GB 藍色\tNULL\tNULL\tNULL\t690393\t1\tNULL\tNULL\n00500025271\tApple iPhone 15 Pro Max 256GB 藍色鈦金屬\tNULL\tNULL\tNULL\t690405\t1\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1828
+}

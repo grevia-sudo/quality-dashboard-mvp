@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, name, username FROM users WHERE name = '宥凱' OR username = '宥凱' LIMIT 5;\nSELECT psd.userId, psd.businessDate, COUNT(*) AS rowCount, COUNT(DISTINCT psd.stationEventId) AS distinctEventCount, COUNT(*) - COUNT(DISTINCT psd.stationEventId) AS duplicateCount\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE (u.name = '宥凱' OR u.username = '宥凱')\n  AND psd.businessDate = CURRENT_DATE()\nGROUP BY psd.userId, psd.businessDate;\nSELECT p.batchNo, p.id AS productId, p.sheetRowNumber, p.lastSheetSyncedAt, p.poNumber, p.vendorName, p.importedCategoryName\nFROM products p\nWHERE p.batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025253','00500025252','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, name, username FROM users WHERE name = '宥凱' OR username = '宥凱' LIMIT 5;\nSELECT psd.userId, psd.businessDate, COUNT(*) AS rowCount, COUNT(DISTINCT psd.stationEventId) AS distinctEventCount, COUNT(*) - COUNT(DISTINCT psd.stationEventId) AS duplicateCount\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE (u.name = '宥凱' OR u.username = '宥凱')\n  AND psd.businessDate = CURRENT_DATE()\nGROUP BY psd.userId, psd.businessDate;\nSELECT p.batchNo, p.id AS productId, p.sheetRowNumber, p.lastSheetSyncedAt, p.poNumber, p.vendorName, p.importedCategoryName\nFROM products p\nWHERE p.batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025253','00500025252','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.batchNo;",
+  "rows": [
+    {
+      "id": "750192",
+      "name": "宥凱",
+      "username": "Youkai"
+    }
+  ],
+  "messages": [
+    "userId\tbusinessDate\trowCount\tdistinctEventCount\tduplicateCount",
+    "750192\t2026-05-13\t129\t80\t49",
+    "batchNo\tproductId\tsheetRowNumber\tlastSheetSyncedAt\tpoNumber\tvendorName\timportedCategoryName",
+    "00500025209\t660212\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025225\t660213\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025228\t660214\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025229\t660215\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025239\t660235\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025240\t660236\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025241\t660237\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025247\t660238\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025252\t660239\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025253\t660240\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025256\t660241\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025264\t660242\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025266\t660243\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025269\t660244\tNULL\tNULL\tNULL\tNULL\tNULL",
+    "00500025271\t660245\tNULL\tNULL\tNULL\tNULL\tNULL"
+  ],
+  "stdout": "id\tname\tusername\n750192\t宥凱\tYoukai\nuserId\tbusinessDate\trowCount\tdistinctEventCount\tduplicateCount\n750192\t2026-05-13\t129\t80\t49\nbatchNo\tproductId\tsheetRowNumber\tlastSheetSyncedAt\tpoNumber\tvendorName\timportedCategoryName\n00500025209\t660212\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025225\t660213\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025228\t660214\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025229\t660215\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025239\t660235\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025240\t660236\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025241\t660237\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025247\t660238\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025252\t660239\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025253\t660240\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025256\t660241\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025264\t660242\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025266\t660243\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025269\t660244\tNULL\tNULL\tNULL\tNULL\tNULL\n00500025271\t660245\tNULL\tNULL\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 2287
+}

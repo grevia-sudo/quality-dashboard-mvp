@@ -1,0 +1,442 @@
+{
+  "query": "SELECT `id`, `stationCode`, `categoryId`, `subtypeCode`, `baseUnitPoints`, `dailyTargetQty`, `active`\nFROM `productivity_target_configs`\nWHERE `stationCode` IN ('A1','A2') AND `active` = 1\nORDER BY `stationCode` ASC, `categoryId` ASC, `subtypeCode` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `stationCode`, `categoryId`, `subtypeCode`, `baseUnitPoints`, `dailyTargetQty`, `active`\nFROM `productivity_target_configs`\nWHERE `stationCode` IN ('A1','A2') AND `active` = 1\nORDER BY `stationCode` ASC, `categoryId` ASC, `subtypeCode` ASC;",
+  "rows": [
+    {
+      "id": "20",
+      "stationCode": "A1",
+      "categoryId": "7",
+      "subtypeCode": "Acer",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "22",
+      "stationCode": "A1",
+      "categoryId": "8",
+      "subtypeCode": "Acer",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "1",
+      "stationCode": "A1",
+      "categoryId": "9",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "30",
+      "stationCode": "A1",
+      "categoryId": "10",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.002500",
+      "dailyTargetQty": "400",
+      "active": "1"
+    },
+    {
+      "id": "19",
+      "stationCode": "A1",
+      "categoryId": "11",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "13",
+      "stationCode": "A1",
+      "categoryId": "12",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "8",
+      "stationCode": "A1",
+      "categoryId": "13",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "12",
+      "stationCode": "A1",
+      "categoryId": "14",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "62",
+      "stationCode": "A1",
+      "categoryId": "15",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "23",
+      "stationCode": "A1",
+      "categoryId": "16",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "31",
+      "stationCode": "A1",
+      "categoryId": "18",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.002500",
+      "dailyTargetQty": "400",
+      "active": "1"
+    },
+    {
+      "id": "9",
+      "stationCode": "A1",
+      "categoryId": "19",
+      "subtypeCode": "ASUS",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "24",
+      "stationCode": "A1",
+      "categoryId": "20",
+      "subtypeCode": "DELL",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "21",
+      "stationCode": "A1",
+      "categoryId": "21",
+      "subtypeCode": "Gigabyte",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "29",
+      "stationCode": "A1",
+      "categoryId": "22",
+      "subtypeCode": "GOLIFE",
+      "baseUnitPoints": "0.002500",
+      "dailyTargetQty": "400",
+      "active": "1"
+    },
+    {
+      "id": "63",
+      "stationCode": "A1",
+      "categoryId": "23",
+      "subtypeCode": "Google",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "26",
+      "stationCode": "A1",
+      "categoryId": "24",
+      "subtypeCode": "HP",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "25",
+      "stationCode": "A1",
+      "categoryId": "25",
+      "subtypeCode": "Lenovo",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "17",
+      "stationCode": "A1",
+      "categoryId": "26",
+      "subtypeCode": "Motorola",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "11",
+      "stationCode": "A1",
+      "categoryId": "27",
+      "subtypeCode": "MSI",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "15",
+      "stationCode": "A1",
+      "categoryId": "28",
+      "subtypeCode": "MSI",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "27",
+      "stationCode": "A1",
+      "categoryId": "29",
+      "subtypeCode": "MSI",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "5",
+      "stationCode": "A1",
+      "categoryId": "30",
+      "subtypeCode": "OPPO",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "36",
+      "stationCode": "A1",
+      "categoryId": "31",
+      "subtypeCode": "PAPAGO",
+      "baseUnitPoints": "0.002500",
+      "dailyTargetQty": "400",
+      "active": "1"
+    },
+    {
+      "id": "10",
+      "stationCode": "A1",
+      "categoryId": "32",
+      "subtypeCode": "POCO",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "7",
+      "stationCode": "A1",
+      "categoryId": "33",
+      "subtypeCode": "Redmi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "14",
+      "stationCode": "A1",
+      "categoryId": "34",
+      "subtypeCode": "Redmi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "18",
+      "stationCode": "A1",
+      "categoryId": "35",
+      "subtypeCode": "Samsung",
+      "baseUnitPoints": "0.005000",
+      "dailyTargetQty": "200",
+      "active": "1"
+    },
+    {
+      "id": "3",
+      "stationCode": "A1",
+      "categoryId": "36",
+      "subtypeCode": "Samsung",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "2",
+      "stationCode": "A1",
+      "categoryId": "37",
+      "subtypeCode": "SONY",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "28",
+      "stationCode": "A1",
+      "categoryId": "38",
+      "subtypeCode": "TOSHIBA",
+      "baseUnitPoints": "0.004000",
+      "dailyTargetQty": "250",
+      "active": "1"
+    },
+    {
+      "id": "4",
+      "stationCode": "A1",
+      "categoryId": "39",
+      "subtypeCode": "vivo",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "16",
+      "stationCode": "A1",
+      "categoryId": "40",
+      "subtypeCode": "Xiaomi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "6",
+      "stationCode": "A1",
+      "categoryId": "41",
+      "subtypeCode": "Xiaomi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "34",
+      "stationCode": "A2",
+      "categoryId": "9",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "32",
+      "stationCode": "A2",
+      "categoryId": "15",
+      "subtypeCode": "Apple",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "37",
+      "stationCode": "A2",
+      "categoryId": "19",
+      "subtypeCode": "ASUS",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "38",
+      "stationCode": "A2",
+      "categoryId": "23",
+      "subtypeCode": "Google",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "39",
+      "stationCode": "A2",
+      "categoryId": "26",
+      "subtypeCode": "Motorola",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "41",
+      "stationCode": "A2",
+      "categoryId": "30",
+      "subtypeCode": "OPPO",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "40",
+      "stationCode": "A2",
+      "categoryId": "32",
+      "subtypeCode": "POCO",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "35",
+      "stationCode": "A2",
+      "categoryId": "33",
+      "subtypeCode": "Redmi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "42",
+      "stationCode": "A2",
+      "categoryId": "34",
+      "subtypeCode": "Redmi",
+      "baseUnitPoints": "0.002786",
+      "dailyTargetQty": "359",
+      "active": "1"
+    },
+    {
+      "id": "43",
+      "stationCode": "A2",
+      "categoryId": "36",
+      "subtypeCode": "Samsung",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "44",
+      "stationCode": "A2",
+      "categoryId": "37",
+      "subtypeCode": "SONY",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "45",
+      "stationCode": "A2",
+      "categoryId": "39",
+      "subtypeCode": "vivo",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "33",
+      "stationCode": "A2",
+      "categoryId": "40",
+      "subtypeCode": "Xiaomi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    },
+    {
+      "id": "49",
+      "stationCode": "A2",
+      "categoryId": "41",
+      "subtypeCode": "Xiaomi",
+      "baseUnitPoints": "0.002778",
+      "dailyTargetQty": "360",
+      "active": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstationCode\tcategoryId\tsubtypeCode\tbaseUnitPoints\tdailyTargetQty\tactive\n20\tA1\t7\tAcer\t0.005000\t200\t1\n22\tA1\t8\tAcer\t0.004000\t250\t1\n1\tA1\t9\tApple\t0.002778\t360\t1\n30\tA1\t10\tApple\t0.002500\t400\t1\n19\tA1\t11\tApple\t0.005000\t200\t1\n13\tA1\t12\tApple\t0.005000\t200\t1\n8\tA1\t13\tApple\t0.005000\t200\t1\n12\tA1\t14\tApple\t0.005000\t200\t1\n62\tA1\t15\tApple\t0.002778\t360\t1\n23\tA1\t16\tApple\t0.004000\t250\t1\n31\tA1\t18\tApple\t0.002500\t400\t1\n9\tA1\t19\tASUS\t0.002778\t360\t1\n24\tA1\t20\tDELL\t0.004000\t250\t1\n21\tA1\t21\tGigabyte\t0.005000\t200\t1\n29\tA1\t22\tGOLIFE\t0.002500\t400\t1\n63\tA1\t23\tGoogle\t0.002778\t360\t1\n26\tA1\t24\tHP\t0.004000\t250\t1\n25\tA1\t25\tLenovo\t0.004000\t250\t1\n17\tA1\t26\tMotorola\t0.002778\t360\t1\n11\tA1\t27\tMSI\t0.005000\t200\t1\n15\tA1\t28\tMSI\t0.005000\t200\t1\n27\tA1\t29\tMSI\t0.004000\t250\t1\n5\tA1\t30\tOPPO\t0.002778\t360\t1\n36\tA1\t31\tPAPAGO\t0.002500\t400\t1\n10\tA1\t32\tPOCO\t0.002778\t360\t1\n7\tA1\t33\tRedmi\t0.002778\t360\t1\n14\tA1\t34\tRedmi\t0.002778\t360\t1\n18\tA1\t35\tSamsung\t0.005000\t200\t1\n3\tA1\t36\tSamsung\t0.002778\t360\t1\n2\tA1\t37\tSONY\t0.002778\t360\t1\n28\tA1\t38\tTOSHIBA\t0.004000\t250\t1\n4\tA1\t39\tvivo\t0.002778\t360\t1\n16\tA1\t40\tXiaomi\t0.002778\t360\t1\n6\tA1\t41\tXiaomi\t0.002778\t360\t1\n34\tA2\t9\tApple\t0.002778\t360\t1\n32\tA2\t15\tApple\t0.002778\t360\t1\n37\tA2\t19\tASUS\t0.002778\t360\t1\n38\tA2\t23\tGoogle\t0.002778\t360\t1\n39\tA2\t26\tMotorola\t0.002778\t360\t1\n41\tA2\t30\tOPPO\t0.002778\t360\t1\n40\tA2\t32\tPOCO\t0.002778\t360\t1\n35\tA2\t33\tRedmi\t0.002778\t360\t1\n42\tA2\t34\tRedmi\t0.002786\t359\t1\n43\tA2\t36\tSamsung\t0.002778\t360\t1\n44\tA2\t37\tSONY\t0.002778\t360\t1\n45\tA2\t39\tvivo\t0.002778\t360\t1\n33\tA2\t40\tXiaomi\t0.002778\t360\t1\n49\tA2\t41\tXiaomi\t0.002778\t360\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1748
+}

@@ -1,0 +1,21 @@
+{
+  "query": "SELECT id, name, email, role FROM users WHERE name LIKE '%宥凱%' OR email LIKE '%youkai%' OR email LIKE '%yukai%';\nSELECT COUNT(*) AS dailyKpiRows FROM engineer_daily_productivity;\nSELECT COUNT(*) AS productCount FROM products;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, name, email, role FROM users WHERE name LIKE '%宥凱%' OR email LIKE '%youkai%' OR email LIKE '%yukai%';\nSELECT COUNT(*) AS dailyKpiRows FROM engineer_daily_productivity;\nSELECT COUNT(*) AS productCount FROM products;",
+  "rows": [
+    {
+      "id": "750192",
+      "name": "宥凱",
+      "email": "NULL",
+      "role": "engineer"
+    }
+  ],
+  "messages": [
+    "dailyKpiRows",
+    "6",
+    "productCount",
+    "323"
+  ],
+  "stdout": "id\tname\temail\trole\n750192\t宥凱\tNULL\tengineer\ndailyKpiRows\n6\nproductCount\n323\n",
+  "stderr": "",
+  "execution_time_ms": 2133
+}

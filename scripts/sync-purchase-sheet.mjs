@@ -468,8 +468,6 @@ export async function runPurchaseSheetSync() {
         WHERE p.archivedAt IS NULL
 
 
-          AND p.vendorName IS NOT NULL
-          AND (p.importedCategoryName IS NOT NULL OR c.categoryName IS NOT NULL)
           AND (p.batchNo IS NOT NULL OR p.serialNumber IS NOT NULL OR p.imei IS NOT NULL)
           AND (
             ${syncScopeCondition}

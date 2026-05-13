@@ -1,0 +1,19 @@
+{
+  "query": "SELECT DATE(createdAt) AS createdDate, COUNT(*) AS totalProducts, SUM(CASE WHEN sheetRowNumber IS NOT NULL THEN 1 ELSE 0 END) AS syncedRows, SUM(CASE WHEN sheetRowNumber IS NULL THEN 1 ELSE 0 END) AS unsyncedRows FROM products GROUP BY DATE(createdAt) ORDER BY createdDate DESC LIMIT 7;\n\nSELECT COUNT(*) AS targetBatchCount, SUM(CASE WHEN sheetRowNumber IS NOT NULL THEN 1 ELSE 0 END) AS targetSyncedCount, SUM(CASE WHEN sheetRowNumber IS NULL THEN 1 ELSE 0 END) AS targetUnsyncedCount FROM products WHERE batchNo REGEXP '^005000252';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT DATE(createdAt) AS createdDate, COUNT(*) AS totalProducts, SUM(CASE WHEN sheetRowNumber IS NOT NULL THEN 1 ELSE 0 END) AS syncedRows, SUM(CASE WHEN sheetRowNumber IS NULL THEN 1 ELSE 0 END) AS unsyncedRows FROM products GROUP BY DATE(createdAt) ORDER BY createdDate DESC LIMIT 7;\n\nSELECT COUNT(*) AS targetBatchCount, SUM(CASE WHEN sheetRowNumber IS NOT NULL THEN 1 ELSE 0 END) AS targetSyncedCount, SUM(CASE WHEN sheetRowNumber IS NULL THEN 1 ELSE 0 END) AS targetUnsyncedCount FROM products WHERE batchNo REGEXP '^005000252';",
+  "rows": [
+    {
+      "createdDate": "2026-05-13",
+      "totalProducts": "323",
+      "syncedRows": "308",
+      "unsyncedRows": "15"
+    }
+  ],
+  "messages": [
+    "targetBatchCount\ttargetSyncedCount\ttargetUnsyncedCount",
+    "79\t64\t15"
+  ],
+  "stdout": "createdDate\ttotalProducts\tsyncedRows\tunsyncedRows\n2026-05-13\t323\t308\t15\ntargetBatchCount\ttargetSyncedCount\ttargetUnsyncedCount\n79\t64\t15\n",
+  "stderr": "",
+  "execution_time_ms": 2010
+}

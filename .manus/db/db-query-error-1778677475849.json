@@ -1,0 +1,19 @@
+{
+  "query": "SELECT id, name, email, role FROM users WHERE name LIKE '%宥凱%' OR email LIKE '%youkai%' OR email LIKE '%yukai%';\n\nSELECT id, userId, businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, overAchievementRate, finalKpiScore, createdAt, updatedAt FROM engineer_daily_productivity ORDER BY businessDate DESC, updatedAt DESC LIMIT 50;\n\nSELECT COUNT(*) AS productCount FROM products;\n\nSELECT id, batchNo, serialNumber, imei, currentStationCode, currentStatus, deletedAt, createdAt, updatedAt FROM products WHERE batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271') ORDER BY batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, name, email, role FROM users WHERE name LIKE '%宥凱%' OR email LIKE '%youkai%' OR email LIKE '%yukai%';\n\nSELECT id, userId, businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, overAchievementRate, finalKpiScore, createdAt, updatedAt FROM engineer_daily_productivity ORDER BY businessDate DESC, updatedAt DESC LIMIT 50;\n\nSELECT COUNT(*) AS productCount FROM products;\n\nSELECT id, batchNo, serialNumber, imei, currentStationCode, currentStatus, deletedAt, createdAt, updatedAt FROM products WHERE batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271') ORDER BY batchNo;",
+  "returncode": 1,
+  "logs": [
+    "id\tname\temail\trole",
+    "750192\t宥凱\tNULL\tengineer",
+    "id\tuserId\tbusinessDate\ttotalPoints\trawAchievementRate\tkpiAchievementRate\toverAchievementRate\tfinalKpiScore\tcreatedAt\tupdatedAt",
+    "330001\t750192\t2026-05-13\t0.358362\t35.84\t35.84\t0.00\t33.843832\t2026-05-13 06:21:50\t2026-05-13 09:51:37",
+    "330005\t750212\t2026-05-13\t0.031250\t3.13\t3.13\t0.00\t0.106778\t2026-05-13 09:32:20\t2026-05-13 09:49:17",
+    "330003\t2042728\t2026-05-13\t0.037500\t3.75\t3.75\t0.00\t0.862037\t2026-05-13 09:20:37\t2026-05-13 09:49:14",
+    "330004\t750206\t2026-05-13\t0.050000\t5.00\t5.00\t0.00\t1.826944\t2026-05-13 09:22:43\t2026-05-13 09:48:16",
+    "330006\t750139\t2026-05-13\t0.031250\t3.13\t3.13\t0.00\t2.212667\t2026-05-13 09:33:48\t2026-05-13 09:46:51",
+    "330002\t750136\t2026-05-13\t0.219462\t21.95\t21.95\t0.00\t21.613579\t2026-05-13 06:22:02\t2026-05-13 09:45:55",
+    "productCount",
+    "323",
+    "ERROR 1054 (42S22) at line 7: Unknown column 'currentstationcode' in 'field list'"
+  ]
+}

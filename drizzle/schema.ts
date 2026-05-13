@@ -236,7 +236,10 @@ export const productivityScoreDetails = mysqlTable("productivity_score_details",
   qualityFactor: decimal("qualityFactor", { precision: 8, scale: 4 }).default("1.0000").notNull(),
   earnedPoints: decimal("earnedPoints", { precision: 12, scale: 6 }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => ({
+  stationEventUniqueIdx: uniqueIndex("productivity_score_details_station_event_unique_idx").on(table.stationEventId),
+  userDateIdx: index("productivity_score_details_user_date_idx").on(table.userId, table.businessDate),
+}));
 
 export const engineerDailyProductivity = mysqlTable("engineer_daily_productivity", {
   id: int("id").autoincrement().primaryKey(),

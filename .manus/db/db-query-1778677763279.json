@@ -1,0 +1,74 @@
+{
+  "query": "SHOW COLUMNS FROM sheet_sync_jobs;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SHOW COLUMNS FROM sheet_sync_jobs;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "jobType",
+      "Type": "varchar(80)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "targetSheetName",
+      "Type": "varchar(160)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "syncJobStatus",
+      "Type": "enum('queued','processing','success','failed')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "queued",
+      "Extra": ""
+    },
+    {
+      "Field": "queuedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "startedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "finishedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "errorMessage",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\njobType\tvarchar(80)\tNO\t\tNULL\t\ntargetSheetName\tvarchar(160)\tNO\t\tNULL\t\nsyncJobStatus\tenum('queued','processing','success','failed')\tNO\t\tqueued\t\nqueuedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nstartedAt\ttimestamp\tYES\t\tNULL\t\nfinishedAt\ttimestamp\tYES\t\tNULL\t\nerrorMessage\ttext\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 1789
+}

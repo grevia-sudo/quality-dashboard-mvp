@@ -205,7 +205,7 @@ export async function syncEngineerDailyProductivityRecord(
     ? matchedTasks.reduce((sum, task) => sum + (task.updatedAt.getTime() - task.createdAt.getTime()) / 36e5, 0) / matchedTasks.length
     : 0;
   const attendanceFairnessFactor = attendanceDays > 0 ? 1 : 0;
-  const finalKpiScore = Math.max(0, kpiAchievementRate - avgProcessHours);
+  const finalKpiScore = rawAchievementRate;
 
   const payload = {
     attendanceFlag: dailyDetails.length > 0 || dailySupportRows.length > 0,
@@ -323,6 +323,7 @@ export async function backfillProductivityFromCompletedEvents(
       businessDate: stationEvents.businessDate,
       categoryId: stationEvents.categoryId,
       subtypeCode: stationEvents.subtypeCode,
+      countForProductivity: stationEvents.countForProductivity,
       isRework: stationEvents.isRework,
       productCategoryId: products.categoryId,
       importedCategoryName: products.importedCategoryName,
@@ -335,7 +336,6 @@ export async function backfillProductivityFromCompletedEvents(
     .leftJoin(products, eq(products.id, stationEvents.productId))
     .where(and(
       eq(stationEvents.eventType, "complete"),
-      eq(stationEvents.countForProductivity, true),
       inArray(stationEvents.stationCode, PRODUCTIVITY_TRACKED_STATION_CODES as unknown as StationCode[]),
       isNull(productivityScoreDetails.id),
       input?.userId ? eq(stationEvents.operatorUserId, input.userId) : undefined,
@@ -359,6 +359,15 @@ export async function backfillProductivityFromCompletedEvents(
         })
         .where(eq(stationEvents.id, event.stationEventId));
       continue;
+    }
+
+    if (!event.countForProductivity) {
+      await db
+        .update(stationEvents)
+        .set({
+          countForProductivity: true,
+        })
+        .where(eq(stationEvents.id, event.stationEventId));
     }
 
     const resolvedCategoryContext = await resolveProductCategoryContext(db, {
@@ -429,6 +438,21 @@ export async function backfillProductivityFromCompletedEvents(
       reworkFactor: reworkFactor.toFixed(4),
       qualityFactor: qualityFactor.toFixed(4),
       earnedPoints: earnedPoints.toFixed(6),
+    }).onDuplicateKeyUpdate({
+      set: {
+        businessDate: event.businessDate,
+        userId: event.operatorUserId,
+        productId: event.productId,
+        stationCode: event.stationCode,
+        categoryId: resolvedCategoryId,
+        subtypeCode: resolvedSubtypeCode,
+        targetConfigId: targetConfig.id,
+        completedQty: 1,
+        baseUnitPoints: targetConfig.baseUnitPoints,
+        reworkFactor: reworkFactor.toFixed(4),
+        qualityFactor: qualityFactor.toFixed(4),
+        earnedPoints: earnedPoints.toFixed(6),
+      },
     });
 
     affectedUserDateKeys.set(`${event.operatorUserId}-${toDateKey(event.businessDate)}`, {
@@ -4274,6 +4298,21 @@ export async function completeStationTask(input: {
         reworkFactor: "1.0000",
         qualityFactor: "1.0000",
         earnedPoints: Number(targetConfig.baseUnitPoints).toFixed(6),
+      }).onDuplicateKeyUpdate({
+        set: {
+          businessDate: businessDateValue,
+          userId: input.operatorUserId,
+          productId: input.productId,
+          stationCode: input.stationCode,
+          categoryId: effectiveCategoryId,
+          subtypeCode: effectiveSubtypeCode,
+          targetConfigId: targetConfig.id,
+          completedQty: 1,
+          baseUnitPoints: targetConfig.baseUnitPoints,
+          reworkFactor: "1.0000",
+          qualityFactor: "1.0000",
+          earnedPoints: Number(targetConfig.baseUnitPoints).toFixed(6),
+        },
       });
 
       await syncEngineerDailyProductivityRecord(db, {
@@ -4853,12 +4892,13 @@ export async function getEngineerKpiSummary(userId: number) {
       kpiAchievementRate,
       overAchievementRate,
       dimensions: {
-        productivity: {
-          score: Math.min(kpiAchievementRate, 100),
-          totalPoints,
-          displayPoints: toDisplayPoints(totalPoints),
-          supportDisplayPoints: toDisplayPoints(todaySupportPoints),
-        },
+          productivity: {
+            score: rawAchievementRate,
+            totalPoints,
+            displayPoints: toDisplayPoints(totalPoints),
+            supportDisplayPoints: toDisplayPoints(todaySupportPoints),
+          },
+
         quality: {
           score: qualityScore,
           defectRate,
@@ -5251,26 +5291,26 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
       const todayDetailPoints = detailRows
         .filter((row) => toDateKey(row.businessDate) === range.todayKey)
         .reduce((sum, row) => sum + Number(row.earnedPoints ?? 0), 0);
+      const todayRowTotalPoints = Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
       const todayProductivityPoints = todayDetailPoints > 0
         ? todayDetailPoints
-        : Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
+        : Math.max(0, todayRowTotalPoints - todaySupport.supportPoints);
       const todayPoints = todayProductivityPoints + todaySupport.supportPoints;
       const rangeSupportEntries = Array.from(supportByUserDate.entries()).filter(([key]) => key.startsWith(`${user.id}-`));
       const rangeSupportPoints = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportPoints, 0);
       const rangeSupportHours = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportHours, 0);
-      const rangeProductivityPoints = rows.reduce((sum, row) => sum + Number(row.totalPoints), 0);
+      const rangeProductivityPoints = rows.reduce((sum, row) => {
+        const dateKey = toDateKey(row.businessDate);
+        const supportPointsForDate = supportByUserDate.get(`${user.id}-${dateKey}`)?.supportPoints ?? 0;
+        return sum + Math.max(0, Number(row.totalPoints ?? 0) - supportPointsForDate);
+      }, 0);
       const rangeTotalPoints = rangeProductivityPoints + rangeSupportPoints;
       const attendanceDays = attendanceDateSet.size;
       const monthAvgPoints = attendanceDays > 0 ? rangeTotalPoints / attendanceDays : 0;
       const avgKpiAchievementRate = attendanceDays > 0 ? Math.min(toDisplayPoints(monthAvgPoints), 100) : 0;
       const rawAchievementRate = toDisplayPoints(todayPoints);
       const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
-      const latestEffectiveDailyRow = [...rows]
-        .reverse()
-        .find((row) => Boolean(row.attendanceFlag) || Number(row.totalPoints ?? 0) > 0 || Number(row.finalKpiScore ?? 0) > 0);
-      const finalKpiScore = latestEffectiveDailyRow
-        ? Number(latestEffectiveDailyRow.finalKpiScore ?? 0)
-        : Math.min(rawAchievementRate, 100);
+      const finalKpiScore = rawAchievementRate;
       const stationBreakdownMap = new Map<string, { stationCode: string; completedQty: number; totalPoints: number; totalDisplayPoints: number; supportHours: number }>();
 
       detailRows.forEach((row) => {

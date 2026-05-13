@@ -1,0 +1,18 @@
+{
+  "query": "SELECT businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, avgProcessHours, finalKpiScore FROM engineer_daily_productivity WHERE userId = 750192 ORDER BY businessDate DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, avgProcessHours, finalKpiScore FROM engineer_daily_productivity WHERE userId = 750192 ORDER BY businessDate DESC LIMIT 5;",
+  "rows": [
+    {
+      "businessDate": "2026-05-13",
+      "totalPoints": "0.358362",
+      "rawAchievementRate": "35.84",
+      "kpiAchievementRate": "35.84",
+      "avgProcessHours": "1.99",
+      "finalKpiScore": "33.843832"
+    }
+  ],
+  "messages": [],
+  "stdout": "businessDate\ttotalPoints\trawAchievementRate\tkpiAchievementRate\tavgProcessHours\tfinalKpiScore\n2026-05-13\t0.358362\t35.84\t35.84\t1.99\t33.843832\n",
+  "stderr": "",
+  "execution_time_ms": 1783
+}

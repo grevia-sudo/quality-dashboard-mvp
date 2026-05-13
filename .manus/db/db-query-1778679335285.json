@@ -1,0 +1,424 @@
+{
+  "query": "SELECT p.`id`, p.`batchNo`, p.`poNumber`, p.`vendorName`, p.`importedCategoryName`, p.`categoryId`, p.`createdAt`\nFROM `products` p\nWHERE p.`id` BETWEEN 660200 AND 660255\nORDER BY p.`id` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.`id`, p.`batchNo`, p.`poNumber`, p.`vendorName`, p.`importedCategoryName`, p.`categoryId`, p.`createdAt`\nFROM `products` p\nWHERE p.`id` BETWEEN 660200 AND 660255\nORDER BY p.`id` ASC;",
+  "rows": [
+    {
+      "id": "660200",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660201",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660202",
+      "batchNo": "00500025194",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660203",
+      "batchNo": "00500025260",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660204",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660205",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "36",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660206",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660207",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660208",
+      "batchNo": "00500025188",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660209",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660210",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660211",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-02",
+      "vendorName": "點子",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "15",
+      "createdAt": "2026-05-13 05:15:33"
+    },
+    {
+      "id": "660212",
+      "batchNo": "00500025209",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 06:52:27"
+    },
+    {
+      "id": "660213",
+      "batchNo": "00500025225",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 07:24:09"
+    },
+    {
+      "id": "660214",
+      "batchNo": "00500025228",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 07:27:22"
+    },
+    {
+      "id": "660215",
+      "batchNo": "00500025229",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 07:27:31"
+    },
+    {
+      "id": "660216",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660217",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660218",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660219",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660220",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660221",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660222",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660223",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660224",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660225",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660226",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660227",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660228",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660229",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660230",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660231",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660232",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660233",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660234",
+      "batchNo": "NULL",
+      "poNumber": "PO-20260513-03",
+      "vendorName": "Vivo",
+      "importedCategoryName": "智慧型手機",
+      "categoryId": "39",
+      "createdAt": "2026-05-13 07:31:29"
+    },
+    {
+      "id": "660235",
+      "batchNo": "00500025239",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 07:39:04"
+    },
+    {
+      "id": "660236",
+      "batchNo": "00500025240",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 07:39:14"
+    },
+    {
+      "id": "660237",
+      "batchNo": "00500025241",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 07:39:22"
+    },
+    {
+      "id": "660238",
+      "batchNo": "00500025247",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 08:19:29"
+    },
+    {
+      "id": "660239",
+      "batchNo": "00500025252",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 08:35:37"
+    },
+    {
+      "id": "660240",
+      "batchNo": "00500025253",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 08:36:48"
+    },
+    {
+      "id": "660241",
+      "batchNo": "00500025256",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 08:44:01"
+    },
+    {
+      "id": "660242",
+      "batchNo": "00500025264",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 08:49:32"
+    },
+    {
+      "id": "660243",
+      "batchNo": "00500025266",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 09:19:42"
+    },
+    {
+      "id": "660244",
+      "batchNo": "00500025269",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 09:20:26"
+    },
+    {
+      "id": "660245",
+      "batchNo": "00500025271",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "createdAt": "2026-05-13 09:28:01"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tpoNumber\tvendorName\timportedCategoryName\tcategoryId\tcreatedAt\n660200\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660201\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660202\t00500025194\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660203\t00500025260\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660204\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660205\tNULL\tPO-20260513-02\t點子\t智慧型手機\t36\t2026-05-13 05:15:33\n660206\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660207\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660208\t00500025188\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660209\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660210\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660211\tNULL\tPO-20260513-02\t點子\t智慧型手機\t15\t2026-05-13 05:15:33\n660212\t00500025209\tNULL\tNULL\tNULL\tNULL\t2026-05-13 06:52:27\n660213\t00500025225\tNULL\tNULL\tNULL\tNULL\t2026-05-13 07:24:09\n660214\t00500025228\tNULL\tNULL\tNULL\tNULL\t2026-05-13 07:27:22\n660215\t00500025229\tNULL\tNULL\tNULL\tNULL\t2026-05-13 07:27:31\n660216\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660217\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660218\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660219\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660220\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660221\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660222\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660223\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660224\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660225\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660226\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660227\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660228\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660229\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660230\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660231\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660232\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660233\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660234\tNULL\tPO-20260513-03\tVivo\t智慧型手機\t39\t2026-05-13 07:31:29\n660235\t00500025239\tNULL\tNULL\tNULL\tNULL\t2026-05-13 07:39:04\n660236\t00500025240\tNULL\tNULL\tNULL\tNULL\t2026-05-13 07:39:14\n660237\t00500025241\tNULL\tNULL\tNULL\tNULL\t2026-05-13 07:39:22\n660238\t00500025247\tNULL\tNULL\tNULL\tNULL\t2026-05-13 08:19:29\n660239\t00500025252\tNULL\tNULL\tNULL\tNULL\t2026-05-13 08:35:37\n660240\t00500025253\tNULL\tNULL\tNULL\tNULL\t2026-05-13 08:36:48\n660241\t00500025256\tNULL\tNULL\tNULL\tNULL\t2026-05-13 08:44:01\n660242\t00500025264\tNULL\tNULL\tNULL\tNULL\t2026-05-13 08:49:32\n660243\t00500025266\tNULL\tNULL\tNULL\tNULL\t2026-05-13 09:19:42\n660244\t00500025269\tNULL\tNULL\tNULL\tNULL\t2026-05-13 09:20:26\n660245\t00500025271\tNULL\tNULL\tNULL\tNULL\t2026-05-13 09:28:01\n",
+  "stderr": "",
+  "execution_time_ms": 1836
+}

@@ -1,0 +1,27 @@
+{
+  "query": "SELECT id, userId, businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, overAchievementRate, finalKpiScore, createdAt, updatedAt FROM engineer_daily_productivity WHERE userId = 750192 ORDER BY businessDate DESC, updatedAt DESC;\n\nSELECT businessDate, stationCode, COUNT(*) AS detailCount, ROUND(SUM(earnedPoints), 6) AS detailPoints FROM productivity_score_details WHERE userId = 750192 GROUP BY businessDate, stationCode ORDER BY businessDate DESC, stationCode;\n\nSELECT COUNT(*) AS totalDetailRows, ROUND(SUM(earnedPoints), 6) AS totalDetailPoints FROM productivity_score_details WHERE userId = 750192;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, userId, businessDate, totalPoints, rawAchievementRate, kpiAchievementRate, overAchievementRate, finalKpiScore, createdAt, updatedAt FROM engineer_daily_productivity WHERE userId = 750192 ORDER BY businessDate DESC, updatedAt DESC;\n\nSELECT businessDate, stationCode, COUNT(*) AS detailCount, ROUND(SUM(earnedPoints), 6) AS detailPoints FROM productivity_score_details WHERE userId = 750192 GROUP BY businessDate, stationCode ORDER BY businessDate DESC, stationCode;\n\nSELECT COUNT(*) AS totalDetailRows, ROUND(SUM(earnedPoints), 6) AS totalDetailPoints FROM productivity_score_details WHERE userId = 750192;",
+  "rows": [
+    {
+      "id": "330001",
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "totalPoints": "0.358362",
+      "rawAchievementRate": "35.84",
+      "kpiAchievementRate": "35.84",
+      "overAchievementRate": "0.00",
+      "finalKpiScore": "33.843832",
+      "createdAt": "2026-05-13 06:21:50",
+      "updatedAt": "2026-05-13 09:51:37"
+    }
+  ],
+  "messages": [
+    "businessDate\tstationCode\tdetailCount\tdetailPoints",
+    "2026-05-13\tA1\t129\t0.358362",
+    "totalDetailRows\ttotalDetailPoints",
+    "129\t0.358362"
+  ],
+  "stdout": "id\tuserId\tbusinessDate\ttotalPoints\trawAchievementRate\tkpiAchievementRate\toverAchievementRate\tfinalKpiScore\tcreatedAt\tupdatedAt\n330001\t750192\t2026-05-13\t0.358362\t35.84\t35.84\t0.00\t33.843832\t2026-05-13 06:21:50\t2026-05-13 09:51:37\nbusinessDate\tstationCode\tdetailCount\tdetailPoints\n2026-05-13\tA1\t129\t0.358362\ntotalDetailRows\ttotalDetailPoints\n129\t0.358362\n",
+  "stderr": "",
+  "execution_time_ms": 2223
+}

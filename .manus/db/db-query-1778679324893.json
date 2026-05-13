@@ -1,0 +1,160 @@
+{
+  "query": "SELECT p.`id`, p.`batchNo`, p.`poNumber`, p.`vendorName`, p.`importedCategoryName`, p.`categoryId`, p.`sheetRowNumber`, p.`lastSheetSyncedAt`\nFROM `products` p\nWHERE p.`batchNo` IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.`batchNo` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.`id`, p.`batchNo`, p.`poNumber`, p.`vendorName`, p.`importedCategoryName`, p.`categoryId`, p.`sheetRowNumber`, p.`lastSheetSyncedAt`\nFROM `products` p\nWHERE p.`batchNo` IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY p.`batchNo` ASC;",
+  "rows": [
+    {
+      "id": "660212",
+      "batchNo": "00500025209",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660213",
+      "batchNo": "00500025225",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660214",
+      "batchNo": "00500025228",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660215",
+      "batchNo": "00500025229",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660235",
+      "batchNo": "00500025239",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660236",
+      "batchNo": "00500025240",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660237",
+      "batchNo": "00500025241",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660238",
+      "batchNo": "00500025247",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660239",
+      "batchNo": "00500025252",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660240",
+      "batchNo": "00500025253",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660241",
+      "batchNo": "00500025256",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660242",
+      "batchNo": "00500025264",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660243",
+      "batchNo": "00500025266",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660244",
+      "batchNo": "00500025269",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    },
+    {
+      "id": "660245",
+      "batchNo": "00500025271",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "categoryId": "NULL",
+      "sheetRowNumber": "NULL",
+      "lastSheetSyncedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tpoNumber\tvendorName\timportedCategoryName\tcategoryId\tsheetRowNumber\tlastSheetSyncedAt\n660212\t00500025209\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660213\t00500025225\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660214\t00500025228\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660215\t00500025229\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660235\t00500025239\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660236\t00500025240\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660237\t00500025241\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660238\t00500025247\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660239\t00500025252\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660240\t00500025253\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660241\t00500025256\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660242\t00500025264\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660243\t00500025266\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660244\t00500025269\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n660245\t00500025271\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1787
+}

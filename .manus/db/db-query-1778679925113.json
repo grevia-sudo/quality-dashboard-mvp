@@ -1,0 +1,37 @@
+{
+  "query": "SELECT psd.userId, psd.businessDate, COUNT(*) AS rowCount, COUNT(DISTINCT psd.stationEventId) AS distinctEventCount, COUNT(*) - COUNT(DISTINCT psd.stationEventId) AS duplicateCount, ROUND(SUM(psd.earnedPoints) * 100, 2) AS displayPoints\nFROM productivity_score_details psd\nWHERE psd.userId = 750192\n  AND psd.businessDate = '2026-05-13'\nGROUP BY psd.userId, psd.businessDate;\nSELECT businessDate, totalPoints, rawAchievementRate, finalKpiScore, avgProcessHours\nFROM engineer_daily_productivity\nWHERE userId = 750192\n  AND businessDate = '2026-05-13';\nSELECT batchNo, sheetRowNumber, lastSheetSyncedAt\nFROM products\nWHERE batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY batchNo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT psd.userId, psd.businessDate, COUNT(*) AS rowCount, COUNT(DISTINCT psd.stationEventId) AS distinctEventCount, COUNT(*) - COUNT(DISTINCT psd.stationEventId) AS duplicateCount, ROUND(SUM(psd.earnedPoints) * 100, 2) AS displayPoints\nFROM productivity_score_details psd\nWHERE psd.userId = 750192\n  AND psd.businessDate = '2026-05-13'\nGROUP BY psd.userId, psd.businessDate;\nSELECT businessDate, totalPoints, rawAchievementRate, finalKpiScore, avgProcessHours\nFROM engineer_daily_productivity\nWHERE userId = 750192\n  AND businessDate = '2026-05-13';\nSELECT batchNo, sheetRowNumber, lastSheetSyncedAt\nFROM products\nWHERE batchNo IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025252','00500025253','00500025256','00500025264','00500025266','00500025269','00500025271')\nORDER BY batchNo;",
+  "rows": [
+    {
+      "userId": "750192",
+      "businessDate": "2026-05-13",
+      "rowCount": "80",
+      "distinctEventCount": "80",
+      "duplicateCount": "0",
+      "displayPoints": "22.22"
+    }
+  ],
+  "messages": [
+    "businessDate\ttotalPoints\trawAchievementRate\tfinalKpiScore\tavgProcessHours",
+    "2026-05-13\t0.222240\t22.22\t22.224000\t1.99",
+    "batchNo\tsheetRowNumber\tlastSheetSyncedAt",
+    "00500025209\t520\t2026-05-13 13:44:25",
+    "00500025225\t521\t2026-05-13 13:44:26",
+    "00500025228\t522\t2026-05-13 13:44:26",
+    "00500025229\t523\t2026-05-13 13:44:28",
+    "00500025239\t524\t2026-05-13 13:44:29",
+    "00500025240\t525\t2026-05-13 13:44:30",
+    "00500025241\t526\t2026-05-13 13:44:31",
+    "00500025247\t527\t2026-05-13 13:44:32",
+    "00500025252\t528\t2026-05-13 13:44:33",
+    "00500025253\t529\t2026-05-13 13:44:34",
+    "00500025256\t530\t2026-05-13 13:44:35",
+    "00500025264\t531\t2026-05-13 13:44:36",
+    "00500025266\t532\t2026-05-13 13:44:37",
+    "00500025269\t533\t2026-05-13 13:44:39",
+    "00500025271\t534\t2026-05-13 13:44:40"
+  ],
+  "stdout": "userId\tbusinessDate\trowCount\tdistinctEventCount\tduplicateCount\tdisplayPoints\n750192\t2026-05-13\t80\t80\t0\t22.22\nbusinessDate\ttotalPoints\trawAchievementRate\tfinalKpiScore\tavgProcessHours\n2026-05-13\t0.222240\t22.22\t22.224000\t1.99\nbatchNo\tsheetRowNumber\tlastSheetSyncedAt\n00500025209\t520\t2026-05-13 13:44:25\n00500025225\t521\t2026-05-13 13:44:26\n00500025228\t522\t2026-05-13 13:44:26\n00500025229\t523\t2026-05-13 13:44:28\n00500025239\t524\t2026-05-13 13:44:29\n00500025240\t525\t2026-05-13 13:44:30\n00500025241\t526\t2026-05-13 13:44:31\n00500025247\t527\t2026-05-13 13:44:32\n00500025252\t528\t2026-05-13 13:44:33\n00500025253\t529\t2026-05-13 13:44:34\n00500025256\t530\t2026-05-13 13:44:35\n00500025264\t531\t2026-05-13 13:44:36\n00500025266\t532\t2026-05-13 13:44:37\n00500025269\t533\t2026-05-13 13:44:39\n00500025271\t534\t2026-05-13 13:44:40\n",
+  "stderr": "",
+  "execution_time_ms": 2149
+}

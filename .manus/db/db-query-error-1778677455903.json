@@ -1,0 +1,10 @@
+{
+  "query": "SELECT id, name, email, role FROM users WHERE name LIKE '%宥凱%' OR email LIKE '%youkai%' OR email LIKE '%yukai%';\n\nSELECT user_id, score_date, total_score, total_devices, weighted_points, created_at, updated_at FROM engineer_daily_productivity ORDER BY score_date DESC, updated_at DESC LIMIT 20;\n\nSELECT COUNT(*) AS product_count FROM products;\n\nSELECT id, batch_no, serial_number, imei, current_station, deleted_at, created_at, updated_at FROM products WHERE batch_no IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025253','00500025252','00500025256','00500025264','00500025266','00500025269','00500025271') ORDER BY batch_no;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, name, email, role FROM users WHERE name LIKE '%宥凱%' OR email LIKE '%youkai%' OR email LIKE '%yukai%';\n\nSELECT user_id, score_date, total_score, total_devices, weighted_points, created_at, updated_at FROM engineer_daily_productivity ORDER BY score_date DESC, updated_at DESC LIMIT 20;\n\nSELECT COUNT(*) AS product_count FROM products;\n\nSELECT id, batch_no, serial_number, imei, current_station, deleted_at, created_at, updated_at FROM products WHERE batch_no IN ('00500025209','00500025225','00500025228','00500025229','00500025239','00500025240','00500025241','00500025247','00500025253','00500025252','00500025256','00500025264','00500025266','00500025269','00500025271') ORDER BY batch_no;",
+  "returncode": 1,
+  "logs": [
+    "id\tname\temail\trole",
+    "750192\t宥凱\tNULL\tengineer",
+    "ERROR 1054 (42S22) at line 3: Unknown column 'user_id' in 'field list'"
+  ]
+}
