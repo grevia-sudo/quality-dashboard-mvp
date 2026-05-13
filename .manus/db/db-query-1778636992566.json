@@ -1,0 +1,9 @@
+{
+  "query": "SET FOREIGN_KEY_CHECKS = 0;\nDELETE FROM sampling_results;\nDELETE FROM productivity_score_details;\nDELETE FROM engineer_daily_productivity;\nDELETE FROM support_task_compensations;\nDELETE FROM station_events;\nDELETE FROM station_tasks;\nDELETE FROM sheet_sync_jobs;\nDELETE FROM import_batch_backups;\nDELETE FROM purchase_order_deletion_logs;\nDELETE FROM product_archives;\nDELETE FROM products;\nSET FOREIGN_KEY_CHECKS = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SET FOREIGN_KEY_CHECKS = 0;\nDELETE FROM sampling_results;\nDELETE FROM productivity_score_details;\nDELETE FROM engineer_daily_productivity;\nDELETE FROM support_task_compensations;\nDELETE FROM station_events;\nDELETE FROM station_tasks;\nDELETE FROM sheet_sync_jobs;\nDELETE FROM import_batch_backups;\nDELETE FROM purchase_order_deletion_logs;\nDELETE FROM product_archives;\nDELETE FROM products;\nSET FOREIGN_KEY_CHECKS = 1;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 4585
+}

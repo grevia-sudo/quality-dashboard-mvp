@@ -1,0 +1,78 @@
+{
+  "query": "SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products\nUNION ALL SELECT 'station_tasks', COUNT(*) FROM station_tasks\nUNION ALL SELECT 'station_events', COUNT(*) FROM station_events\nUNION ALL SELECT 'sampling_results', COUNT(*) FROM sampling_results\nUNION ALL SELECT 'productivity_score_details', COUNT(*) FROM productivity_score_details\nUNION ALL SELECT 'engineer_daily_productivity', COUNT(*) FROM engineer_daily_productivity\nUNION ALL SELECT 'support_task_compensations', COUNT(*) FROM support_task_compensations\nUNION ALL SELECT 'sheet_sync_jobs', COUNT(*) FROM sheet_sync_jobs\nUNION ALL SELECT 'import_batch_backups', COUNT(*) FROM import_batch_backups\nUNION ALL SELECT 'purchase_order_deletion_logs', COUNT(*) FROM purchase_order_deletion_logs\nUNION ALL SELECT 'product_archives', COUNT(*) FROM product_archives\nUNION ALL SELECT 'product_categories', COUNT(*) FROM product_categories\nUNION ALL SELECT 'category_station_flows', COUNT(*) FROM category_station_flows\nUNION ALL SELECT 'defect_options', COUNT(*) FROM defect_options\nUNION ALL SELECT 'product_name_options', COUNT(*) FROM product_name_options\nUNION ALL SELECT 'productivity_target_configs', COUNT(*) FROM productivity_target_configs\nUNION ALL SELECT 'users', COUNT(*) FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products\nUNION ALL SELECT 'station_tasks', COUNT(*) FROM station_tasks\nUNION ALL SELECT 'station_events', COUNT(*) FROM station_events\nUNION ALL SELECT 'sampling_results', COUNT(*) FROM sampling_results\nUNION ALL SELECT 'productivity_score_details', COUNT(*) FROM productivity_score_details\nUNION ALL SELECT 'engineer_daily_productivity', COUNT(*) FROM engineer_daily_productivity\nUNION ALL SELECT 'support_task_compensations', COUNT(*) FROM support_task_compensations\nUNION ALL SELECT 'sheet_sync_jobs', COUNT(*) FROM sheet_sync_jobs\nUNION ALL SELECT 'import_batch_backups', COUNT(*) FROM import_batch_backups\nUNION ALL SELECT 'purchase_order_deletion_logs', COUNT(*) FROM purchase_order_deletion_logs\nUNION ALL SELECT 'product_archives', COUNT(*) FROM product_archives\nUNION ALL SELECT 'product_categories', COUNT(*) FROM product_categories\nUNION ALL SELECT 'category_station_flows', COUNT(*) FROM category_station_flows\nUNION ALL SELECT 'defect_options', COUNT(*) FROM defect_options\nUNION ALL SELECT 'product_name_options', COUNT(*) FROM product_name_options\nUNION ALL SELECT 'productivity_target_configs', COUNT(*) FROM productivity_target_configs\nUNION ALL SELECT 'users', COUNT(*) FROM users;",
+  "rows": [
+    {
+      "table_name": "sampling_results",
+      "row_count": "0"
+    },
+    {
+      "table_name": "products",
+      "row_count": "0"
+    },
+    {
+      "table_name": "engineer_daily_productivity",
+      "row_count": "0"
+    },
+    {
+      "table_name": "productivity_score_details",
+      "row_count": "0"
+    },
+    {
+      "table_name": "station_events",
+      "row_count": "0"
+    },
+    {
+      "table_name": "support_task_compensations",
+      "row_count": "0"
+    },
+    {
+      "table_name": "import_batch_backups",
+      "row_count": "0"
+    },
+    {
+      "table_name": "purchase_order_deletion_logs",
+      "row_count": "0"
+    },
+    {
+      "table_name": "station_tasks",
+      "row_count": "0"
+    },
+    {
+      "table_name": "product_categories",
+      "row_count": "41"
+    },
+    {
+      "table_name": "defect_options",
+      "row_count": "103"
+    },
+    {
+      "table_name": "sheet_sync_jobs",
+      "row_count": "0"
+    },
+    {
+      "table_name": "category_station_flows",
+      "row_count": "229"
+    },
+    {
+      "table_name": "productivity_target_configs",
+      "row_count": "139"
+    },
+    {
+      "table_name": "users",
+      "row_count": "18"
+    },
+    {
+      "table_name": "product_archives",
+      "row_count": "0"
+    },
+    {
+      "table_name": "product_name_options",
+      "row_count": "5334"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\trow_count\nsampling_results\t0\nproducts\t0\nengineer_daily_productivity\t0\nproductivity_score_details\t0\nstation_events\t0\nsupport_task_compensations\t0\nimport_batch_backups\t0\npurchase_order_deletion_logs\t0\nstation_tasks\t0\nproduct_categories\t41\ndefect_options\t103\nsheet_sync_jobs\t0\ncategory_station_flows\t229\nproductivity_target_configs\t139\nusers\t18\nproduct_archives\t0\nproduct_name_options\t5334\n",
+  "stderr": "",
+  "execution_time_ms": 1828
+}

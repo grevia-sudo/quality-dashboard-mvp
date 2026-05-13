@@ -301,11 +301,11 @@
 - [x] 追查使用者指定批號清單為何只有 019 開頭資料成功上傳到 Google，其餘批號未上傳，並確認實際同步失敗路徑與影響範圍
 - [x] 核對使用者提供的 Google Drive 目標資料夾實際內容，確認 E 站照片未上傳到目標 Google Drive，而是寫入內建 storage 或歷史補同步位置
 - [x] 將 E 站正式照片流程改回直接上傳到指定 Google Drive 資料夾 `1PPdt4swkmSav8G6k2Dfpk55OBPJk4srW`，不再只寫入 `/manus-storage/`
-- [ ] 將指定 005 / 013 / 019 批號既有暫存照片補傳回指定 Google Drive 資料夾，並同步修正採購單 AC/AD 照片連結
+- [x] 將指定 005 / 013 / 019 批號既有暫存照片補傳回指定 Google Drive 資料夾，並同步修正採購單 AC/AD 照片連結（後續依使用者改為全面清除業務資料與 Google 資料，該補傳需求已隨清除作業收斂）
 - [x] 移除正式照片僅停留在 `/manus-storage/station-e-photos/` 或其他暫存路徑的做法，確保每筆 E 站照片最終落到 Google Drive
-- [ ] 釐清目標 Google Drive 資料夾雖已分享給服務帳號，為何 Drive API 仍回覆 service account 無 storage quota，並確認是否屬於 Shared Drive 而非僅分享資料夾
-- [ ] 驗證新 Shared Drive 資料夾 `0AGU-A31NmApoUk9PVA` 的 driveId 與服務帳號實際寫入能力，並切換 E 站正式上傳目標
-- [ ] 診斷全量補傳在 `00500025060` 附近停滯的實際原因，必要時重啟剩餘批次補傳並驗證結果
+- [x] 釐清目標 Google Drive 資料夾雖已分享給服務帳號，為何 Drive API 仍回覆 service account 無 storage quota，並確認是否屬於 Shared Drive 而非僅分享資料夾（已確認並在後續全面清除 Google 資料前完成 Shared Drive 寫入驗證）
+- [x] 驗證新 Shared Drive 資料夾 `0AGU-A31NmApoUk9PVA` 的 driveId 與服務帳號實際寫入能力，並切換 E 站正式上傳目標
+- [x] 診斷全量補傳在 `00500025060` 附近停滯的實際原因，必要時重啟剩餘批次補傳並驗證結果（後續依使用者改為全面清除業務資料與 Google 資料，剩餘補傳批次已不再保留）
 - [x] 追查 KPI 數據未載入最新資料、與現場統計不一致的原因，確認資料來源、匯入條件與必要修正
 - [x] 匯出目前 KPI 細項至人員與站點別明細，提供使用者逐筆核對是否為手動統計口徑差異
 - [x] 追查並修正「耳機音響 × Samsung」無法匯入且顯示錯誤的問題，確認分類品牌對應、匯入規則與實際報錯路徑
@@ -319,3 +319,4 @@
 - [x] 補上批號固定格式與前導零正規化，讓 KPI 與 Google 對帳統一使用同一個批號鍵值
 - [x] 補上 Google 主表不存在資料不得納入 KPI 的正式防呆，避免後續重算時再次計入
 - [x] 清除系統內所有業務資料與對應 Google 資料，但保留設定；執行前先核對前一個可回復備份並取得最終確認
+- [x] 再次清空新進的系統業務資料與對應 Google 資料，但保留所有設定資料不動，並完成驗證
