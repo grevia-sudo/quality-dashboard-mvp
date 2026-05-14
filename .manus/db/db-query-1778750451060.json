@@ -1,0 +1,80 @@
+{
+  "query": "SELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, p.stationCode, p.productStatus, p.createdAt, p.updatedAt\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF'\nORDER BY p.id ASC;\n\nSELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, p.stationCode, p.productStatus,\n  COUNT(*) OVER (PARTITION BY p.serialNumber) AS sameSerialCount,\n  COUNT(*) OVER (PARTITION BY p.sheetRowNumber) AS sameRowCount\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF' OR p.sheetRowNumber = 604\nORDER BY p.sheetRowNumber ASC, p.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, p.stationCode, p.productStatus, p.createdAt, p.updatedAt\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF'\nORDER BY p.id ASC;\n\nSELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, p.stationCode, p.productStatus,\n  COUNT(*) OVER (PARTITION BY p.serialNumber) AS sameSerialCount,\n  COUNT(*) OVER (PARTITION BY p.sheetRowNumber) AS sameRowCount\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF' OR p.sheetRowNumber = 604\nORDER BY p.sheetRowNumber ASC, p.id ASC;",
+  "rows": [
+    {
+      "id": "720032",
+      "productCode": "P-1778741246056-750193",
+      "poNumber": "NULL",
+      "batchNo": "Q49QF04603",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "C0VQYGX30H",
+      "productName": "G72RCQXG7N",
+      "sheetRowNumber": "604",
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "createdAt": "2026-05-14 06:47:26",
+      "updatedAt": "2026-05-14 06:50:57"
+    },
+    {
+      "id": "750004",
+      "productCode": "P-1778747104240-750193",
+      "poNumber": "NULL",
+      "batchNo": "00500025410",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "353103648954639",
+      "productName": "Apple iPhone 13 Pro 512GB 天峰藍色",
+      "sheetRowNumber": "604",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "createdAt": "2026-05-14 08:25:04",
+      "updatedAt": "2026-05-14 08:27:09"
+    },
+    {
+      "id": "id",
+      "productCode": "productCode",
+      "poNumber": "poNumber",
+      "batchNo": "batchNo",
+      "serialNumber": "serialNumber",
+      "imei": "imei",
+      "productName": "productName",
+      "sheetRowNumber": "sheetRowNumber",
+      "stationCode": "stationCode",
+      "productStatus": "productStatus",
+      "createdAt": "sameSerialCount",
+      "updatedAt": "sameRowCount"
+    },
+    {
+      "id": "720032",
+      "productCode": "P-1778741246056-750193",
+      "poNumber": "NULL",
+      "batchNo": "Q49QF04603",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "C0VQYGX30H",
+      "productName": "G72RCQXG7N",
+      "sheetRowNumber": "604",
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "createdAt": "2",
+      "updatedAt": "2"
+    },
+    {
+      "id": "750004",
+      "productCode": "P-1778747104240-750193",
+      "poNumber": "NULL",
+      "batchNo": "00500025410",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "353103648954639",
+      "productName": "Apple iPhone 13 Pro 512GB 天峰藍色",
+      "sheetRowNumber": "604",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "createdAt": "2",
+      "updatedAt": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductCode\tpoNumber\tbatchNo\tserialNumber\timei\tproductName\tsheetRowNumber\tstationCode\tproductStatus\tcreatedAt\tupdatedAt\n720032\tP-1778741246056-750193\tNULL\tQ49QF04603\tV42J4RV4FF\tC0VQYGX30H\tG72RCQXG7N\t604\tB\tpending_b\t2026-05-14 06:47:26\t2026-05-14 06:50:57\n750004\tP-1778747104240-750193\tNULL\t00500025410\tV42J4RV4FF\t353103648954639\tApple iPhone 13 Pro 512GB 天峰藍色\t604\tA2\tpending_a2\t2026-05-14 08:25:04\t2026-05-14 08:27:09\nid\tproductCode\tpoNumber\tbatchNo\tserialNumber\timei\tproductName\tsheetRowNumber\tstationCode\tproductStatus\tsameSerialCount\tsameRowCount\n720032\tP-1778741246056-750193\tNULL\tQ49QF04603\tV42J4RV4FF\tC0VQYGX30H\tG72RCQXG7N\t604\tB\tpending_b\t2\t2\n750004\tP-1778747104240-750193\tNULL\t00500025410\tV42J4RV4FF\t353103648954639\tApple iPhone 13 Pro 512GB 天峰藍色\t604\tA2\tpending_a2\t2\t2\n",
+  "stderr": "",
+  "execution_time_ms": 2025
+}

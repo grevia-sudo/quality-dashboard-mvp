@@ -1,0 +1,24 @@
+{
+  "query": "SELECT stationCode, active, COUNT(*) AS configCount\nFROM productivity_target_configs\nWHERE stationCode = 'D'\nGROUP BY stationCode, active;\n\nSELECT se.id AS stationEventId, se.businessDate, se.operatorUserId, u.name, u.username, se.productId, se.categoryId, se.subtypeCode, p.importedCategoryName, p.importedBrandName, p.productName, p.batchNo, se.countForProductivity\nFROM station_events se\nLEFT JOIN users u ON u.id = se.operatorUserId\nLEFT JOIN products p ON p.id = se.productId\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'complete'\n  AND DATE_FORMAT(se.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nORDER BY se.businessDate DESC, se.id DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT stationCode, active, COUNT(*) AS configCount\nFROM productivity_target_configs\nWHERE stationCode = 'D'\nGROUP BY stationCode, active;\n\nSELECT se.id AS stationEventId, se.businessDate, se.operatorUserId, u.name, u.username, se.productId, se.categoryId, se.subtypeCode, p.importedCategoryName, p.importedBrandName, p.productName, p.batchNo, se.countForProductivity\nFROM station_events se\nLEFT JOIN users u ON u.id = se.operatorUserId\nLEFT JOIN products p ON p.id = se.productId\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'complete'\n  AND DATE_FORMAT(se.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nORDER BY se.businessDate DESC, se.id DESC;",
+  "rows": [
+    {
+      "stationCode": "D",
+      "active": "0",
+      "configCount": "1"
+    },
+    {
+      "stationCode": "D",
+      "active": "1",
+      "configCount": "31"
+    }
+  ],
+  "messages": [
+    "stationEventId\tbusinessDate\toperatorUserId\tname\tusername\tproductId\tcategoryId\tsubtypeCode\timportedCategoryName\timportedBrandName\tproductName\tbatchNo\tcountForProductivity",
+    "780466\t2026-05-14\t1\t綠途未來股份有限公司\tNULL\t750031\t15\tApple\t智慧型手機\tApple\tTrace Device 01\tTRACE-BATCH-1778749398731-01\t1",
+    "780325\t2026-05-14\t1\t綠途未來股份有限公司\tNULL\t750023\tNULL\tNULL\t智慧型手機\tApple\tNo Import To Stock Device\tFLOW-STOCK-BATCH-1778749390586\t1"
+  ],
+  "stdout": "stationCode\tactive\tconfigCount\nD\t0\t1\nD\t1\t31\nstationEventId\tbusinessDate\toperatorUserId\tname\tusername\tproductId\tcategoryId\tsubtypeCode\timportedCategoryName\timportedBrandName\tproductName\tbatchNo\tcountForProductivity\n780466\t2026-05-14\t1\t綠途未來股份有限公司\tNULL\t750031\t15\tApple\t智慧型手機\tApple\tTrace Device 01\tTRACE-BATCH-1778749398731-01\t1\n780325\t2026-05-14\t1\t綠途未來股份有限公司\tNULL\t750023\tNULL\tNULL\t智慧型手機\tApple\tNo Import To Stock Device\tFLOW-STOCK-BATCH-1778749390586\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1942
+}

@@ -483,6 +483,101 @@ describe("station productivity persistence", () => {
     expect(eventRow?.countForProductivity).toBe(true);
   }, 20000);
 
+  it("creates productivity detail for D station sampling_pass events when the Google purchase sheet contains the batch", async () => {
+    await ensureMvpSeedData();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const uniqueSuffix = `${Date.now()}-d-sampling-pass`;
+    const engineerOpenId = `kpi-d-sampling-pass-${uniqueSuffix}`;
+
+    await db.insert(users).values({
+      openId: engineerOpenId,
+      username: `kpi-d-sampling-pass-${uniqueSuffix}`,
+      name: "KPI D Sampling Pass",
+      loginMethod: "password",
+      role: "engineer",
+    });
+
+    const engineerRow = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.openId, engineerOpenId))
+      .limit(1);
+
+    const engineerId = engineerRow[0]?.id;
+    expect(engineerId).toBeTruthy();
+    if (!engineerId) {
+      return;
+    }
+
+    createdUserIds.push(engineerId);
+
+    const poNumber = `PO-KPI-D-SAMPLING-PASS-${uniqueSuffix}`;
+    createdPoNumbers.add(poNumber);
+    const googleBatchNo = `KPI-D-SAMPLING-PASS-BATCH-${uniqueSuffix}`;
+
+    await importProducts({
+      poNumber,
+      vendorName: "KPI D Sampling Pass Vendor",
+      rows: [
+        {
+          batchNo: googleBatchNo,
+          serialNumber: `KPI-D-SAMPLING-PASS-SN-${uniqueSuffix}`,
+          imei: `97${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+          productName: "Apple iPhone D Sampling Pass",
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+
+    const seededProduct = (await db
+      .select({
+        productId: products.id,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(products)
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(eq(products.poNumber, poNumber))
+      .limit(1))[0];
+
+    expect(seededProduct).toBeTruthy();
+
+    const businessDateValue = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const insertedEvent = await db.insert(stationEvents).values({
+      productId: seededProduct?.productId ?? 0,
+      stationTaskId: null,
+      stationCode: "D",
+      eventType: "sampling_pass",
+      operatorUserId: engineerId,
+      businessDate: businessDateValue,
+      categoryId: seededProduct?.categoryId ?? null,
+      subtypeCode: seededProduct?.subtypeCode ?? null,
+      countForProductivity: true,
+      payload: { summary: "D 站抽檢通過應納入 KPI" },
+    }).$returningId();
+
+    mockGooglePurchaseSheetBatches([googleBatchNo]);
+
+    await backfillProductivityFromCompletedEvents(db, { userId: engineerId });
+
+    const detailRows = await db
+      .select({
+        id: productivityScoreDetails.id,
+        stationCode: productivityScoreDetails.stationCode,
+      })
+      .from(productivityScoreDetails)
+      .where(eq(productivityScoreDetails.stationEventId, insertedEvent[0]?.id ?? 0));
+
+    expect(detailRows).toHaveLength(1);
+    expect(detailRows[0]?.stationCode).toBe("D");
+  }, 20000);
+
   it("does not create productivity detail when Google purchase sheet does not contain the batch", async () => {
     await ensureMvpSeedData();
 

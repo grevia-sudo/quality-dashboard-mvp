@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, p.currentStationCode, p.currentStatus, p.createdAt, p.updatedAt\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF'\nORDER BY p.id ASC;\n\nSELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, COUNT(*) OVER (PARTITION BY p.serialNumber) AS sameSerialCount, COUNT(*) OVER (PARTITION BY p.sheetRowNumber) AS sameRowCount\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF' OR p.sheetRowNumber = 604\nORDER BY p.sheetRowNumber ASC, p.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, p.currentStationCode, p.currentStatus, p.createdAt, p.updatedAt\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF'\nORDER BY p.id ASC;\n\nSELECT p.id, p.productCode, p.poNumber, p.batchNo, p.serialNumber, p.imei, p.productName, p.sheetRowNumber, COUNT(*) OVER (PARTITION BY p.serialNumber) AS sameSerialCount, COUNT(*) OVER (PARTITION BY p.sheetRowNumber) AS sameRowCount\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF' OR p.sheetRowNumber = 604\nORDER BY p.sheetRowNumber ASC, p.id ASC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'p.currentstationcode' in 'field list'"
+  ]
+}

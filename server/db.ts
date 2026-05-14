@@ -30,7 +30,7 @@ import { buildPendingStockMismatchSummary, isPendingStockImportMismatch } from "
 import { deletePurchaseOrderRowsFromGoogleSheet } from "./purchase-sheet-delete-sync";
 
 const STATION_CODES = ["A1", "A2", "B", "C", "D", "E", "STOCK"] as const;
-const PRODUCTIVITY_TRACKED_STATION_CODES = ["A1", "A2", "B", "C", "E"] as const;
+const PRODUCTIVITY_TRACKED_STATION_CODES = ["A1", "A2", "B", "C", "D", "E"] as const;
 const SUPPORT_COMPENSATION_INTERNAL_POINTS_PER_HOUR = 0.125;
 const DISPLAY_POINTS_MULTIPLIER = 100;
 type StationCode = (typeof STATION_CODES)[number];
@@ -70,6 +70,13 @@ type ProductivityTrackedStationCode = (typeof PRODUCTIVITY_TRACKED_STATION_CODES
 
 function isProductivityTrackedStation(stationCode: StationCode): stationCode is ProductivityTrackedStationCode {
   return PRODUCTIVITY_TRACKED_STATION_CODES.includes(stationCode as ProductivityTrackedStationCode);
+}
+
+function isProductivityEventEligibleForBackfill(input: {
+  stationCode: StationCode;
+  eventType: typeof stationEvents.$inferSelect.eventType;
+}) {
+  return input.eventType === "complete" || (input.stationCode === "D" && input.eventType === "sampling_pass");
 }
 
 async function findProductivityTargetConfig(
@@ -319,6 +326,7 @@ export async function backfillProductivityFromCompletedEvents(
       stationEventId: stationEvents.id,
       productId: stationEvents.productId,
       stationCode: stationEvents.stationCode,
+      eventType: stationEvents.eventType,
       operatorUserId: stationEvents.operatorUserId,
       businessDate: stationEvents.businessDate,
       categoryId: stationEvents.categoryId,
@@ -335,8 +343,11 @@ export async function backfillProductivityFromCompletedEvents(
     .leftJoin(productivityScoreDetails, eq(productivityScoreDetails.stationEventId, stationEvents.id))
     .leftJoin(products, eq(products.id, stationEvents.productId))
     .where(and(
-      eq(stationEvents.eventType, "complete"),
       inArray(stationEvents.stationCode, PRODUCTIVITY_TRACKED_STATION_CODES as unknown as StationCode[]),
+      or(
+        eq(stationEvents.eventType, "complete"),
+        and(eq(stationEvents.stationCode, "D"), eq(stationEvents.eventType, "sampling_pass")),
+      ),
       isNull(productivityScoreDetails.id),
       input?.userId ? eq(stationEvents.operatorUserId, input.userId) : undefined,
     ));
@@ -346,7 +357,10 @@ export async function backfillProductivityFromCompletedEvents(
   const googleBatchKeys = await readPurchaseSheetBatchKeySet();
 
   for (const event of missingEvents) {
-    if (!event.operatorUserId || !isProductivityTrackedStation(event.stationCode)) {
+    if (!event.operatorUserId || !isProductivityTrackedStation(event.stationCode) || !isProductivityEventEligibleForBackfill({
+      stationCode: event.stationCode,
+      eventType: event.eventType,
+    })) {
       continue;
     }
 

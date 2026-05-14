@@ -1,0 +1,30 @@
+{
+  "query": "SELECT edp.userId, u.name, u.username, edp.businessDate, edp.totalPoints, edp.finalKpiScore\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nWHERE edp.userId IN (750189, 1)\n  AND edp.businessDate = CURDATE()\nORDER BY edp.userId ASC;\n\nSELECT psd.userId, u.name, u.username, COUNT(*) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND psd.businessDate = CURDATE()\nGROUP BY psd.userId, u.name, u.username\nORDER BY psd.userId ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT edp.userId, u.name, u.username, edp.businessDate, edp.totalPoints, edp.finalKpiScore\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nWHERE edp.userId IN (750189, 1)\n  AND edp.businessDate = CURDATE()\nORDER BY edp.userId ASC;\n\nSELECT psd.userId, u.name, u.username, COUNT(*) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND psd.businessDate = CURDATE()\nGROUP BY psd.userId, u.name, u.username\nORDER BY psd.userId ASC;",
+  "rows": [
+    {
+      "userId": "1",
+      "name": "綠途未來股份有限公司",
+      "username": "NULL",
+      "businessDate": "2026-05-14",
+      "totalPoints": "0.179248",
+      "finalKpiScore": "17.924800"
+    },
+    {
+      "userId": "750189",
+      "name": "巧克力",
+      "username": "Qc.8",
+      "businessDate": "2026-05-14",
+      "totalPoints": "3.301482",
+      "finalKpiScore": "330.148200"
+    }
+  ],
+  "messages": [
+    "userId\tname\tusername\tdetailRows\ttotalPoints",
+    "1\t綠途未來股份有限公司\tNULL\t22\t0.1100",
+    "750189\t巧克力\tQc.8\t579\t2.8950"
+  ],
+  "stdout": "userId\tname\tusername\tbusinessDate\ttotalPoints\tfinalKpiScore\n1\t綠途未來股份有限公司\tNULL\t2026-05-14\t0.179248\t17.924800\n750189\t巧克力\tQc.8\t2026-05-14\t3.301482\t330.148200\nuserId\tname\tusername\tdetailRows\ttotalPoints\n1\t綠途未來股份有限公司\tNULL\t22\t0.1100\n750189\t巧克力\tQc.8\t579\t2.8950\n",
+  "stderr": "",
+  "execution_time_ms": 1946
+}

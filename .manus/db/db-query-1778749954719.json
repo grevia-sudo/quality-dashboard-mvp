@@ -1,0 +1,19 @@
+{
+  "query": "SELECT u.id AS userId, u.name, u.username, COUNT(*) AS completedEvents\nFROM station_events se\nJOIN users u ON u.id = se.operatorUserId\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'complete'\n  AND se.countForProductivity = 1\n  AND DATE_FORMAT(se.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username\nHAVING u.id = 750189;\n\nSELECT u.id AS userId, u.name, u.username, COUNT(*) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username\nHAVING u.id = 750189;\n\nSELECT COUNT(*) AS allDCompletedEvents\nFROM station_events se\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'complete'\n  AND se.countForProductivity = 1\n  AND DATE_FORMAT(se.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m');\n\nSELECT COUNT(*) AS allDDetailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS allDTotalPoints\nFROM productivity_score_details psd\nWHERE psd.stationCode = 'D'\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.id AS userId, u.name, u.username, COUNT(*) AS completedEvents\nFROM station_events se\nJOIN users u ON u.id = se.operatorUserId\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'complete'\n  AND se.countForProductivity = 1\n  AND DATE_FORMAT(se.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username\nHAVING u.id = 750189;\n\nSELECT u.id AS userId, u.name, u.username, COUNT(*) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username\nHAVING u.id = 750189;\n\nSELECT COUNT(*) AS allDCompletedEvents\nFROM station_events se\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'complete'\n  AND se.countForProductivity = 1\n  AND DATE_FORMAT(se.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m');\n\nSELECT COUNT(*) AS allDDetailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS allDTotalPoints\nFROM productivity_score_details psd\nWHERE psd.stationCode = 'D'\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m');",
+  "rows": [
+    {
+      "allDCompletedEvents": "2"
+    },
+    {
+      "allDCompletedEvents": "allDDetailRows\tallDTotalPoints"
+    },
+    {
+      "allDCompletedEvents": "0\t0.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "allDCompletedEvents\n2\nallDDetailRows\tallDTotalPoints\n0\t0.0000\n",
+  "stderr": "",
+  "execution_time_ms": 2444
+}

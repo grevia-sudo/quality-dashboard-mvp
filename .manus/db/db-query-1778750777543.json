@@ -1,0 +1,28 @@
+{
+  "query": "SELECT COUNT(*) AS missingDSamplingPassWithoutDetail\nFROM station_events se\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'sampling_pass'\n  AND se.countForProductivity = 1\n  AND psd.id IS NULL;\n\nSELECT u.id AS userId, u.name, u.username, COUNT(psd.id) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username\nORDER BY detailRows DESC, u.id ASC;\n\nSELECT u.id AS userId, u.name, u.username, COUNT(psd.id) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND psd.userId = 750189\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COUNT(*) AS missingDSamplingPassWithoutDetail\nFROM station_events se\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'sampling_pass'\n  AND se.countForProductivity = 1\n  AND psd.id IS NULL;\n\nSELECT u.id AS userId, u.name, u.username, COUNT(psd.id) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username\nORDER BY detailRows DESC, u.id ASC;\n\nSELECT u.id AS userId, u.name, u.username, COUNT(psd.id) AS detailRows, ROUND(COALESCE(SUM(psd.earnedPoints), 0), 4) AS totalPoints\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE psd.stationCode = 'D'\n  AND psd.userId = 750189\n  AND DATE_FORMAT(psd.businessDate, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')\nGROUP BY u.id, u.name, u.username;",
+  "rows": [
+    {
+      "missingDSamplingPassWithoutDetail": "1"
+    },
+    {
+      "missingDSamplingPassWithoutDetail": "userId\tname\tusername\tdetailRows\ttotalPoints"
+    },
+    {
+      "missingDSamplingPassWithoutDetail": "750189\t巧克力\tQc.8\t576\t2.8800"
+    },
+    {
+      "missingDSamplingPassWithoutDetail": "1\t綠途未來股份有限公司\tNULL\t22\t0.1100"
+    },
+    {
+      "missingDSamplingPassWithoutDetail": "userId\tname\tusername\tdetailRows\ttotalPoints"
+    },
+    {
+      "missingDSamplingPassWithoutDetail": "750189\t巧克力\tQc.8\t576\t2.8800"
+    }
+  ],
+  "messages": [],
+  "stdout": "missingDSamplingPassWithoutDetail\n1\nuserId\tname\tusername\tdetailRows\ttotalPoints\n750189\t巧克力\tQc.8\t576\t2.8800\n1\t綠途未來股份有限公司\tNULL\t22\t0.1100\nuserId\tname\tusername\tdetailRows\ttotalPoints\n750189\t巧克力\tQc.8\t576\t2.8800\n",
+  "stderr": "",
+  "execution_time_ms": 2220
+}

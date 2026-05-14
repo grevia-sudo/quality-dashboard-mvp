@@ -1,0 +1,194 @@
+{
+  "query": "SHOW COLUMNS FROM products;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SHOW COLUMNS FROM products;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "productCode",
+      "Type": "varchar(120)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "batchNo",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "serialNumber",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "imei",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "productName",
+      "Type": "varchar(160)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "warrantyDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "categoryId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stationCode",
+      "Type": "enum('A1','A2','B','C','D','E','STOCK')",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "A1",
+      "Extra": ""
+    },
+    {
+      "Field": "productStatus",
+      "Type": "enum('pending_a1','pending_a2','pending_b','pending_c','pending_d','pending_e','pending_stock','completed','archived')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "pending_a1",
+      "Extra": ""
+    },
+    {
+      "Field": "inspectionSummary",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "wipeStatus",
+      "Type": "varchar(40)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "pending",
+      "Extra": ""
+    },
+    {
+      "Field": "stockStatus",
+      "Type": "varchar(40)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "pending",
+      "Extra": ""
+    },
+    {
+      "Field": "archivedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "poNumber",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "vendorName",
+      "Type": "varchar(160)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "arrivalAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sheetRowNumber",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastSheetSyncedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "importedCategoryName",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "importedBrandName",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nproductCode\tvarchar(120)\tNO\tUNI\tNULL\t\nbatchNo\tvarchar(120)\tYES\t\tNULL\t\nserialNumber\tvarchar(120)\tYES\t\tNULL\t\nimei\tvarchar(120)\tYES\t\tNULL\t\nproductName\tvarchar(160)\tYES\t\tNULL\t\nwarrantyDate\tdate\tYES\t\tNULL\t\ncategoryId\tint\tYES\tMUL\tNULL\t\nstationCode\tenum('A1','A2','B','C','D','E','STOCK')\tNO\tMUL\tA1\t\nproductStatus\tenum('pending_a1','pending_a2','pending_b','pending_c','pending_d','pending_e','pending_stock','completed','archived')\tNO\t\tpending_a1\t\ninspectionSummary\ttext\tYES\t\tNULL\t\nwipeStatus\tvarchar(40)\tYES\t\tpending\t\nstockStatus\tvarchar(40)\tYES\t\tpending\t\narchivedAt\ttimestamp\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\npoNumber\tvarchar(120)\tYES\t\tNULL\t\nvendorName\tvarchar(160)\tYES\t\tNULL\t\narrivalAt\ttimestamp\tYES\t\tNULL\t\nsheetRowNumber\tint\tYES\t\tNULL\t\nlastSheetSyncedAt\ttimestamp\tYES\t\tNULL\t\nimportedCategoryName\tvarchar(120)\tYES\t\tNULL\t\nimportedBrandName\tvarchar(120)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 1718
+}

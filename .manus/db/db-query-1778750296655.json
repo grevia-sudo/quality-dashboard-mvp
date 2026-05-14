@@ -1,0 +1,40 @@
+{
+  "query": "SELECT p.id, p.serialNumber, p.productName, p.importedCategoryName, p.importedBrandName, p.batchNo, p.poNumber, p.sheetRowNumber, p.createdAt, p.updatedAt\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF';\n\nSELECT se.id, se.stationCode, se.stationEventType, se.businessDate, se.categoryId, se.subtypeCode, se.createdAt\nFROM station_events se\nJOIN products p ON p.id = se.productId\nWHERE p.serialNumber = 'V42J4RV4FF'\nORDER BY se.id DESC\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id, p.serialNumber, p.productName, p.importedCategoryName, p.importedBrandName, p.batchNo, p.poNumber, p.sheetRowNumber, p.createdAt, p.updatedAt\nFROM products p\nWHERE p.serialNumber = 'V42J4RV4FF';\n\nSELECT se.id, se.stationCode, se.stationEventType, se.businessDate, se.categoryId, se.subtypeCode, se.createdAt\nFROM station_events se\nJOIN products p ON p.id = se.productId\nWHERE p.serialNumber = 'V42J4RV4FF'\nORDER BY se.id DESC\nLIMIT 20;",
+  "rows": [
+    {
+      "id": "720032",
+      "serialNumber": "V42J4RV4FF",
+      "productName": "G72RCQXG7N",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "batchNo": "Q49QF04603",
+      "poNumber": "NULL",
+      "sheetRowNumber": "604",
+      "createdAt": "2026-05-14 06:47:26",
+      "updatedAt": "2026-05-14 06:50:57"
+    },
+    {
+      "id": "750004",
+      "serialNumber": "V42J4RV4FF",
+      "productName": "Apple iPhone 13 Pro 512GB 天峰藍色",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "batchNo": "00500025410",
+      "poNumber": "NULL",
+      "sheetRowNumber": "604",
+      "createdAt": "2026-05-14 08:25:04",
+      "updatedAt": "2026-05-14 08:27:09"
+    }
+  ],
+  "messages": [
+    "id\tstationCode\tstationEventType\tbusinessDate\tcategoryId\tsubtypeCode\tcreatedAt",
+    "780063\tA2\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 08:26:56",
+    "780018\tA1\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 08:25:04",
+    "750188\tA2\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 06:50:47",
+    "750183\tA1\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 06:47:26"
+  ],
+  "stdout": "id\tserialNumber\tproductName\timportedCategoryName\timportedBrandName\tbatchNo\tpoNumber\tsheetRowNumber\tcreatedAt\tupdatedAt\n720032\tV42J4RV4FF\tG72RCQXG7N\tNULL\tNULL\tQ49QF04603\tNULL\t604\t2026-05-14 06:47:26\t2026-05-14 06:50:57\n750004\tV42J4RV4FF\tApple iPhone 13 Pro 512GB 天峰藍色\tNULL\tNULL\t00500025410\tNULL\t604\t2026-05-14 08:25:04\t2026-05-14 08:27:09\nid\tstationCode\tstationEventType\tbusinessDate\tcategoryId\tsubtypeCode\tcreatedAt\n780063\tA2\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 08:26:56\n780018\tA1\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 08:25:04\n750188\tA2\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 06:50:47\n750183\tA1\tcomplete\t2026-05-14\tNULL\tNULL\t2026-05-14 06:47:26\n",
+  "stderr": "",
+  "execution_time_ms": 1985
+}

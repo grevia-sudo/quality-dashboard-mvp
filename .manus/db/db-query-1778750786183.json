@@ -1,0 +1,27 @@
+{
+  "query": "SELECT se.id AS stationEventId, se.businessDate, se.operatorUserId, u.name, u.username, se.productId, se.categoryId, se.subtypeCode, se.countForProductivity,\n       p.batchNo, p.serialNumber, p.imei, p.productName, p.importedCategoryName, p.importedBrandName\nFROM station_events se\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nLEFT JOIN products p ON p.id = se.productId\nLEFT JOIN users u ON u.id = se.operatorUserId\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'sampling_pass'\n  AND se.countForProductivity = 1\n  AND psd.id IS NULL\nORDER BY se.id DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT se.id AS stationEventId, se.businessDate, se.operatorUserId, u.name, u.username, se.productId, se.categoryId, se.subtypeCode, se.countForProductivity,\n       p.batchNo, p.serialNumber, p.imei, p.productName, p.importedCategoryName, p.importedBrandName\nFROM station_events se\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nLEFT JOIN products p ON p.id = se.productId\nLEFT JOIN users u ON u.id = se.operatorUserId\nWHERE se.stationCode = 'D'\n  AND se.stationEventType = 'sampling_pass'\n  AND se.countForProductivity = 1\n  AND psd.id IS NULL\nORDER BY se.id DESC;",
+  "rows": [
+    {
+      "stationEventId": "780467",
+      "businessDate": "2026-05-14",
+      "operatorUserId": "1",
+      "name": "綠途未來股份有限公司",
+      "username": "NULL",
+      "productId": "750038",
+      "categoryId": "30002",
+      "subtypeCode": "Apple",
+      "countForProductivity": "1",
+      "batchNo": "MANUAL-D-1778749409996-PASS",
+      "serialNumber": "MANUAL-D-SN-1778749409996-PASS",
+      "imei": "941778749409997",
+      "productName": "Manual D Pass Device",
+      "importedCategoryName": "穿戴型設備",
+      "importedBrandName": "Apple"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationEventId\tbusinessDate\toperatorUserId\tname\tusername\tproductId\tcategoryId\tsubtypeCode\tcountForProductivity\tbatchNo\tserialNumber\timei\tproductName\timportedCategoryName\timportedBrandName\n780467\t2026-05-14\t1\t綠途未來股份有限公司\tNULL\t750038\t30002\tApple\t1\tMANUAL-D-1778749409996-PASS\tMANUAL-D-SN-1778749409996-PASS\t941778749409997\tManual D Pass Device\t穿戴型設備\tApple\n",
+  "stderr": "",
+  "execution_time_ms": 1707
+}
