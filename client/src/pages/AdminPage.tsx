@@ -205,6 +205,10 @@ export default function AdminPage() {
   const [categoryFlowCopyTargets, setCategoryFlowCopyTargets] = useState<CategoryFlowCopyTargets>({});
   const [categoryFlowCategorySearch, setCategoryFlowCategorySearch] = useState("");
   const [categoryFlowBrandSearch, setCategoryFlowBrandSearch] = useState("");
+  const [targetStationFilter, setTargetStationFilter] = useState<CapacityStationCode | "ALL">("ALL");
+  const [targetCategorySearch, setTargetCategorySearch] = useState("");
+  const [targetBrandSearch, setTargetBrandSearch] = useState("");
+  const [targetActiveFilter, setTargetActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [kpiFilterStartDate, setKpiFilterStartDate] = useState("");
   const [kpiFilterEndDate, setKpiFilterEndDate] = useState("");
   const lastLoadedKpiRangeRef = useRef<{ startDate: string; endDate: string } | null>(null);
@@ -560,6 +564,29 @@ export default function AdminPage() {
       return matchesCategory && matchesBrand;
     }),
     [categories, normalizedCategorySearch, normalizedBrandSearch],
+  );
+  const normalizedTargetCategorySearch = targetCategorySearch.trim().toLowerCase();
+  const normalizedTargetBrandSearch = targetBrandSearch.trim().toLowerCase();
+  const filteredTargetDrafts = useMemo(
+    () => targetDrafts.filter((target) => {
+      const matchesStation = targetStationFilter === "ALL" || target.stationCode === targetStationFilter;
+      const matchesCategory = !normalizedTargetCategorySearch || target.categoryName.toLowerCase().includes(normalizedTargetCategorySearch);
+      const matchesBrand = !normalizedTargetBrandSearch || target.brandName.toLowerCase().includes(normalizedTargetBrandSearch);
+      const matchesActive = targetActiveFilter === "all"
+        || (targetActiveFilter === "active" ? target.active : !target.active);
+      return matchesStation && matchesCategory && matchesBrand && matchesActive;
+    }),
+    [targetDrafts, targetStationFilter, normalizedTargetCategorySearch, normalizedTargetBrandSearch, targetActiveFilter],
+  );
+  const visibleTargetSections = useMemo(
+    () => capacityStationOptions
+      .filter((stationCode) => targetStationFilter === "ALL" || stationCode === targetStationFilter)
+      .map((stationCode) => ({
+        stationCode,
+        targets: filteredTargetDrafts.filter((target) => target.stationCode === stationCode),
+      }))
+      .filter((section) => section.targets.length > 0),
+    [filteredTargetDrafts, targetStationFilter],
   );
   const analyzedProductTraceResults = useMemo(
     () => analyzeProductTraceResults(productTraceQuery.data ?? []),
@@ -1079,10 +1106,42 @@ export default function AdminPage() {
                   <p className="text-sm leading-7 text-slate-600">可依 A1、A2、B、C、D、E 各站點，為每個品類／品牌組合輸入每日產能。系統會同步換算每小時產能與前台 100 點制的單件點數，供後續工程師點數與 KPI 邏輯使用。</p>
                   <p className="mt-2 text-xs text-slate-500">產能調整完成後，請使用上方統一按鈕一次儲存，避免各分頁分開送出造成設定不同步。</p>
                 </div>
-                {(query.data?.categories ?? []).length > 0 ? capacityStationOptions.map((stationCode) => {
-                  const stationTargets = targetDrafts.filter((target) => target.stationCode === stationCode);
-
-                  return (
+                {(query.data?.categories ?? []).length > 0 ? <>
+                  <div className="grid gap-4 rounded-[24px] bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-4">
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>站點</span>
+                      <select value={targetStationFilter} onChange={(event) => setTargetStationFilter(event.target.value as CapacityStationCode | "ALL")} className="editable-select h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                        <option value="ALL">全部站點</option>
+                        {capacityStationOptions.map((stationCode) => (
+                          <option key={stationCode} value={stationCode}>{stationCode}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>商品類別</span>
+                      <Input value={targetCategorySearch} onChange={(event) => setTargetCategorySearch(event.target.value)} placeholder="例如：智慧手機" className="editable-field rounded-2xl border-0 bg-white" />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>品牌</span>
+                      <Input value={targetBrandSearch} onChange={(event) => setTargetBrandSearch(event.target.value)} placeholder="例如：Apple、Samsung" className="editable-field rounded-2xl border-0 bg-white" />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>啟用狀態</span>
+                      <select value={targetActiveFilter} onChange={(event) => setTargetActiveFilter(event.target.value as "all" | "active" | "inactive")} className="editable-select h-10 rounded-2xl border-0 bg-white px-3 text-slate-900 shadow-sm outline-none">
+                        <option value="all">全部狀態</option>
+                        <option value="active">僅顯示啟用</option>
+                        <option value="inactive">僅顯示未啟用</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="flex flex-col gap-2 rounded-[20px] bg-white px-4 py-3 text-sm text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2 font-medium text-slate-700">
+                      <Search className="h-4 w-4" />
+                      目前共有 {filteredTargetDrafts.length} 筆產能設定符合條件
+                    </div>
+                    <p className="text-xs text-slate-500">可同時依站點、商品類別、品牌與啟用狀態交叉篩選。</p>
+                  </div>
+                  {visibleTargetSections.length > 0 ? visibleTargetSections.map(({ stationCode, targets: stationTargets }) => (
                     <div key={stationCode} className="space-y-3 rounded-[24px] bg-slate-50 p-5">
                       <div>
                         <p className="text-lg font-bold text-slate-900">{stationCode} 站每日產能</p>
@@ -1128,8 +1187,8 @@ export default function AdminPage() {
                         </table>
                       </div>
                     </div>
-                  );
-                }) : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先到「品類設定」新增商品類別與品牌組合，再回來輸入各站每日產能。</div>}
+                  )) : <div className="rounded-[24px] bg-slate-50 p-5 text-sm text-slate-600">目前找不到符合搜尋條件的產能設定，請調整站點、商品類別、品牌或啟用狀態後再試一次。</div>}
+                </> : <div className="rounded-[24px] bg-slate-50 p-4 text-sm text-slate-600">目前沒有任何品類設定；請先到「品類設定」新增商品類別與品牌組合，再回來輸入各站每日產能。</div>}
               </CardContent>
             </Card>
           </TabsContent>

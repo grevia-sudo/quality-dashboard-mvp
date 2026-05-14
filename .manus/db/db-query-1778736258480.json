@@ -1,0 +1,46 @@
+{
+  "query": "SELECT u.name AS engineer_name, psd.stationCode AS station_code, psd.businessDate,\n       COUNT(*) AS detail_rows,\n       COUNT(DISTINCT psd.stationEventId) AS unique_events,\n       SUM(psd.completedQty) AS completed_qty_sum,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, psd.stationCode, psd.businessDate\nORDER BY u.name, psd.businessDate, psd.stationCode;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name AS engineer_name, psd.stationCode AS station_code, psd.businessDate,\n       COUNT(*) AS detail_rows,\n       COUNT(DISTINCT psd.stationEventId) AS unique_events,\n       SUM(psd.completedQty) AS completed_qty_sum,\n       ROUND(SUM(psd.earnedPoints) * 100, 2) AS display_points\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, psd.stationCode, psd.businessDate\nORDER BY u.name, psd.businessDate, psd.stationCode;",
+  "rows": [
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "businessDate": "2026-05-13",
+      "detail_rows": "95",
+      "unique_events": "95",
+      "completed_qty_sum": "95",
+      "display_points": "26.39"
+    },
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "businessDate": "2026-05-14",
+      "detail_rows": "69",
+      "unique_events": "67",
+      "completed_qty_sum": "69",
+      "display_points": "19.17"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "businessDate": "2026-05-13",
+      "detail_rows": "121",
+      "unique_events": "94",
+      "completed_qty_sum": "121",
+      "display_points": "33.61"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "businessDate": "2026-05-14",
+      "detail_rows": "56",
+      "unique_events": "56",
+      "completed_qty_sum": "56",
+      "display_points": "15.56"
+    }
+  ],
+  "messages": [],
+  "stdout": "engineer_name\tstation_code\tbusinessDate\tdetail_rows\tunique_events\tcompleted_qty_sum\tdisplay_points\n宥凱\tA1\t2026-05-13\t95\t95\t95\t26.39\n宥凱\tA1\t2026-05-14\t69\t67\t69\t19.17\n小周\tA2\t2026-05-13\t121\t94\t121\t33.61\n小周\tA2\t2026-05-14\t56\t56\t56\t15.56\n",
+  "stderr": "",
+  "execution_time_ms": 1744
+}

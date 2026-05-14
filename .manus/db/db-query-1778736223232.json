@@ -1,0 +1,9 @@
+{
+  "query": "SELECT u.name AS engineer_name, stc.businessDate, stc.supportTask, ROUND(stc.supportHours, 2) AS support_hours,\n       ROUND(stc.supportHours * 0.125 * 100, 2) AS support_display_points\nFROM support_task_compensations stc\nJOIN users u ON u.id = stc.userId\nWHERE u.name IN ('宥凱','小周')\n  AND stc.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND stc.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nORDER BY u.name, stc.businessDate, stc.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name AS engineer_name, stc.businessDate, stc.supportTask, ROUND(stc.supportHours, 2) AS support_hours,\n       ROUND(stc.supportHours * 0.125 * 100, 2) AS support_display_points\nFROM support_task_compensations stc\nJOIN users u ON u.id = stc.userId\nWHERE u.name IN ('宥凱','小周')\n  AND stc.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND stc.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nORDER BY u.name, stc.businessDate, stc.id;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1850
+}

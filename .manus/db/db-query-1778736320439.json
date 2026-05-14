@@ -1,0 +1,52 @@
+{
+  "query": "SELECT COLUMN_NAME\nFROM INFORMATION_SCHEMA.COLUMNS\nWHERE TABLE_SCHEMA = DATABASE()\n  AND TABLE_NAME = 'station_events'\nORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COLUMN_NAME\nFROM INFORMATION_SCHEMA.COLUMNS\nWHERE TABLE_SCHEMA = DATABASE()\n  AND TABLE_NAME = 'station_events'\nORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "productId"
+    },
+    {
+      "COLUMN_NAME": "stationTaskId"
+    },
+    {
+      "COLUMN_NAME": "stationCode"
+    },
+    {
+      "COLUMN_NAME": "stationEventType"
+    },
+    {
+      "COLUMN_NAME": "operatorUserId"
+    },
+    {
+      "COLUMN_NAME": "businessDate"
+    },
+    {
+      "COLUMN_NAME": "categoryId"
+    },
+    {
+      "COLUMN_NAME": "subtypeCode"
+    },
+    {
+      "COLUMN_NAME": "isRework"
+    },
+    {
+      "COLUMN_NAME": "reworkRound"
+    },
+    {
+      "COLUMN_NAME": "countForProductivity"
+    },
+    {
+      "COLUMN_NAME": "payload"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nproductId\nstationTaskId\nstationCode\nstationEventType\noperatorUserId\nbusinessDate\ncategoryId\nsubtypeCode\nisRework\nreworkRound\ncountForProductivity\npayload\ncreatedAt\n",
+  "stderr": "",
+  "execution_time_ms": 1697
+}

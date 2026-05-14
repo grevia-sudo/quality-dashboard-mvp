@@ -1,0 +1,39 @@
+{
+  "query": "SELECT INDEX_NAME, NON_UNIQUE, COLUMN_NAME\nFROM INFORMATION_SCHEMA.STATISTICS\nWHERE TABLE_SCHEMA = DATABASE()\n  AND TABLE_NAME = 'productivity_score_details'\nORDER BY INDEX_NAME, SEQ_IN_INDEX;\n\nSELECT u.name AS engineer_name, psd.businessDate, psd.stationCode, COUNT(*) AS duplicate_rows, COUNT(DISTINCT psd.stationEventId) AS duplicate_event_count\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\n  AND psd.stationEventId IN (\n    SELECT stationEventId\n    FROM productivity_score_details\n    GROUP BY stationEventId\n    HAVING COUNT(*) > 1\n  )\nGROUP BY u.name, psd.businessDate, psd.stationCode\nORDER BY u.name, psd.businessDate, psd.stationCode;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT INDEX_NAME, NON_UNIQUE, COLUMN_NAME\nFROM INFORMATION_SCHEMA.STATISTICS\nWHERE TABLE_SCHEMA = DATABASE()\n  AND TABLE_NAME = 'productivity_score_details'\nORDER BY INDEX_NAME, SEQ_IN_INDEX;\n\nSELECT u.name AS engineer_name, psd.businessDate, psd.stationCode, COUNT(*) AS duplicate_rows, COUNT(DISTINCT psd.stationEventId) AS duplicate_event_count\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\n  AND psd.stationEventId IN (\n    SELECT stationEventId\n    FROM productivity_score_details\n    GROUP BY stationEventId\n    HAVING COUNT(*) > 1\n  )\nGROUP BY u.name, psd.businessDate, psd.stationCode\nORDER BY u.name, psd.businessDate, psd.stationCode;",
+  "rows": [
+    {
+      "INDEX_NAME": "PRIMARY",
+      "NON_UNIQUE": "0",
+      "COLUMN_NAME": "id"
+    },
+    {
+      "INDEX_NAME": "productivity_score_details_categoryId_product_categories_id_fk",
+      "NON_UNIQUE": "1",
+      "COLUMN_NAME": "categoryId"
+    },
+    {
+      "INDEX_NAME": "productivity_score_details_productId_products_id_fk",
+      "NON_UNIQUE": "1",
+      "COLUMN_NAME": "productId"
+    },
+    {
+      "INDEX_NAME": "productivity_score_details_stationEventId_station_events_id_fk",
+      "NON_UNIQUE": "1",
+      "COLUMN_NAME": "stationEventId"
+    },
+    {
+      "INDEX_NAME": "productivity_score_details_userId_users_id_fk",
+      "NON_UNIQUE": "1",
+      "COLUMN_NAME": "userId"
+    }
+  ],
+  "messages": [
+    "engineer_name\tbusinessDate\tstationCode\tduplicate_rows\tduplicate_event_count",
+    "宥凱\t2026-05-14\tA1\t3\t1",
+    "小周\t2026-05-13\tA2\t41\t14"
+  ],
+  "stdout": "INDEX_NAME\tNON_UNIQUE\tCOLUMN_NAME\nPRIMARY\t0\tid\nproductivity_score_details_categoryId_product_categories_id_fk\t1\tcategoryId\nproductivity_score_details_productId_products_id_fk\t1\tproductId\nproductivity_score_details_stationEventId_station_events_id_fk\t1\tstationEventId\nproductivity_score_details_userId_users_id_fk\t1\tuserId\nengineer_name\tbusinessDate\tstationCode\tduplicate_rows\tduplicate_event_count\n宥凱\t2026-05-14\tA1\t3\t1\n小周\t2026-05-13\tA2\t41\t14\n",
+  "stderr": "",
+  "execution_time_ms": 2053
+}

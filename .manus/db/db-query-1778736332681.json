@@ -1,0 +1,46 @@
+{
+  "query": "SELECT u.name AS engineer_name, se.stationCode AS station_code, se.businessDate,\n       COUNT(*) AS station_event_count,\n       SUM(CASE WHEN se.countForProductivity = 1 THEN 1 ELSE 0 END) AS counted_events,\n       SUM(CASE WHEN psd.id IS NOT NULL THEN 1 ELSE 0 END) AS detail_join_rows,\n       COUNT(DISTINCT CASE WHEN psd.id IS NOT NULL THEN se.id END) AS detail_covered_events\nFROM station_events se\nJOIN users u ON u.id = se.operatorUserId\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE u.name IN ('宥凱','小周')\n  AND se.stationEventType = 'complete'\n  AND se.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND se.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, se.stationCode, se.businessDate\nORDER BY u.name, se.businessDate, se.stationCode;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name AS engineer_name, se.stationCode AS station_code, se.businessDate,\n       COUNT(*) AS station_event_count,\n       SUM(CASE WHEN se.countForProductivity = 1 THEN 1 ELSE 0 END) AS counted_events,\n       SUM(CASE WHEN psd.id IS NOT NULL THEN 1 ELSE 0 END) AS detail_join_rows,\n       COUNT(DISTINCT CASE WHEN psd.id IS NOT NULL THEN se.id END) AS detail_covered_events\nFROM station_events se\nJOIN users u ON u.id = se.operatorUserId\nLEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id\nWHERE u.name IN ('宥凱','小周')\n  AND se.stationEventType = 'complete'\n  AND se.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND se.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, se.stationCode, se.businessDate\nORDER BY u.name, se.businessDate, se.stationCode;",
+  "rows": [
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "businessDate": "2026-05-13",
+      "station_event_count": "95",
+      "counted_events": "95",
+      "detail_join_rows": "95",
+      "detail_covered_events": "95"
+    },
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "businessDate": "2026-05-14",
+      "station_event_count": "81",
+      "counted_events": "81",
+      "detail_join_rows": "69",
+      "detail_covered_events": "67"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "businessDate": "2026-05-13",
+      "station_event_count": "121",
+      "counted_events": "121",
+      "detail_join_rows": "121",
+      "detail_covered_events": "94"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "businessDate": "2026-05-14",
+      "station_event_count": "64",
+      "counted_events": "64",
+      "detail_join_rows": "56",
+      "detail_covered_events": "56"
+    }
+  ],
+  "messages": [],
+  "stdout": "engineer_name\tstation_code\tbusinessDate\tstation_event_count\tcounted_events\tdetail_join_rows\tdetail_covered_events\n宥凱\tA1\t2026-05-13\t95\t95\t95\t95\n宥凱\tA1\t2026-05-14\t81\t81\t69\t67\n小周\tA2\t2026-05-13\t121\t121\t121\t94\n小周\tA2\t2026-05-14\t64\t64\t56\t56\n",
+  "stderr": "",
+  "execution_time_ms": 1766
+}

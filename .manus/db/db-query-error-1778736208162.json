@@ -1,0 +1,8 @@
+{
+  "query": "SELECT u.name AS engineer_name, scr.businessDate, scr.supportTask, ROUND(scr.supportHours, 2) AS support_hours,\n       ROUND(scr.supportHours * 0.125 * 100, 2) AS support_display_points\nFROM support_compensation_records scr\nJOIN users u ON u.id = scr.userId\nWHERE u.name IN ('宥凱','小周')\n  AND scr.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND scr.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nORDER BY u.name, scr.businessDate, scr.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name AS engineer_name, scr.businessDate, scr.supportTask, ROUND(scr.supportHours, 2) AS support_hours,\n       ROUND(scr.supportHours * 0.125 * 100, 2) AS support_display_points\nFROM support_compensation_records scr\nJOIN users u ON u.id = scr.userId\nWHERE u.name IN ('宥凱','小周')\n  AND scr.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND scr.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nORDER BY u.name, scr.businessDate, scr.id;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'f4lqwhzd9ggdmjubm98r2c.support_compensation_records' doesn't exist"
+  ]
+}

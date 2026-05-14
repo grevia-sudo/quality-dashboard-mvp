@@ -1,0 +1,58 @@
+{
+  "query": "SELECT COLUMN_NAME\nFROM INFORMATION_SCHEMA.COLUMNS\nWHERE TABLE_SCHEMA = DATABASE()\n  AND TABLE_NAME = 'engineer_daily_productivity'\nORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COLUMN_NAME\nFROM INFORMATION_SCHEMA.COLUMNS\nWHERE TABLE_SCHEMA = DATABASE()\n  AND TABLE_NAME = 'engineer_daily_productivity'\nORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "businessDate"
+    },
+    {
+      "COLUMN_NAME": "userId"
+    },
+    {
+      "COLUMN_NAME": "attendanceFlag"
+    },
+    {
+      "COLUMN_NAME": "totalPoints"
+    },
+    {
+      "COLUMN_NAME": "rawAchievementRate"
+    },
+    {
+      "COLUMN_NAME": "kpiAchievementRate"
+    },
+    {
+      "COLUMN_NAME": "overAchievementRate"
+    },
+    {
+      "COLUMN_NAME": "samplingFailRate"
+    },
+    {
+      "COLUMN_NAME": "reworkRate"
+    },
+    {
+      "COLUMN_NAME": "overdueCount"
+    },
+    {
+      "COLUMN_NAME": "avgProcessHours"
+    },
+    {
+      "COLUMN_NAME": "attendanceFairnessFactor"
+    },
+    {
+      "COLUMN_NAME": "finalKpiScore"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "updatedAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nbusinessDate\nuserId\nattendanceFlag\ntotalPoints\nrawAchievementRate\nkpiAchievementRate\noverAchievementRate\nsamplingFailRate\nreworkRate\noverdueCount\navgProcessHours\nattendanceFairnessFactor\nfinalKpiScore\ncreatedAt\nupdatedAt\n",
+  "stderr": "",
+  "execution_time_ms": 1691
+}

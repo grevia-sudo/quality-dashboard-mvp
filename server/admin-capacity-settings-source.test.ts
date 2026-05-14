@@ -21,6 +21,19 @@ describe("admin capacity settings source coverage", () => {
     expect(adminPageSource).toContain('儲存全部設定');
   });
 
+  it("supports filtering capacity settings by station, category, brand, and active status", () => {
+    expect(adminPageSource).toContain('const [targetStationFilter, setTargetStationFilter] = useState<CapacityStationCode | "ALL">("ALL");');
+    expect(adminPageSource).toContain('const [targetCategorySearch, setTargetCategorySearch] = useState("");');
+    expect(adminPageSource).toContain('const [targetBrandSearch, setTargetBrandSearch] = useState("");');
+    expect(adminPageSource).toContain('const [targetActiveFilter, setTargetActiveFilter] = useState<"all" | "active" | "inactive">("all");');
+    expect(adminPageSource).toContain('matchesStation');
+    expect(adminPageSource).toContain('matchesCategory');
+    expect(adminPageSource).toContain('matchesBrand');
+    expect(adminPageSource).toContain('matchesActive');
+    expect(adminPageSource).toContain('目前共有 {filteredTargetDrafts.length} 筆產能設定符合條件');
+    expect(adminPageSource).toContain('目前找不到符合搜尋條件的產能設定');
+  });
+
   it("submits station-category capacity payload for persistence", () => {
     expect(adminPageSource).toContain('categoryId: target.categoryId');
     expect(adminPageSource).toContain('subtypeCode: target.subtypeCode');

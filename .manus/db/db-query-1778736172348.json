@@ -1,0 +1,33 @@
+{
+  "query": "SELECT u.name AS engineer_name, psd.stationCode AS station_code, COUNT(*) AS detail_count, ROUND(SUM(psd.earnedPoints), 4) AS station_points, COUNT(DISTINCT psd.stationEventId) AS unique_events\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, psd.stationCode\nORDER BY u.name, psd.stationCode;\n\nSELECT u.name AS engineer_name, ROUND(SUM(psd.earnedPoints), 4) AS total_detail_points, COUNT(*) AS total_details, COUNT(DISTINCT psd.stationEventId) AS unique_events\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name;\n\nSELECT u.name AS engineer_name, edp.businessDate, ROUND(edp.totalPoints,4) AS total_points, ROUND(edp.finalKpiScore,4) AS final_kpi_score, ROUND(edp.rawAchievementRate,4) AS raw_achievement_rate, ROUND(edp.avgProcessHours,4) AS avg_process_hours\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nWHERE u.name IN ('宥凱','小周')\n  AND edp.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND edp.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nORDER BY u.name, edp.businessDate;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name AS engineer_name, psd.stationCode AS station_code, COUNT(*) AS detail_count, ROUND(SUM(psd.earnedPoints), 4) AS station_points, COUNT(DISTINCT psd.stationEventId) AS unique_events\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, psd.stationCode\nORDER BY u.name, psd.stationCode;\n\nSELECT u.name AS engineer_name, ROUND(SUM(psd.earnedPoints), 4) AS total_detail_points, COUNT(*) AS total_details, COUNT(DISTINCT psd.stationEventId) AS unique_events\nFROM productivity_score_details psd\nJOIN users u ON u.id = psd.userId\nWHERE u.name IN ('宥凱','小周')\n  AND psd.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND psd.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name;\n\nSELECT u.name AS engineer_name, edp.businessDate, ROUND(edp.totalPoints,4) AS total_points, ROUND(edp.finalKpiScore,4) AS final_kpi_score, ROUND(edp.rawAchievementRate,4) AS raw_achievement_rate, ROUND(edp.avgProcessHours,4) AS avg_process_hours\nFROM engineer_daily_productivity edp\nJOIN users u ON u.id = edp.userId\nWHERE u.name IN ('宥凱','小周')\n  AND edp.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND edp.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nORDER BY u.name, edp.businessDate;",
+  "rows": [
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "detail_count": "164",
+      "station_points": "0.4556",
+      "unique_events": "162"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "detail_count": "177",
+      "station_points": "0.4917",
+      "unique_events": "150"
+    }
+  ],
+  "messages": [
+    "engineer_name\ttotal_detail_points\ttotal_details\tunique_events",
+    "宥凱\t0.4556\t164\t162",
+    "小周\t0.4917\t177\t150",
+    "engineer_name\tbusinessDate\ttotal_points\tfinal_kpi_score\traw_achievement_rate\tavg_process_hours",
+    "宥凱\t2026-05-13\t0.2639\t26.3910\t26.3900\t1.9900",
+    "宥凱\t2026-05-14\t0.1917\t19.1682\t19.1700\t18.5800",
+    "小周\t2026-05-13\t0.3361\t33.6138\t33.6100\t0.3300",
+    "小周\t2026-05-14\t0.1556\t15.5568\t15.5600\t0.7600"
+  ],
+  "stdout": "engineer_name\tstation_code\tdetail_count\tstation_points\tunique_events\n宥凱\tA1\t164\t0.4556\t162\n小周\tA2\t177\t0.4917\t150\nengineer_name\ttotal_detail_points\ttotal_details\tunique_events\n宥凱\t0.4556\t164\t162\n小周\t0.4917\t177\t150\nengineer_name\tbusinessDate\ttotal_points\tfinal_kpi_score\traw_achievement_rate\tavg_process_hours\n宥凱\t2026-05-13\t0.2639\t26.3910\t26.3900\t1.9900\n宥凱\t2026-05-14\t0.1917\t19.1682\t19.1700\t18.5800\n小周\t2026-05-13\t0.3361\t33.6138\t33.6100\t0.3300\n小周\t2026-05-14\t0.1556\t15.5568\t15.5600\t0.7600\n",
+  "stderr": "",
+  "execution_time_ms": 2184
+}

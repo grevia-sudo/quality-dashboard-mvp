@@ -1,0 +1,46 @@
+{
+  "query": "SELECT u.name AS engineer_name, se.stationCode AS station_code, se.businessDate,\n       SUM(CASE WHEN psd_counts.cnt IS NULL THEN 1 ELSE 0 END) AS events_without_detail,\n       SUM(CASE WHEN psd_counts.cnt = 1 THEN 1 ELSE 0 END) AS events_with_single_detail,\n       SUM(CASE WHEN psd_counts.cnt > 1 THEN 1 ELSE 0 END) AS events_with_duplicate_details,\n       SUM(CASE WHEN psd_counts.cnt > 1 THEN psd_counts.cnt - 1 ELSE 0 END) AS extra_duplicate_rows\nFROM station_events se\nJOIN users u ON u.id = se.operatorUserId\nLEFT JOIN (\n  SELECT stationEventId, COUNT(*) AS cnt\n  FROM productivity_score_details\n  GROUP BY stationEventId\n) psd_counts ON psd_counts.stationEventId = se.id\nWHERE u.name IN ('宥凱','小周')\n  AND se.stationEventType = 'complete'\n  AND se.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND se.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, se.stationCode, se.businessDate\nORDER BY u.name, se.businessDate, se.stationCode;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT u.name AS engineer_name, se.stationCode AS station_code, se.businessDate,\n       SUM(CASE WHEN psd_counts.cnt IS NULL THEN 1 ELSE 0 END) AS events_without_detail,\n       SUM(CASE WHEN psd_counts.cnt = 1 THEN 1 ELSE 0 END) AS events_with_single_detail,\n       SUM(CASE WHEN psd_counts.cnt > 1 THEN 1 ELSE 0 END) AS events_with_duplicate_details,\n       SUM(CASE WHEN psd_counts.cnt > 1 THEN psd_counts.cnt - 1 ELSE 0 END) AS extra_duplicate_rows\nFROM station_events se\nJOIN users u ON u.id = se.operatorUserId\nLEFT JOIN (\n  SELECT stationEventId, COUNT(*) AS cnt\n  FROM productivity_score_details\n  GROUP BY stationEventId\n) psd_counts ON psd_counts.stationEventId = se.id\nWHERE u.name IN ('宥凱','小周')\n  AND se.stationEventType = 'complete'\n  AND se.businessDate >= DATE_FORMAT(CURDATE(), '%Y-%m-01')\n  AND se.businessDate < DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)\nGROUP BY u.name, se.stationCode, se.businessDate\nORDER BY u.name, se.businessDate, se.stationCode;",
+  "rows": [
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "businessDate": "2026-05-13",
+      "events_without_detail": "0",
+      "events_with_single_detail": "95",
+      "events_with_duplicate_details": "0",
+      "extra_duplicate_rows": "0"
+    },
+    {
+      "engineer_name": "宥凱",
+      "station_code": "A1",
+      "businessDate": "2026-05-14",
+      "events_without_detail": "12",
+      "events_with_single_detail": "66",
+      "events_with_duplicate_details": "1",
+      "extra_duplicate_rows": "2"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "businessDate": "2026-05-13",
+      "events_without_detail": "0",
+      "events_with_single_detail": "80",
+      "events_with_duplicate_details": "14",
+      "extra_duplicate_rows": "27"
+    },
+    {
+      "engineer_name": "小周",
+      "station_code": "A2",
+      "businessDate": "2026-05-14",
+      "events_without_detail": "8",
+      "events_with_single_detail": "56",
+      "events_with_duplicate_details": "0",
+      "extra_duplicate_rows": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "engineer_name\tstation_code\tbusinessDate\tevents_without_detail\tevents_with_single_detail\tevents_with_duplicate_details\textra_duplicate_rows\n宥凱\tA1\t2026-05-13\t0\t95\t0\t0\n宥凱\tA1\t2026-05-14\t12\t66\t1\t2\n小周\tA2\t2026-05-13\t0\t80\t14\t27\n小周\tA2\t2026-05-14\t8\t56\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1784
+}
