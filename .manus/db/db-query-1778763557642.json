@@ -1,0 +1,80 @@
+{
+  "query": "SELECT poNumber,\n       SUM(CASE WHEN archivedAt IS NULL THEN 1 ELSE 0 END) AS activeProducts,\n       SUM(CASE WHEN archivedAt IS NOT NULL THEN 1 ELSE 0 END) AS archivedProducts,\n       MIN(createdAt) AS firstCreatedAt,\n       MAX(updatedAt) AS lastUpdatedAt\nFROM products\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nGROUP BY poNumber\nORDER BY poNumber;\n\nSELECT poNumber, deletedProducts, deletedTasks, deletedByName, createdAt\nFROM purchase_order_deletion_logs\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nORDER BY createdAt DESC;\n\nSELECT poNumber, backupLabel, productCount, createdAt, restoredAt\nFROM import_batch_backups\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT poNumber,\n       SUM(CASE WHEN archivedAt IS NULL THEN 1 ELSE 0 END) AS activeProducts,\n       SUM(CASE WHEN archivedAt IS NOT NULL THEN 1 ELSE 0 END) AS archivedProducts,\n       MIN(createdAt) AS firstCreatedAt,\n       MAX(updatedAt) AS lastUpdatedAt\nFROM products\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nGROUP BY poNumber\nORDER BY poNumber;\n\nSELECT poNumber, deletedProducts, deletedTasks, deletedByName, createdAt\nFROM purchase_order_deletion_logs\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nORDER BY createdAt DESC;\n\nSELECT poNumber, backupLabel, productCount, createdAt, restoredAt\nFROM import_batch_backups\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "poNumber": "PO-20260514-04",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:08",
+      "lastUpdatedAt": "2026-05-14 09:03:42"
+    },
+    {
+      "poNumber": "PO-20260514-05",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:14",
+      "lastUpdatedAt": "2026-05-14 09:03:37"
+    },
+    {
+      "poNumber": "PO-20260514-07",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:19",
+      "lastUpdatedAt": "2026-05-14 09:03:44"
+    },
+    {
+      "poNumber": "PO-20260514-12",
+      "activeProducts": "0",
+      "archivedProducts": "2",
+      "firstCreatedAt": "2026-05-14 09:03:31",
+      "lastUpdatedAt": "2026-05-14 09:03:49"
+    },
+    {
+      "poNumber": "PO-BACKUP-EDGE-1778749392638",
+      "activeProducts": "1",
+      "archivedProducts": "0",
+      "firstCreatedAt": "2026-05-14 09:03:14",
+      "lastUpdatedAt": "2026-05-14 09:20:48"
+    },
+    {
+      "poNumber": "PO-STOCK-BLOCK-1778749390586",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:11",
+      "lastUpdatedAt": "2026-05-14 09:03:45"
+    },
+    {
+      "poNumber": "TEST-A1-DUP-GUARD-1778749412041",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:33",
+      "lastUpdatedAt": "2026-05-14 09:03:50"
+    },
+    {
+      "poNumber": "TEST-A1-IMEI-1778749381829",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:02",
+      "lastUpdatedAt": "2026-05-14 09:03:45"
+    },
+    {
+      "poNumber": "TEST-A1-NAME-1778749416728",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:37",
+      "lastUpdatedAt": "2026-05-14 09:03:51"
+    },
+    {
+      "poNumber": "TEST-A1-SN-1778749418491",
+      "activeProducts": "0",
+      "archivedProducts": "1",
+      "firstCreatedAt": "2026-05-14 09:03:39",
+      "lastUpdatedAt": "2026-05-14 09:03:52"
+    }
+  ],
+  "messages": [],
+  "stdout": "poNumber\tactiveProducts\tarchivedProducts\tfirstCreatedAt\tlastUpdatedAt\nPO-20260514-04\t0\t1\t2026-05-14 09:03:08\t2026-05-14 09:03:42\nPO-20260514-05\t0\t1\t2026-05-14 09:03:14\t2026-05-14 09:03:37\nPO-20260514-07\t0\t1\t2026-05-14 09:03:19\t2026-05-14 09:03:44\nPO-20260514-12\t0\t2\t2026-05-14 09:03:31\t2026-05-14 09:03:49\nPO-BACKUP-EDGE-1778749392638\t1\t0\t2026-05-14 09:03:14\t2026-05-14 09:20:48\nPO-STOCK-BLOCK-1778749390586\t0\t1\t2026-05-14 09:03:11\t2026-05-14 09:03:45\nTEST-A1-DUP-GUARD-1778749412041\t0\t1\t2026-05-14 09:03:33\t2026-05-14 09:03:50\nTEST-A1-IMEI-1778749381829\t0\t1\t2026-05-14 09:03:02\t2026-05-14 09:03:45\nTEST-A1-NAME-1778749416728\t0\t1\t2026-05-14 09:03:37\t2026-05-14 09:03:51\nTEST-A1-SN-1778749418491\t0\t1\t2026-05-14 09:03:39\t2026-05-14 09:03:52\n",
+  "stderr": "",
+  "execution_time_ms": 2169
+}

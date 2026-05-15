@@ -1,0 +1,25 @@
+{
+  "query": "SELECT id, productCode, poNumber, batchNo, serialNumber, imei, productName, stationCode, productStatus, sheetRowNumber, archivedAt, createdAt, updatedAt FROM products WHERE batchNo = '01200000298' ORDER BY archivedAt IS NULL DESC, updatedAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, productCode, poNumber, batchNo, serialNumber, imei, productName, stationCode, productStatus, sheetRowNumber, archivedAt, createdAt, updatedAt FROM products WHERE batchNo = '01200000298' ORDER BY archivedAt IS NULL DESC, updatedAt DESC;",
+  "rows": [
+    {
+      "id": "720102",
+      "productCode": "P-1778743519746-023",
+      "poNumber": "PO-20260514-03",
+      "batchNo": "01200000298",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "productName": "NULL",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "674",
+      "archivedAt": "NULL",
+      "createdAt": "2026-05-14 07:25:19",
+      "updatedAt": "2026-05-14 07:26:25"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductCode\tpoNumber\tbatchNo\tserialNumber\timei\tproductName\tstationCode\tproductStatus\tsheetRowNumber\tarchivedAt\tcreatedAt\tupdatedAt\n720102\tP-1778743519746-023\tPO-20260514-03\t01200000298\tNULL\tNULL\tNULL\tA1\tpending_a1\t674\tNULL\t2026-05-14 07:25:19\t2026-05-14 07:26:25\n",
+  "stderr": "",
+  "execution_time_ms": 1694
+}

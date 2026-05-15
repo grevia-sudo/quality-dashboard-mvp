@@ -216,13 +216,11 @@ export function matchesSheetRow(row, product) {
   const rowSerialNumber = normalizeIdentityCell(row?.[4]);
   const rowImei = normalizeIdentityCell(row?.[5]);
 
-  if (imei && rowImei && rowImei === imei) {
-    return true;
-  }
-  if (serialNumber && rowSerialNumber && rowSerialNumber === serialNumber) {
-    return true;
-  }
   if (isSameBatchNo(batchNo, rowBatchNo)) {
+    return true;
+  }
+
+  if (serialNumber && imei && rowSerialNumber && rowImei && rowSerialNumber === serialNumber && rowImei === imei) {
     return true;
   }
 

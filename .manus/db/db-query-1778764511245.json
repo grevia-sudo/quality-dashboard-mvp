@@ -1,0 +1,9 @@
+{
+  "query": "SELECT poNumber, COUNT(*) AS remainingProducts\nFROM products\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nGROUP BY poNumber\nORDER BY poNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT poNumber, COUNT(*) AS remainingProducts\nFROM products\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-KPI-WRITE-1778749381827',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-KPI-FALLBACK-1778749392323-fallback',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491',\n  'PO-KPI-MISSING-GOOGLE-1778749418051-missing-google',\n  'PO-KPI-D-SAMPLING-PASS-1778750585732-d-sampling-pass',\n  'PO-KPI-MISSING-GOOGLE-1778750592526-missing-google',\n  'PO-KPI-IDEMPOTENT-1778750598137-idempotent'\n)\nGROUP BY poNumber\nORDER BY poNumber;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1783
+}

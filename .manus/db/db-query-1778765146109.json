@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, poNumber, batchNo, serialNumber, imei, productName, sheetRowNumber, archivedAt, createdAt, updatedAt\nFROM products\nWHERE batchNo = 'NO-IMPORT-BATCH-1778749383598'\n   OR serialNumber = 'V42J4RV4FF'\n   OR batchNo IN ('Q49QF04603', '00500025410')\n   OR imei IN ('C0VQYGX30H', '353103648954639')\nORDER BY createdAt ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, poNumber, batchNo, serialNumber, imei, productName, sheetRowNumber, archivedAt, createdAt, updatedAt\nFROM products\nWHERE batchNo = 'NO-IMPORT-BATCH-1778749383598'\n   OR serialNumber = 'V42J4RV4FF'\n   OR batchNo IN ('Q49QF04603', '00500025410')\n   OR imei IN ('C0VQYGX30H', '353103648954639')\nORDER BY createdAt ASC;",
+  "rows": [
+    {
+      "id": "720032",
+      "poNumber": "NULL",
+      "batchNo": "Q49QF04603",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "C0VQYGX30H",
+      "productName": "G72RCQXG7N",
+      "sheetRowNumber": "604",
+      "archivedAt": "NULL",
+      "createdAt": "2026-05-14 06:47:26",
+      "updatedAt": "2026-05-14 06:50:57"
+    },
+    {
+      "id": "750004",
+      "poNumber": "NULL",
+      "batchNo": "00500025410",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "353103648954639",
+      "productName": "Apple iPhone 13 Pro 512GB 天峰藍色",
+      "sheetRowNumber": "604",
+      "archivedAt": "NULL",
+      "createdAt": "2026-05-14 08:25:04",
+      "updatedAt": "2026-05-14 08:27:09"
+    },
+    {
+      "id": "750015",
+      "poNumber": "PO-NO-IMPORT-1778749383598",
+      "batchNo": "NO-IMPORT-BATCH-1778749383598",
+      "serialNumber": "NO-IMPORT-SN-1778749383598",
+      "imei": "931778749383599",
+      "productName": "No Import Flow Device",
+      "sheetRowNumber": "795",
+      "archivedAt": "2026-05-14 09:03:45",
+      "createdAt": "2026-05-14 09:03:04",
+      "updatedAt": "2026-05-14 09:03:45"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpoNumber\tbatchNo\tserialNumber\timei\tproductName\tsheetRowNumber\tarchivedAt\tcreatedAt\tupdatedAt\n720032\tNULL\tQ49QF04603\tV42J4RV4FF\tC0VQYGX30H\tG72RCQXG7N\t604\tNULL\t2026-05-14 06:47:26\t2026-05-14 06:50:57\n750004\tNULL\t00500025410\tV42J4RV4FF\t353103648954639\tApple iPhone 13 Pro 512GB 天峰藍色\t604\tNULL\t2026-05-14 08:25:04\t2026-05-14 08:27:09\n750015\tPO-NO-IMPORT-1778749383598\tNO-IMPORT-BATCH-1778749383598\tNO-IMPORT-SN-1778749383598\t931778749383599\tNo Import Flow Device\t795\t2026-05-14 09:03:45\t2026-05-14 09:03:04\t2026-05-14 09:03:45\n",
+  "stderr": "",
+  "execution_time_ms": 1745
+}

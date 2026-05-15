@@ -2073,6 +2073,7 @@ async function findPendingA1ProductByIdentity(
       categoryId: products.categoryId,
       currentStationCode: products.currentStationCode,
       currentStatus: products.currentStatus,
+      sheetRowNumber: products.sheetRowNumber,
       pendingTaskId: stationTasks.id,
     })
     .from(products)
@@ -2212,6 +2213,7 @@ async function findGooglePurchaseSheetBatchConflict(input: {
   batchNo?: string | null;
   serialNumber?: string | null;
   imei?: string | null;
+  allowBlankIdentitySupplementRowNumber?: number | null;
 }) {
   const normalizedBatchKey = normalizeBatchMatchValue(input.batchNo);
   const normalizedSerialNumber = normalizeIdentityMatchValue(input.serialNumber);
@@ -2234,8 +2236,14 @@ async function findGooglePurchaseSheetBatchConflict(input: {
       (normalizedSerialNumber && rowSerialNumber && normalizedSerialNumber === rowSerialNumber)
       || (normalizedImei && rowImei && normalizedImei === rowImei),
     );
+    const rowHasNoIdentity = !rowSerialNumber && !rowImei;
+    const isAllowedBlankIdentitySupplement = Boolean(
+      rowHasNoIdentity
+      && input.allowBlankIdentitySupplementRowNumber
+      && input.allowBlankIdentitySupplementRowNumber === index + 1,
+    );
 
-    if (sameIdentity) {
+    if (sameIdentity || isAllowedBlankIdentitySupplement) {
       continue;
     }
 
@@ -2339,6 +2347,7 @@ export async function completeA1ArrivalByScan(input: {
     batchNo: normalizedBatchNo,
     serialNumber: normalizedSerialNumber,
     imei: normalizedImei,
+    allowBlankIdentitySupplementRowNumber: matchedProduct?.sheetRowNumber ?? null,
   });
 
   if (duplicatedGoogleBatch) {
@@ -2403,14 +2412,20 @@ export async function completeA1ArrivalByScan(input: {
       categoryId: null,
       currentStationCode: "A1" as const,
       currentStatus: "pending_a1" as const,
+      sheetRowNumber: null,
       pendingTaskId: pendingTask?.id ?? null,
     };
   }
 
-  const nextBatchNo = mergeScannedIdentityField("商品批號", matchedProduct.batchNo, normalizedBatchNo);
+  const resolvedMatchedProduct = matchedProduct;
+  if (!resolvedMatchedProduct) {
+    return { success: false as const, message: "找不到可處理的 A1 商品" };
+  }
+
+  const nextBatchNo = mergeScannedIdentityField("商品批號", resolvedMatchedProduct.batchNo, normalizedBatchNo);
   const duplicateAfterMerge = await findOtherActiveProductByBatchNo(db, {
     batchNo: nextBatchNo,
-    excludeProductId: matchedProduct.id,
+    excludeProductId: resolvedMatchedProduct.id,
   });
   if (duplicateAfterMerge) {
     return {
@@ -2419,12 +2434,12 @@ export async function completeA1ArrivalByScan(input: {
     };
   }
 
-  const nextSerialNumber = mergeScannedIdentityField("商品序號", matchedProduct.serialNumber, normalizedSerialNumber);
-  const nextImei = mergeScannedIdentityField("IMEI", matchedProduct.imei, normalizedImei);
-  const nextProductName = resolveA1ProductName(matchedProduct.productName, normalizedProductName);
-  const pendingTaskId = matchedProduct.pendingTaskId ?? (await ensurePendingA1Task(db, matchedProduct.id, businessDateValue, {
-    source: matchedProduct.poNumber ? "a1_scan_receive" : "a1_scan_receive_without_import",
-    awaitingImportMatch: matchedProduct.poNumber ? undefined : true,
+  const nextSerialNumber = mergeScannedIdentityField("商品序號", resolvedMatchedProduct.serialNumber, normalizedSerialNumber);
+  const nextImei = mergeScannedIdentityField("IMEI", resolvedMatchedProduct.imei, normalizedImei);
+  const nextProductName = resolveA1ProductName(resolvedMatchedProduct.productName, normalizedProductName);
+  const pendingTaskId = resolvedMatchedProduct.pendingTaskId ?? (await ensurePendingA1Task(db, resolvedMatchedProduct.id, businessDateValue, {
+    source: resolvedMatchedProduct.poNumber ? "a1_scan_receive" : "a1_scan_receive_without_import",
+    awaitingImportMatch: resolvedMatchedProduct.poNumber ? undefined : true,
   }))?.id;
 
   if (!pendingTaskId) {
@@ -2440,31 +2455,31 @@ export async function completeA1ArrivalByScan(input: {
       serialNumber: nextSerialNumber,
       imei: nextImei,
       productName: nextProductName,
-      currentStationCode: nextStation ?? matchedProduct.currentStationCode,
-      currentStatus: nextStation ? statusForStation(nextStation) : matchedProduct.currentStatus,
-      inspectionSummary: matchedProduct.poNumber ? "A1 掃碼點到貨完成，待背景同步 Google" : "已刷入系統，待匯入比對與 Google 回寫",
+      currentStationCode: nextStation ?? resolvedMatchedProduct.currentStationCode,
+      currentStatus: nextStation ? statusForStation(nextStation) : resolvedMatchedProduct.currentStatus,
+      inspectionSummary: resolvedMatchedProduct.poNumber ? "A1 掃碼點到貨完成，待背景同步 Google" : "已刷入系統，待匯入比對與 Google 回寫",
       updatedAt: completedAt,
     })
-    .where(eq(products.id, matchedProduct.id));
+    .where(eq(products.id, resolvedMatchedProduct.id));
 
   queueA1CompletionSideEffectsInBackground({
-    productId: matchedProduct.id,
+    productId: resolvedMatchedProduct.id,
     stationTaskId: pendingTaskId,
     operatorUserId: input.operatorUserId,
     businessDate: businessDateValue,
     completedAt,
-    categoryId: matchedProduct.categoryId ?? null,
+    categoryId: resolvedMatchedProduct.categoryId ?? null,
     nextStation,
   });
 
   return {
     success: true as const,
     nextStationCode: "A2" as const,
-    productId: matchedProduct.id,
-    productCode: matchedProduct.productCode,
-    poNumber: matchedProduct.poNumber,
-    vendorName: matchedProduct.vendorName,
-    categoryName: matchedProduct.importedCategoryName,
+    productId: resolvedMatchedProduct.id,
+    productCode: resolvedMatchedProduct.productCode,
+    poNumber: resolvedMatchedProduct.poNumber,
+    vendorName: resolvedMatchedProduct.vendorName,
+    categoryName: resolvedMatchedProduct.importedCategoryName,
   };
 }
 

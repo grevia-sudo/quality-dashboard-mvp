@@ -19,6 +19,128 @@ afterEach(() => {
 });
 
 describe("A1 and E direct feature regressions", () => {
+  it("allows A1 receive to supplement the same imported Google row when that row only has a matching batch and blank serial/imei", async () => {
+    await ensureMvpSeedData();
+    const uniqueSuffix = `${Date.now()}`;
+    const batchNo = `GOOGLE-BLANK-BATCH-${uniqueSuffix}`;
+    const serialNumber = `GOOGLE-BLANK-SERIAL-${uniqueSuffix}`;
+    const imei = `93${`${Number(uniqueSuffix) + 1}`.padStart(13, "0").slice(-13)}`;
+    const productName = "Google Blank Identity Device";
+
+    const importResult = await importProducts({
+      poNumber: `PO-GOOGLE-BLANK-${uniqueSuffix}`,
+      vendorName: "Google Blank Vendor",
+      rows: [
+        {
+          batchNo,
+          serialNumber: null,
+          imei: null,
+          productName: null,
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+
+    const db = await getDb();
+    expect(db).toBeTruthy();
+
+    const importedProduct = (await db!
+      .select({
+        id: products.id,
+        stationCode: products.currentStationCode,
+        productStatus: products.currentStatus,
+        sheetRowNumber: products.sheetRowNumber,
+      })
+      .from(products)
+      .where(and(
+        eq(products.poNumber, importResult.poNumber),
+        eq(products.batchNo, batchNo),
+        isNull(products.archivedAt),
+      ))
+      .limit(1))[0];
+
+    expect(importedProduct).toBeTruthy();
+    expect(importedProduct?.stationCode).toBe("A1");
+    expect(importedProduct?.productStatus).toBe("pending_a1");
+
+    await db!
+      .update(products)
+      .set({ sheetRowNumber: 2 })
+      .where(eq(products.id, importedProduct!.id));
+
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("oauth2.googleapis.com/token")) {
+        return new Response(JSON.stringify({
+          access_token: "fake-google-token",
+          expires_in: 3600,
+          token_type: "Bearer",
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      if (url.includes("sheets.googleapis.com")) {
+        return new Response(JSON.stringify({
+          values: [
+            ["PO", "Vendor", "Arrived", "批號", "序號", "IMEI", "品名"],
+            [
+              importResult.poNumber,
+              "Google Blank Vendor",
+              "",
+              batchNo,
+              "",
+              "",
+              "",
+            ],
+          ],
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      throw new Error(`Unexpected fetch URL in test: ${url}`);
+    }) as typeof fetch;
+
+    const result = await completeA1ArrivalByScan({
+      operatorUserId: 1,
+      batchNo,
+      serialNumber,
+      imei,
+      productName,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.productId).toBe(importedProduct?.id);
+
+    const refreshedProduct = (await db!
+      .select({
+        batchNo: products.batchNo,
+        serialNumber: products.serialNumber,
+        imei: products.imei,
+        productName: products.productName,
+        stationCode: products.currentStationCode,
+        productStatus: products.currentStatus,
+        sheetRowNumber: products.sheetRowNumber,
+      })
+      .from(products)
+      .where(eq(products.id, importedProduct!.id))
+      .limit(1))[0];
+
+    expect(refreshedProduct).toMatchObject({
+      batchNo,
+      serialNumber,
+      imei,
+      productName,
+      stationCode: "A2",
+      productStatus: "pending_a2",
+      sheetRowNumber: 2,
+    });
+  }, 20000);
+
   it("blocks A1 receive when Google purchase sheet already has the same batch number with another identity", async () => {
     await ensureMvpSeedData();
     const uniqueSuffix = `${Date.now()}`;

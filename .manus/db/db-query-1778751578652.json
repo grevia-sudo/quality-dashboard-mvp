@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, batchNo, serialNumber, imei, productName, sheetRowNumber, stationCode, productStatus, createdAt, updatedAt\nFROM products\nWHERE serialNumber = 'V42J4RV4FF'\nORDER BY id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, batchNo, serialNumber, imei, productName, sheetRowNumber, stationCode, productStatus, createdAt, updatedAt\nFROM products\nWHERE serialNumber = 'V42J4RV4FF'\nORDER BY id ASC;",
+  "rows": [
+    {
+      "id": "720032",
+      "batchNo": "Q49QF04603",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "C0VQYGX30H",
+      "productName": "G72RCQXG7N",
+      "sheetRowNumber": "604",
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "createdAt": "2026-05-14 06:47:26",
+      "updatedAt": "2026-05-14 06:50:57"
+    },
+    {
+      "id": "750004",
+      "batchNo": "00500025410",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "353103648954639",
+      "productName": "Apple iPhone 13 Pro 512GB 天峰藍色",
+      "sheetRowNumber": "604",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "createdAt": "2026-05-14 08:25:04",
+      "updatedAt": "2026-05-14 08:27:09"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tserialNumber\timei\tproductName\tsheetRowNumber\tstationCode\tproductStatus\tcreatedAt\tupdatedAt\n720032\tQ49QF04603\tV42J4RV4FF\tC0VQYGX30H\tG72RCQXG7N\t604\tB\tpending_b\t2026-05-14 06:47:26\t2026-05-14 06:50:57\n750004\t00500025410\tV42J4RV4FF\t353103648954639\tApple iPhone 13 Pro 512GB 天峰藍色\t604\tA2\tpending_a2\t2026-05-14 08:25:04\t2026-05-14 08:27:09\n",
+  "stderr": "",
+  "execution_time_ms": 1758
+}

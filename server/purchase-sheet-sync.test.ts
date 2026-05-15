@@ -96,17 +96,26 @@ describe("purchase sheet sync helpers", () => {
     }))).toEqual([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]);
   });
 
-  it("matches existing rows by IMEI first, then serial number, then batch number", () => {
+  it("matches existing rows by batch number first, or by serial plus IMEI together", () => {
     const values = [
       PURCHASE_SHEET_HEADER,
       ["PO-1", "綠途未來", "智慧型手機", "BATCH-1", "SN-1", "IMEI-1", "iPhone 13", "2026-04-22 10:30:00", "2026-04-22 11:45:00"],
-      ["PO-2", "循環供應商", "平板", "BATCH-2", "SN-2", "", "iPad mini", "", ""],
+      ["PO-2", "循環供應商", "平板", "BATCH-2", "SN-2", "IMEI-2", "iPad mini", "", ""],
     ];
 
-    expect(findMatchingRowNumber(values, { imei: "IMEI-1", serialNumber: "SN-X", batchNo: "BATCH-X" })).toBe(2);
-    expect(findMatchingRowNumber(values, { imei: "", serialNumber: "SN-2", batchNo: "BATCH-X" })).toBe(3);
-    expect(findMatchingRowNumber(values, { imei: "", serialNumber: "", batchNo: "BATCH-1" })).toBe(2);
+    expect(findMatchingRowNumber(values, { imei: "IMEI-X", serialNumber: "SN-X", batchNo: "BATCH-1" })).toBe(2);
+    expect(findMatchingRowNumber(values, { imei: "IMEI-2", serialNumber: "SN-2", batchNo: "BATCH-X" })).toBe(3);
+    expect(findMatchingRowNumber(values, { imei: "", serialNumber: "SN-2", batchNo: "BATCH-X" })).toBeNull();
+    expect(findMatchingRowNumber(values, { imei: "IMEI-1", serialNumber: "SN-X", batchNo: "BATCH-X" })).toBeNull();
     expect(findMatchingRowNumber(values, { imei: "", serialNumber: "", batchNo: "" })).toBeNull();
+  });
+
+  it("does not treat serial-only matches as the same row when batch and IMEI differ", () => {
+    expect(matchesSheetRow(["", "", "", "Q49QF04603", "V42J4RV4FF", "C0VQYGX30H"], {
+      batchNo: "00500025410",
+      serialNumber: "V42J4RV4FF",
+      imei: "353103648954639",
+    })).toBe(false);
   });
 
   it("validates whether a stored row number still points to the same product", () => {
@@ -114,6 +123,11 @@ describe("purchase sheet sync helpers", () => {
       batchNo: "BATCH-1",
       serialNumber: "SN-X",
       imei: "IMEI-X",
+    })).toBe(true);
+    expect(matchesSheetRow(["PO-2", "綠途未來", "智慧型手機", "OTHER-BATCH", "SN-1", "IMEI-1"], {
+      batchNo: "BATCH-1",
+      serialNumber: "SN-1",
+      imei: "IMEI-1",
     })).toBe(true);
     expect(matchesSheetRow(["PO-2", "綠途未來", "智慧型手機", "OTHER-BATCH", "OTHER-SN", "OTHER-IMEI"], {
       batchNo: "BATCH-1",

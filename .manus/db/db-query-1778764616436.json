@@ -1,0 +1,21 @@
+{
+  "query": "SELECT id, poNumber, batchNo, serialNumber, imei, productName, archivedAt, createdAt, updatedAt\nFROM products\nWHERE batchNo = 'NO-IMPORT-BATCH-1778749383598'\nORDER BY id DESC;\n\nSELECT poNumber, deletedProducts, deletedTasks, deletedByName, createdAt\nFROM purchase_order_deletion_logs\nWHERE poNumber IN (\n  SELECT DISTINCT poNumber FROM products WHERE batchNo = 'NO-IMPORT-BATCH-1778749383598'\n)\nORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, poNumber, batchNo, serialNumber, imei, productName, archivedAt, createdAt, updatedAt\nFROM products\nWHERE batchNo = 'NO-IMPORT-BATCH-1778749383598'\nORDER BY id DESC;\n\nSELECT poNumber, deletedProducts, deletedTasks, deletedByName, createdAt\nFROM purchase_order_deletion_logs\nWHERE poNumber IN (\n  SELECT DISTINCT poNumber FROM products WHERE batchNo = 'NO-IMPORT-BATCH-1778749383598'\n)\nORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "750015",
+      "poNumber": "PO-NO-IMPORT-1778749383598",
+      "batchNo": "NO-IMPORT-BATCH-1778749383598",
+      "serialNumber": "NO-IMPORT-SN-1778749383598",
+      "imei": "931778749383599",
+      "productName": "No Import Flow Device",
+      "archivedAt": "2026-05-14 09:03:45",
+      "createdAt": "2026-05-14 09:03:04",
+      "updatedAt": "2026-05-14 09:03:45"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpoNumber\tbatchNo\tserialNumber\timei\tproductName\tarchivedAt\tcreatedAt\tupdatedAt\n750015\tPO-NO-IMPORT-1778749383598\tNO-IMPORT-BATCH-1778749383598\tNO-IMPORT-SN-1778749383598\t931778749383599\tNo Import Flow Device\t2026-05-14 09:03:45\t2026-05-14 09:03:04\t2026-05-14 09:03:45\n",
+  "stderr": "",
+  "execution_time_ms": 2003
+}

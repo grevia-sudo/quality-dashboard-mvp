@@ -1,0 +1,8 @@
+{
+  "query": "SELECT poNumber, vendorName, batchNo, serialNumber, imei, productName, `currentStatus` AS currentStatus, archivedAt, createdAt\nFROM products\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491'\n)\nORDER BY createdAt ASC, poNumber ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT poNumber, vendorName, batchNo, serialNumber, imei, productName, `currentStatus` AS currentStatus, archivedAt, createdAt\nFROM products\nWHERE poNumber IN (\n  'TEST-A1-IMEI-1778749381829',\n  'PO-20260514-04',\n  'PO-STOCK-BLOCK-1778749390586',\n  'PO-BACKUP-EDGE-1778749392638',\n  'PO-20260514-05',\n  'PO-20260514-07',\n  'PO-20260514-12',\n  'TEST-A1-DUP-GUARD-1778749412041',\n  'TEST-A1-NAME-1778749416728',\n  'TEST-A1-SN-1778749418491'\n)\nORDER BY createdAt ASC, poNumber ASC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'currentstatus' in 'field list'"
+  ]
+}
