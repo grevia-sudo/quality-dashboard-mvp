@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.batchNo, p.productCode, p.stationCode, p.productStatus, se.stationCode AS eventStationCode, se.eventType, st.stationCode AS taskStationCode, st.stationTaskStatus, st.resultSummary FROM products p LEFT JOIN station_events se ON se.productId = p.id LEFT JOIN station_tasks st ON st.productId = p.id WHERE p.batchNo IN ('00500025407','00500025410') AND p.archivedAt IS NULL ORDER BY p.batchNo ASC, se.id ASC, st.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.productCode, p.stationCode, p.productStatus, se.stationCode AS eventStationCode, se.eventType, st.stationCode AS taskStationCode, st.stationTaskStatus, st.resultSummary FROM products p LEFT JOIN station_events se ON se.productId = p.id LEFT JOIN station_tasks st ON st.productId = p.id WHERE p.batchNo IN ('00500025407','00500025410') AND p.archivedAt IS NULL ORDER BY p.batchNo ASC, se.id ASC, st.id ASC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'se.eventtype' in 'field list'"
+  ]
+}

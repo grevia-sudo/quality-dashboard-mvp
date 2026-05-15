@@ -1,0 +1,24 @@
+{
+  "query": "SELECT `id`, `productCode`, `batchNo`, `serialNumber`, `imei`, `stationCode`, `productStatus`, `sheetRowNumber`, `poNumber`, `vendorName`, `productName`, `archivedAt` FROM `products` WHERE `batchNo` = '01200000305' ORDER BY `id` DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `productCode`, `batchNo`, `serialNumber`, `imei`, `stationCode`, `productStatus`, `sheetRowNumber`, `poNumber`, `vendorName`, `productName`, `archivedAt` FROM `products` WHERE `batchNo` = '01200000305' ORDER BY `id` DESC;",
+  "rows": [
+    {
+      "id": "720109",
+      "productCode": "P-1778743519746-030",
+      "batchNo": "01200000305",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "sheetRowNumber": "681",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "archivedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductCode\tbatchNo\tserialNumber\timei\tstationCode\tproductStatus\tsheetRowNumber\tpoNumber\tvendorName\tproductName\tarchivedAt\n720109\tP-1778743519746-030\t01200000305\tNULL\tNULL\tA1\tpending_a1\t681\tPO-20260514-03\t全國電子\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1743
+}

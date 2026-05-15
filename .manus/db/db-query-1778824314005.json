@@ -1,0 +1,13 @@
+{
+  "query": "START TRANSACTION;\nUPDATE `products`\nSET `sheetRowNumber` = `sheetRowNumber` - 1,\n    `updatedAt` = CURRENT_TIMESTAMP\nWHERE `archivedAt` IS NULL\n  AND `poNumber` = 'PO-20260514-03'\n  AND `stationCode` = 'A1'\n  AND `productStatus` = 'pending_a1'\n  AND `sheetRowNumber` BETWEEN 681 AND 777;\nSELECT ROW_COUNT() AS `updatedRows`;\nCOMMIT;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute START TRANSACTION;\nUPDATE `products`\nSET `sheetRowNumber` = `sheetRowNumber` - 1,\n    `updatedAt` = CURRENT_TIMESTAMP\nWHERE `archivedAt` IS NULL\n  AND `poNumber` = 'PO-20260514-03'\n  AND `stationCode` = 'A1'\n  AND `productStatus` = 'pending_a1'\n  AND `sheetRowNumber` BETWEEN 681 AND 777;\nSELECT ROW_COUNT() AS `updatedRows`;\nCOMMIT;",
+  "rows": [
+    {
+      "updatedRows": "97"
+    }
+  ],
+  "messages": [],
+  "stdout": "updatedRows\n97\n",
+  "stderr": "",
+  "execution_time_ms": 2545
+}

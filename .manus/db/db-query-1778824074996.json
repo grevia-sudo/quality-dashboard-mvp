@@ -1,0 +1,31 @@
+{
+  "query": "SELECT `stationCode`, `productStatus`, COUNT(*) AS `rowCount`, MIN(`sheetRowNumber`) AS `minRow`, MAX(`sheetRowNumber`) AS `maxRow` FROM `products` WHERE `archivedAt` IS NULL AND `poNumber` = 'PO-20260514-03' GROUP BY `stationCode`, `productStatus` ORDER BY `stationCode`, `productStatus`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `stationCode`, `productStatus`, COUNT(*) AS `rowCount`, MIN(`sheetRowNumber`) AS `minRow`, MAX(`sheetRowNumber`) AS `maxRow` FROM `products` WHERE `archivedAt` IS NULL AND `poNumber` = 'PO-20260514-03' GROUP BY `stationCode`, `productStatus` ORDER BY `stationCode`, `productStatus`;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "productStatus": "pending_a1",
+      "rowCount": "97",
+      "minRow": "681",
+      "maxRow": "777"
+    },
+    {
+      "stationCode": "B",
+      "productStatus": "pending_b",
+      "rowCount": "25",
+      "minRow": "652",
+      "maxRow": "680"
+    },
+    {
+      "stationCode": "C",
+      "productStatus": "pending_c",
+      "rowCount": "4",
+      "minRow": "671",
+      "maxRow": "675"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tproductStatus\trowCount\tminRow\tmaxRow\nA1\tpending_a1\t97\t681\t777\nB\tpending_b\t25\t652\t680\nC\tpending_c\t4\t671\t675\n",
+  "stderr": "",
+  "execution_time_ms": 1851
+}

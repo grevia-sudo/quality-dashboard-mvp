@@ -1,0 +1,34 @@
+{
+  "query": "SELECT `batchNo`, `sheetRowNumber`, `stationCode`, `productStatus` FROM `products` WHERE `archivedAt` IS NULL AND `poNumber` = 'PO-20260514-03' AND `stationCode` = 'A1' AND `productStatus` = 'pending_a1' AND `batchNo` IN ('01200000305', '01200000306', '01200000400', '01200000401') ORDER BY `batchNo` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `batchNo`, `sheetRowNumber`, `stationCode`, `productStatus` FROM `products` WHERE `archivedAt` IS NULL AND `poNumber` = 'PO-20260514-03' AND `stationCode` = 'A1' AND `productStatus` = 'pending_a1' AND `batchNo` IN ('01200000305', '01200000306', '01200000400', '01200000401') ORDER BY `batchNo` ASC;",
+  "rows": [
+    {
+      "batchNo": "01200000305",
+      "sheetRowNumber": "680",
+      "stationCode": "A1",
+      "productStatus": "pending_a1"
+    },
+    {
+      "batchNo": "01200000306",
+      "sheetRowNumber": "681",
+      "stationCode": "A1",
+      "productStatus": "pending_a1"
+    },
+    {
+      "batchNo": "01200000400",
+      "sheetRowNumber": "775",
+      "stationCode": "A1",
+      "productStatus": "pending_a1"
+    },
+    {
+      "batchNo": "01200000401",
+      "sheetRowNumber": "776",
+      "stationCode": "A1",
+      "productStatus": "pending_a1"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tsheetRowNumber\tstationCode\tproductStatus\n01200000305\t680\tA1\tpending_a1\n01200000306\t681\tA1\tpending_a1\n01200000400\t775\tA1\tpending_a1\n01200000401\t776\tA1\tpending_a1\n",
+  "stderr": "",
+  "execution_time_ms": 1701
+}

@@ -1,0 +1,8 @@
+{
+  "query": "SELECT `id`, `productCode`, `poNumber`, `vendorName`, `batchNo`, `serialNumber`, `imei`, `productName`, `sheetRowNumber`, `currentStationCode`, `currentStatus`, `archivedAt`, `updatedAt` FROM `products` WHERE `batchNo` IN ('00500025407','00500025410') ORDER BY `batchNo` ASC, `archivedAt` ASC, `id` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `productCode`, `poNumber`, `vendorName`, `batchNo`, `serialNumber`, `imei`, `productName`, `sheetRowNumber`, `currentStationCode`, `currentStatus`, `archivedAt`, `updatedAt` FROM `products` WHERE `batchNo` IN ('00500025407','00500025410') ORDER BY `batchNo` ASC, `archivedAt` ASC, `id` ASC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'currentstationcode' in 'field list'"
+  ]
+}

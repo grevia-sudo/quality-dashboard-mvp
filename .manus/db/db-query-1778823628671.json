@@ -1,0 +1,1150 @@
+{
+  "query": "SELECT `batchNo`, `serialNumber`, `imei`, `sheetRowNumber`, `poNumber`, `vendorName`, `productName`, `updatedAt` FROM `products` WHERE `archivedAt` IS NULL AND `stationCode` = 'A1' AND `productStatus` = 'pending_a1' AND `batchNo` IS NOT NULL AND `sheetRowNumber` IS NOT NULL ORDER BY `updatedAt` DESC, `id` DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `batchNo`, `serialNumber`, `imei`, `sheetRowNumber`, `poNumber`, `vendorName`, `productName`, `updatedAt` FROM `products` WHERE `archivedAt` IS NULL AND `stationCode` = 'A1' AND `productStatus` = 'pending_a1' AND `batchNo` IS NOT NULL AND `sheetRowNumber` IS NOT NULL ORDER BY `updatedAt` DESC, `id` DESC;",
+  "rows": [
+    {
+      "batchNo": "LOCAL-BATCH-1778812407845",
+      "serialNumber": "LOCAL-SERIAL-1778812407845",
+      "imei": "931778812407846",
+      "sheetRowNumber": "869",
+      "poNumber": "PO-GOOGLE-BATCH-1778812407845",
+      "vendorName": "Google Batch Guard Vendor",
+      "productName": "Local Imported Device",
+      "updatedAt": "2026-05-15 02:33:40"
+    },
+    {
+      "batchNo": "LOCAL-BATCH-1778812359768",
+      "serialNumber": "LOCAL-SERIAL-1778812359768",
+      "imei": "931778812359769",
+      "sheetRowNumber": "859",
+      "poNumber": "PO-GOOGLE-BATCH-1778812359768",
+      "vendorName": "Google Batch Guard Vendor",
+      "productName": "Local Imported Device",
+      "updatedAt": "2026-05-15 02:33:15"
+    },
+    {
+      "batchNo": "GOOGLE-BLANK-BATCH-1778812357327",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "858",
+      "poNumber": "PO-GOOGLE-BLANK-1778812357327",
+      "vendorName": "Google Blank Vendor",
+      "productName": "NULL",
+      "updatedAt": "2026-05-15 02:32:43"
+    },
+    {
+      "batchNo": "IMPORT-BATCH-GUARD-1778812251364",
+      "serialNumber": "IMPORT-BATCH-SN-1778812251364-01",
+      "imei": "921778812251365",
+      "sheetRowNumber": "855",
+      "poNumber": "PO-BATCH-BASE-1778812251364",
+      "vendorName": "批號唯一測試廠商",
+      "productName": "Import Guard Device 01",
+      "updatedAt": "2026-05-15 02:31:21"
+    },
+    {
+      "batchNo": "00512247919",
+      "serialNumber": "IMPORT-BATCH-NORM-SN-1778812247919-01",
+      "imei": "931778812247920",
+      "sheetRowNumber": "854",
+      "poNumber": "PO-BATCH-BASE-NORMALIZED-1778812247919",
+      "vendorName": "批號唯一測試廠商",
+      "productName": "Import Guard Device Normalized 01",
+      "updatedAt": "2026-05-15 02:31:14"
+    },
+    {
+      "batchNo": "BATCH-GUARD-1778812244949-02",
+      "serialNumber": "BATCH-GUARD-SN-1778812244949-02",
+      "imei": "911778812244951",
+      "sheetRowNumber": "853",
+      "poNumber": "PO-BATCH-GUARD-1778812244949",
+      "vendorName": "批號唯一測試廠商",
+      "productName": "Batch Guard Device 02",
+      "updatedAt": "2026-05-15 02:31:13"
+    },
+    {
+      "batchNo": "BATCH-GUARD-1778812244949-01",
+      "serialNumber": "BATCH-GUARD-SN-1778812244949-01",
+      "imei": "911778812244950",
+      "sheetRowNumber": "852",
+      "poNumber": "PO-BATCH-GUARD-1778812244949",
+      "vendorName": "批號唯一測試廠商",
+      "productName": "Batch Guard Device 01",
+      "updatedAt": "2026-05-15 02:31:12"
+    },
+    {
+      "batchNo": "LOCAL-BATCH-1778812218102",
+      "serialNumber": "LOCAL-SERIAL-1778812218102",
+      "imei": "931778812218103",
+      "sheetRowNumber": "841",
+      "poNumber": "PO-GOOGLE-BATCH-1778812218102",
+      "vendorName": "Google Batch Guard Vendor",
+      "productName": "Local Imported Device",
+      "updatedAt": "2026-05-15 02:30:38"
+    },
+    {
+      "batchNo": "GOOGLE-BLANK-BATCH-1778812215816",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "838",
+      "poNumber": "PO-GOOGLE-BLANK-1778812215816",
+      "vendorName": "Google Blank Vendor",
+      "productName": "NULL",
+      "updatedAt": "2026-05-15 02:30:31"
+    },
+    {
+      "batchNo": "TRACE-BATCH-1778812184502-02",
+      "serialNumber": "TRACE-SN-1778812184502",
+      "imei": "881778812184504",
+      "sheetRowNumber": "831",
+      "poNumber": "PO-TRACE-1778812184502",
+      "vendorName": "追蹤驗證廠商",
+      "productName": "NULL",
+      "updatedAt": "2026-05-15 02:30:13"
+    },
+    {
+      "batchNo": "DIFF-BATCH-1778812171873-EXTRA",
+      "serialNumber": "DIFF-SN-1778812171873-EXTRA",
+      "imei": "891778812171882",
+      "sheetRowNumber": "801",
+      "poNumber": "PO-BACKUP-DIFF-1778812171873",
+      "vendorName": "差異驗證廠商",
+      "productName": "Diff Device 06",
+      "updatedAt": "2026-05-15 02:30:09"
+    },
+    {
+      "batchNo": "DIFF-BATCH-1778812171873-05",
+      "serialNumber": "DIFF-SN-1778812171873-05",
+      "imei": "891778812171878",
+      "sheetRowNumber": "800",
+      "poNumber": "PO-BACKUP-DIFF-1778812171873",
+      "vendorName": "差異驗證廠商",
+      "productName": "Diff Device 05",
+      "updatedAt": "2026-05-15 02:30:07"
+    },
+    {
+      "batchNo": "DIFF-BATCH-1778812171873-04",
+      "serialNumber": "DIFF-SN-1778812171873-04",
+      "imei": "891778812171877",
+      "sheetRowNumber": "799",
+      "poNumber": "PO-BACKUP-DIFF-1778812171873",
+      "vendorName": "差異驗證廠商",
+      "productName": "Diff Device 04",
+      "updatedAt": "2026-05-15 02:30:05"
+    },
+    {
+      "batchNo": "DIFF-BATCH-1778812171873-03",
+      "serialNumber": "DIFF-SN-1778812171873-03",
+      "imei": "891778812171876",
+      "sheetRowNumber": "798",
+      "poNumber": "PO-BACKUP-DIFF-1778812171873",
+      "vendorName": "差異驗證廠商",
+      "productName": "Diff Device 03",
+      "updatedAt": "2026-05-15 02:30:03"
+    },
+    {
+      "batchNo": "DIFF-BATCH-1778812171873-02",
+      "serialNumber": "DIFF-SN-1778812171873-02",
+      "imei": "891778812171875",
+      "sheetRowNumber": "797",
+      "poNumber": "PO-BACKUP-DIFF-1778812171873",
+      "vendorName": "差異驗證廠商",
+      "productName": "Diff Device 02",
+      "updatedAt": "2026-05-15 02:30:02"
+    },
+    {
+      "batchNo": "BACKUP-BATCH-1778812168172-02",
+      "serialNumber": "BACKUP-SN-1778812168172-02",
+      "imei": "861778812168174",
+      "sheetRowNumber": "793",
+      "poNumber": "PO-BACKUP-1778812168172",
+      "vendorName": "備份驗證廠商",
+      "productName": "Backup Device 02",
+      "updatedAt": "2026-05-15 02:29:53"
+    },
+    {
+      "batchNo": "BACKUP-BATCH-1778812168172-01",
+      "serialNumber": "BACKUP-SN-1778812168172-01",
+      "imei": "861778812168173",
+      "sheetRowNumber": "792",
+      "poNumber": "PO-BACKUP-1778812168172",
+      "vendorName": "備份驗證廠商",
+      "productName": "Backup Device 01",
+      "updatedAt": "2026-05-15 02:29:51"
+    },
+    {
+      "batchNo": "01200000401",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "777",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:34"
+    },
+    {
+      "batchNo": "01200000400",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "776",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:32"
+    },
+    {
+      "batchNo": "01200000399",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "775",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:30"
+    },
+    {
+      "batchNo": "01200000398",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "774",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:29"
+    },
+    {
+      "batchNo": "01200000397",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "773",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:27"
+    },
+    {
+      "batchNo": "01200000396",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "772",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:24"
+    },
+    {
+      "batchNo": "01200000395",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "771",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:22"
+    },
+    {
+      "batchNo": "01200000394",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "770",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:20"
+    },
+    {
+      "batchNo": "01200000393",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "769",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:18"
+    },
+    {
+      "batchNo": "01200000392",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "768",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:15"
+    },
+    {
+      "batchNo": "01200000391",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "767",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:14"
+    },
+    {
+      "batchNo": "01200000390",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "766",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:12"
+    },
+    {
+      "batchNo": "01200000389",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "765",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:10"
+    },
+    {
+      "batchNo": "01200000388",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "764",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:08"
+    },
+    {
+      "batchNo": "01200000387",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "763",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:06"
+    },
+    {
+      "batchNo": "01200000386",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "762",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:04"
+    },
+    {
+      "batchNo": "01200000385",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "761",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:03"
+    },
+    {
+      "batchNo": "01200000384",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "760",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:29:01"
+    },
+    {
+      "batchNo": "01200000383",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "759",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:59"
+    },
+    {
+      "batchNo": "01200000382",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "758",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:55"
+    },
+    {
+      "batchNo": "01200000381",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "757",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:54"
+    },
+    {
+      "batchNo": "01200000380",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "756",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:52"
+    },
+    {
+      "batchNo": "01200000379",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "755",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:50"
+    },
+    {
+      "batchNo": "01200000378",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "754",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:47"
+    },
+    {
+      "batchNo": "01200000377",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "753",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:46"
+    },
+    {
+      "batchNo": "01200000376",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "752",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:44"
+    },
+    {
+      "batchNo": "01200000375",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "751",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:41"
+    },
+    {
+      "batchNo": "01200000374",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "750",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:37"
+    },
+    {
+      "batchNo": "01200000373",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "749",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:35"
+    },
+    {
+      "batchNo": "01200000372",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "748",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:34"
+    },
+    {
+      "batchNo": "01200000371",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "747",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:31"
+    },
+    {
+      "batchNo": "01200000370",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "746",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:31"
+    },
+    {
+      "batchNo": "01200000369",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "745",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:29"
+    },
+    {
+      "batchNo": "01200000368",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "744",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:27"
+    },
+    {
+      "batchNo": "01200000367",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "743",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:26"
+    },
+    {
+      "batchNo": "01200000366",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "742",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:25"
+    },
+    {
+      "batchNo": "01200000365",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "741",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:24"
+    },
+    {
+      "batchNo": "01200000364",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "740",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:22"
+    },
+    {
+      "batchNo": "01200000363",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "739",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:22"
+    },
+    {
+      "batchNo": "01200000362",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "738",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:20"
+    },
+    {
+      "batchNo": "01200000361",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "737",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:17"
+    },
+    {
+      "batchNo": "01200000360",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "736",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:15"
+    },
+    {
+      "batchNo": "01200000359",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "735",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:14"
+    },
+    {
+      "batchNo": "01200000358",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "734",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:12"
+    },
+    {
+      "batchNo": "01200000357",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "733",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:11"
+    },
+    {
+      "batchNo": "01200000356",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "732",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:09"
+    },
+    {
+      "batchNo": "01200000355",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "731",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:08"
+    },
+    {
+      "batchNo": "01200000354",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "730",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:06"
+    },
+    {
+      "batchNo": "01200000353",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "729",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:03"
+    },
+    {
+      "batchNo": "01200000352",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "728",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:02"
+    },
+    {
+      "batchNo": "01200000351",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "727",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:28:00"
+    },
+    {
+      "batchNo": "01200000350",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "726",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:58"
+    },
+    {
+      "batchNo": "01200000349",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "725",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:56"
+    },
+    {
+      "batchNo": "01200000348",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "724",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:55"
+    },
+    {
+      "batchNo": "01200000347",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "723",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:53"
+    },
+    {
+      "batchNo": "01200000346",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "722",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:51"
+    },
+    {
+      "batchNo": "01200000345",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "721",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:49"
+    },
+    {
+      "batchNo": "01200000344",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "720",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:47"
+    },
+    {
+      "batchNo": "01200000343",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "719",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:44"
+    },
+    {
+      "batchNo": "01200000342",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "718",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:43"
+    },
+    {
+      "batchNo": "01200000341",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "717",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:43"
+    },
+    {
+      "batchNo": "01200000340",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "716",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:41"
+    },
+    {
+      "batchNo": "01200000339",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "715",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:35"
+    },
+    {
+      "batchNo": "01200000338",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "714",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:34"
+    },
+    {
+      "batchNo": "01200000337",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "713",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:33"
+    },
+    {
+      "batchNo": "01200000336",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "712",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:32"
+    },
+    {
+      "batchNo": "01200000335",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "711",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:29"
+    },
+    {
+      "batchNo": "01200000334",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "710",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:28"
+    },
+    {
+      "batchNo": "01200000333",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "709",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:26"
+    },
+    {
+      "batchNo": "01200000332",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "708",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:25"
+    },
+    {
+      "batchNo": "01200000331",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "707",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:24"
+    },
+    {
+      "batchNo": "01200000330",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "706",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:21"
+    },
+    {
+      "batchNo": "01200000329",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "705",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:19"
+    },
+    {
+      "batchNo": "01200000328",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "704",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:18"
+    },
+    {
+      "batchNo": "01200000327",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "703",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:17"
+    },
+    {
+      "batchNo": "01200000326",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "702",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:15"
+    },
+    {
+      "batchNo": "01200000325",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "701",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:13"
+    },
+    {
+      "batchNo": "01200000324",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "700",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:12"
+    },
+    {
+      "batchNo": "01200000323",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "699",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:09"
+    },
+    {
+      "batchNo": "01200000322",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "698",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:07"
+    },
+    {
+      "batchNo": "01200000321",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "697",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:06"
+    },
+    {
+      "batchNo": "01200000320",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "696",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:04"
+    },
+    {
+      "batchNo": "01200000319",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "695",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:04"
+    },
+    {
+      "batchNo": "01200000318",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "694",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:02"
+    },
+    {
+      "batchNo": "01200000317",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "693",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:27:00"
+    },
+    {
+      "batchNo": "01200000316",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "692",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:58"
+    },
+    {
+      "batchNo": "01200000315",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "691",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:57"
+    },
+    {
+      "batchNo": "01200000314",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "690",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:55"
+    },
+    {
+      "batchNo": "01200000313",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "689",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:52"
+    },
+    {
+      "batchNo": "01200000312",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "688",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:50"
+    },
+    {
+      "batchNo": "01200000311",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "687",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:48"
+    },
+    {
+      "batchNo": "01200000310",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "686",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:48"
+    },
+    {
+      "batchNo": "01200000309",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "685",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:46"
+    },
+    {
+      "batchNo": "01200000308",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "684",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:45"
+    },
+    {
+      "batchNo": "01200000307",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "683",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:42"
+    },
+    {
+      "batchNo": "01200000306",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "682",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:40"
+    },
+    {
+      "batchNo": "01200000305",
+      "serialNumber": "NULL",
+      "imei": "NULL",
+      "sheetRowNumber": "681",
+      "poNumber": "PO-20260514-03",
+      "vendorName": "全國電子",
+      "productName": "NULL",
+      "updatedAt": "2026-05-14 07:26:38"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tserialNumber\timei\tsheetRowNumber\tpoNumber\tvendorName\tproductName\tupdatedAt\nLOCAL-BATCH-1778812407845\tLOCAL-SERIAL-1778812407845\t931778812407846\t869\tPO-GOOGLE-BATCH-1778812407845\tGoogle Batch Guard Vendor\tLocal Imported Device\t2026-05-15 02:33:40\nLOCAL-BATCH-1778812359768\tLOCAL-SERIAL-1778812359768\t931778812359769\t859\tPO-GOOGLE-BATCH-1778812359768\tGoogle Batch Guard Vendor\tLocal Imported Device\t2026-05-15 02:33:15\nGOOGLE-BLANK-BATCH-1778812357327\tNULL\tNULL\t858\tPO-GOOGLE-BLANK-1778812357327\tGoogle Blank Vendor\tNULL\t2026-05-15 02:32:43\nIMPORT-BATCH-GUARD-1778812251364\tIMPORT-BATCH-SN-1778812251364-01\t921778812251365\t855\tPO-BATCH-BASE-1778812251364\t批號唯一測試廠商\tImport Guard Device 01\t2026-05-15 02:31:21\n00512247919\tIMPORT-BATCH-NORM-SN-1778812247919-01\t931778812247920\t854\tPO-BATCH-BASE-NORMALIZED-1778812247919\t批號唯一測試廠商\tImport Guard Device Normalized 01\t2026-05-15 02:31:14\nBATCH-GUARD-1778812244949-02\tBATCH-GUARD-SN-1778812244949-02\t911778812244951\t853\tPO-BATCH-GUARD-1778812244949\t批號唯一測試廠商\tBatch Guard Device 02\t2026-05-15 02:31:13\nBATCH-GUARD-1778812244949-01\tBATCH-GUARD-SN-1778812244949-01\t911778812244950\t852\tPO-BATCH-GUARD-1778812244949\t批號唯一測試廠商\tBatch Guard Device 01\t2026-05-15 02:31:12\nLOCAL-BATCH-1778812218102\tLOCAL-SERIAL-1778812218102\t931778812218103\t841\tPO-GOOGLE-BATCH-1778812218102\tGoogle Batch Guard Vendor\tLocal Imported Device\t2026-05-15 02:30:38\nGOOGLE-BLANK-BATCH-1778812215816\tNULL\tNULL\t838\tPO-GOOGLE-BLANK-1778812215816\tGoogle Blank Vendor\tNULL\t2026-05-15 02:30:31\nTRACE-BATCH-1778812184502-02\tTRACE-SN-1778812184502\t881778812184504\t831\tPO-TRACE-1778812184502\t追蹤驗證廠商\tNULL\t2026-05-15 02:30:13\nDIFF-BATCH-1778812171873-EXTRA\tDIFF-SN-1778812171873-EXTRA\t891778812171882\t801\tPO-BACKUP-DIFF-1778812171873\t差異驗證廠商\tDiff Device 06\t2026-05-15 02:30:09\nDIFF-BATCH-1778812171873-05\tDIFF-SN-1778812171873-05\t891778812171878\t800\tPO-BACKUP-DIFF-1778812171873\t差異驗證廠商\tDiff Device 05\t2026-05-15 02:30:07\nDIFF-BATCH-1778812171873-04\tDIFF-SN-1778812171873-04\t891778812171877\t799\tPO-BACKUP-DIFF-1778812171873\t差異驗證廠商\tDiff Device 04\t2026-05-15 02:30:05\nDIFF-BATCH-1778812171873-03\tDIFF-SN-1778812171873-03\t891778812171876\t798\tPO-BACKUP-DIFF-1778812171873\t差異驗證廠商\tDiff Device 03\t2026-05-15 02:30:03\nDIFF-BATCH-1778812171873-02\tDIFF-SN-1778812171873-02\t891778812171875\t797\tPO-BACKUP-DIFF-1778812171873\t差異驗證廠商\tDiff Device 02\t2026-05-15 02:30:02\nBACKUP-BATCH-1778812168172-02\tBACKUP-SN-1778812168172-02\t861778812168174\t793\tPO-BACKUP-1778812168172\t備份驗證廠商\tBackup Device 02\t2026-05-15 02:29:53\nBACKUP-BATCH-1778812168172-01\tBACKUP-SN-1778812168172-01\t861778812168173\t792\tPO-BACKUP-1778812168172\t備份驗證廠商\tBackup Device 01\t2026-05-15 02:29:51\n01200000401\tNULL\tNULL\t777\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:34\n01200000400\tNULL\tNULL\t776\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:32\n01200000399\tNULL\tNULL\t775\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:30\n01200000398\tNULL\tNULL\t774\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:29\n01200000397\tNULL\tNULL\t773\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:27\n01200000396\tNULL\tNULL\t772\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:24\n01200000395\tNULL\tNULL\t771\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:22\n01200000394\tNULL\tNULL\t770\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:20\n01200000393\tNULL\tNULL\t769\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:18\n01200000392\tNULL\tNULL\t768\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:15\n01200000391\tNULL\tNULL\t767\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:14\n01200000390\tNULL\tNULL\t766\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:12\n01200000389\tNULL\tNULL\t765\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:10\n01200000388\tNULL\tNULL\t764\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:08\n01200000387\tNULL\tNULL\t763\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:06\n01200000386\tNULL\tNULL\t762\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:04\n01200000385\tNULL\tNULL\t761\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:03\n01200000384\tNULL\tNULL\t760\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:29:01\n01200000383\tNULL\tNULL\t759\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:59\n01200000382\tNULL\tNULL\t758\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:55\n01200000381\tNULL\tNULL\t757\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:54\n01200000380\tNULL\tNULL\t756\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:52\n01200000379\tNULL\tNULL\t755\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:50\n01200000378\tNULL\tNULL\t754\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:47\n01200000377\tNULL\tNULL\t753\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:46\n01200000376\tNULL\tNULL\t752\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:44\n01200000375\tNULL\tNULL\t751\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:41\n01200000374\tNULL\tNULL\t750\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:37\n01200000373\tNULL\tNULL\t749\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:35\n01200000372\tNULL\tNULL\t748\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:34\n01200000371\tNULL\tNULL\t747\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:31\n01200000370\tNULL\tNULL\t746\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:31\n01200000369\tNULL\tNULL\t745\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:29\n01200000368\tNULL\tNULL\t744\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:27\n01200000367\tNULL\tNULL\t743\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:26\n01200000366\tNULL\tNULL\t742\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:25\n01200000365\tNULL\tNULL\t741\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:24\n01200000364\tNULL\tNULL\t740\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:22\n01200000363\tNULL\tNULL\t739\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:22\n01200000362\tNULL\tNULL\t738\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:20\n01200000361\tNULL\tNULL\t737\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:17\n01200000360\tNULL\tNULL\t736\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:15\n01200000359\tNULL\tNULL\t735\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:14\n01200000358\tNULL\tNULL\t734\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:12\n01200000357\tNULL\tNULL\t733\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:11\n01200000356\tNULL\tNULL\t732\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:09\n01200000355\tNULL\tNULL\t731\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:08\n01200000354\tNULL\tNULL\t730\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:06\n01200000353\tNULL\tNULL\t729\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:03\n01200000352\tNULL\tNULL\t728\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:02\n01200000351\tNULL\tNULL\t727\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:28:00\n01200000350\tNULL\tNULL\t726\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:58\n01200000349\tNULL\tNULL\t725\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:56\n01200000348\tNULL\tNULL\t724\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:55\n01200000347\tNULL\tNULL\t723\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:53\n01200000346\tNULL\tNULL\t722\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:51\n01200000345\tNULL\tNULL\t721\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:49\n01200000344\tNULL\tNULL\t720\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:47\n01200000343\tNULL\tNULL\t719\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:44\n01200000342\tNULL\tNULL\t718\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:43\n01200000341\tNULL\tNULL\t717\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:43\n01200000340\tNULL\tNULL\t716\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:41\n01200000339\tNULL\tNULL\t715\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:35\n01200000338\tNULL\tNULL\t714\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:34\n01200000337\tNULL\tNULL\t713\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:33\n01200000336\tNULL\tNULL\t712\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:32\n01200000335\tNULL\tNULL\t711\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:29\n01200000334\tNULL\tNULL\t710\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:28\n01200000333\tNULL\tNULL\t709\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:26\n01200000332\tNULL\tNULL\t708\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:25\n01200000331\tNULL\tNULL\t707\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:24\n01200000330\tNULL\tNULL\t706\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:21\n01200000329\tNULL\tNULL\t705\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:19\n01200000328\tNULL\tNULL\t704\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:18\n01200000327\tNULL\tNULL\t703\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:17\n01200000326\tNULL\tNULL\t702\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:15\n01200000325\tNULL\tNULL\t701\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:13\n01200000324\tNULL\tNULL\t700\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:12\n01200000323\tNULL\tNULL\t699\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:09\n01200000322\tNULL\tNULL\t698\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:07\n01200000321\tNULL\tNULL\t697\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:06\n01200000320\tNULL\tNULL\t696\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:04\n01200000319\tNULL\tNULL\t695\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:04\n01200000318\tNULL\tNULL\t694\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:02\n01200000317\tNULL\tNULL\t693\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:27:00\n01200000316\tNULL\tNULL\t692\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:58\n01200000315\tNULL\tNULL\t691\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:57\n01200000314\tNULL\tNULL\t690\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:55\n01200000313\tNULL\tNULL\t689\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:52\n01200000312\tNULL\tNULL\t688\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:50\n01200000311\tNULL\tNULL\t687\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:48\n01200000310\tNULL\tNULL\t686\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:48\n01200000309\tNULL\tNULL\t685\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:46\n01200000308\tNULL\tNULL\t684\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:45\n01200000307\tNULL\tNULL\t683\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:42\n01200000306\tNULL\tNULL\t682\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:40\n01200000305\tNULL\tNULL\t681\tPO-20260514-03\t全國電子\tNULL\t2026-05-14 07:26:38\n",
+  "stderr": "",
+  "execution_time_ms": 1722
+}

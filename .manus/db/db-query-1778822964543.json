@@ -1,0 +1,98 @@
+{
+  "query": "SELECT p.batchNo, p.productCode, p.stationCode, p.productStatus, se.stationCode AS eventStationCode, se.stationEventType, st.stationCode AS taskStationCode, st.stationTaskStatus, st.resultSummary FROM products p LEFT JOIN station_events se ON se.productId = p.id LEFT JOIN station_tasks st ON st.productId = p.id WHERE p.batchNo IN ('00500025407','00500025410') AND p.archivedAt IS NULL ORDER BY p.batchNo ASC, se.id ASC, st.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.batchNo, p.productCode, p.stationCode, p.productStatus, se.stationCode AS eventStationCode, se.stationEventType, st.stationCode AS taskStationCode, st.stationTaskStatus, st.resultSummary FROM products p LEFT JOIN station_events se ON se.productId = p.id LEFT JOIN station_tasks st ON st.productId = p.id WHERE p.batchNo IN ('00500025407','00500025410') AND p.archivedAt IS NULL ORDER BY p.batchNo ASC, se.id ASC, st.id ASC;",
+  "rows": [
+    {
+      "batchNo": "00500025407",
+      "productCode": "P-1778747076256-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A1",
+      "stationEventType": "complete",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A1 掃碼點到貨完成"
+    },
+    {
+      "batchNo": "00500025407",
+      "productCode": "P-1778747076256-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A1",
+      "stationEventType": "complete",
+      "taskStationCode": "A2",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A2 安裝 完成"
+    },
+    {
+      "batchNo": "00500025407",
+      "productCode": "P-1778747076256-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A2",
+      "stationEventType": "complete",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A1 掃碼點到貨完成"
+    },
+    {
+      "batchNo": "00500025407",
+      "productCode": "P-1778747076256-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A2",
+      "stationEventType": "complete",
+      "taskStationCode": "A2",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A2 安裝 完成"
+    },
+    {
+      "batchNo": "00500025410",
+      "productCode": "P-1778747104240-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A1",
+      "stationEventType": "complete",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A1 掃碼點到貨完成"
+    },
+    {
+      "batchNo": "00500025410",
+      "productCode": "P-1778747104240-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A1",
+      "stationEventType": "complete",
+      "taskStationCode": "A2",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A2 安裝 完成"
+    },
+    {
+      "batchNo": "00500025410",
+      "productCode": "P-1778747104240-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A2",
+      "stationEventType": "complete",
+      "taskStationCode": "A1",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A1 掃碼點到貨完成"
+    },
+    {
+      "batchNo": "00500025410",
+      "productCode": "P-1778747104240-750193",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "eventStationCode": "A2",
+      "stationEventType": "complete",
+      "taskStationCode": "A2",
+      "stationTaskStatus": "completed",
+      "resultSummary": "A2 安裝 完成"
+    }
+  ],
+  "messages": [],
+  "stdout": "batchNo\tproductCode\tstationCode\tproductStatus\teventStationCode\tstationEventType\ttaskStationCode\tstationTaskStatus\tresultSummary\n00500025407\tP-1778747076256-750193\tA2\tpending_a2\tA1\tcomplete\tA1\tcompleted\tA1 掃碼點到貨完成\n00500025407\tP-1778747076256-750193\tA2\tpending_a2\tA1\tcomplete\tA2\tcompleted\tA2 安裝 完成\n00500025407\tP-1778747076256-750193\tA2\tpending_a2\tA2\tcomplete\tA1\tcompleted\tA1 掃碼點到貨完成\n00500025407\tP-1778747076256-750193\tA2\tpending_a2\tA2\tcomplete\tA2\tcompleted\tA2 安裝 完成\n00500025410\tP-1778747104240-750193\tA2\tpending_a2\tA1\tcomplete\tA1\tcompleted\tA1 掃碼點到貨完成\n00500025410\tP-1778747104240-750193\tA2\tpending_a2\tA1\tcomplete\tA2\tcompleted\tA2 安裝 完成\n00500025410\tP-1778747104240-750193\tA2\tpending_a2\tA2\tcomplete\tA1\tcompleted\tA1 掃碼點到貨完成\n00500025410\tP-1778747104240-750193\tA2\tpending_a2\tA2\tcomplete\tA2\tcompleted\tA2 安裝 完成\n",
+  "stderr": "",
+  "execution_time_ms": 1720
+}

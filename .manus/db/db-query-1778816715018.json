@@ -1,0 +1,40 @@
+{
+  "query": "SELECT `id`, `productCode`, `poNumber`, `vendorName`, `batchNo`, `serialNumber`, `imei`, `productName`, `sheetRowNumber`, `stationCode`, `productStatus`, `archivedAt`, `updatedAt` FROM `products` WHERE `batchNo` IN ('00500025407','00500025410') ORDER BY `batchNo` ASC, `archivedAt` ASC, `id` ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT `id`, `productCode`, `poNumber`, `vendorName`, `batchNo`, `serialNumber`, `imei`, `productName`, `sheetRowNumber`, `stationCode`, `productStatus`, `archivedAt`, `updatedAt` FROM `products` WHERE `batchNo` IN ('00500025407','00500025410') ORDER BY `batchNo` ASC, `archivedAt` ASC, `id` ASC;",
+  "rows": [
+    {
+      "id": "750003",
+      "productCode": "P-1778747076256-750193",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "batchNo": "00500025407",
+      "serialNumber": "G22V4VM47F",
+      "imei": "354228672367488",
+      "productName": "Apple iPhone 13 128GB 星光色",
+      "sheetRowNumber": "784",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "archivedAt": "NULL",
+      "updatedAt": "2026-05-14 08:27:08"
+    },
+    {
+      "id": "750004",
+      "productCode": "P-1778747104240-750193",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "batchNo": "00500025410",
+      "serialNumber": "V42J4RV4FF",
+      "imei": "353103648954639",
+      "productName": "Apple iPhone 13 Pro 512GB 天峰藍色",
+      "sheetRowNumber": "604",
+      "stationCode": "A2",
+      "productStatus": "pending_a2",
+      "archivedAt": "NULL",
+      "updatedAt": "2026-05-15 01:08:15"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductCode\tpoNumber\tvendorName\tbatchNo\tserialNumber\timei\tproductName\tsheetRowNumber\tstationCode\tproductStatus\tarchivedAt\tupdatedAt\n750003\tP-1778747076256-750193\tNULL\tNULL\t00500025407\tG22V4VM47F\t354228672367488\tApple iPhone 13 128GB 星光色\t784\tA2\tpending_a2\tNULL\t2026-05-14 08:27:08\n750004\tP-1778747104240-750193\tNULL\tNULL\t00500025410\tV42J4RV4FF\t353103648954639\tApple iPhone 13 Pro 512GB 天峰藍色\t604\tA2\tpending_a2\tNULL\t2026-05-15 01:08:15\n",
+  "stderr": "",
+  "execution_time_ms": 1825
+}
