@@ -112,6 +112,15 @@ async function getGoogleAccessToken() {
   return result.access_token;
 }
 
+const BLOCKED_TEST_PO_PATTERN = /^(TEST-|PO-(BACKUP|TRACE|STOCK-BLOCK|NO-IMPORT|GOOGLE-|BATCH-|A1-|KPI-))/i;
+const BLOCKED_TEST_VENDOR_PATTERN = /(測試|驗證|demo|dummy|guard)/i;
+
+export function shouldBlockGooglePurchaseSync(product) {
+  const poNumber = String(product?.poNumber ?? "").trim();
+  const vendorName = String(product?.vendorName ?? "").trim();
+  return BLOCKED_TEST_PO_PATTERN.test(poNumber) || BLOCKED_TEST_VENDOR_PATTERN.test(vendorName);
+}
+
 export async function callSheetsApi(accessToken, path, { method = "GET", query = {}, body } = {}) {
   const url = new URL(`https://sheets.googleapis.com/v4/${path}`);
 
@@ -478,6 +487,7 @@ export async function runPurchaseSheetSync() {
 
     const sheetResponse = await getSheetValues(accessToken);
     const normalizedValues = createInitialSheetValues(sheetResponse.values);
+    const syncableProducts = products.filter((product) => !shouldBlockGooglePurchaseSync(product));
 
     await updateSheetHeader(accessToken);
     normalizedValues[0] = PURCHASE_SHEET_HEADER;
@@ -485,7 +495,7 @@ export async function runPurchaseSheetSync() {
     let appendedCount = 0;
     let updatedCount = 0;
 
-    for (const product of products) {
+    for (const product of syncableProducts) {
       const generatedRow = buildSheetRow(product);
       const storedRowNumber = product.sheetRowNumber;
       const storedRow = storedRowNumber ? normalizedValues[storedRowNumber - 1] ?? [] : null;
