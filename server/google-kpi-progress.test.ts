@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildAdminEngineerKpiProgressFromGoogleRows } from "./db";
 
 describe("buildAdminEngineerKpiProgressFromGoogleRows", () => {
-  it("aggregates Google purchase sheet rows by station and operator within the requested date range", () => {
+  it("uses matched product category targets to calculate station scores from Google rows", () => {
     const rows = [
       [
         "採購單號",
@@ -98,39 +98,10 @@ describe("buildAdminEngineerKpiProgressFromGoogleRows", () => {
         "0050003",
         "SN-3",
         "IMEI-3",
-        "iPhone",
+        "Android",
         "2026/05/15 09:00",
         "外部人員",
         "2026/05/15 09:10",
-        "",
-        "",
-        "80",
-        "正常",
-        "",
-        "",
-        "N",
-        "正常",
-        "正常",
-        "",
-        "",
-        "正常",
-        "N",
-        "",
-        "",
-        "",
-        "",
-      ],
-      [
-        "PO-old",
-        "譯通",
-        "智慧型手機",
-        "0050004",
-        "SN-4",
-        "IMEI-4",
-        "iPhone",
-        "2026/05/13 09:00",
-        "宥凱",
-        "2026/05/13 09:10",
         "",
         "",
         "80",
@@ -163,6 +134,20 @@ describe("buildAdminEngineerKpiProgressFromGoogleRows", () => {
         { userId: 11, businessDate: new Date("2026-05-15T00:00:00.000Z"), supportHours: 2 },
       ],
       purchaseSheetRows: rows,
+      productRows: [
+        { id: 101, batchNo: "0050001", serialNumber: "SN-1", imei: "IMEI-1", categoryId: 1, subtypeCode: "iPhone" },
+        { id: 102, batchNo: "0050002", serialNumber: "SN-2", imei: "IMEI-2", categoryId: 1, subtypeCode: "iPhone" },
+        { id: 103, batchNo: "0050003", serialNumber: "SN-3", imei: "IMEI-3", categoryId: 2, subtypeCode: "Android" },
+      ],
+      targetRows: [
+        { stationCode: "A1", categoryId: 1, subtypeCode: "iPhone", baseUnitPoints: 0.02, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+        { stationCode: "A2", categoryId: 1, subtypeCode: "iPhone", baseUnitPoints: 0.03, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+        { stationCode: "B", categoryId: 1, subtypeCode: "iPhone", baseUnitPoints: 0.04, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+        { stationCode: "C", categoryId: 1, subtypeCode: "iPhone", baseUnitPoints: 0.05, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+        { stationCode: "D", categoryId: 1, subtypeCode: "iPhone", baseUnitPoints: 0.06, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+        { stationCode: "E", categoryId: 1, subtypeCode: "iPhone", baseUnitPoints: 0.07, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+        { stationCode: "A1", categoryId: 2, subtypeCode: "Android", baseUnitPoints: 0.015, effectiveFrom: new Date("2026-01-01T00:00:00.000Z"), effectiveTo: null, active: true },
+      ],
       range: {
         todayKey: "2026-05-15",
         startDate: "2026-05-14",
@@ -176,36 +161,63 @@ describe("buildAdminEngineerKpiProgressFromGoogleRows", () => {
     const idle = result.find((row) => row.userId === 15);
 
     expect(youkai).toBeTruthy();
-    expect(youkai?.monthTotalDisplayPoints).toBe(27);
-    expect(youkai?.todayDisplayPoints).toBe(26);
+    expect(youkai?.monthTotalDisplayPoints).toBeCloseTo(29, 5);
+    expect(youkai?.todayDisplayPoints).toBeCloseTo(27, 5);
     expect(youkai?.todaySupportDisplayPoints).toBe(25);
     expect(youkai?.rangeSupportDisplayPoints).toBe(25);
     expect(youkai?.stationBreakdown).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ stationCode: "A1", completedQty: 2, totalDisplayPoints: 2 }),
+        expect.objectContaining({ stationCode: "A1", completedQty: 2, totalDisplayPoints: 4 }),
         expect.objectContaining({ stationCode: "SUPPORT", supportHours: 2, totalDisplayPoints: 25 }),
       ]),
     );
 
-    expect(choco?.monthTotalDisplayPoints).toBeCloseTo(6, 5);
-    expect(choco?.todayDisplayPoints).toBeCloseTo(3, 5);
-    expect(choco?.stationBreakdown).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ stationCode: "C", completedQty: 2, totalDisplayPoints: 2 }),
-        expect.objectContaining({ stationCode: "D", completedQty: 2, totalDisplayPoints: 2 }),
-        expect.objectContaining({ stationCode: "E", completedQty: 2, totalDisplayPoints: 2 }),
-      ]),
-    );
+    expect(choco?.monthTotalDisplayPoints).toBeCloseTo(36, 5);
+    expect(choco?.todayDisplayPoints).toBeCloseTo(18, 5);
+    const chocoC = choco?.stationBreakdown.find((item) => item.stationCode === "C");
+    const chocoD = choco?.stationBreakdown.find((item) => item.stationCode === "D");
+    const chocoE = choco?.stationBreakdown.find((item) => item.stationCode === "E");
+    expect(chocoC?.completedQty).toBe(2);
+    expect(chocoC?.totalDisplayPoints).toBeCloseTo(10, 5);
+    expect(chocoD?.completedQty).toBe(2);
+    expect(chocoD?.totalDisplayPoints).toBeCloseTo(12, 5);
+    expect(chocoE?.completedQty).toBe(2);
+    expect(chocoE?.totalDisplayPoints).toBeCloseTo(14, 5);
 
-    expect(external?.monthTotalDisplayPoints).toBeCloseTo(1, 5);
+    expect(external?.monthTotalDisplayPoints).toBeCloseTo(1.5, 5);
     expect(external?.role).toBe("google_sheet");
     expect(external?.stationBreakdown).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ stationCode: "A1", completedQty: 1, totalDisplayPoints: 1 }),
+        expect.objectContaining({ stationCode: "A1", completedQty: 1, totalDisplayPoints: 1.5 }),
       ]),
     );
 
     expect(idle?.monthTotalDisplayPoints).toBe(0);
     expect(idle?.zeroScoreCategory).toBe("本月未作業");
+  });
+
+  it("keeps completion counts but gives zero points when no target config can be resolved", () => {
+    const result = buildAdminEngineerKpiProgressFromGoogleRows({
+      userRows: [{ id: 21, username: "youkai", name: "宥凱", role: "user" }],
+      supportRows: [],
+      purchaseSheetRows: [
+        ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間"],
+        ["PO-X", "譯通", "智慧型手機", "0050999", "SN-X", "IMEI-X", "Unknown", "2026/05/15 09:00", "宥凱", "2026/05/15 09:10"],
+      ],
+      productRows: [],
+      targetRows: [],
+      range: {
+        todayKey: "2026-05-15",
+        startDate: "2026-05-15",
+        endDate: "2026-05-15",
+      },
+    });
+
+    expect(result[0]?.todayDisplayPoints).toBe(0);
+    expect(result[0]?.stationBreakdown).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ stationCode: "A1", completedQty: 1, totalDisplayPoints: 0 }),
+      ]),
+    );
   });
 });

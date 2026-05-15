@@ -5227,7 +5227,6 @@ function isDateKeyWithinRange(dateKey: string, range: { startDate: string; endDa
 }
 
 const GOOGLE_KPI_PURCHASE_SHEET_RANGE = `${PURCHASE_SHEET_NAME}!A:AD`;
-const GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION = 0.01;
 const GOOGLE_KPI_STATION_SPECS = [
   { stationCode: "A1", operatorIndex: 8, completedAtIndex: 9 },
   { stationCode: "A2", operatorIndex: 10, completedAtIndex: 11 },
@@ -5236,6 +5235,25 @@ const GOOGLE_KPI_STATION_SPECS = [
   { stationCode: "D", operatorIndex: 24, completedAtIndex: 23 },
   { stationCode: "E", operatorIndex: 26, completedAtIndex: 25 },
 ] as const;
+
+type GoogleKpiMatchedProductRow = {
+  id: number;
+  batchNo: string | null;
+  serialNumber: string | null;
+  imei: string | null;
+  categoryId: number | null;
+  subtypeCode: string | null;
+};
+
+type GoogleKpiTargetConfigRow = {
+  stationCode: StationCode;
+  categoryId: number | null;
+  subtypeCode: string | null;
+  baseUnitPoints: string | number;
+  effectiveFrom: Date;
+  effectiveTo: Date | null;
+  active: boolean;
+};
 
 function normalizeGoogleKpiOperatorName(value: unknown) {
   return String(value ?? "").trim().replace(/\s+/g, " ");
@@ -5288,15 +5306,119 @@ function buildGoogleKpiUserLookup(userRows: Array<{ id: number; username: string
   return lookup;
 }
 
+function buildGoogleKpiProductLookup(productRows: GoogleKpiMatchedProductRow[]) {
+  const byBatchNo = new Map<string, GoogleKpiMatchedProductRow>();
+  const bySerialNumber = new Map<string, GoogleKpiMatchedProductRow>();
+  const byImei = new Map<string, GoogleKpiMatchedProductRow>();
+
+  productRows.forEach((row) => {
+    const batchKey = normalizeBatchMatchValue(row.batchNo);
+    const serialKey = normalizeIdentityMatchValue(row.serialNumber);
+    const imeiKey = normalizeIdentityMatchValue(row.imei);
+
+    if (batchKey && !byBatchNo.has(batchKey)) {
+      byBatchNo.set(batchKey, row);
+    }
+    if (serialKey && !bySerialNumber.has(serialKey)) {
+      bySerialNumber.set(serialKey, row);
+    }
+    if (imeiKey && !byImei.has(imeiKey)) {
+      byImei.set(imeiKey, row);
+    }
+  });
+
+  return {
+    byBatchNo,
+    bySerialNumber,
+    byImei,
+  };
+}
+
+function findGoogleKpiMatchedProduct(row: string[], productLookup: ReturnType<typeof buildGoogleKpiProductLookup>) {
+  const imeiKey = normalizeIdentityMatchValue(row?.[5]);
+  if (imeiKey && productLookup.byImei.has(imeiKey)) {
+    return productLookup.byImei.get(imeiKey) ?? null;
+  }
+
+  const serialKey = normalizeIdentityMatchValue(row?.[4]);
+  if (serialKey && productLookup.bySerialNumber.has(serialKey)) {
+    return productLookup.bySerialNumber.get(serialKey) ?? null;
+  }
+
+  const batchKey = normalizeBatchMatchValue(row?.[3]);
+  if (batchKey && productLookup.byBatchNo.has(batchKey)) {
+    return productLookup.byBatchNo.get(batchKey) ?? null;
+  }
+
+  return null;
+}
+
+function buildGoogleKpiTargetLookup(targetRows: GoogleKpiTargetConfigRow[]) {
+  const lookup = new Map<string, GoogleKpiTargetConfigRow[]>();
+
+  targetRows.forEach((row) => {
+    if (!row.active || !row.categoryId) {
+      return;
+    }
+
+    const key = `${row.stationCode}__${row.categoryId}`;
+    const existing = lookup.get(key) ?? [];
+    existing.push(row);
+    lookup.set(key, existing);
+  });
+
+  lookup.forEach((rows, key) => {
+    lookup.set(key, rows.sort((left, right) => right.effectiveFrom.getTime() - left.effectiveFrom.getTime()));
+  });
+
+  return lookup;
+}
+
+function resolveGoogleKpiInternalPoints(input: {
+  stationCode: ProductivityTrackedStationCode;
+  completedDateKey: string;
+  matchedProduct: GoogleKpiMatchedProductRow | null;
+  targetLookup: ReturnType<typeof buildGoogleKpiTargetLookup>;
+}) {
+  if (!input.matchedProduct?.categoryId) {
+    return 0;
+  }
+
+  const targetKey = `${input.stationCode}__${input.matchedProduct.categoryId}`;
+  const targetRows = input.targetLookup.get(targetKey) ?? [];
+  if (targetRows.length === 0) {
+    return 0;
+  }
+
+  const businessDateValue = dateKeyToDate(input.completedDateKey);
+  const normalizedSubtypeCode = normalizeOptionalText(input.matchedProduct.subtypeCode);
+  const effectiveRows = targetRows.filter((row) => row.effectiveFrom.getTime() <= businessDateValue.getTime() && (!row.effectiveTo || row.effectiveTo.getTime() >= businessDateValue.getTime()));
+  if (effectiveRows.length === 0) {
+    return 0;
+  }
+
+  const exactMatch = normalizedSubtypeCode
+    ? effectiveRows.find((row) => normalizeOptionalText(row.subtypeCode) === normalizedSubtypeCode)
+    : null;
+  const fallbackMatch = effectiveRows.find((row) => !normalizeOptionalText(row.subtypeCode));
+  const resolved = exactMatch ?? fallbackMatch ?? effectiveRows[0] ?? null;
+
+  return resolved ? Number(resolved.baseUnitPoints ?? 0) : 0;
+}
+
 export function buildAdminEngineerKpiProgressFromGoogleRows(input: {
   userRows: Array<{ id: number; username: string | null; name: string | null; role: string | null }>;
   supportRows: Array<{ userId: number; businessDate: Date; supportHours: string | number | null }>;
   purchaseSheetRows: string[][];
+  productRows: GoogleKpiMatchedProductRow[];
+  targetRows: GoogleKpiTargetConfigRow[];
   range: { todayKey: string; startDate: string; endDate: string };
 }) {
-  const { userRows, supportRows, purchaseSheetRows, range } = input;
+  const { userRows, supportRows, purchaseSheetRows, productRows, targetRows, range } = input;
   const userLookup = buildGoogleKpiUserLookup(userRows);
   const userMetadataById = new Map(userRows.map((user) => [user.id, user]));
+  const productLookup = buildGoogleKpiProductLookup(productRows);
+  const targetLookup = buildGoogleKpiTargetLookup(targetRows);
   const aggregates = new Map<number, {
     userId: number;
     username: string;
@@ -5346,6 +5468,8 @@ export function buildAdminEngineerKpiProgressFromGoogleRows(input: {
   });
 
   purchaseSheetRows.slice(1).forEach((row) => {
+    const matchedProduct = findGoogleKpiMatchedProduct(row, productLookup);
+
     GOOGLE_KPI_STATION_SPECS.forEach((spec) => {
       const operatorName = normalizeGoogleKpiOperatorName(row?.[spec.operatorIndex]);
       const dateKey = parseGoogleSheetDateKey(row?.[spec.completedAtIndex]);
@@ -5353,6 +5477,12 @@ export function buildAdminEngineerKpiProgressFromGoogleRows(input: {
         return;
       }
 
+      const internalPoints = resolveGoogleKpiInternalPoints({
+        stationCode: spec.stationCode,
+        completedDateKey: dateKey,
+        matchedProduct,
+        targetLookup,
+      });
       const matchedUser = userLookup.get(operatorName) ?? {
         userId: createSyntheticGoogleKpiUserId(operatorName),
         username: operatorName,
@@ -5361,9 +5491,9 @@ export function buildAdminEngineerKpiProgressFromGoogleRows(input: {
       };
       const aggregate = ensureAggregate(matchedUser);
       aggregate.attendanceDateSet.add(dateKey);
-      aggregate.rangeProductivityPoints += GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION;
+      aggregate.rangeProductivityPoints += internalPoints;
       if (dateKey === range.todayKey) {
-        aggregate.todayProductivityPoints += GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION;
+        aggregate.todayProductivityPoints += internalPoints;
       }
 
       const existingStation = aggregate.stationBreakdownMap.get(spec.stationCode) ?? {
@@ -5374,7 +5504,7 @@ export function buildAdminEngineerKpiProgressFromGoogleRows(input: {
         supportHours: 0,
       };
       existingStation.completedQty += 1;
-      existingStation.totalPoints += GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION;
+      existingStation.totalPoints += internalPoints;
       existingStation.totalDisplayPoints = toDisplayPoints(existingStation.totalPoints);
       aggregate.stationBreakdownMap.set(spec.stationCode, existingStation);
     });
@@ -5461,7 +5591,7 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   }
 
   const range = normalizeAdminDateRange(input);
-  const [userRows, supportRows, purchaseSheetRows] = await Promise.all([
+  const [userRows, supportRows, purchaseSheetRows, productRows, targetRows] = await Promise.all([
     db
       .select({
         id: users.id,
@@ -5483,12 +5613,41 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
         lte(supportTaskCompensations.businessDate, dateKeyToDate(range.endDate)),
       )),
     readPurchaseSheetRows(GOOGLE_KPI_PURCHASE_SHEET_RANGE),
+    db
+      .select({
+        id: products.id,
+        batchNo: products.batchNo,
+        serialNumber: products.serialNumber,
+        imei: products.imei,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(products)
+      .leftJoin(productCategories, eq(productCategories.id, products.categoryId))
+      .where(isNull(products.archivedAt)),
+    db
+      .select({
+        stationCode: productivityTargetConfigs.stationCode,
+        categoryId: productivityTargetConfigs.categoryId,
+        subtypeCode: productivityTargetConfigs.subtypeCode,
+        baseUnitPoints: productivityTargetConfigs.baseUnitPoints,
+        effectiveFrom: productivityTargetConfigs.effectiveFrom,
+        effectiveTo: productivityTargetConfigs.effectiveTo,
+        active: productivityTargetConfigs.active,
+      })
+      .from(productivityTargetConfigs)
+      .where(and(
+        eq(productivityTargetConfigs.active, true),
+        inArray(productivityTargetConfigs.stationCode, PRODUCTIVITY_TRACKED_STATION_CODES as unknown as StationCode[]),
+      )),
   ]);
 
   return buildAdminEngineerKpiProgressFromGoogleRows({
     userRows,
     supportRows,
     purchaseSheetRows,
+    productRows,
+    targetRows,
     range,
   });
 }
