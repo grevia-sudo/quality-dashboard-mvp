@@ -110,6 +110,15 @@ function mapSummaryToOptionIds(summary: string | null | undefined, options: Defe
   return normalizeIdList(options.filter((option) => tokens.has(option.label)).map((option) => option.id));
 }
 
+export function buildEditableOptionList(options: DefectOption[], selectedIds: number[]) {
+  const selectedIdSet = new Set(normalizeIdList(selectedIds));
+  return options.filter((option) => option.active || selectedIdSet.has(option.id));
+}
+
+export function resolveDraftOptionIds(carriedOptionIds: number[], summary: string | null | undefined, options: DefectOption[]) {
+  return carriedOptionIds.length > 0 ? carriedOptionIds : mapSummaryToOptionIds(summary, options);
+}
+
 function mapSummaryToBatteryInputs(summary: string | null | undefined) {
   const tokens = parseSummaryTokens(summary);
   const batteryIssueLabels = tokens.filter(isBatteryIssueLabel);
@@ -130,10 +139,10 @@ function buildSamplingCStatus(task: SamplingTask) {
 
 function createInitialDraft(task: SamplingTask, detailData?: StationDetailData): InspectionDraft {
   const batteryInputs = mapSummaryToBatteryInputs(task.inheritedBatterySummary);
-  const bFaultOptions = (detailData?.bFaultOptions ?? []).filter((option) => option.active);
-  const faultOptions = (detailData?.faultOptions ?? []).filter((option) => option.active);
-  const appearanceOptions = (detailData?.appearanceOptions ?? []).filter((option) => option.active);
-  const cameraOptions = (detailData?.cameraOptions ?? []).filter((option) => option.active);
+  const bFaultOptions = detailData?.bFaultOptions ?? [];
+  const faultOptions = detailData?.faultOptions ?? [];
+  const appearanceOptions = detailData?.appearanceOptions ?? [];
+  const cameraOptions = detailData?.cameraOptions ?? [];
   const carriedBFaultOptionIds = normalizeIdList(task.taskMetadata?.bFaultOptionIds ?? []);
   const carriedCFaultOptionIds = normalizeIdList(task.taskMetadata?.faultOptionIds ?? []);
   const carriedCAppearanceOptionIds = normalizeIdList(task.taskMetadata?.appearanceOptionIds ?? []);
@@ -143,21 +152,13 @@ function createInitialDraft(task: SamplingTask, detailData?: StationDetailData):
     batteryNote: batteryInputs.batteryNote,
     batteryIssueLabels: batteryInputs.batteryIssueLabels,
     bFaultSummary: normalizeResultText(task.inheritedBFaultSummary),
-    bFaultOptionIds: carriedBFaultOptionIds.length > 0
-      ? carriedBFaultOptionIds
-      : mapSummaryToOptionIds(task.inheritedBFaultSummary, bFaultOptions),
+    bFaultOptionIds: resolveDraftOptionIds(carriedBFaultOptionIds, task.inheritedBFaultSummary, bFaultOptions),
     cFaultSummary: normalizeResultText(task.inheritedCFaultSummary),
-    cFaultOptionIds: carriedCFaultOptionIds.length > 0
-      ? carriedCFaultOptionIds
-      : mapSummaryToOptionIds(task.inheritedCFaultSummary, faultOptions),
+    cFaultOptionIds: resolveDraftOptionIds(carriedCFaultOptionIds, task.inheritedCFaultSummary, faultOptions),
     cAppearanceSummary: normalizeResultText(task.inheritedCAppearanceSummary),
-    cAppearanceOptionIds: carriedCAppearanceOptionIds.length > 0
-      ? carriedCAppearanceOptionIds
-      : mapSummaryToOptionIds(task.inheritedCAppearanceSummary, appearanceOptions),
+    cAppearanceOptionIds: resolveDraftOptionIds(carriedCAppearanceOptionIds, task.inheritedCAppearanceSummary, appearanceOptions),
     cCameraSummary: normalizeResultText(task.inheritedCCameraSummary),
-    cCameraOptionIds: carriedCCameraOptionIds.length > 0
-      ? carriedCCameraOptionIds
-      : mapSummaryToOptionIds(task.inheritedCCameraSummary, cameraOptions),
+    cCameraOptionIds: resolveDraftOptionIds(carriedCCameraOptionIds, task.inheritedCCameraSummary, cameraOptions),
     isEditingPrevious: false,
     isEditingCurrent: false,
   };
@@ -187,10 +188,10 @@ export default function SamplingPage() {
   const tasks = ((query.data?.tasks ?? []) as SamplingTask[]);
   const detailData = detailQuery.data as StationDetailData | undefined;
   const categoryOptions = categoryOptionsQuery.data ?? [];
-  const bFaultOptions = (detailData?.bFaultOptions ?? []).filter((option) => option.active);
-  const faultOptions = (detailData?.faultOptions ?? []).filter((option) => option.active);
-  const appearanceOptions = (detailData?.appearanceOptions ?? []).filter((option) => option.active);
-  const cameraOptions = (detailData?.cameraOptions ?? []).filter((option) => option.active);
+  const bFaultOptions = detailData?.bFaultOptions ?? [];
+  const faultOptions = detailData?.faultOptions ?? [];
+  const appearanceOptions = detailData?.appearanceOptions ?? [];
+  const cameraOptions = detailData?.cameraOptions ?? [];
 
   useEffect(() => {
     if (shouldRedirectFromManagementOps({ loading, role: user?.role })) {
@@ -521,15 +522,15 @@ export default function SamplingPage() {
                           <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
                             <div className="space-y-3">
                               <p className="text-sm font-medium text-slate-700">故障選項</p>
-                              {bFaultOptions.length > 0 ? (
+                              {buildEditableOptionList(bFaultOptions, draft.bFaultOptionIds).length > 0 ? (
                                 <div className="flex flex-wrap gap-3">
-                                  {bFaultOptions.map((option) => (
+                                  {buildEditableOptionList(bFaultOptions, draft.bFaultOptionIds).map((option) => (
                                     <label key={option.id} className="flex min-h-[56px] min-w-[170px] items-center gap-3 rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm sm:min-w-[180px] xl:min-w-[185px]">
                                       <Checkbox
                                         checked={draft.bFaultOptionIds.includes(option.id)}
                                         onCheckedChange={(checked) => toggleBFaultOption(task, option.id, Boolean(checked))}
                                       />
-                                      <span>{option.label}</span>
+                                      <span>{option.label}{option.active ? "" : "（已停用）"}</span>
                                     </label>
                                   ))}
                                 </div>

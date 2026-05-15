@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.id AS product_id, p.batchNo, st.id AS task_id, st.stationCode, st.taskStatus, st.resultSummary, st.metadata FROM products p JOIN station_tasks st ON st.productId = p.id WHERE p.batchNo = '00500025279' AND p.archivedAt IS NULL ORDER BY st.id; SELECT id, stationCode, optionType, label, active, sortOrder FROM defect_options WHERE label = '充電孔異常' ORDER BY stationCode, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id AS product_id, p.batchNo, st.id AS task_id, st.stationCode, st.taskStatus, st.resultSummary, st.metadata FROM products p JOIN station_tasks st ON st.productId = p.id WHERE p.batchNo = '00500025279' AND p.archivedAt IS NULL ORDER BY st.id; SELECT id, stationCode, optionType, label, active, sortOrder FROM defect_options WHERE label = '充電孔異常' ORDER BY stationCode, id;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'st.taskstatus' in 'field list'"
+  ]
+}
