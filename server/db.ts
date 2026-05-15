@@ -5226,6 +5226,234 @@ function isDateKeyWithinRange(dateKey: string, range: { startDate: string; endDa
   return dateKey >= range.startDate && dateKey <= range.endDate;
 }
 
+const GOOGLE_KPI_PURCHASE_SHEET_RANGE = `${PURCHASE_SHEET_NAME}!A:AD`;
+const GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION = 0.01;
+const GOOGLE_KPI_STATION_SPECS = [
+  { stationCode: "A1", operatorIndex: 8, completedAtIndex: 9 },
+  { stationCode: "A2", operatorIndex: 10, completedAtIndex: 11 },
+  { stationCode: "B", operatorIndex: 14, completedAtIndex: 15 },
+  { stationCode: "C", operatorIndex: 19, completedAtIndex: 20 },
+  { stationCode: "D", operatorIndex: 24, completedAtIndex: 23 },
+  { stationCode: "E", operatorIndex: 26, completedAtIndex: 25 },
+] as const;
+
+function normalizeGoogleKpiOperatorName(value: unknown) {
+  return String(value ?? "").trim().replace(/\s+/g, " ");
+}
+
+function parseGoogleSheetDateKey(value: unknown) {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const matched = normalized.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (!matched) {
+    return null;
+  }
+
+  const [, year, month, day] = matched;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function createSyntheticGoogleKpiUserId(name: string) {
+  let hash = 0;
+  for (const char of name) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 100000000;
+  }
+  return -(hash || 1);
+}
+
+function buildGoogleKpiUserLookup(userRows: Array<{ id: number; username: string | null; name: string | null; role: string | null }>) {
+  const lookup = new Map<string, { userId: number; username: string; name: string; role: string }>();
+
+  userRows.forEach((user) => {
+    const resolvedName = normalizeGoogleKpiOperatorName(user.name ?? user.username ?? `User-${user.id}`);
+    const resolvedUsername = normalizeGoogleKpiOperatorName(user.username ?? resolvedName);
+    const role = user.role ?? "user";
+    const candidates = [resolvedName, resolvedUsername].filter(Boolean);
+
+    candidates.forEach((candidate) => {
+      if (!lookup.has(candidate)) {
+        lookup.set(candidate, {
+          userId: user.id,
+          username: user.username ?? resolvedUsername,
+          name: user.name ?? resolvedName,
+          role,
+        });
+      }
+    });
+  });
+
+  return lookup;
+}
+
+export function buildAdminEngineerKpiProgressFromGoogleRows(input: {
+  userRows: Array<{ id: number; username: string | null; name: string | null; role: string | null }>;
+  supportRows: Array<{ userId: number; businessDate: Date; supportHours: string | number | null }>;
+  purchaseSheetRows: string[][];
+  range: { todayKey: string; startDate: string; endDate: string };
+}) {
+  const { userRows, supportRows, purchaseSheetRows, range } = input;
+  const userLookup = buildGoogleKpiUserLookup(userRows);
+  const userMetadataById = new Map(userRows.map((user) => [user.id, user]));
+  const aggregates = new Map<number, {
+    userId: number;
+    username: string;
+    name: string;
+    role: string | null;
+    attendanceDateSet: Set<string>;
+    todayProductivityPoints: number;
+    todaySupportHours: number;
+    todaySupportPoints: number;
+    rangeProductivityPoints: number;
+    rangeSupportHours: number;
+    rangeSupportPoints: number;
+    stationBreakdownMap: Map<string, { stationCode: string; completedQty: number; totalPoints: number; totalDisplayPoints: number; supportHours: number }>;
+  }>();
+
+  const ensureAggregate = (userLike: { userId: number; username: string; name: string; role: string | null }) => {
+    const existing = aggregates.get(userLike.userId);
+    if (existing) {
+      return existing;
+    }
+
+    const created = {
+      userId: userLike.userId,
+      username: userLike.username,
+      name: userLike.name,
+      role: userLike.role,
+      attendanceDateSet: new Set<string>(),
+      todayProductivityPoints: 0,
+      todaySupportHours: 0,
+      todaySupportPoints: 0,
+      rangeProductivityPoints: 0,
+      rangeSupportHours: 0,
+      rangeSupportPoints: 0,
+      stationBreakdownMap: new Map<string, { stationCode: string; completedQty: number; totalPoints: number; totalDisplayPoints: number; supportHours: number }>(),
+    };
+    aggregates.set(userLike.userId, created);
+    return created;
+  };
+
+  userRows.forEach((user) => {
+    ensureAggregate({
+      userId: user.id,
+      username: user.username ?? "-",
+      name: user.name ?? user.username ?? `User-${user.id}`,
+      role: user.role,
+    });
+  });
+
+  purchaseSheetRows.slice(1).forEach((row) => {
+    GOOGLE_KPI_STATION_SPECS.forEach((spec) => {
+      const operatorName = normalizeGoogleKpiOperatorName(row?.[spec.operatorIndex]);
+      const dateKey = parseGoogleSheetDateKey(row?.[spec.completedAtIndex]);
+      if (!operatorName || !dateKey || !isDateKeyWithinRange(dateKey, range)) {
+        return;
+      }
+
+      const matchedUser = userLookup.get(operatorName) ?? {
+        userId: createSyntheticGoogleKpiUserId(operatorName),
+        username: operatorName,
+        name: operatorName,
+        role: "google_sheet",
+      };
+      const aggregate = ensureAggregate(matchedUser);
+      aggregate.attendanceDateSet.add(dateKey);
+      aggregate.rangeProductivityPoints += GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION;
+      if (dateKey === range.todayKey) {
+        aggregate.todayProductivityPoints += GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION;
+      }
+
+      const existingStation = aggregate.stationBreakdownMap.get(spec.stationCode) ?? {
+        stationCode: spec.stationCode,
+        completedQty: 0,
+        totalPoints: 0,
+        totalDisplayPoints: 0,
+        supportHours: 0,
+      };
+      existingStation.completedQty += 1;
+      existingStation.totalPoints += GOOGLE_KPI_INTERNAL_POINTS_PER_COMPLETION;
+      existingStation.totalDisplayPoints = toDisplayPoints(existingStation.totalPoints);
+      aggregate.stationBreakdownMap.set(spec.stationCode, existingStation);
+    });
+  });
+
+  supportRows.forEach((row) => {
+    const matchedUser = userMetadataById.get(row.userId);
+    const aggregate = ensureAggregate({
+      userId: row.userId,
+      username: matchedUser?.username ?? `user-${row.userId}`,
+      name: matchedUser?.name ?? matchedUser?.username ?? `User-${row.userId}`,
+      role: matchedUser?.role ?? "user",
+    });
+    const dateKey = toDateKey(row.businessDate);
+    const hours = Number(row.supportHours ?? 0);
+    const points = getSupportCompensationInternalPoints(hours);
+    aggregate.attendanceDateSet.add(dateKey);
+    aggregate.rangeSupportHours += hours;
+    aggregate.rangeSupportPoints += points;
+    if (dateKey === range.todayKey) {
+      aggregate.todaySupportHours += hours;
+      aggregate.todaySupportPoints += points;
+    }
+  });
+
+  return Array.from(aggregates.values())
+    .map((aggregate) => {
+      if (aggregate.rangeSupportHours > 0 || aggregate.rangeSupportPoints > 0) {
+        aggregate.stationBreakdownMap.set("SUPPORT", {
+          stationCode: "SUPPORT",
+          completedQty: 0,
+          totalPoints: aggregate.rangeSupportPoints,
+          totalDisplayPoints: toDisplayPoints(aggregate.rangeSupportPoints),
+          supportHours: aggregate.rangeSupportHours,
+        });
+      }
+
+      const todayPoints = aggregate.todayProductivityPoints + aggregate.todaySupportPoints;
+      const rangeTotalPoints = aggregate.rangeProductivityPoints + aggregate.rangeSupportPoints;
+      const attendanceDays = aggregate.attendanceDateSet.size;
+      const monthAvgPoints = attendanceDays > 0 ? rangeTotalPoints / attendanceDays : 0;
+      const rawAchievementRate = toDisplayPoints(todayPoints);
+      const matchedUser = {
+        username: aggregate.username,
+        name: aggregate.name,
+      };
+
+      return {
+        userId: aggregate.userId,
+        username: aggregate.username,
+        name: aggregate.name,
+        role: aggregate.role ?? "user",
+        attendanceDays,
+        todayPoints,
+        todayDisplayPoints: toDisplayPoints(todayPoints),
+        todaySupportHours: aggregate.todaySupportHours,
+        todaySupportPoints: aggregate.todaySupportPoints,
+        todaySupportDisplayPoints: toDisplayPoints(aggregate.todaySupportPoints),
+        monthTotalPoints: rangeTotalPoints,
+        monthTotalDisplayPoints: toDisplayPoints(rangeTotalPoints),
+        todayLabel: range.todayKey,
+        rangeStartDate: range.startDate,
+        rangeEndDate: range.endDate,
+        monthAvgPoints,
+        monthAvgDisplayPoints: toDisplayPoints(monthAvgPoints),
+        rangeSupportHours: aggregate.rangeSupportHours,
+        rangeSupportPoints: aggregate.rangeSupportPoints,
+        rangeSupportDisplayPoints: toDisplayPoints(aggregate.rangeSupportPoints),
+        avgKpiAchievementRate: attendanceDays > 0 ? Math.min(toDisplayPoints(monthAvgPoints), 100) : 0,
+        rawAchievementRate,
+        overAchievementRate: Math.max(rawAchievementRate - 100, 0),
+        finalKpiScore: rawAchievementRate,
+        zeroScoreCategory: classifyZeroScoreKpiAccount(matchedUser, rangeTotalPoints),
+        stationBreakdown: sortKpiStationBreakdown(Array.from(aggregate.stationBreakdownMap.values())),
+      };
+    })
+    .sort((left, right) => right.monthTotalPoints - left.monthTotalPoints || right.finalKpiScore - left.finalKpiScore || left.name.localeCompare(right.name));
+}
+
 async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   const db = await getDb();
   if (!db) {
@@ -5233,8 +5461,7 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
   }
 
   const range = normalizeAdminDateRange(input);
-  await backfillProductivityFromCompletedEvents(db);
-  const [userRows, productivityRows, productivityDetailRows, supportRows] = await Promise.all([
+  const [userRows, supportRows, purchaseSheetRows] = await Promise.all([
     db
       .select({
         id: users.id,
@@ -5246,32 +5473,6 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
       .where(notInArray(users.role, ["admin"])),
     db
       .select({
-        userId: engineerDailyProductivity.userId,
-        businessDate: engineerDailyProductivity.businessDate,
-        totalPoints: engineerDailyProductivity.totalPoints,
-        kpiAchievementRate: engineerDailyProductivity.kpiAchievementRate,
-        rawAchievementRate: engineerDailyProductivity.rawAchievementRate,
-        overAchievementRate: engineerDailyProductivity.overAchievementRate,
-        finalKpiScore: engineerDailyProductivity.finalKpiScore,
-        attendanceFlag: engineerDailyProductivity.attendanceFlag,
-      })
-      .from(engineerDailyProductivity)
-      .orderBy(asc(engineerDailyProductivity.businessDate), asc(engineerDailyProductivity.id)),
-    db
-      .select({
-        userId: productivityScoreDetails.userId,
-        stationCode: productivityScoreDetails.stationCode,
-        completedQty: productivityScoreDetails.completedQty,
-        earnedPoints: productivityScoreDetails.earnedPoints,
-        businessDate: productivityScoreDetails.businessDate,
-      })
-      .from(productivityScoreDetails)
-      .where(and(
-        gte(productivityScoreDetails.businessDate, dateKeyToDate(range.startDate)),
-        lte(productivityScoreDetails.businessDate, dateKeyToDate(range.endDate)),
-      )),
-    db
-      .select({
         userId: supportTaskCompensations.userId,
         businessDate: supportTaskCompensations.businessDate,
         supportHours: supportTaskCompensations.supportHours,
@@ -5281,124 +5482,15 @@ async function getAdminEngineerKpiProgress(input?: AdminDateRangeInput) {
         gte(supportTaskCompensations.businessDate, dateKeyToDate(range.startDate)),
         lte(supportTaskCompensations.businessDate, dateKeyToDate(range.endDate)),
       )),
+    readPurchaseSheetRows(GOOGLE_KPI_PURCHASE_SHEET_RANGE),
   ]);
 
-  const rangedRows = productivityRows.filter((row) => isDateKeyWithinRange(toDateKey(row.businessDate), range));
-  const rangedDetailRows = productivityDetailRows.filter((row) => isDateKeyWithinRange(toDateKey(row.businessDate), range));
-  const supportByUserDate = new Map<string, { supportHours: number; supportPoints: number }>();
-
-  supportRows.forEach((row) => {
-    const dateKey = toDateKey(row.businessDate);
-    const key = `${row.userId}-${dateKey}`;
-    const current = supportByUserDate.get(key) ?? { supportHours: 0, supportPoints: 0 };
-    const hours = Number(row.supportHours);
-    current.supportHours += hours;
-    current.supportPoints += getSupportCompensationInternalPoints(hours);
-    supportByUserDate.set(key, current);
+  return buildAdminEngineerKpiProgressFromGoogleRows({
+    userRows,
+    supportRows,
+    purchaseSheetRows,
+    range,
   });
-
-  return userRows
-    .map((user) => {
-      const rows = rangedRows.filter((row) => row.userId === user.id);
-      const detailRows = rangedDetailRows.filter((row) => row.userId === user.id);
-      const rowsByDate = new Map<string, (typeof rows)[number]>();
-      rows.forEach((row) => {
-        rowsByDate.set(toDateKey(row.businessDate), row);
-      });
-
-      const attendanceDateSet = new Set<string>();
-      rows.forEach((row) => {
-        if (row.attendanceFlag) {
-          attendanceDateSet.add(toDateKey(row.businessDate));
-        }
-      });
-      supportRows
-        .filter((row) => row.userId === user.id)
-        .forEach((row) => attendanceDateSet.add(toDateKey(row.businessDate)));
-
-      const todaySupport = supportByUserDate.get(`${user.id}-${range.todayKey}`) ?? { supportHours: 0, supportPoints: 0 };
-      const todayDetailPoints = detailRows
-        .filter((row) => toDateKey(row.businessDate) === range.todayKey)
-        .reduce((sum, row) => sum + Number(row.earnedPoints ?? 0), 0);
-      const todayRowTotalPoints = Number(rowsByDate.get(range.todayKey)?.totalPoints ?? 0);
-      const todayProductivityPoints = todayDetailPoints > 0
-        ? todayDetailPoints
-        : Math.max(0, todayRowTotalPoints - todaySupport.supportPoints);
-      const todayPoints = todayProductivityPoints + todaySupport.supportPoints;
-      const rangeSupportEntries = Array.from(supportByUserDate.entries()).filter(([key]) => key.startsWith(`${user.id}-`));
-      const rangeSupportPoints = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportPoints, 0);
-      const rangeSupportHours = rangeSupportEntries.reduce((sum, [, value]) => sum + value.supportHours, 0);
-      const rangeProductivityPoints = rows.reduce((sum, row) => {
-        const dateKey = toDateKey(row.businessDate);
-        const supportPointsForDate = supportByUserDate.get(`${user.id}-${dateKey}`)?.supportPoints ?? 0;
-        return sum + Math.max(0, Number(row.totalPoints ?? 0) - supportPointsForDate);
-      }, 0);
-      const rangeTotalPoints = rangeProductivityPoints + rangeSupportPoints;
-      const attendanceDays = attendanceDateSet.size;
-      const monthAvgPoints = attendanceDays > 0 ? rangeTotalPoints / attendanceDays : 0;
-      const avgKpiAchievementRate = attendanceDays > 0 ? Math.min(toDisplayPoints(monthAvgPoints), 100) : 0;
-      const rawAchievementRate = toDisplayPoints(todayPoints);
-      const overAchievementRate = Math.max(rawAchievementRate - 100, 0);
-      const finalKpiScore = rawAchievementRate;
-      const stationBreakdownMap = new Map<string, { stationCode: string; completedQty: number; totalPoints: number; totalDisplayPoints: number; supportHours: number }>();
-
-      detailRows.forEach((row) => {
-        const stationCode = row.stationCode;
-        const existing = stationBreakdownMap.get(stationCode) ?? {
-          stationCode,
-          completedQty: 0,
-          totalPoints: 0,
-          totalDisplayPoints: 0,
-          supportHours: 0,
-        };
-        existing.completedQty += Number(row.completedQty ?? 0);
-        existing.totalPoints += Number(row.earnedPoints ?? 0);
-        existing.totalDisplayPoints = toDisplayPoints(existing.totalPoints);
-        stationBreakdownMap.set(stationCode, existing);
-      });
-
-      if (rangeSupportHours > 0 || rangeSupportPoints > 0) {
-        stationBreakdownMap.set("SUPPORT", {
-          stationCode: "SUPPORT",
-          completedQty: 0,
-          totalPoints: rangeSupportPoints,
-          totalDisplayPoints: toDisplayPoints(rangeSupportPoints),
-          supportHours: rangeSupportHours,
-        });
-      }
-
-      const zeroScoreCategory = classifyZeroScoreKpiAccount(user, rangeTotalPoints);
-
-      return {
-        userId: user.id,
-        username: user.username ?? "-",
-        name: user.name ?? user.username ?? `User-${user.id}`,
-        role: user.role,
-        attendanceDays,
-        todayPoints,
-        todayDisplayPoints: toDisplayPoints(todayPoints),
-        todaySupportHours: todaySupport.supportHours,
-        todaySupportPoints: todaySupport.supportPoints,
-        todaySupportDisplayPoints: toDisplayPoints(todaySupport.supportPoints),
-        monthTotalPoints: rangeTotalPoints,
-        monthTotalDisplayPoints: toDisplayPoints(rangeTotalPoints),
-        todayLabel: range.todayKey,
-        rangeStartDate: range.startDate,
-        rangeEndDate: range.endDate,
-        monthAvgPoints,
-        monthAvgDisplayPoints: toDisplayPoints(monthAvgPoints),
-        rangeSupportHours,
-        rangeSupportPoints,
-        rangeSupportDisplayPoints: toDisplayPoints(rangeSupportPoints),
-        avgKpiAchievementRate,
-        rawAchievementRate,
-        overAchievementRate,
-        finalKpiScore,
-        zeroScoreCategory,
-        stationBreakdown: sortKpiStationBreakdown(Array.from(stationBreakdownMap.values())),
-      };
-    })
-    .sort((left, right) => right.monthTotalPoints - left.monthTotalPoints || right.finalKpiScore - left.finalKpiScore);
 }
 
 export async function getVisibleEngineerKpiProgress(input: AdminDateRangeInput | undefined, viewer: { userId: number; role?: string | null }) {
