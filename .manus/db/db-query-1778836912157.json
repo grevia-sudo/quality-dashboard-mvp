@@ -1,0 +1,52 @@
+{
+  "query": "SELECT pt.stationCode, pc.categoryName, pc.brandName, pt.dailyTargetQty, pt.baseUnitPoints FROM productivity_target_configs pt JOIN product_categories pc ON pc.id = pt.categoryId WHERE pt.active = 1 AND pc.categoryName = '智慧型手機' AND pc.brandName = 'Apple' AND pt.stationCode IN ('A1','A2','B','C','D','E') ORDER BY FIELD(pt.stationCode,'A1','A2','B','C','D','E'), pt.effectiveFrom DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT pt.stationCode, pc.categoryName, pc.brandName, pt.dailyTargetQty, pt.baseUnitPoints FROM productivity_target_configs pt JOIN product_categories pc ON pc.id = pt.categoryId WHERE pt.active = 1 AND pc.categoryName = '智慧型手機' AND pc.brandName = 'Apple' AND pt.stationCode IN ('A1','A2','B','C','D','E') ORDER BY FIELD(pt.stationCode,'A1','A2','B','C','D','E'), pt.effectiveFrom DESC;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tcategoryName\tbrandName\tdailyTargetQty\tbaseUnitPoints\nA1\t智慧型手機\tApple\t360\t0.002778\nA2\t智慧型手機\tApple\t360\t0.002778\nB\t智慧型手機\tApple\t160\t0.006250\nC\t智慧型手機\tApple\t159\t0.006289\nD\t智慧型手機\tApple\t200\t0.005000\nE\t智慧型手機\tApple\t400\t0.002500\n",
+  "stderr": "",
+  "execution_time_ms": 1788
+}
