@@ -7,6 +7,7 @@ import {
   matchesSheetRow,
   mergeMissingCells,
   PURCHASE_SHEET_HEADER,
+  SHEET_INDEXES,
 } from "../scripts/purchase-sheet-sync-helpers.mjs";
 
 describe("purchase sheet sync helpers", () => {
@@ -145,7 +146,12 @@ describe("purchase sheet sync helpers", () => {
       a1CompletedAt: "2026-04-22T10:20:00.000Z",
       a2CompletedAt: "2026-04-22T09:50:00.000Z",
       bCompletedAt: "2026-04-22T09:40:00.000Z",
-      cCompletedAt: "2026-04-22T09:30:00.000Z",
+      cCompletedAt: null,
+      cOperatorName: "",
+      cFaultSummary: "",
+      cAppearanceSummary: "",
+      cCameraSummary: "",
+      cModifiedPreviousStage: "",
       dCompletedAt: "2026-04-22T09:20:00.000Z",
       eCompletedAt: "2026-04-22T09:10:00.000Z",
     };
@@ -183,6 +189,23 @@ describe("purchase sheet sync helpers", () => {
       "",
       "",
     ]);
+  });
+
+  it("forces full C-stage refresh indexes when any C-stage data exists even if timestamps are stale", () => {
+    const refreshIndexes = Array.from(getSheetRefreshIndexes({
+      lastSheetSyncedAt: "2026-04-24T12:00:00.000Z",
+      cCompletedAt: "2026-04-24T11:59:00.000Z",
+      cOperatorName: "Cindy",
+      cFaultSummary: "破裂",
+    }));
+
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cStageTime);
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cModifiedPreviousStage);
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cFaultSummary);
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cAppearanceSummary);
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cOperatorName);
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cCompletedAt);
+    expect(refreshIndexes).toContain(SHEET_INDEXES.cCameraSummary);
   });
 
   it("creates the standard header row when the sheet is still empty", () => {

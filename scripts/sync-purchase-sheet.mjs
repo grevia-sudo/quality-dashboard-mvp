@@ -9,10 +9,29 @@ import {
   SHEET_NAME,
   SPREADSHEET_ID,
   PURCHASE_SHEET_HEADER,
+  SHEET_INDEXES,
 } from "./purchase-sheet-sync-helpers.mjs";
 
 const SHEETS_WRITE_THROTTLE_MS = 1_100;
 let lastSheetsWriteAt = 0;
+
+export function isBlankCell(value) {
+  return value === null || value === undefined || String(value).trim() === "";
+}
+
+export function assertCStageWritten(product, writtenRow) {
+  const localHasCCompleted = !isBlankCell(product?.cCompletedAt);
+  if (!localHasCCompleted) {
+    return;
+  }
+
+  const googleCCompletedAt = writtenRow?.[SHEET_INDEXES.cCompletedAt];
+  if (isBlankCell(googleCCompletedAt)) {
+    throw new Error(
+      `Google 採購單 C 欄位未寫入：productId=${product?.id ?? ""}, batch=${product?.batchNo ?? ""}`,
+    );
+  }
+}
 
 function wait(delayMs) {
   return new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -506,12 +525,14 @@ export async function runPurchaseSheetSync() {
         const existingRow = normalizedValues[rowNumber - 1] ?? [];
         const mergedRow = mergeMissingCells(existingRow, generatedRow, product);
 
+        assertCStageWritten(product, mergedRow);
         await updateSheetRow(accessToken, rowNumber, mergedRow);
         normalizedValues[rowNumber - 1] = mergedRow;
         updatedCount += 1;
       } else {
         const appendedRowNumber = normalizedValues.length + 1;
 
+        assertCStageWritten(product, generatedRow);
         await appendSheetRow(accessToken, generatedRow);
         normalizedValues.push(generatedRow);
         rowNumber = appendedRowNumber;

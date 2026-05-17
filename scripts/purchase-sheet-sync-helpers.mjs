@@ -2,6 +2,18 @@ export const SPREADSHEET_ID = "15uKVOc13iVhs2ffT9FWgKti47s38Hl_Zyjht6o7HU_Y";
 export const SHEET_NAME = "採購單";
 export const PURCHASE_SHEET_HEADER = ["採購單號", "廠商", "商品分類", "商品批號", "商品序號", "IMEI", "品名", "點到貨時間", "A1執行人", "安裝軟體時間", "A2執行人", "軟體測試時間", "電池檢測", "B站故障狀態", "B站執行人", "測試時間", "是否修改B站的狀態回覆", "螢幕狀態", "機身狀態", "C站測試人員", "C站完成時間", "鏡頭狀態", "D站是否修改檢查結果", "D站完成時間", "D站檢測者", "E站抹除完成時間", "E站測試人員", "E站照片同步狀態", "E站正面照片", "E站反面照片"];
 
+export const SHEET_INDEXES = {
+  cStageTime: 15,
+  cModifiedPreviousStage: 16,
+  cFaultSummary: 17,
+  cAppearanceSummary: 18,
+  cOperatorName: 19,
+  cCompletedAt: 20,
+  cCameraSummary: 21,
+};
+
+const C_STAGE_REFRESH_INDEXES = [7, 8, 9, 10, 11, 14, 12, 13, 15, 16, 17, 18, 19, 20, 21];
+
 export function stringifyCell(value) {
   if (value === null || value === undefined) {
     return "";
@@ -132,6 +144,35 @@ export function buildSheetRow(product) {
   ];
 }
 
+function hasValue(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  return true;
+}
+
+function hasCStageData(product) {
+  return (
+    hasValue(product?.cCompletedAt) ||
+    hasValue(product?.cOperatorName) ||
+    hasValue(product?.cFaultSummary) ||
+    hasValue(product?.cAppearanceSummary) ||
+    hasValue(product?.cCameraSummary) ||
+    hasValue(product?.cModifiedPreviousStage) ||
+    hasValue(product?.cModifiedBatterySummary) ||
+    hasValue(product?.cModifiedBFaultSummary)
+  );
+}
+
 function isSheetDateNewer(candidate, lastSyncedAt) {
   if (!candidate || !lastSyncedAt) {
     return false;
@@ -167,7 +208,7 @@ export function getSheetRefreshIndexes(product) {
     a1: isSheetDateNewer(product.a1CompletedAt, lastSyncedAt) || isSheetDateNewer(product.updatedAt, lastSyncedAt),
     a2: isSheetDateNewer(product.a2CompletedAt, lastSyncedAt),
     b: isSheetDateNewer(product.bCompletedAt, lastSyncedAt),
-    c: isSheetDateNewer(product.cCompletedAt, lastSyncedAt),
+    c: isSheetDateNewer(product.cCompletedAt, lastSyncedAt) || hasCStageData(product),
     d: isSheetDateNewer(product.dCompletedAt, lastSyncedAt),
     e: isSheetDateNewer(product.eCompletedAt, lastSyncedAt),
   };
@@ -182,7 +223,7 @@ export function getSheetRefreshIndexes(product) {
     [7, 8, 9, 10, 11, 12, 13, 14].forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.c) {
-    [7, 8, 9, 10, 11, 14, 12, 13, 15, 16, 17, 18, 19, 20, 21].forEach((index) => refreshIndexes.add(index));
+    C_STAGE_REFRESH_INDEXES.forEach((index) => refreshIndexes.add(index));
   }
   if (stageUpdated.d) {
     [7, 8, 9, 10, 11, 14, 15, 19, 20, 12, 13, 17, 18, 21, 22, 23, 24].forEach((index) => refreshIndexes.add(index));

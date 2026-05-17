@@ -1,0 +1,38 @@
+{
+  "query": "SELECT ptc.id, ptc.stationCode, pc.categoryName, pc.brandName, ptc.subtypeCode, ptc.dailyTargetQty, ptc.baseUnitPoints, ptc.effectiveFrom, ptc.effectiveTo, ptc.active, ptc.createdAt, ptc.updatedAt\nFROM productivity_target_configs ptc\nINNER JOIN product_categories pc ON pc.id = ptc.categoryId\nWHERE ptc.stationCode IN ('C','E')\n  AND pc.categoryName = '智慧型手機'\n  AND pc.brandName = 'Apple'\nORDER BY ptc.stationCode, ptc.id DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT ptc.id, ptc.stationCode, pc.categoryName, pc.brandName, ptc.subtypeCode, ptc.dailyTargetQty, ptc.baseUnitPoints, ptc.effectiveFrom, ptc.effectiveTo, ptc.active, ptc.createdAt, ptc.updatedAt\nFROM productivity_target_configs ptc\nINNER JOIN product_categories pc ON pc.id = ptc.categoryId\nWHERE ptc.stationCode IN ('C','E')\n  AND pc.categoryName = '智慧型手機'\n  AND pc.brandName = 'Apple'\nORDER BY ptc.stationCode, ptc.id DESC;",
+  "rows": [
+    {
+      "id": "30009",
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289",
+      "effectiveFrom": "2026-04-28",
+      "effectiveTo": "NULL",
+      "active": "1",
+      "createdAt": "2026-04-28 04:33:51",
+      "updatedAt": "2026-05-06 00:49:19"
+    },
+    {
+      "id": "30064",
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "effectiveFrom": "2026-04-28",
+      "effectiveTo": "NULL",
+      "active": "1",
+      "createdAt": "2026-04-28 04:33:51",
+      "updatedAt": "2026-04-28 04:33:51"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstationCode\tcategoryName\tbrandName\tsubtypeCode\tdailyTargetQty\tbaseUnitPoints\teffectiveFrom\teffectiveTo\tactive\tcreatedAt\tupdatedAt\n30009\tC\t智慧型手機\tApple\tApple\t159\t0.006289\t2026-04-28\tNULL\t1\t2026-04-28 04:33:51\t2026-05-06 00:49:19\n30064\tE\t智慧型手機\tApple\tApple\t400\t0.002500\t2026-04-28\tNULL\t1\t2026-04-28 04:33:51\t2026-04-28 04:33:51\n",
+  "stderr": "",
+  "execution_time_ms": 1822
+}
