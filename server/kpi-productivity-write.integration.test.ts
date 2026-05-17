@@ -4,17 +4,27 @@ import {
   engineerDailyProductivity,
   productCategories,
   productivityScoreDetails,
+  productArchives,
   products,
+  samplingResults,
   stationEvents,
   stationTasks,
   supportTaskCompensations,
   users,
 } from "../drizzle/schema";
-import { backfillProductivityFromCompletedEvents, completeStationTask, ensureMvpSeedData, getDb, importProducts } from "./db";
+import { backfillProductivityFromCompletedEvents, completeStationTask, ensureMvpSeedData, getDb, importProducts, submitSamplingResult } from "./db";
 
 const createdPoNumbers = new Set<string>();
 const createdUserIds: number[] = [];
 const originalFetch = global.fetch;
+
+function createTestPhoto(fileName: string) {
+  return {
+    fileName,
+    mimeType: "image/jpeg",
+    dataUrl: "data:image/jpeg;base64,aGVsbG8=",
+  };
+}
 
 function mockGooglePurchaseSheetBatches(batches: string[]) {
   global.fetch = vi.fn(async (input: RequestInfo | URL) => {
@@ -69,8 +79,10 @@ async function cleanupCreatedRows() {
     const productIds = targetProducts.map((row) => row.id);
     if (productIds.length > 0) {
       await db.delete(productivityScoreDetails).where(inArray(productivityScoreDetails.productId, productIds));
+      await db.delete(samplingResults).where(inArray(samplingResults.productId, productIds));
       await db.delete(stationEvents).where(inArray(stationEvents.productId, productIds));
       await db.delete(stationTasks).where(inArray(stationTasks.productId, productIds));
+      await db.delete(productArchives).where(inArray(productArchives.originalProductId, productIds));
       await db.delete(products).where(inArray(products.id, productIds));
     }
 
@@ -786,4 +798,191 @@ describe("station productivity persistence", () => {
     expect(detailRowsAfterBackfill).toHaveLength(1);
     expect(detailRowsAfterBackfill[0]?.stationEventId).toBe(createdDetail?.stationEventId ?? null);
   }, 20000);
+
+  it("counts KPI for every tracked station in the default A1→A2→B→C→D→E flow without touching real Google data", async () => {
+    await ensureMvpSeedData();
+
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available");
+    }
+
+    const uniqueSuffix = `${Date.now()}-all-stations`;
+    const engineerOpenId = `kpi-all-stations-${uniqueSuffix}`;
+    const batchNo = `KPI-ALL-STATIONS-BATCH-${uniqueSuffix}`;
+
+    await db.insert(users).values({
+      openId: engineerOpenId,
+      username: `kpi-all-stations-${uniqueSuffix}`,
+      name: "KPI All Stations",
+      loginMethod: "password",
+      role: "engineer",
+    });
+
+    const engineerRow = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.openId, engineerOpenId))
+      .limit(1);
+
+    const engineerId = engineerRow[0]?.id;
+    expect(engineerId).toBeTruthy();
+    if (!engineerId) {
+      return;
+    }
+
+    createdUserIds.push(engineerId);
+
+    const poNumber = `PO-KPI-ALL-STATIONS-${uniqueSuffix}`;
+    createdPoNumbers.add(poNumber);
+
+    await importProducts({
+      poNumber,
+      vendorName: "KPI 全站驗證測試廠商",
+      rows: [
+        {
+          batchNo,
+          serialNumber: `KPI-ALL-STATIONS-SN-${uniqueSuffix}`,
+          imei: `95${`${Date.now()}`.padStart(13, "0").slice(-13)}`,
+          productName: "Apple iPhone KPI All Stations",
+          categoryName: "智慧型手機",
+          brandName: "Apple",
+        },
+      ],
+    });
+
+    mockGooglePurchaseSheetBatches([batchNo]);
+
+    const getPendingTask = async (stationCode: "A1" | "A2" | "B" | "C" | "D" | "E") => (await db
+      .select({
+        taskId: stationTasks.id,
+        productId: stationTasks.productId,
+        categoryId: products.categoryId,
+        subtypeCode: productCategories.subtypeCode,
+      })
+      .from(stationTasks)
+      .innerJoin(products, eq(stationTasks.productId, products.id))
+      .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+      .where(and(
+        eq(products.poNumber, poNumber),
+        eq(stationTasks.stationCode, stationCode),
+        eq(stationTasks.taskStatus, "pending"),
+      ))
+      .limit(1))[0];
+
+    const a1Task = await getPendingTask("A1");
+    expect(a1Task).toBeTruthy();
+    const a1Result = await completeStationTask({
+      taskId: a1Task?.taskId ?? 0,
+      stationCode: "A1",
+      operatorUserId: engineerId,
+      productId: a1Task?.productId ?? 0,
+      categoryId: a1Task?.categoryId ?? null,
+      subtypeCode: a1Task?.subtypeCode ?? null,
+      summary: "A1 全站 KPI 驗證完成",
+    });
+    expect(a1Result.success).toBe(true);
+
+    const a2Task = await getPendingTask("A2");
+    expect(a2Task).toBeTruthy();
+    const a2Result = await completeStationTask({
+      taskId: a2Task?.taskId ?? 0,
+      stationCode: "A2",
+      operatorUserId: engineerId,
+      productId: a2Task?.productId ?? 0,
+      categoryId: a2Task?.categoryId ?? null,
+      subtypeCode: a2Task?.subtypeCode ?? null,
+      summary: "A2 全站 KPI 驗證完成",
+    });
+    expect(a2Result.success).toBe(true);
+
+    const bTask = await getPendingTask("B");
+    expect(bTask).toBeTruthy();
+    const bResult = await completeStationTask({
+      taskId: bTask?.taskId ?? 0,
+      stationCode: "B",
+      operatorUserId: engineerId,
+      productId: bTask?.productId ?? 0,
+      categoryId: bTask?.categoryId ?? null,
+      subtypeCode: bTask?.subtypeCode ?? null,
+      summary: "B 全站 KPI 驗證完成",
+    });
+    expect(bResult.success).toBe(true);
+
+    const cTask = await getPendingTask("C");
+    expect(cTask).toBeTruthy();
+    const cResult = await completeStationTask({
+      taskId: cTask?.taskId ?? 0,
+      stationCode: "C",
+      operatorUserId: engineerId,
+      productId: cTask?.productId ?? 0,
+      categoryId: cTask?.categoryId ?? null,
+      subtypeCode: cTask?.subtypeCode ?? null,
+      summary: "C 全站 KPI 驗證完成",
+    });
+    expect(cResult.success).toBe(true);
+
+    const dTask = await getPendingTask("D");
+    expect(dTask).toBeTruthy();
+    const samplingResult = await submitSamplingResult({
+      taskId: dTask?.taskId ?? 0,
+      productId: dTask?.productId ?? 0,
+      sampledByUserId: engineerId,
+      passed: true,
+      categoryId: dTask?.categoryId ?? null,
+      subtypeCode: dTask?.subtypeCode ?? null,
+      cFaultSummary: "正常",
+      cAppearanceSummary: "正常",
+      cCameraSummary: "正常",
+    });
+    expect(samplingResult.success).toBe(true);
+
+    await backfillProductivityFromCompletedEvents(db, { userId: engineerId });
+
+    const eTask = await getPendingTask("E");
+    expect(eTask).toBeTruthy();
+    const eResult = await completeStationTask({
+      taskId: eTask?.taskId ?? 0,
+      stationCode: "E",
+      operatorUserId: engineerId,
+      productId: eTask?.productId ?? 0,
+      categoryId: eTask?.categoryId ?? null,
+      subtypeCode: eTask?.subtypeCode ?? null,
+      summary: "E 全站 KPI 驗證完成",
+      eFrontPhoto: createTestPhoto("front.jpg"),
+      eBackPhoto: createTestPhoto("back.jpg"),
+    });
+    expect(eResult.success).toBe(true);
+
+    const detailRows = await db
+      .select({
+        stationCode: productivityScoreDetails.stationCode,
+        completedQty: productivityScoreDetails.completedQty,
+        earnedPoints: productivityScoreDetails.earnedPoints,
+      })
+      .from(productivityScoreDetails)
+      .where(and(
+        eq(productivityScoreDetails.userId, engineerId),
+        eq(productivityScoreDetails.productId, a1Task?.productId ?? 0),
+      ));
+
+    const stationCodes = detailRows.map((row) => row.stationCode).sort();
+    expect(stationCodes).toEqual(["A1", "A2", "B", "C", "D", "E"]);
+    detailRows.forEach((row) => {
+      expect(row.completedQty).toBe(1);
+      expect(Number(row.earnedPoints ?? 0)).toBeGreaterThan(0);
+    });
+
+    const aggregateRows = await db
+      .select({
+        totalPoints: engineerDailyProductivity.totalPoints,
+        rawAchievementRate: engineerDailyProductivity.rawAchievementRate,
+      })
+      .from(engineerDailyProductivity)
+      .where(eq(engineerDailyProductivity.userId, engineerId));
+
+    expect(aggregateRows).toHaveLength(1);
+    expect(Number(aggregateRows[0]?.totalPoints ?? 0)).toBeGreaterThan(0);
+    expect(Number(aggregateRows[0]?.rawAchievementRate ?? 0)).toBeGreaterThan(0);
+  }, 60000);
 });

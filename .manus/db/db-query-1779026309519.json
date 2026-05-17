@@ -1,0 +1,40 @@
+{
+  "query": "SELECT stationCode, COUNT(*) AS active_target_count, COUNT(DISTINCT categoryId) AS category_count\nFROM productivity_target_configs\nWHERE active = 1\nGROUP BY stationCode\nORDER BY FIELD(stationCode, 'A1', 'A2', 'B', 'C', 'D', 'E');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT stationCode, COUNT(*) AS active_target_count, COUNT(DISTINCT categoryId) AS category_count\nFROM productivity_target_configs\nWHERE active = 1\nGROUP BY stationCode\nORDER BY FIELD(stationCode, 'A1', 'A2', 'B', 'C', 'D', 'E');",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "active_target_count": "34",
+      "category_count": "34"
+    },
+    {
+      "stationCode": "A2",
+      "active_target_count": "14",
+      "category_count": "14"
+    },
+    {
+      "stationCode": "B",
+      "active_target_count": "15",
+      "category_count": "15"
+    },
+    {
+      "stationCode": "C",
+      "active_target_count": "31",
+      "category_count": "31"
+    },
+    {
+      "stationCode": "D",
+      "active_target_count": "31",
+      "category_count": "31"
+    },
+    {
+      "stationCode": "E",
+      "active_target_count": "14",
+      "category_count": "14"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tactive_target_count\tcategory_count\nA1\t34\t34\nA2\t14\t14\nB\t15\t15\nC\t31\t31\nD\t31\t31\nE\t14\t14\n",
+  "stderr": "",
+  "execution_time_ms": 1790
+}
