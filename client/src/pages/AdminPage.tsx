@@ -147,6 +147,29 @@ function formatKpiStationBreakdown(rows: Array<{ stationCode: string; completedQ
     .join("；");
 }
 
+function formatKpiReviewEventLabel(eventType?: string | null) {
+  if (eventType === "sampling_pass") {
+    return "抽樣通過";
+  }
+  if (eventType === "complete") {
+    return "完成作業";
+  }
+  return "-";
+}
+
+function getKpiReviewStatusBadgeClass(status?: string | null) {
+  if (status === "scored") {
+    return "bg-emerald-100 text-emerald-700";
+  }
+  if (status === "missing_detail") {
+    return "bg-rose-100 text-rose-700";
+  }
+  if (status === "excluded") {
+    return "bg-amber-100 text-amber-700";
+  }
+  return "bg-slate-200 text-slate-700";
+}
+
 function buildKpiAuditCsv(rows: Array<{
   name: string;
   username: string;
@@ -221,6 +244,10 @@ export default function AdminPage() {
   const [productTraceKeyword, setProductTraceKeyword] = useState("");
   const [selectedGapBatchNos, setSelectedGapBatchNos] = useState<string[]>([]);
   const [submittedProductTraceKeyword, setSubmittedProductTraceKeyword] = useState("");
+  const [kpiReviewKeyword, setKpiReviewKeyword] = useState("");
+  const [submittedKpiReviewKeyword, setSubmittedKpiReviewKeyword] = useState("");
+  const [kpiReviewOperatorUserId, setKpiReviewOperatorUserId] = useState("ALL");
+  const [kpiReviewStationFilter, setKpiReviewStationFilter] = useState<CapacityStationCode | "ALL">("ALL");
   const [newUsername, setNewUsername] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserName, setNewUserName] = useState("");
@@ -235,6 +262,17 @@ export default function AdminPage() {
     keyword: submittedProductTraceKeyword,
   }, {
     enabled: submittedProductTraceKeyword.trim().length > 0,
+    retry: false,
+  });
+  const kpiReviewQuery = trpc.admin.kpiReview.useQuery({
+    startDate: appliedKpiRange.startDate || undefined,
+    endDate: appliedKpiRange.endDate || undefined,
+    keyword: submittedKpiReviewKeyword || undefined,
+    operatorUserId: kpiReviewOperatorUserId === "ALL" ? undefined : Number(kpiReviewOperatorUserId),
+    stationCode: kpiReviewStationFilter === "ALL" ? undefined : kpiReviewStationFilter,
+    limit: 80,
+  }, {
+    enabled: canViewAdminPage && activeAdminSection === "kpi-report",
     retry: false,
   });
 
@@ -629,6 +667,8 @@ export default function AdminPage() {
   const zeroScoreTestRows = zeroScoreRows.filter((item) => item.zeroScoreCategory === "測試帳號");
   const kpiRiskChecklist = query.data?.kpiRiskChecklist ?? [];
   const kpiGoogleGapAudit = query.data?.kpiGoogleGapAudit;
+  const kpiReviewSummary = kpiReviewQuery.data?.summary;
+  const kpiReviewRows = kpiReviewQuery.data?.rows ?? [];
   const kpiGapCandidateBatches = kpiGoogleGapAudit?.candidateBatches ?? [];
   const effectiveGapBatchNos = selectedGapBatchNos.length > 0 ? selectedGapBatchNos : kpiGapCandidateBatches.slice(0, 5).map((item) => item.batchNo);
   const kpiCardTitle = canSeeAllKpi ? "全員 KPI 進度" : "我的 KPI 進度";
@@ -675,6 +715,29 @@ export default function AdminPage() {
     setKpiFilterStartDate("");
     setKpiFilterEndDate("");
     setAppliedKpiRange({});
+  };
+
+  const handleApplyKpiReviewFilters = () => {
+    setSubmittedKpiReviewKeyword(kpiReviewKeyword.trim());
+    setAppliedKpiRange({
+      startDate: kpiFilterStartDate || undefined,
+      endDate: kpiFilterEndDate || undefined,
+    });
+  };
+
+  const handleResetKpiReviewFilters = () => {
+    const defaultStartDate = query.data?.kpiRange?.startDate ?? "";
+    const defaultEndDate = query.data?.kpiRange?.endDate ?? "";
+    setKpiReviewKeyword("");
+    setSubmittedKpiReviewKeyword("");
+    setKpiReviewOperatorUserId("ALL");
+    setKpiReviewStationFilter("ALL");
+    setKpiFilterStartDate(defaultStartDate);
+    setKpiFilterEndDate(defaultEndDate);
+    setAppliedKpiRange({
+      startDate: defaultStartDate || undefined,
+      endDate: defaultEndDate || undefined,
+    });
   };
 
   const handleDownloadKpiAuditReport = () => {
@@ -1515,6 +1578,132 @@ export default function AdminPage() {
                       </tbody>
                     </table>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-0 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold">商品層級 KPI 複核</CardTitle>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">這個頁面會以商品為主體，逐站列出最新可計分事件、是否已有 KPI 明細，以及缺漏或排除的原因，方便你直接複核單件商品在哪一站被計分。</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>開始日期</span>
+                      <Input type="date" value={kpiFilterStartDate} onChange={(event) => setKpiFilterStartDate(event.target.value)} />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>結束日期</span>
+                      <Input type="date" value={kpiFilterEndDate} onChange={(event) => setKpiFilterEndDate(event.target.value)} />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600 xl:col-span-2">
+                      <span>批號／序號／IMEI／品名</span>
+                      <Input value={kpiReviewKeyword} onChange={(event) => setKpiReviewKeyword(event.target.value)} placeholder="例如：00500025301、IMEI 或 iPhone 15" />
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>工程師</span>
+                      <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700" value={kpiReviewOperatorUserId} onChange={(event) => setKpiReviewOperatorUserId(event.target.value)}>
+                        <option value="ALL">全部工程師</option>
+                        {supportAssignableUsers.map((item) => <option key={`kpi-review-user-${item.id}`} value={String(item.id)}>{item.name}（{item.username}）</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-2 text-sm text-slate-600">
+                      <span>站點</span>
+                      <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700" value={kpiReviewStationFilter} onChange={(event) => setKpiReviewStationFilter(event.target.value as CapacityStationCode | "ALL")}>
+                        <option value="ALL">全部站點</option>
+                        {capacityStationOptions.map((stationCode) => <option key={`kpi-review-station-${stationCode}`} value={stationCode}>{stationCode}</option>)}
+                      </select>
+                    </label>
+                    <div className="flex items-end gap-2 xl:col-span-2">
+                      <Button className="rounded-2xl" onClick={handleApplyKpiReviewFilters}>套用篩選</Button>
+                      <Button variant="outline" className="rounded-2xl" onClick={handleResetKpiReviewFilters}>重設</Button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="rounded-[24px] bg-slate-50 p-4">
+                      <p className="text-xs text-slate-400">商品數</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiReviewSummary?.productCount ?? 0}</p>
+                    </div>
+                    <div className="rounded-[24px] bg-slate-50 p-4">
+                      <p className="text-xs text-slate-400">已計分站點</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">{kpiReviewSummary?.scoredStationCount ?? 0}</p>
+                    </div>
+                    <div className="rounded-[24px] bg-rose-50 p-4">
+                      <p className="text-xs text-rose-500">待補寫站點</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-rose-700">{kpiReviewSummary?.missingDetailStationCount ?? 0}</p>
+                    </div>
+                    <div className="rounded-[24px] bg-amber-50 p-4">
+                      <p className="text-xs text-amber-600">已排除站點</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-amber-700">{kpiReviewSummary?.excludedStationCount ?? 0}</p>
+                    </div>
+                  </div>
+
+                  {kpiReviewQuery.isLoading ? (
+                    <div className="rounded-[24px] bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">正在整理商品層級 KPI 複核資料…</div>
+                  ) : kpiReviewRows.length > 0 ? (
+                    <div className="space-y-4">
+                      {kpiReviewRows.map((item) => (
+                        <div key={`kpi-review-product-${item.productId}`} className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-base font-bold text-slate-900">{item.productName || item.batchNo || item.serialNumber || `商品 #${item.productId}`}</p>
+                                <Badge className="bg-slate-200 text-slate-700">目前站點：{item.currentStationCode ?? "-"}</Badge>
+                                {item.missingStationCount > 0
+                                  ? <Badge className="bg-rose-100 text-rose-700">待補寫 {item.missingStationCount} 站</Badge>
+                                  : <Badge className="bg-emerald-100 text-emerald-700">已對齊</Badge>}
+                              </div>
+                              <p className="text-sm text-slate-500">批號：{item.batchNo || "-"}｜序號：{item.serialNumber || "-"}｜IMEI：{item.imei || "-"}</p>
+                              <p className="text-sm text-slate-500">PO：{item.poNumber || "-"}｜品類：{item.categoryName || "-"}｜品牌：{item.brandName || "-"}｜狀態：{item.currentStatus || "-"}</p>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                              <div className="rounded-[20px] bg-white px-4 py-3">
+                                <p className="text-xs text-slate-400">已檢視站點</p>
+                                <p className="mt-1 text-xl font-black text-slate-900">{item.reviewedStationCount}/6</p>
+                              </div>
+                              <div className="rounded-[20px] bg-white px-4 py-3">
+                                <p className="text-xs text-slate-400">已計分站點</p>
+                                <p className="mt-1 text-xl font-black text-slate-900">{item.scoredStationCount}</p>
+                              </div>
+                              <div className="rounded-[20px] bg-white px-4 py-3">
+                                <p className="text-xs text-slate-400">最新事件</p>
+                                <p className="mt-1 text-sm font-semibold text-slate-900">{item.latestEventAt ? new Date(item.latestEventAt).toLocaleString() : "-"}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 overflow-x-auto rounded-[20px] bg-white">
+                            <table className="min-w-full text-sm text-slate-700">
+                              <thead>
+                                <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                                  <th className="px-4 py-3">站點</th>
+                                  <th className="px-4 py-3">最新事件</th>
+                                  <th className="px-4 py-3">工程師</th>
+                                  <th className="px-4 py-3">KPI 狀態</th>
+                                  <th className="px-4 py-3">KPI 明細</th>
+                                  <th className="px-4 py-3">作業日</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {item.stationReviews.map((review) => (
+                                  <tr key={`kpi-review-product-${item.productId}-${review.stationCode}`} className="border-b border-slate-200/80 last:border-b-0 align-top">
+                                    <td className="px-4 py-3 font-medium text-slate-900">{review.stationCode}</td>
+                                    <td className="px-4 py-3 text-slate-600">{formatKpiReviewEventLabel(review.eventType)}{review.isRework ? "（返工）" : ""}</td>
+                                    <td className="px-4 py-3 text-slate-600">{review.operatorName || "-"}</td>
+                                    <td className="px-4 py-3"><Badge className={getKpiReviewStatusBadgeClass(review.status)}>{review.statusLabel}</Badge></td>
+                                    <td className="px-4 py-3 text-slate-600">{review.detailCount > 0 ? `${review.completedQty} 件／${formatDisplayPoints(review.totalDisplayPoints)}` : review.status === "missing_detail" ? "待補寫 KPI 明細" : review.status === "excluded" ? "不納入 KPI" : "-"}</td>
+                                    <td className="px-4 py-3 text-slate-600">{review.businessDate || "-"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-[24px] bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">目前查無符合條件的商品 KPI 複核資料。你可以放寬日期區間，或改用批號、序號、IMEI 與品名搜尋。</div>
+                  )}
                 </CardContent>
               </Card>
 

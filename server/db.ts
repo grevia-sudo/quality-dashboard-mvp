@@ -6304,6 +6304,213 @@ export async function excludeGoogleMissingKpiBatches(input: {
   };
 }
 
+export async function getAdminKpiReviewRows(input?: AdminDateRangeInput & {
+  keyword?: string;
+  operatorUserId?: number;
+  stationCode?: StationCode;
+  limit?: number;
+}, viewer?: { userId: number; role?: string | null }) {
+  const db = await getDb();
+  const range = normalizeAdminDateRange(input);
+  if (!db) {
+    return {
+      range: {
+        startDate: range.startDate,
+        endDate: range.endDate,
+      },
+      summary: {
+        productCount: 0,
+        eligibleStationCount: 0,
+        scoredStationCount: 0,
+        missingDetailStationCount: 0,
+        excludedStationCount: 0,
+      },
+      rows: [],
+    };
+  }
+
+  await backfillProductivityFromCompletedEvents(db, viewer && !canViewAllKpiForRole(viewer.role) ? { userId: viewer.userId } : undefined);
+
+  const keyword = normalizeOptionalText(input?.keyword);
+  const keywordPattern = keyword ? `%${keyword}%` : undefined;
+  const productLimit = Math.max(1, Math.min(input?.limit ?? 80, 200));
+  const viewerUserFilter = viewer && !canViewAllKpiForRole(viewer.role) ? viewer.userId : undefined;
+
+  const eventRows = await db
+    .select({
+      stationEventId: stationEvents.id,
+      productId: products.id,
+      stationCode: stationEvents.stationCode,
+      eventType: stationEvents.eventType,
+      businessDate: stationEvents.businessDate,
+      eventCreatedAt: stationEvents.createdAt,
+      countForProductivity: stationEvents.countForProductivity,
+      isRework: stationEvents.isRework,
+      userId: stationEvents.operatorUserId,
+      userName: users.name,
+      username: users.username,
+      detailId: productivityScoreDetails.id,
+      completedQty: productivityScoreDetails.completedQty,
+      earnedPoints: productivityScoreDetails.earnedPoints,
+      baseUnitPoints: productivityScoreDetails.baseUnitPoints,
+      reworkFactor: productivityScoreDetails.reworkFactor,
+      qualityFactor: productivityScoreDetails.qualityFactor,
+      poNumber: products.poNumber,
+      batchNo: products.batchNo,
+      serialNumber: products.serialNumber,
+      imei: products.imei,
+      productName: products.productName,
+      currentStationCode: products.currentStationCode,
+      currentStatus: products.currentStatus,
+      categoryName: productCategories.categoryName,
+      brandName: productCategories.brandName,
+    })
+    .from(stationEvents)
+    .innerJoin(products, eq(products.id, stationEvents.productId))
+    .leftJoin(productivityScoreDetails, eq(productivityScoreDetails.stationEventId, stationEvents.id))
+    .leftJoin(users, eq(users.id, stationEvents.operatorUserId))
+    .leftJoin(productCategories, eq(products.categoryId, productCategories.id))
+    .where(and(
+      isNull(products.archivedAt),
+      inArray(stationEvents.stationCode, PRODUCTIVITY_TRACKED_STATION_CODES as unknown as StationCode[]),
+      or(
+        eq(stationEvents.eventType, "complete"),
+        and(eq(stationEvents.stationCode, "D"), eq(stationEvents.eventType, "sampling_pass")),
+      ),
+      gte(stationEvents.businessDate, dateKeyToDate(range.startDate)),
+      lte(stationEvents.businessDate, dateKeyToDate(range.endDate)),
+      viewerUserFilter ? eq(stationEvents.operatorUserId, viewerUserFilter) : undefined,
+      input?.operatorUserId ? eq(stationEvents.operatorUserId, input.operatorUserId) : undefined,
+      input?.stationCode ? eq(stationEvents.stationCode, input.stationCode) : undefined,
+      keywordPattern
+        ? or(
+          like(products.batchNo, keywordPattern),
+          like(products.serialNumber, keywordPattern),
+          like(products.imei, keywordPattern),
+          like(products.poNumber, keywordPattern),
+          like(products.productName, keywordPattern),
+        )
+        : undefined,
+    ))
+    .orderBy(desc(stationEvents.createdAt), desc(stationEvents.id));
+
+  const selectedProductIds: number[] = [];
+  const selectedProductSet = new Set<number>();
+  for (const row of eventRows) {
+    if (!selectedProductSet.has(row.productId)) {
+      if (selectedProductIds.length >= productLimit) {
+        continue;
+      }
+      selectedProductSet.add(row.productId);
+      selectedProductIds.push(row.productId);
+    }
+  }
+
+  const filteredRows = eventRows.filter((row) => selectedProductSet.has(row.productId));
+  const productMap = new Map<number, typeof filteredRows>();
+  filteredRows.forEach((row) => {
+    const current = productMap.get(row.productId) ?? [];
+    current.push(row);
+    productMap.set(row.productId, current);
+  });
+
+  let eligibleStationCount = 0;
+  let scoredStationCount = 0;
+  let missingDetailStationCount = 0;
+  let excludedStationCount = 0;
+
+  const rows = selectedProductIds.map((productId) => {
+    const productRows = productMap.get(productId) ?? [];
+    const latestRow = productRows[0];
+    const stationReviews = PRODUCTIVITY_TRACKED_STATION_CODES.map((stationCode) => {
+      const stationRows = productRows.filter((row) => row.stationCode === stationCode);
+      const latestStationRow = stationRows[0];
+      const detailRows = stationRows.filter((row) => row.detailId != null);
+      const totalDisplayPoints = detailRows.reduce((sum, row) => sum + toDisplayPoints(Number(row.earnedPoints ?? 0)), 0);
+      const hasCountableEvent = stationRows.some((row) => Boolean(row.countForProductivity));
+      const hasExcludedEvent = stationRows.some((row) => !row.countForProductivity);
+
+      let status: "scored" | "missing_detail" | "excluded" | "not_started" = "not_started";
+      let statusLabel = "尚無可計分事件";
+
+      if (detailRows.length > 0) {
+        status = "scored";
+        statusLabel = `已計分 ${detailRows.length} 筆`;
+      } else if (hasCountableEvent) {
+        status = "missing_detail";
+        statusLabel = stationCode === "D"
+          ? "已有抽樣通過事件，但尚未寫入 KPI 明細"
+          : "已有完成事件，但尚未寫入 KPI 明細";
+      } else if (hasExcludedEvent) {
+        status = "excluded";
+        statusLabel = "事件已排除，不納入 KPI";
+      }
+
+      if (status !== "not_started") {
+        eligibleStationCount += 1;
+      }
+      if (status === "scored") {
+        scoredStationCount += 1;
+      }
+      if (status === "missing_detail") {
+        missingDetailStationCount += 1;
+      }
+      if (status === "excluded") {
+        excludedStationCount += 1;
+      }
+
+      return {
+        stationCode,
+        status,
+        statusLabel,
+        eventType: latestStationRow?.eventType ?? null,
+        businessDate: latestStationRow?.businessDate ? toDateKey(latestStationRow.businessDate) : null,
+        eventCreatedAt: latestStationRow?.eventCreatedAt ?? null,
+        operatorName: normalizeOptionalText(latestStationRow?.userName) ?? normalizeOptionalText(latestStationRow?.username) ?? null,
+        detailCount: detailRows.length,
+        completedQty: detailRows.reduce((sum, row) => sum + Number(row.completedQty ?? 0), 0),
+        totalDisplayPoints,
+        baseDisplayPoints: detailRows.length > 0 ? toDisplayPoints(Number(detailRows[0]?.baseUnitPoints ?? 0)) : 0,
+        countForProductivity: latestStationRow?.countForProductivity ?? null,
+        isRework: latestStationRow?.isRework ?? false,
+      };
+    });
+
+    return {
+      productId,
+      poNumber: normalizeOptionalText(latestRow?.poNumber) ?? "",
+      batchNo: normalizeBatchNo(latestRow?.batchNo) ?? "",
+      serialNumber: normalizeOptionalText(latestRow?.serialNumber) ?? "",
+      imei: normalizeOptionalText(latestRow?.imei) ?? "",
+      productName: normalizeOptionalText(latestRow?.productName) ?? "",
+      currentStationCode: latestRow?.currentStationCode ?? null,
+      currentStatus: latestRow?.currentStatus ?? null,
+      categoryName: normalizeOptionalText(latestRow?.categoryName) ?? "",
+      brandName: normalizeOptionalText(latestRow?.brandName) ?? "",
+      latestEventAt: latestRow?.eventCreatedAt ?? null,
+      reviewedStationCount: stationReviews.filter((item) => item.status !== "not_started").length,
+      scoredStationCount: stationReviews.filter((item) => item.status === "scored").length,
+      missingStationCount: stationReviews.filter((item) => item.status === "missing_detail").length,
+      stationReviews,
+    };
+  });
+
+  return {
+    range: {
+      startDate: range.startDate,
+      endDate: range.endDate,
+    },
+    summary: {
+      productCount: rows.length,
+      eligibleStationCount,
+      scoredStationCount,
+      missingDetailStationCount,
+      excludedStationCount,
+    },
+    rows,
+  };
+}
+
 export async function getAdminSetupData(input?: AdminDateRangeInput, viewer?: { userId: number; role?: string | null }) {
   const db = await getDb();
   const normalizedRange = normalizeAdminDateRange(input);

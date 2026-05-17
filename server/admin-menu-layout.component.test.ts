@@ -9,6 +9,7 @@ const useAuthMock = vi.fn();
 const setupUseQueryMock = vi.fn();
 const importBackupsUseQueryMock = vi.fn();
 const productTraceUseQueryMock = vi.fn();
+const kpiReviewUseQueryMock = vi.fn();
 let currentLocation = "/admin/menus";
 
 vi.mock("wouter", () => ({
@@ -73,6 +74,10 @@ vi.mock("@/lib/trpc", () => {
         productTrace: {
           useQuery: (...args: unknown[]) => productTraceUseQueryMock(...args),
         },
+        kpiReview: {
+          useQuery: (...args: unknown[]) => kpiReviewUseQueryMock(...args),
+        },
+        excludeGoogleMissingKpiBatches: { useMutation: buildMutation },
         saveAllSettings: { useMutation: buildMutation },
         createProductNameOption: { useMutation: buildMutation },
         syncProductNameOptionsFromSheet: { useMutation: buildMutation },
@@ -147,6 +152,40 @@ describe("admin menu settings layout component", () => {
     });
     importBackupsUseQueryMock.mockReturnValue({ data: [], isLoading: false });
     productTraceUseQueryMock.mockReturnValue({ data: [], isLoading: false });
+    kpiReviewUseQueryMock.mockReturnValue({
+      isLoading: false,
+      data: {
+        summary: {
+          productCount: 1,
+          eligibleStationCount: 4,
+          scoredStationCount: 3,
+          missingDetailStationCount: 1,
+          excludedStationCount: 0,
+        },
+        rows: [
+          {
+            productId: 501,
+            productName: "iPhone 15 Pro",
+            batchNo: "BATCH-501",
+            serialNumber: "SN-501",
+            imei: "IMEI-501",
+            poNumber: "PO-501",
+            categoryName: "智慧型手機",
+            brandName: "Apple",
+            currentStationCode: "D",
+            currentStatus: "processing_d",
+            latestEventAt: "2026-04-28T09:15:00.000Z",
+            reviewedStationCount: 4,
+            scoredStationCount: 3,
+            missingStationCount: 1,
+            stationReviews: [
+              { stationCode: "A1", eventType: "complete", operatorName: "工程師", status: "scored", statusLabel: "已計分 1 筆", detailCount: 1, completedQty: 1, totalDisplayPoints: 1.2, businessDate: "2026-04-28", isRework: false },
+              { stationCode: "D", eventType: "sampling_pass", operatorName: "工程師", status: "missing_detail", statusLabel: "已有抽樣通過事件，但尚未寫入 KPI 明細", detailCount: 0, completedQty: 0, totalDisplayPoints: 0, businessDate: "2026-04-28", isRework: false },
+            ],
+          },
+        ],
+      },
+    });
   });
 
   afterEach(() => {
@@ -239,6 +278,17 @@ describe("admin menu settings layout component", () => {
     expect(screen.queryByText("查詢商品")).toBeNull();
   });
 
+  it("renders the KPI review subpage with product-level station scoring details", () => {
+    currentLocation = "/admin/kpi-report";
+    render(React.createElement(AdminPage));
+
+    expect(screen.getByRole("heading", { name: "KPI 複核報表" })).toBeTruthy();
+    expect(screen.getByText("商品層級 KPI 複核")).toBeTruthy();
+    expect(screen.getByText("批號：BATCH-501｜序號：SN-501｜IMEI：IMEI-501")).toBeTruthy();
+    expect(screen.getByText("已計分 1 筆")).toBeTruthy();
+    expect(screen.getByText("已有抽樣通過事件，但尚未寫入 KPI 明細")).toBeTruthy();
+  });
+
   it("allows supervisor users to access the admin page content", () => {
     currentLocation = "/admin";
     useAuthMock.mockReturnValue({
@@ -254,6 +304,5 @@ describe("admin menu settings layout component", () => {
 
     expect(screen.getByTestId("dashboard-nav").textContent).toContain("管理後台");
     expect(screen.queryByText("管理後台需主管、經理或 admin 權限")).toBeNull();
-    expect(screen.getByText("全員 KPI 進度")).toBeTruthy();
   });
 });

@@ -22,6 +22,7 @@ import {
   deleteSupportCompensation,
   syncProductNameOptionsFromGoogleSheet,
   ensureMvpSeedData,
+  getAdminKpiReviewRows,
   getAdminSetupData,
   getPendingStockImportMismatchProducts,
   getImportBatchBackups,
@@ -408,6 +409,31 @@ export const appRouter = router({
       .query(async () => {
         await ensureMvpSeedData();
         return getPendingStockImportMismatchProducts();
+      }),
+    kpiReview: managementProcedure
+      .input(
+        z.object({
+          startDate: optionalTextSchema.nullable().optional(),
+          endDate: optionalTextSchema.nullable().optional(),
+          keyword: optionalTextSchema.nullable().optional(),
+          operatorUserId: z.number().int().positive().nullable().optional(),
+          stationCode: stationCodeSchema.exclude(["STOCK"]).nullable().optional(),
+          limit: z.number().int().min(1).max(200).optional(),
+        }).optional(),
+      )
+      .query(async ({ ctx, input }) => {
+        await ensureMvpSeedData();
+        return getAdminKpiReviewRows({
+          startDate: input?.startDate ?? undefined,
+          endDate: input?.endDate ?? undefined,
+          keyword: input?.keyword ?? undefined,
+          operatorUserId: input?.operatorUserId ?? undefined,
+          stationCode: input?.stationCode ?? undefined,
+          limit: input?.limit ?? undefined,
+        }, {
+          userId: ctx.user.id,
+          role: ctx.user.role,
+        });
       }),
     getDefectOptions: adminProcedure
       .input(

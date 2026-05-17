@@ -36,6 +36,30 @@ const dbMocks = vi.hoisted(() => ({
   getSamplingQueue: vi.fn(async () => ({ stationCode: "D", label: "D 站抽樣", tasks: [] })),
   submitSamplingResult: vi.fn(async (input: unknown) => ({ success: true as const, input })),
   getAdminSetupData: vi.fn(async (input?: { startDate?: string; endDate?: string }) => ({ users: [], rules: [], categories: [{ id: 3, categoryName: "智慧手機", brandName: "Apple", subtypeCode: "Apple", active: true }], targets: [], defectOptions: [], categoryFlows: [{ categoryId: 3, stationCode: "A1", stepOrder: 1 }, { categoryId: 3, stationCode: "C", stepOrder: 2 }, { categoryId: 3, stationCode: "D", stepOrder: 3 }, { categoryId: 3, stationCode: "E", stepOrder: 4 }, { categoryId: 3, stationCode: "STOCK", stepOrder: 5 }], kpiProgress: [{ userId: 7, name: "Demo User", role: "user", monthTotalPoints: 12.5, avgKpiAchievementRate: 83.3, attendanceDays: 18, finalKpiScore: 88 }], stationLeadTimes: [{ stationCode: "C", avgDaysFromImport: 1.5, sampleCount: 12 }], categoryStockCycleTimes: [{ categoryId: 3, categoryName: "智慧手機", brandName: "Apple", avgDaysToStock: 3.2, sampleCount: 10 }], kpiRange: { startDate: input?.startDate ?? "2026-04-01", endDate: input?.endDate ?? "2026-04-30" }, productNameOptions: [{ id: 1, label: "iPhone 13", active: true, sortOrder: 10, categoryName: "智慧手機", brandName: "Apple", sourceRowNumber: 2 }], syncSummary: { queuedJobs: 0, targetSheetName: "採購單" }, archiveSummary: { retentionMonths: 6, candidateCount: 0, policy: "主表僅保留六個月內資料" } })),
+  getAdminKpiReviewRows: vi.fn(async (input?: { keyword?: string; operatorUserId?: number; stationCode?: string }) => ({
+    range: { startDate: "2026-04-01", endDate: "2026-04-30" },
+    summary: { productCount: 1, eligibleStationCount: 2, scoredStationCount: 1, missingDetailStationCount: 1, excludedStationCount: 0 },
+    rows: [{
+      productId: 99,
+      productName: "iPhone 13",
+      batchNo: input?.keyword ?? "TRACE-001",
+      serialNumber: "SN-1001",
+      imei: "IMEI-1001",
+      poNumber: "PO-1001",
+      categoryName: "智慧手機",
+      brandName: "Apple",
+      currentStationCode: input?.stationCode ?? "D",
+      currentStatus: "processing_d",
+      latestEventAt: new Date("2026-04-26T03:00:00Z"),
+      reviewedStationCount: 2,
+      scoredStationCount: 1,
+      missingStationCount: 1,
+      stationReviews: [
+        { stationCode: "A1", status: "scored", statusLabel: "已計分 1 筆", eventType: "complete", operatorName: "Demo User", detailCount: 1, completedQty: 1, totalDisplayPoints: 1.2, businessDate: "2026-04-26", isRework: false },
+        { stationCode: "D", status: "missing_detail", statusLabel: "已有抽樣通過事件，但尚未寫入 KPI 明細", eventType: "sampling_pass", operatorName: "Demo User", detailCount: 0, completedQty: 0, totalDisplayPoints: 0, businessDate: "2026-04-26", isRework: false },
+      ],
+    }],
+  })),
   getPendingStockImportMismatchProducts: vi.fn(async () => [{ productId: 88, productCode: "P-100088", productName: "iPhone 15 Pro", poNumber: null, vendorName: null, batchNo: "BATCH-88", serialNumber: "SN-88", imei: "IMEI-88", arrivalAt: new Date("2026-04-28T02:00:00Z"), currentStationCode: "STOCK", currentStatus: "pending_stock", importedCategoryName: null, importedBrandName: "Apple", assignedCategoryName: "智慧型手機", assignedBrandName: "Apple", updatedAt: new Date("2026-04-28T08:00:00Z"), stockTaskId: 501, stockTaskStatus: "pending", stockTaskCreatedAt: new Date("2026-04-28T07:30:00Z"), missingFields: ["採購單號", "商品分類"], missingFieldSummary: "採購單號、商品分類", mismatchReason: "缺少採購單號、商品分類，尚未完成匯入比對" }]),
   getImportBatchBackups: vi.fn(async () => [{ id: 11, poNumber: "PO-20260426-01", vendorName: "綠途未來", backupLabel: "PO-20260426-01 匯入備份", productCount: 2, createdAt: new Date("2026-04-26T02:00:00Z"), restoredAt: null, createdByUserId: 7, restoredByUserId: null }]),
   createImportBatchBackup: vi.fn(async (input: unknown) => ({ id: 11, backupLabel: "PO-20260426-01 匯入備份", ...(typeof input === "object" && input ? input : {}) })),
@@ -67,6 +91,7 @@ const {
   getSamplingQueue,
   submitSamplingResult,
   getAdminSetupData,
+  getAdminKpiReviewRows,
   getPendingStockImportMismatchProducts,
   getImportBatchBackups,
   createImportBatchBackup,
@@ -147,7 +172,8 @@ describe("warehouse MVP router", () => {
     const supervisorResult = await supervisorCaller.admin.setup();
 
     expect(supervisorResult.kpiProgress[0]?.role).toBe("user");
-    expect(getAdminSetupData).toHaveBeenCalledWith({ startDate: undefined, endDate: undefined });
+    expect(getAdminSetupData).toHaveBeenCalledWith({ startDate: undefined, endDate: undefined }, expect.objectContaining({ role: "admin" }));
+    expect(getAdminSetupData).toHaveBeenCalledWith({ startDate: undefined, endDate: undefined }, expect.objectContaining({ role: "supervisor" }));
 
     const userCaller = appRouter.createCaller(createContext("user"));
     await expect(userCaller.admin.setup()).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -174,7 +200,7 @@ describe("warehouse MVP router", () => {
     expect(getAdminSetupData).toHaveBeenLastCalledWith({
       startDate: "2026-04-10",
       endDate: "2026-04-20",
-    });
+    }, expect.objectContaining({ role: "admin" }));
     expect(result.kpiRange).toEqual({
       startDate: "2026-04-10",
       endDate: "2026-04-20",
@@ -658,6 +684,19 @@ describe("warehouse MVP router", () => {
     expect(ensureMvpSeedData).toHaveBeenCalled();
     expect(archiveExpiredData).toHaveBeenCalled();
     expect(getAdminSetupData).toHaveBeenCalled();
+  });
+
+  it("allows management roles to query product-level KPI review rows", async () => {
+    const caller = appRouter.createCaller(createContext("supervisor"));
+
+    const result = await caller.admin.kpiReview({
+      keyword: "TRACE-001",
+      stationCode: "D",
+    });
+
+    expect(getAdminKpiReviewRows).toHaveBeenCalledWith(expect.objectContaining({ keyword: "TRACE-001", stationCode: "D" }), expect.objectContaining({ role: "supervisor" }));
+    expect(result.summary.missingDetailStationCount).toBe(1);
+    expect(result.rows[0]?.stationReviews[1]?.status).toBe("missing_detail");
   });
 
   it("loads station detail data for the requested station", async () => {
