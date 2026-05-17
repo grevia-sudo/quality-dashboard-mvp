@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) AS sampling_results_count FROM sampling_results WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'));",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT COUNT(*) AS sampling_results_count FROM sampling_results WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'));",
+  "rows": [
+    {
+      "sampling_results_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "sampling_results_count\n0\n",
+  "stderr": "",
+  "execution_time_ms": 1898
+}

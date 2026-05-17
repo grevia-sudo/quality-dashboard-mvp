@@ -1,0 +1,30 @@
+{
+  "query": "SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350')\nUNION ALL\nSELECT 'station_tasks' AS table_name, COUNT(*) AS row_count FROM station_tasks WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'))\nUNION ALL\nSELECT 'station_events' AS table_name, COUNT(*) AS row_count FROM station_events WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'))\nUNION ALL\nSELECT 'productivity_score_details' AS table_name, COUNT(*) AS row_count FROM productivity_score_details WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'))\nUNION ALL\nSELECT 'product_archives' AS table_name, COUNT(*) AS row_count FROM product_archives WHERE originalProductId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'));",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT 'products' AS table_name, COUNT(*) AS row_count FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350')\nUNION ALL\nSELECT 'station_tasks' AS table_name, COUNT(*) AS row_count FROM station_tasks WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'))\nUNION ALL\nSELECT 'station_events' AS table_name, COUNT(*) AS row_count FROM station_events WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'))\nUNION ALL\nSELECT 'productivity_score_details' AS table_name, COUNT(*) AS row_count FROM productivity_score_details WHERE productId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'))\nUNION ALL\nSELECT 'product_archives' AS table_name, COUNT(*) AS row_count FROM product_archives WHERE originalProductId IN (SELECT id FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350'));",
+  "rows": [
+    {
+      "table_name": "station_tasks",
+      "row_count": "0"
+    },
+    {
+      "table_name": "productivity_score_details",
+      "row_count": "0"
+    },
+    {
+      "table_name": "station_events",
+      "row_count": "0"
+    },
+    {
+      "table_name": "products",
+      "row_count": "0"
+    },
+    {
+      "table_name": "product_archives",
+      "row_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\trow_count\nstation_tasks\t0\nproductivity_score_details\t0\nstation_events\t0\nproducts\t0\nproduct_archives\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1788
+}

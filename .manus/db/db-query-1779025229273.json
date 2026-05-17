@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, batchNo, poNumber, vendorName, productName, createdAt, updatedAt FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350') ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, batchNo, poNumber, vendorName, productName, createdAt, updatedAt FROM products WHERE batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350') ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "810169",
+      "batchNo": "RESTORE-BATCH-1779024197350",
+      "poNumber": "PO-E-RESTORE-1779024197350",
+      "vendorName": "Restore Vendor",
+      "productName": "Restore Device",
+      "createdAt": "2026-05-17 13:23:18",
+      "updatedAt": "2026-05-17 13:23:21"
+    },
+    {
+      "id": "810030",
+      "batchNo": "MANUAL-NEXT-1779024163008-01",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "productName": "Manual Next Station Device",
+      "createdAt": "2026-05-17 13:22:47",
+      "updatedAt": "2026-05-17 13:22:54"
+    },
+    {
+      "id": "810029",
+      "batchNo": "MANUAL-NEXT-1779024163008-01",
+      "poNumber": "PO-20260517-07",
+      "vendorName": "手動指定跨站驗證",
+      "productName": "Manual Next Station Device",
+      "createdAt": "2026-05-17 13:22:44",
+      "updatedAt": "2026-05-17 13:22:45"
+    },
+    {
+      "id": "810013",
+      "batchNo": "FLOW-STOCK-BATCH-1779024145508",
+      "poNumber": "PO-STOCK-BLOCK-1779024145508",
+      "vendorName": "待入庫前補匯入廠商",
+      "productName": "No Import To Stock Device",
+      "createdAt": "2026-05-17 13:22:26",
+      "updatedAt": "2026-05-17 13:23:03"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tpoNumber\tvendorName\tproductName\tcreatedAt\tupdatedAt\n810169\tRESTORE-BATCH-1779024197350\tPO-E-RESTORE-1779024197350\tRestore Vendor\tRestore Device\t2026-05-17 13:23:18\t2026-05-17 13:23:21\n810030\tMANUAL-NEXT-1779024163008-01\tNULL\tNULL\tManual Next Station Device\t2026-05-17 13:22:47\t2026-05-17 13:22:54\n810029\tMANUAL-NEXT-1779024163008-01\tPO-20260517-07\t手動指定跨站驗證\tManual Next Station Device\t2026-05-17 13:22:44\t2026-05-17 13:22:45\n810013\tFLOW-STOCK-BATCH-1779024145508\tPO-STOCK-BLOCK-1779024145508\t待入庫前補匯入廠商\tNo Import To Stock Device\t2026-05-17 13:22:26\t2026-05-17 13:23:03\n",
+  "stderr": "",
+  "execution_time_ms": 1860
+}

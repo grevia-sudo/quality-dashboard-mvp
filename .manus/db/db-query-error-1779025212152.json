@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.id, p.batchNo, p.poNumber, p.vendorName, p.productName, p.createdAt, p.updatedAt, p.currentStationCode, p.currentStatus\nFROM products p\nWHERE p.batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350')\nORDER BY p.createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT p.id, p.batchNo, p.poNumber, p.vendorName, p.productName, p.createdAt, p.updatedAt, p.currentStationCode, p.currentStatus\nFROM products p\nWHERE p.batchNo IN ('FLOW-STOCK-BATCH-1779024145508', 'MANUAL-NEXT-1779024163008-01', 'RESTORE-BATCH-1779024197350')\nORDER BY p.createdAt DESC;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'p.currentstationcode' in 'field list'"
+  ]
+}

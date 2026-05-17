@@ -395,3 +395,5 @@
 - [x] 將 /home/ubuntu/quality_dashboard_full_dump.sql 壓縮為 quality_dashboard_full_dump.sql.gz，放到可下載位置並交付使用者
 - [x] 依使用者確認正式開始實作 C 站未回寫 Google 的最小修正，並以本地測試驗證
 - [x] 依使用者要求重新確認 KPI 口徑最終標準，明確判定 E 站 400/300 與 C 站 159/160 應採用哪一個數值
+- [x] 追查 FLOW-STOCK-BATCH-1779024145508、MANUAL-NEXT-1779024163008-01、RESTORE-BATCH-1779024197350 是否為本次代理操作或測試所建立
+- [x] 刪除 FLOW-STOCK-BATCH-1779024145508、MANUAL-NEXT-1779024163008-01、RESTORE-BATCH-1779024197350 在系統資料庫中的相關資料
