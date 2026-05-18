@@ -1,0 +1,1261 @@
+{
+  "query": "SELECT ptc.stationCode, pc.categoryName, pc.brandName, ptc.subtypeCode, ptc.dailyTargetQty, ptc.baseUnitPoints, ptc.active FROM productivity_target_configs ptc LEFT JOIN product_categories pc ON pc.id = ptc.categoryId WHERE ptc.active = 1 ORDER BY ptc.stationCode, pc.categoryName, pc.brandName, ptc.id DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT ptc.stationCode, pc.categoryName, pc.brandName, ptc.subtypeCode, ptc.dailyTargetQty, ptc.baseUnitPoints, ptc.active FROM productivity_target_configs ptc LEFT JOIN product_categories pc ON pc.id = ptc.categoryId WHERE ptc.active = 1 ORDER BY ptc.stationCode, pc.categoryName, pc.brandName, ptc.id DESC;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "categoryName": "平板電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "平板電腦",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "平板電腦",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "桌上型電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "桌上型電腦",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "液晶螢幕",
+      "brandName": "Acer",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "液晶螢幕",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "液晶螢幕",
+      "brandName": "Gigabyte",
+      "subtypeCode": "Gigabyte",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "液晶螢幕",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "液晶螢幕",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "穿戴裝置",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "Acer",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "DELL",
+      "subtypeCode": "DELL",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "HP",
+      "subtypeCode": "HP",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "Lenovo",
+      "subtypeCode": "Lenovo",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "brandName": "TOSHIBA",
+      "subtypeCode": "TOSHIBA",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "耳機音響",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "觸控筆",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "車用週邊",
+      "brandName": "GOLIFE",
+      "subtypeCode": "GOLIFE",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "車用週邊",
+      "brandName": "PAPAGO",
+      "subtypeCode": "PAPAGO",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "平板電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "平板電腦",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "平板電腦",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "359",
+      "baseUnitPoints": "0.002786",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "平板電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "平板電腦",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "平板電腦",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "影音周邊",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "平板電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "平板電腦",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "平板電腦",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "影音周邊",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "桌上型電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "桌上型電腦",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "液晶螢幕",
+      "brandName": "Acer",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "液晶螢幕",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "液晶螢幕",
+      "brandName": "Gigabyte",
+      "subtypeCode": "Gigabyte",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "液晶螢幕",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "液晶螢幕",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "120",
+      "baseUnitPoints": "0.008333",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "80",
+      "baseUnitPoints": "0.012500",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "穿戴裝置",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "80",
+      "baseUnitPoints": "0.012500",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "Acer",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "DELL",
+      "subtypeCode": "DELL",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "HP",
+      "subtypeCode": "HP",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "Lenovo",
+      "subtypeCode": "Lenovo",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "brandName": "TOSHIBA",
+      "subtypeCode": "TOSHIBA",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "平板電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "平板電腦",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "平板電腦",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "影音周邊",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "桌上型電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "桌上型電腦",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "液晶螢幕",
+      "brandName": "Acer",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "液晶螢幕",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "液晶螢幕",
+      "brandName": "Gigabyte",
+      "subtypeCode": "Gigabyte",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "液晶螢幕",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "液晶螢幕",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "穿戴型設備",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "穿戴裝置",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "Acer",
+      "subtypeCode": "Acer",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "DELL",
+      "subtypeCode": "DELL",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "HP",
+      "subtypeCode": "HP",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "Lenovo",
+      "subtypeCode": "Lenovo",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "MSI",
+      "subtypeCode": "MSI",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "brandName": "TOSHIBA",
+      "subtypeCode": "TOSHIBA",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "平板電腦",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "平板電腦",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "平板電腦",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Apple",
+      "subtypeCode": "Apple",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "ASUS",
+      "subtypeCode": "ASUS",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Google",
+      "subtypeCode": "Google",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Motorola",
+      "subtypeCode": "Motorola",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "OPPO",
+      "subtypeCode": "OPPO",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "POCO",
+      "subtypeCode": "POCO",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Redmi",
+      "subtypeCode": "Redmi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Samsung",
+      "subtypeCode": "Samsung",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "SONY",
+      "subtypeCode": "SONY",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "vivo",
+      "subtypeCode": "vivo",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "brandName": "Xiaomi",
+      "subtypeCode": "Xiaomi",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500",
+      "active": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tcategoryName\tbrandName\tsubtypeCode\tdailyTargetQty\tbaseUnitPoints\tactive\nA1\t平板電腦\tApple\tApple\t360\t0.002778\t1\nA1\t平板電腦\tRedmi\tRedmi\t360\t0.002778\t1\nA1\t平板電腦\tXiaomi\tXiaomi\t360\t0.002778\t1\nA1\t智慧型手機\tApple\tApple\t360\t0.002778\t1\nA1\t智慧型手機\tASUS\tASUS\t360\t0.002778\t1\nA1\t智慧型手機\tGoogle\tGoogle\t360\t0.002778\t1\nA1\t智慧型手機\tMotorola\tMotorola\t360\t0.002778\t1\nA1\t智慧型手機\tOPPO\tOPPO\t360\t0.002778\t1\nA1\t智慧型手機\tPOCO\tPOCO\t360\t0.002778\t1\nA1\t智慧型手機\tRedmi\tRedmi\t360\t0.002778\t1\nA1\t智慧型手機\tSamsung\tSamsung\t360\t0.002778\t1\nA1\t智慧型手機\tSONY\tSONY\t360\t0.002778\t1\nA1\t智慧型手機\tvivo\tvivo\t360\t0.002778\t1\nA1\t智慧型手機\tXiaomi\tXiaomi\t360\t0.002778\t1\nA1\t桌上型電腦\tApple\tApple\t200\t0.005000\t1\nA1\t桌上型電腦\tMSI\tMSI\t200\t0.005000\t1\nA1\t液晶螢幕\tAcer\tAcer\t200\t0.005000\t1\nA1\t液晶螢幕\tApple\tApple\t200\t0.005000\t1\nA1\t液晶螢幕\tGigabyte\tGigabyte\t200\t0.005000\t1\nA1\t液晶螢幕\tMSI\tMSI\t200\t0.005000\t1\nA1\t液晶螢幕\tSamsung\tSamsung\t200\t0.005000\t1\nA1\t穿戴型設備\tApple\tApple\t200\t0.005000\t1\nA1\t穿戴裝置\tApple\tApple\t200\t0.005000\t1\nA1\t筆記型電腦\tAcer\tAcer\t250\t0.004000\t1\nA1\t筆記型電腦\tApple\tApple\t250\t0.004000\t1\nA1\t筆記型電腦\tDELL\tDELL\t250\t0.004000\t1\nA1\t筆記型電腦\tHP\tHP\t250\t0.004000\t1\nA1\t筆記型電腦\tLenovo\tLenovo\t250\t0.004000\t1\nA1\t筆記型電腦\tMSI\tMSI\t250\t0.004000\t1\nA1\t筆記型電腦\tTOSHIBA\tTOSHIBA\t250\t0.004000\t1\nA1\t耳機音響\tApple\tApple\t400\t0.002500\t1\nA1\t觸控筆\tApple\tApple\t400\t0.002500\t1\nA1\t車用週邊\tGOLIFE\tGOLIFE\t400\t0.002500\t1\nA1\t車用週邊\tPAPAGO\tPAPAGO\t400\t0.002500\t1\nA2\t平板電腦\tApple\tApple\t360\t0.002778\t1\nA2\t平板電腦\tRedmi\tRedmi\t360\t0.002778\t1\nA2\t平板電腦\tXiaomi\tXiaomi\t360\t0.002778\t1\nA2\t智慧型手機\tApple\tApple\t360\t0.002778\t1\nA2\t智慧型手機\tASUS\tASUS\t360\t0.002778\t1\nA2\t智慧型手機\tGoogle\tGoogle\t360\t0.002778\t1\nA2\t智慧型手機\tMotorola\tMotorola\t360\t0.002778\t1\nA2\t智慧型手機\tOPPO\tOPPO\t360\t0.002778\t1\nA2\t智慧型手機\tPOCO\tPOCO\t360\t0.002778\t1\nA2\t智慧型手機\tRedmi\tRedmi\t359\t0.002786\t1\nA2\t智慧型手機\tSamsung\tSamsung\t360\t0.002778\t1\nA2\t智慧型手機\tSONY\tSONY\t360\t0.002778\t1\nA2\t智慧型手機\tvivo\tvivo\t360\t0.002778\t1\nA2\t智慧型手機\tXiaomi\tXiaomi\t360\t0.002778\t1\nB\t平板電腦\tApple\tApple\t160\t0.006250\t1\nB\t平板電腦\tRedmi\tRedmi\t160\t0.006250\t1\nB\t平板電腦\tXiaomi\tXiaomi\t160\t0.006250\t1\nB\t影音周邊\tApple\tApple\t160\t0.006250\t1\nB\t智慧型手機\tApple\tApple\t160\t0.006250\t1\nB\t智慧型手機\tASUS\tASUS\t160\t0.006250\t1\nB\t智慧型手機\tGoogle\tGoogle\t160\t0.006250\t1\nB\t智慧型手機\tMotorola\tMotorola\t160\t0.006250\t1\nB\t智慧型手機\tOPPO\tOPPO\t160\t0.006250\t1\nB\t智慧型手機\tPOCO\tPOCO\t160\t0.006250\t1\nB\t智慧型手機\tRedmi\tRedmi\t160\t0.006250\t1\nB\t智慧型手機\tSamsung\tSamsung\t160\t0.006250\t1\nB\t智慧型手機\tSONY\tSONY\t160\t0.006250\t1\nB\t智慧型手機\tvivo\tvivo\t160\t0.006250\t1\nB\t智慧型手機\tXiaomi\tXiaomi\t159\t0.006289\t1\nC\t平板電腦\tApple\tApple\t160\t0.006250\t1\nC\t平板電腦\tRedmi\tRedmi\t160\t0.006250\t1\nC\t平板電腦\tXiaomi\tXiaomi\t160\t0.006250\t1\nC\t影音周邊\tApple\tApple\t160\t0.006250\t1\nC\t智慧型手機\tApple\tApple\t159\t0.006289\t1\nC\t智慧型手機\tASUS\tASUS\t160\t0.006250\t1\nC\t智慧型手機\tGoogle\tGoogle\t160\t0.006250\t1\nC\t智慧型手機\tMotorola\tMotorola\t160\t0.006250\t1\nC\t智慧型手機\tOPPO\tOPPO\t160\t0.006250\t1\nC\t智慧型手機\tPOCO\tPOCO\t160\t0.006250\t1\nC\t智慧型手機\tRedmi\tRedmi\t160\t0.006250\t1\nC\t智慧型手機\tSamsung\tSamsung\t160\t0.006250\t1\nC\t智慧型手機\tSONY\tSONY\t160\t0.006250\t1\nC\t智慧型手機\tvivo\tvivo\t160\t0.006250\t1\nC\t智慧型手機\tXiaomi\tXiaomi\t160\t0.006250\t1\nC\t桌上型電腦\tApple\tApple\t40\t0.025000\t1\nC\t桌上型電腦\tMSI\tMSI\t40\t0.025000\t1\nC\t液晶螢幕\tAcer\tAcer\t120\t0.008333\t1\nC\t液晶螢幕\tApple\tApple\t120\t0.008333\t1\nC\t液晶螢幕\tGigabyte\tGigabyte\t120\t0.008333\t1\nC\t液晶螢幕\tMSI\tMSI\t120\t0.008333\t1\nC\t液晶螢幕\tSamsung\tSamsung\t120\t0.008333\t1\nC\t穿戴型設備\tApple\tApple\t80\t0.012500\t1\nC\t穿戴裝置\tApple\tApple\t80\t0.012500\t1\nC\t筆記型電腦\tAcer\tAcer\t40\t0.025000\t1\nC\t筆記型電腦\tApple\tApple\t40\t0.025000\t1\nC\t筆記型電腦\tDELL\tDELL\t40\t0.025000\t1\nC\t筆記型電腦\tHP\tHP\t40\t0.025000\t1\nC\t筆記型電腦\tLenovo\tLenovo\t40\t0.025000\t1\nC\t筆記型電腦\tMSI\tMSI\t40\t0.025000\t1\nC\t筆記型電腦\tTOSHIBA\tTOSHIBA\t40\t0.025000\t1\nD\t平板電腦\tApple\tApple\t200\t0.005000\t1\nD\t平板電腦\tRedmi\tRedmi\t200\t0.005000\t1\nD\t平板電腦\tXiaomi\tXiaomi\t200\t0.005000\t1\nD\t影音周邊\tApple\tApple\t200\t0.005000\t1\nD\t智慧型手機\tApple\tApple\t200\t0.005000\t1\nD\t智慧型手機\tASUS\tASUS\t200\t0.005000\t1\nD\t智慧型手機\tGoogle\tGoogle\t200\t0.005000\t1\nD\t智慧型手機\tMotorola\tMotorola\t200\t0.005000\t1\nD\t智慧型手機\tOPPO\tOPPO\t200\t0.005000\t1\nD\t智慧型手機\tPOCO\tPOCO\t200\t0.005000\t1\nD\t智慧型手機\tRedmi\tRedmi\t200\t0.005000\t1\nD\t智慧型手機\tSamsung\tSamsung\t200\t0.005000\t1\nD\t智慧型手機\tSONY\tSONY\t200\t0.005000\t1\nD\t智慧型手機\tvivo\tvivo\t200\t0.005000\t1\nD\t智慧型手機\tXiaomi\tXiaomi\t200\t0.005000\t1\nD\t桌上型電腦\tApple\tApple\t150\t0.006667\t1\nD\t桌上型電腦\tMSI\tMSI\t150\t0.006667\t1\nD\t液晶螢幕\tAcer\tAcer\t150\t0.006667\t1\nD\t液晶螢幕\tApple\tApple\t150\t0.006667\t1\nD\t液晶螢幕\tGigabyte\tGigabyte\t150\t0.006667\t1\nD\t液晶螢幕\tMSI\tMSI\t150\t0.006667\t1\nD\t液晶螢幕\tSamsung\tSamsung\t150\t0.006667\t1\nD\t穿戴型設備\tApple\tApple\t150\t0.006667\t1\nD\t穿戴裝置\tApple\tApple\t150\t0.006667\t1\nD\t筆記型電腦\tAcer\tAcer\t150\t0.006667\t1\nD\t筆記型電腦\tApple\tApple\t150\t0.006667\t1\nD\t筆記型電腦\tDELL\tDELL\t150\t0.006667\t1\nD\t筆記型電腦\tHP\tHP\t150\t0.006667\t1\nD\t筆記型電腦\tLenovo\tLenovo\t150\t0.006667\t1\nD\t筆記型電腦\tMSI\tMSI\t150\t0.006667\t1\nD\t筆記型電腦\tTOSHIBA\tTOSHIBA\t150\t0.006667\t1\nE\t平板電腦\tApple\tApple\t400\t0.002500\t1\nE\t平板電腦\tRedmi\tRedmi\t400\t0.002500\t1\nE\t平板電腦\tXiaomi\tXiaomi\t400\t0.002500\t1\nE\t智慧型手機\tApple\tApple\t400\t0.002500\t1\nE\t智慧型手機\tASUS\tASUS\t400\t0.002500\t1\nE\t智慧型手機\tGoogle\tGoogle\t400\t0.002500\t1\nE\t智慧型手機\tMotorola\tMotorola\t400\t0.002500\t1\nE\t智慧型手機\tOPPO\tOPPO\t400\t0.002500\t1\nE\t智慧型手機\tPOCO\tPOCO\t400\t0.002500\t1\nE\t智慧型手機\tRedmi\tRedmi\t400\t0.002500\t1\nE\t智慧型手機\tSamsung\tSamsung\t400\t0.002500\t1\nE\t智慧型手機\tSONY\tSONY\t400\t0.002500\t1\nE\t智慧型手機\tvivo\tvivo\t400\t0.002500\t1\nE\t智慧型手機\tXiaomi\tXiaomi\t400\t0.002500\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1837
+}

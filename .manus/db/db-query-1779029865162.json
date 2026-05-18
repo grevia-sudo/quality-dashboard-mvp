@@ -1,0 +1,148 @@
+{
+  "query": "SELECT se.stationCode, COALESCE(u.name, u.username, CONCAT('user-', se.operatorUserId)) AS operatorName, COUNT(*) AS eventCount, SUM(CASE WHEN p.categoryId IS NULL THEN 1 ELSE 0 END) AS missingCategoryCount FROM station_events se LEFT JOIN products p ON p.id = se.productId LEFT JOIN users u ON u.id = se.operatorUserId WHERE se.countForProductivity = 1 AND se.businessDate >= '2026-05-01' AND se.businessDate < '2026-06-01' GROUP BY se.stationCode, se.operatorUserId, operatorName ORDER BY se.stationCode, operatorName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT se.stationCode, COALESCE(u.name, u.username, CONCAT('user-', se.operatorUserId)) AS operatorName, COUNT(*) AS eventCount, SUM(CASE WHEN p.categoryId IS NULL THEN 1 ELSE 0 END) AS missingCategoryCount FROM station_events se LEFT JOIN products p ON p.id = se.productId LEFT JOIN users u ON u.id = se.operatorUserId WHERE se.countForProductivity = 1 AND se.businessDate >= '2026-05-01' AND se.businessDate < '2026-06-01' GROUP BY se.stationCode, se.operatorUserId, operatorName ORDER BY se.stationCode, operatorName;",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "operatorName": "NULL",
+      "eventCount": "586",
+      "missingCategoryCount": "249"
+    },
+    {
+      "stationCode": "A1",
+      "operatorName": "佳珉",
+      "eventCount": "907",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "A1",
+      "operatorName": "宥凱",
+      "eventCount": "399",
+      "missingCategoryCount": "29"
+    },
+    {
+      "stationCode": "A1",
+      "operatorName": "小周",
+      "eventCount": "3",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "A2",
+      "operatorName": "小周",
+      "eventCount": "371",
+      "missingCategoryCount": "29"
+    },
+    {
+      "stationCode": "B",
+      "operatorName": "Vicky",
+      "eventCount": "80",
+      "missingCategoryCount": "9"
+    },
+    {
+      "stationCode": "B",
+      "operatorName": "佳穎",
+      "eventCount": "102",
+      "missingCategoryCount": "11"
+    },
+    {
+      "stationCode": "B",
+      "operatorName": "秉翰",
+      "eventCount": "75",
+      "missingCategoryCount": "2"
+    },
+    {
+      "stationCode": "B",
+      "operatorName": "葉tiger",
+      "eventCount": "101",
+      "missingCategoryCount": "7"
+    },
+    {
+      "stationCode": "C",
+      "operatorName": "Vicky",
+      "eventCount": "16",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "C",
+      "operatorName": "巧克力",
+      "eventCount": "103",
+      "missingCategoryCount": "15"
+    },
+    {
+      "stationCode": "C",
+      "operatorName": "秉翰",
+      "eventCount": "6",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "C",
+      "operatorName": "葉tiger",
+      "eventCount": "6",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "C",
+      "operatorName": "雋喆",
+      "eventCount": "145",
+      "missingCategoryCount": "14"
+    },
+    {
+      "stationCode": "D",
+      "operatorName": "巧克力",
+      "eventCount": "165",
+      "missingCategoryCount": "17"
+    },
+    {
+      "stationCode": "D",
+      "operatorName": "綠途未來股份有限公司",
+      "eventCount": "3",
+      "missingCategoryCount": "3"
+    },
+    {
+      "stationCode": "E",
+      "operatorName": "巧克力",
+      "eventCount": "160",
+      "missingCategoryCount": "15"
+    },
+    {
+      "stationCode": "E",
+      "operatorName": "綠途未來股份有限公司",
+      "eventCount": "3",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "STOCK",
+      "operatorName": "Vicky",
+      "eventCount": "16",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "STOCK",
+      "operatorName": "巧克力",
+      "eventCount": "160",
+      "missingCategoryCount": "15"
+    },
+    {
+      "stationCode": "STOCK",
+      "operatorName": "秉翰",
+      "eventCount": "6",
+      "missingCategoryCount": "0"
+    },
+    {
+      "stationCode": "STOCK",
+      "operatorName": "綠途未來股份有限公司",
+      "eventCount": "5",
+      "missingCategoryCount": "3"
+    },
+    {
+      "stationCode": "STOCK",
+      "operatorName": "葉tiger",
+      "eventCount": "6",
+      "missingCategoryCount": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\toperatorName\teventCount\tmissingCategoryCount\nA1\tNULL\t586\t249\nA1\t佳珉\t907\t0\nA1\t宥凱\t399\t29\nA1\t小周\t3\t0\nA2\t小周\t371\t29\nB\tVicky\t80\t9\nB\t佳穎\t102\t11\nB\t秉翰\t75\t2\nB\t葉tiger\t101\t7\nC\tVicky\t16\t0\nC\t巧克力\t103\t15\nC\t秉翰\t6\t0\nC\t葉tiger\t6\t0\nC\t雋喆\t145\t14\nD\t巧克力\t165\t17\nD\t綠途未來股份有限公司\t3\t3\nE\t巧克力\t160\t15\nE\t綠途未來股份有限公司\t3\t0\nSTOCK\tVicky\t16\t0\nSTOCK\t巧克力\t160\t15\nSTOCK\t秉翰\t6\t0\nSTOCK\t綠途未來股份有限公司\t5\t3\nSTOCK\t葉tiger\t6\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1884
+}

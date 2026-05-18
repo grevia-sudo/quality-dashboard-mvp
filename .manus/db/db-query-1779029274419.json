@@ -1,0 +1,94 @@
+{
+  "query": "SELECT id, batchNo, poNumber, vendorName, importedCategoryName, importedBrandName, categoryId, stationCode, productStatus, sheetRowNumber FROM products WHERE batchNo = '00500025282';\nSELECT se.id, se.stationCode, se.stationEventType, se.businessDate, se.categoryId, se.subtypeCode, se.countForProductivity, psd.id AS detailId, psd.targetConfigId, psd.earnedPoints FROM station_events se INNER JOIN products p ON p.id = se.productId LEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id WHERE p.batchNo = '00500025282' ORDER BY se.id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, batchNo, poNumber, vendorName, importedCategoryName, importedBrandName, categoryId, stationCode, productStatus, sheetRowNumber FROM products WHERE batchNo = '00500025282';\nSELECT se.id, se.stationCode, se.stationEventType, se.businessDate, se.categoryId, se.subtypeCode, se.countForProductivity, psd.id AS detailId, psd.targetConfigId, psd.earnedPoints FROM station_events se INNER JOIN products p ON p.id = se.productId LEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id WHERE p.batchNo = '00500025282' ORDER BY se.id ASC;",
+  "rows": [
+    {
+      "id": "690002",
+      "batchNo": "00500025282",
+      "poNumber": "NULL",
+      "vendorName": "NULL",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "categoryId": "NULL",
+      "stationCode": "E",
+      "productStatus": "pending_e",
+      "sheetRowNumber": "536"
+    },
+    {
+      "id": "id",
+      "batchNo": "stationCode",
+      "poNumber": "stationEventType",
+      "vendorName": "businessDate",
+      "importedCategoryName": "categoryId",
+      "importedBrandName": "subtypeCode",
+      "categoryId": "countForProductivity",
+      "stationCode": "detailId",
+      "productStatus": "targetConfigId",
+      "sheetRowNumber": "earnedPoints"
+    },
+    {
+      "id": "720010",
+      "batchNo": "A1",
+      "poNumber": "complete",
+      "vendorName": "2026-05-14",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "categoryId": "1",
+      "stationCode": "NULL",
+      "productStatus": "NULL",
+      "sheetRowNumber": "NULL"
+    },
+    {
+      "id": "720030",
+      "batchNo": "A2",
+      "poNumber": "complete",
+      "vendorName": "2026-05-14",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "categoryId": "1",
+      "stationCode": "NULL",
+      "productStatus": "NULL",
+      "sheetRowNumber": "NULL"
+    },
+    {
+      "id": "780261",
+      "batchNo": "B",
+      "poNumber": "complete",
+      "vendorName": "2026-05-14",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "categoryId": "1",
+      "stationCode": "NULL",
+      "productStatus": "NULL",
+      "sheetRowNumber": "NULL"
+    },
+    {
+      "id": "810025",
+      "batchNo": "C",
+      "poNumber": "complete",
+      "vendorName": "2026-05-15",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "categoryId": "1",
+      "stationCode": "NULL",
+      "productStatus": "NULL",
+      "sheetRowNumber": "NULL"
+    },
+    {
+      "id": "811700",
+      "batchNo": "D",
+      "poNumber": "sampling_pass",
+      "vendorName": "2026-05-15",
+      "importedCategoryName": "NULL",
+      "importedBrandName": "NULL",
+      "categoryId": "1",
+      "stationCode": "NULL",
+      "productStatus": "NULL",
+      "sheetRowNumber": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbatchNo\tpoNumber\tvendorName\timportedCategoryName\timportedBrandName\tcategoryId\tstationCode\tproductStatus\tsheetRowNumber\n690002\t00500025282\tNULL\tNULL\tNULL\tNULL\tNULL\tE\tpending_e\t536\nid\tstationCode\tstationEventType\tbusinessDate\tcategoryId\tsubtypeCode\tcountForProductivity\tdetailId\ttargetConfigId\tearnedPoints\n720010\tA1\tcomplete\t2026-05-14\tNULL\tNULL\t1\tNULL\tNULL\tNULL\n720030\tA2\tcomplete\t2026-05-14\tNULL\tNULL\t1\tNULL\tNULL\tNULL\n780261\tB\tcomplete\t2026-05-14\tNULL\tNULL\t1\tNULL\tNULL\tNULL\n810025\tC\tcomplete\t2026-05-15\tNULL\tNULL\t1\tNULL\tNULL\tNULL\n811700\tD\tsampling_pass\t2026-05-15\tNULL\tNULL\t1\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 2118
+}

@@ -1,0 +1,142 @@
+{
+  "query": "SELECT ptc.stationCode, pc.categoryName, ptc.dailyTargetQty, ptc.baseUnitPoints FROM productivity_target_configs ptc JOIN product_categories pc ON pc.id = ptc.categoryId WHERE ptc.active = 1 AND pc.brandName = 'Apple' AND pc.categoryName IN ('平板電腦','耳機音響','穿戴型設備','桌上型電腦','智慧型手機','筆記型電腦') GROUP BY ptc.stationCode, pc.categoryName, ptc.dailyTargetQty, ptc.baseUnitPoints ORDER BY FIELD(ptc.stationCode,'A1','A2','B','C','D','E'), FIELD(pc.categoryName,'平板電腦','耳機音響','穿戴型設備','桌上型電腦','智慧型手機','筆記型電腦');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT ptc.stationCode, pc.categoryName, ptc.dailyTargetQty, ptc.baseUnitPoints FROM productivity_target_configs ptc JOIN product_categories pc ON pc.id = ptc.categoryId WHERE ptc.active = 1 AND pc.brandName = 'Apple' AND pc.categoryName IN ('平板電腦','耳機音響','穿戴型設備','桌上型電腦','智慧型手機','筆記型電腦') GROUP BY ptc.stationCode, pc.categoryName, ptc.dailyTargetQty, ptc.baseUnitPoints ORDER BY FIELD(ptc.stationCode,'A1','A2','B','C','D','E'), FIELD(pc.categoryName,'平板電腦','耳機音響','穿戴型設備','桌上型電腦','智慧型手機','筆記型電腦');",
+  "rows": [
+    {
+      "stationCode": "A1",
+      "categoryName": "平板電腦",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "耳機音響",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "穿戴型設備",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "桌上型電腦",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "智慧型手機",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778"
+    },
+    {
+      "stationCode": "A1",
+      "categoryName": "筆記型電腦",
+      "dailyTargetQty": "250",
+      "baseUnitPoints": "0.004000"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "平板電腦",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778"
+    },
+    {
+      "stationCode": "A2",
+      "categoryName": "智慧型手機",
+      "dailyTargetQty": "360",
+      "baseUnitPoints": "0.002778"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "平板電腦",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250"
+    },
+    {
+      "stationCode": "B",
+      "categoryName": "智慧型手機",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "平板電腦",
+      "dailyTargetQty": "160",
+      "baseUnitPoints": "0.006250"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "穿戴型設備",
+      "dailyTargetQty": "80",
+      "baseUnitPoints": "0.012500"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "桌上型電腦",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "智慧型手機",
+      "dailyTargetQty": "159",
+      "baseUnitPoints": "0.006289"
+    },
+    {
+      "stationCode": "C",
+      "categoryName": "筆記型電腦",
+      "dailyTargetQty": "40",
+      "baseUnitPoints": "0.025000"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "平板電腦",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "穿戴型設備",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "桌上型電腦",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "智慧型手機",
+      "dailyTargetQty": "200",
+      "baseUnitPoints": "0.005000"
+    },
+    {
+      "stationCode": "D",
+      "categoryName": "筆記型電腦",
+      "dailyTargetQty": "150",
+      "baseUnitPoints": "0.006667"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "平板電腦",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500"
+    },
+    {
+      "stationCode": "E",
+      "categoryName": "智慧型手機",
+      "dailyTargetQty": "400",
+      "baseUnitPoints": "0.002500"
+    }
+  ],
+  "messages": [],
+  "stdout": "stationCode\tcategoryName\tdailyTargetQty\tbaseUnitPoints\nA1\t平板電腦\t360\t0.002778\nA1\t耳機音響\t400\t0.002500\nA1\t穿戴型設備\t200\t0.005000\nA1\t桌上型電腦\t200\t0.005000\nA1\t智慧型手機\t360\t0.002778\nA1\t筆記型電腦\t250\t0.004000\nA2\t平板電腦\t360\t0.002778\nA2\t智慧型手機\t360\t0.002778\nB\t平板電腦\t160\t0.006250\nB\t智慧型手機\t160\t0.006250\nC\t平板電腦\t160\t0.006250\nC\t穿戴型設備\t80\t0.012500\nC\t桌上型電腦\t40\t0.025000\nC\t智慧型手機\t159\t0.006289\nC\t筆記型電腦\t40\t0.025000\nD\t平板電腦\t200\t0.005000\nD\t穿戴型設備\t150\t0.006667\nD\t桌上型電腦\t150\t0.006667\nD\t智慧型手機\t200\t0.005000\nD\t筆記型電腦\t150\t0.006667\nE\t平板電腦\t400\t0.002500\nE\t智慧型手機\t400\t0.002500\n",
+  "stderr": "",
+  "execution_time_ms": 1730
+}

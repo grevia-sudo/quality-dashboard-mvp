@@ -1,0 +1,10 @@
+{
+  "query": "SELECT id, batchNo, poNumber, vendorName, importedCategoryName, importedBrandName, categoryId, stationCode, productStatus, sheetRowNumber FROM products WHERE batchNo = '00500025282';\nSELECT se.id, se.stationCode, se.eventType, se.businessDate, se.categoryId, se.subtypeCode, se.countForProductivity, psd.id AS detailId, psd.targetConfigId, psd.earnedPoints FROM station_events se INNER JOIN products p ON p.id = se.productId LEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id WHERE p.batchNo = '00500025282' ORDER BY se.id ASC;\nSELECT COUNT(*) AS purchaseSheetRows FROM products WHERE batchNo = '00500025282' AND sheetRowNumber IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 27YhjuzT1vAAGri.3f5f101aaba8 --database F4LQWhZd9GGdmJuBm98r2c --execute SELECT id, batchNo, poNumber, vendorName, importedCategoryName, importedBrandName, categoryId, stationCode, productStatus, sheetRowNumber FROM products WHERE batchNo = '00500025282';\nSELECT se.id, se.stationCode, se.eventType, se.businessDate, se.categoryId, se.subtypeCode, se.countForProductivity, psd.id AS detailId, psd.targetConfigId, psd.earnedPoints FROM station_events se INNER JOIN products p ON p.id = se.productId LEFT JOIN productivity_score_details psd ON psd.stationEventId = se.id WHERE p.batchNo = '00500025282' ORDER BY se.id ASC;\nSELECT COUNT(*) AS purchaseSheetRows FROM products WHERE batchNo = '00500025282' AND sheetRowNumber IS NOT NULL;",
+  "returncode": 1,
+  "logs": [
+    "id\tbatchNo\tpoNumber\tvendorName\timportedCategoryName\timportedBrandName\tcategoryId\tstationCode\tproductStatus\tsheetRowNumber",
+    "690002\t00500025282\tNULL\tNULL\tNULL\tNULL\tNULL\tE\tpending_e\t536",
+    "ERROR 1054 (42S22) at line 2: Unknown column 'se.eventtype' in 'field list'"
+  ]
+}
