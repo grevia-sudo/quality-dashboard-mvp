@@ -1,5 +1,7 @@
 # Project TODO
 
+- [x] 依使用者最後補強的 5 項規則修訂完整 PRD，補入商品生命週期正式起點、Google Protected Range、Retry Queue、Notification Resolution Flow 與 Task/Event 責任定義
+
 - [x] 依使用者新增的 12 項規則補修完整 PRD，納入完成事件、事件驅動模型、正式狀態機、待入庫雙狀態、商品身份規則、KPI 不可漂移、Google Ownership、Sync Failure、返工 KPI、跨站修改、資料生命週期與通知策略
 
 - [x] 後端加入支援補償 CRUD helper 並把補償點數併入 KPI 匯總
